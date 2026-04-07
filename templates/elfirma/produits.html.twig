@@ -361,7 +361,7 @@
                                 <!-- Actions -->
                                 <td class="py-4 px-4">
                                     <div class="flex gap-2">
-                                        <button onclick='openEditModal({{ produit.idProduit }}, {{ produit|json_encode|raw }})' 
+                                        <button onclick='openEditModal({{ produit.idProduit }}, {nom: "{{ produit.nom|escape("js") }}", type: "{{ produit.type|escape("js") }}", prix_unitaire: {{ produit.prixUnitaire }}, quantite_stock: {{ produit.quantiteStock }}, qualite: "{{ produit.qualite|escape("js") }}", statut: "{{ produit.statut }}", image: "{{ produit.image|escape("js") }}", categorie: {id: {{ produit.categorie.id|default("null") }}}, date_production: "{{ produit.dateProduction|date("Y-m-d") }}", date_expiration: "{{ produit.dateExpiration|date("Y-m-d") }}"})' 
                                                 class="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
                                                 title="Modifier">
                                             <span class="material-symbols-outlined text-sm">edit</span>
@@ -564,14 +564,19 @@
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">
                             <span class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-green-600">image</span>
-                                Modifier l'Image
+                                Edit Image
                             </span>
                         </label>
+                        <div id="currentImageSection" class="mb-4 hidden">
+                            <p class="text-xs text-gray-600 mb-2">Current Image:</p>
+                            <img id="currentImagePreview" src="" alt="Current" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
+                        </div>
                         <input type="file" name="image" accept="image/*" id="editImageInput"
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
-                        <p class="mt-2 text-xs text-gray-500">Laissez vide pour conserver l'image actuelle</p>
+                        <p class="mt-2 text-xs text-gray-500">Leave empty to keep the current image, or select a new one to replace it</p>
                         <div id="editImagePreview" class="mt-4 hidden">
-                            <img src="" alt="Aperçu" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
+                            <p class="text-xs text-gray-600 mb-2">New Image Preview:</p>
+                            <img src="" alt="Preview" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
                         </div>
                     </div>
                 </div>
@@ -598,24 +603,55 @@
         }
         
         function openEditModal(id, produit) {
-            document.getElementById('editNom').value = produit.nom;
-            document.getElementById('editType').value = produit.type;
-            document.getElementById('editPrix').value = produit.prix_unitaire;
-            document.getElementById('editQuantite').value = produit.quantite_stock;
-            document.getElementById('editQualite').value = produit.qualite || '';
+            // Log to check the data structure
+            console.log('Product data:', produit);
+            console.log('produit.nom:', produit.nom);
+            
+            // Set all fields with proper null/undefined checking
+            if (produit.nom && produit.nom !== 'undefined') {
+                document.getElementById('editNom').value = produit.nom;
+            }
+            if (produit.type && produit.type !== 'undefined') {
+                document.getElementById('editType').value = produit.type;
+            }
+            if (produit.prix_unitaire) {
+                document.getElementById('editPrix').value = produit.prix_unitaire;
+            }
+            if (produit.quantite_stock !== undefined && produit.quantite_stock !== null) {
+                document.getElementById('editQuantite').value = produit.quantite_stock;
+            }
+            if (produit.qualite && produit.qualite !== 'undefined') {
+                document.getElementById('editQualite').value = produit.qualite;
+            }
+            
             document.getElementById('editStatut').value = produit.statut || 'Disponible';
             
             if (produit.categorie && produit.categorie.id) {
                 document.getElementById('editCategorieId').value = produit.categorie.id;
             }
             
-            if (produit.date_production && produit.date_production.date) {
-                document.getElementById('editDateProduction').value = produit.date_production.date.substring(0, 10);
+            // Handle dates
+            if (produit.date_production && produit.date_production !== '1970-01-01') {
+                document.getElementById('editDateProduction').value = produit.date_production.substring(0, 10);
             }
             
-            if (produit.date_expiration && produit.date_expiration.date) {
-                document.getElementById('editDateExpiration').value = produit.date_expiration.date.substring(0, 10);
+            if (produit.date_expiration && produit.date_expiration !== '1970-01-01') {
+                document.getElementById('editDateExpiration').value = produit.date_expiration.substring(0, 10);
             }
+            
+            // Display current image if it exists
+            if (produit.image && produit.image !== 'undefined') {
+                const currentImageSection = document.getElementById('currentImageSection');
+                const currentImagePreview = document.getElementById('currentImagePreview');
+                currentImagePreview.src = '/uploads/produits/' + produit.image;
+                currentImageSection.classList.remove('hidden');
+            } else {
+                document.getElementById('currentImageSection').classList.add('hidden');
+            }
+            
+            // Clear new image preview
+            document.getElementById('editImagePreview').classList.add('hidden');
+            document.getElementById('editImageInput').value = '';
             
             document.getElementById('editForm').action = '{{ path('produit_edit', { id: '__ID__' }) }}'.replace('__ID__', id);
             openModal('editModal');
