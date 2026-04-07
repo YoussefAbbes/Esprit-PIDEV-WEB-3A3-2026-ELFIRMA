@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
-    <title>Elfirma - Produits</title>
+    <title>Elfirma - Products</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -23,52 +23,52 @@
     <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 py-8 pr-4 bg-[#f5f5dc]">
         <div class="px-8 mb-8">
             <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
-            <p class="text-[#43493d] text-sm">Gestion Agricole</p>
+            <p class="text-[#43493d] text-sm">Agricultural Management</p>
         </div>
         <nav class="flex-1 flex flex-col space-y-1">
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
                 <span class="material-symbols-outlined">dashboard</span>
-                <span>Tableau de Bord</span>
+                <span>Dashboard</span>
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
                 <span class="material-symbols-outlined">group</span>
-                <span>Gestion Utilisateurs</span>
+                <span>User Management</span>
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'parcelles-cultures' }) }}">
                 <span class="material-symbols-outlined">agriculture</span>
-                <span>Gestion Parcelles</span>
+                <span>Field Management</span>
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
                 <span class="material-symbols-outlined">pets</span>
-                <span>Gestion Élevage</span>
+                <span>Livestock Management</span>
             </a>
             
-            <!-- Gestion des Produits avec sous-menu -->
+            <!-- Product Management with submenu -->
             <div class="py-1">
                 <div class="flex items-center gap-4 py-3 px-8 bg-[#2d5016] text-white rounded-l-full ml-auto">
                 
-                    <span class="flex-1">Gestion Produits</span>
+                    <span class="flex-1">Product Management</span>
                     <span class="material-symbols-outlined text-sm">expand_less</span>
                 </div>
                 <div class="mt-1 ml-8">
                     <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_page', { module: 'categories' }) }}">
                         <span class="material-symbols-outlined text-sm">category</span>
-                        <span>Catégories</span>
+                        <span>Categories</span>
                     </a>
                     <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('elfirma_page', { module: 'produits' }) }}">
                         
-                        <span>Produits</span>
+                        <span>Products</span>
                     </a>
                 </div>
             </div>
             
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
                 <span class="material-symbols-outlined">handyman</span>
-                <span>Gestion Équipements</span>
+                <span>Equipment Management</span>
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
                 <span class="material-symbols-outlined">description</span>
-                <span>Gestion Contrats</span>
+                <span>Contract Management</span>
             </a>
         </nav>
     </aside>
@@ -77,7 +77,7 @@
     <main class="flex-1 md:ml-72 min-h-screen flex flex-col">
         <!-- Header -->
         <header class="sticky top-0 z-50 bg-[#fbfbe2]/70 backdrop-blur-xl px-8 py-4 flex justify-between items-center border-b border-[#c3c9b9]/20">
-            <h2 class="text-2xl font-black text-[#0a2200]">Gestion des Produits</h2>
+            <h2 class="text-2xl font-black text-[#0a2200]">Product Management</h2>
             <div class="flex items-center gap-3 bg-[#f5f5dc] px-4 py-1.5 rounded-full">
                 <div class="text-right">
                     <p class="text-sm font-bold text-[#0a2200]">Admin Elfirma</p>
@@ -149,8 +149,8 @@
                             <p class="text-[#43493d] max-w-xl">Gérez votre inventaire de produits et stocks.</p>
                         </div>
                         <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
-                          
-                            <span>Nouveau Produit</span>
+                            <span class="material-symbols-outlined">add</span>
+                            <span>New Product</span>
                         </button>
             </section>
 
@@ -163,7 +163,7 @@
                         <input 
                             type="text" 
                             id="searchInput"
-                            placeholder="Rechercher un produit..." 
+                            placeholder="Search for a product..." 
                             class="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
                             onkeyup="filterTable()"
                         />
@@ -227,21 +227,39 @@
             <section class="bg-white rounded-xl p-8 shadow-sm border-2 border-green-100">
                 <h3 class="text-2xl font-bold text-[#0a2200] mb-6 flex items-center gap-3">
                     <span class="material-symbols-outlined text-green-600">list</span>
-                    Liste des Produits
+                    Product List
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full" id="produitsTable">
                         <thead>
                             <tr class="text-left text-[#43493d] text-xs uppercase tracking-widest font-black border-b-2 border-green-200">
-                                <th class="pb-4 px-4">Image</th>
-                                <th class="pb-4 px-4">Nom</th>
-                                <th class="pb-4 px-4">Catégorie</th>
-                                <th class="pb-4 px-4">Type</th>
-                                <th class="pb-4 px-4">Qualité</th>
-                                <th class="pb-4 px-4">Prix (DT)</th>
-                                <th class="pb-4 px-4">Stock</th>
-                                <th class="pb-4 px-4">Dates</th>
-                                <th class="pb-4 px-4">Statut</th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('image')">
+                                    <div class="flex items-center gap-2">Image <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('name')">
+                                    <div class="flex items-center gap-2">Name <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('category')">
+                                    <div class="flex items-center gap-2">Category <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('type')">
+                                    <div class="flex items-center gap-2">Type <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('quality')">
+                                    <div class="flex items-center gap-2">Quality <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('price')">
+                                    <div class="flex items-center gap-2">Price (DT) <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('stock')">
+                                    <div class="flex items-center gap-2">Stock <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('dates')">
+                                    <div class="flex items-center gap-2">Dates <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
+                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('status')">
+                                    <div class="flex items-center gap-2">Status <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                </th>
                                 <th class="pb-4 px-4">Actions</th>
                             </tr>
                         </thead>
@@ -250,9 +268,12 @@
                             <tr class="border-b border-green-50 hover:bg-green-50 transition-colors" 
                                 data-name="{{ produit.nom|lower }}" 
                                 data-category="{{ produit.categorie ? produit.categorie.nom|lower : '' }}" 
+                                data-type="{{ produit.type|lower }}"
+                                data-quality="{{ produit.qualite|lower }}"
                                 data-status="{{ produit.statut|lower }}"
                                 data-stock="{{ produit.quantiteStock }}"
                                 data-price="{{ produit.prixUnitaire }}"
+                                data-dates="{{ produit.dateProduction|date('Y-m-d') }}"
                                 data-id="{{ produit.idProduit }}">
                                 <!-- Image -->
                                 <td class="py-4 px-4">
@@ -628,32 +649,91 @@
             document.getElementById('resultCount').textContent = visibleCount;
         }
         
-        function sortTable() {
-            const select = document.getElementById('sortSelect');
-            const sortType = select.value;
+        // Sorting state
+        let sortState = {
+            column: null,
+            direction: 'asc' // 'asc' or 'desc'
+        };
+        
+        function sortTable(column) {
             const tbody = document.getElementById('tableBody');
             const rows = Array.from(tbody.querySelectorAll('tr:not(#emptyRow)'));
             
+            // Toggle direction if same column clicked
+            if (sortState.column === column) {
+                sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortState.column = column;
+                sortState.direction = 'asc';
+            }
+            
             rows.sort((a, b) => {
-                switch(sortType) {
-                    case 'name-asc':
-                        return a.dataset.name.localeCompare(b.dataset.name);
-                    case 'name-desc':
-                        return b.dataset.name.localeCompare(a.dataset.name);
-                    case 'stock-asc':
-                        return parseInt(a.dataset.stock) - parseInt(b.dataset.stock);
-                    case 'stock-desc':
-                        return parseInt(b.dataset.stock) - parseInt(a.dataset.stock);
-                    case 'price-asc':
-                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-                    case 'price-desc':
-                        return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                let aVal, bVal;
+                
+                switch(column) {
+                    case 'name':
+                        aVal = a.dataset.name || '';
+                        bVal = b.dataset.name || '';
+                        return sortState.direction === 'asc' 
+                            ? aVal.localeCompare(bVal)
+                            : bVal.localeCompare(aVal);
+                    case 'category':
+                        aVal = a.dataset.category || '';
+                        bVal = b.dataset.category || '';
+                        return sortState.direction === 'asc' 
+                            ? aVal.localeCompare(bVal)
+                            : bVal.localeCompare(aVal);
+                    case 'type':
+                        aVal = a.dataset.type || '';
+                        bVal = b.dataset.type || '';
+                        return sortState.direction === 'asc' 
+                            ? aVal.localeCompare(bVal)
+                            : bVal.localeCompare(aVal);
+                    case 'quality':
+                        aVal = a.dataset.quality || '';
+                        bVal = b.dataset.quality || '';
+                        return sortState.direction === 'asc' 
+                            ? aVal.localeCompare(bVal)
+                            : bVal.localeCompare(aVal);
+                    case 'price':
+                        aVal = parseFloat(a.dataset.price) || 0;
+                        bVal = parseFloat(b.dataset.price) || 0;
+                        return sortState.direction === 'asc' ? aVal - bVal : bVal - aVal;
+                    case 'stock':
+                        aVal = parseInt(a.dataset.stock) || 0;
+                        bVal = parseInt(b.dataset.stock) || 0;
+                        return sortState.direction === 'asc' ? aVal - bVal : bVal - aVal;
+                    case 'status':
+                        aVal = a.dataset.status || '';
+                        bVal = b.dataset.status || '';
+                        return sortState.direction === 'asc' 
+                            ? aVal.localeCompare(bVal)
+                            : bVal.localeCompare(aVal);
                     default:
                         return 0;
                 }
             });
             
             rows.forEach(row => tbody.appendChild(row));
+            updateSortIndicators();
+        }
+        
+        function updateSortIndicators() {
+            document.querySelectorAll('th .material-symbols-outlined').forEach(icon => {
+                icon.textContent = 'unfold_more';
+            });
+            
+            if (sortState.column) {
+                const headers = document.querySelectorAll('th');
+                headers.forEach(h => {
+                    if (h.getAttribute('onclick') && h.getAttribute('onclick').includes(sortState.column)) {
+                        const icon = h.querySelector('.material-symbols-outlined');
+                        if (icon) {
+                            icon.textContent = sortState.direction === 'asc' ? 'arrow_upward' : 'arrow_downward';
+                        }
+                    }
+                });
+            }
         }
         
         function resetFilters() {
