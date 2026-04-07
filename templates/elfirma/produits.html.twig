@@ -6,6 +6,7 @@
     <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
     <title>Elfirma - Products</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
@@ -148,10 +149,16 @@
                             <h2 class="text-4xl font-black text-[#0a2200] tracking-tight leading-none mb-2">Produits Agricoles</h2>
                             <p class="text-[#43493d] max-w-xl">Gérez votre inventaire de produits et stocks.</p>
                         </div>
-                        <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
-                            <span class="material-symbols-outlined">add</span>
-                            <span>New Product</span>
-                        </button>
+                        <div class="flex gap-3">
+                            <button onclick="generatePDF()" class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105">
+                                <span class="material-symbols-outlined">picture_as_pdf</span>
+                                <span>Export PDF</span>
+                            </button>
+                            <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
+                                <span class="material-symbols-outlined">add</span>
+                                <span>New Product</span>
+                            </button>
+                        </div>
             </section>
 
             <!-- Search, Filter and Sort Section -->
@@ -815,6 +822,182 @@
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
             }
+        }
+        
+        // Professional PDF Export Function
+        function generatePDF() {
+            // Fetch product data from API
+            fetch('/elfirma/produit/api/list')
+                .then(response => response.json())
+                .then(produits => {
+                    if (produits.length === 0) {
+                        alert('No products to export');
+                        return;
+                    }
+                    
+                    // Create PDF content
+                    const element = document.createElement('div');
+                    element.style.padding = '20px';
+                    element.style.backgroundColor = '#ffffff';
+                    element.style.fontFamily = 'Arial, sans-serif';
+                    
+                    // Header with Logo
+                    const header = document.createElement('div');
+                    header.style.display = 'flex';
+                    header.style.justifyContent = 'space-between';
+                    header.style.alignItems = 'center';
+                    header.style.borderBottom = '3px solid #2d5016';
+                    header.style.paddingBottom = '15px';
+                    header.style.marginBottom = '20px';
+                    
+                    const logoSection = document.createElement('div');
+                    logoSection.innerHTML = '<img src="/assets/img/logo.png" style="height: 60px; width: auto;">';
+                    
+                    const titleSection = document.createElement('div');
+                    titleSection.style.textAlign = 'right';
+                    titleSection.innerHTML = `
+                        <h1 style="margin: 0; color: #2d5016; font-size: 24px; font-weight: bold;">ELFIRMA</h1>
+                        <p style="margin: 5px 0 0 0; color: #43493d; font-size: 12px;">Agricultural Management System</p>
+                        <p style="margin: 2px 0 0 0; color: #666; font-size: 10px;">Generated: ${new Date().toLocaleString()}</p>
+                    `;
+                    
+                    header.appendChild(logoSection);
+                    header.appendChild(titleSection);
+                    element.appendChild(header);
+                    
+                    // Summary Stats
+                    const totalProducts = produits.length;
+                    const totalStock = produits.reduce((sum, p) => sum + (p.stock || 0), 0);
+                    const totalValue = produits.reduce((sum, p) => sum + ((parseFloat(p.prix) || 0) * (p.stock || 0)), 0);
+                    
+                    const statsDiv = document.createElement('div');
+                    statsDiv.style.display = 'grid';
+                    statsDiv.style.gridTemplateColumns = '1fr 1fr 1fr';
+                    statsDiv.style.gap = '15px';
+                    statsDiv.style.marginBottom = '25px';
+                    
+                    const statCards = [
+                        { label: 'Total Products', value: totalProducts, color: '#2d5016' },
+                        { label: 'Total Stock', value: totalStock + ' units', color: '#16a34a' },
+                        { label: 'Stock Value', value: totalValue.toFixed(2) + ' DT', color: '#059669' }
+                    ];
+                    
+                    statCards.forEach(stat => {
+                        const card = document.createElement('div');
+                        card.style.backgroundColor = stat.color;
+                        card.style.color = 'white';
+                        card.style.padding = '15px';
+                        card.style.borderRadius = '8px';
+                        card.style.textAlign = 'center';
+                        card.innerHTML = `
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">${stat.label}</div>
+                            <div style="font-size: 24px; font-weight: bold;">${stat.value}</div>
+                        `;
+                        statsDiv.appendChild(card);
+                    });
+                    element.appendChild(statsDiv);
+                    
+                    // Title
+                    const title = document.createElement('h2');
+                    title.style.color = '#2d5016';
+                    title.style.fontSize = '18px';
+                    title.style.marginBottom = '15px';
+                    title.style.borderBottom = '2px solid #2d5016';
+                    title.style.paddingBottom = '10px';
+                    title.textContent = '📋 Product List';
+                    element.appendChild(title);
+                    
+                    // Table
+                    const table = document.createElement('table');
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+                    table.style.fontSize = '9px';
+                    
+                    // Table Header
+                    const thead = document.createElement('thead');
+                    const headerRow = document.createElement('tr');
+                    headerRow.style.backgroundColor = '#2d5016';
+                    headerRow.style.color = 'white';
+                    
+                    const headers = ['Product', 'Category', 'Type', 'Quality', 'Price (DT)', 'Stock', 'Prod. Date', 'Exp. Date', 'Status'];
+                    headers.forEach(headerText => {
+                        const th = document.createElement('th');
+                        th.style.padding = '10px';
+                        th.style.textAlign = 'left';
+                        th.style.fontWeight = 'bold';
+                        th.style.fontSize = '10px';
+                        th.style.borderBottom = '2px solid #1e3a0f';
+                        th.textContent = headerText;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+                    
+                    // Table Body - Use API data
+                    const tbody = document.createElement('tbody');
+                    let rowNum = 0;
+                    produits.forEach((produit) => {
+                        const newRow = document.createElement('tr');
+                        newRow.style.borderBottom = '1px solid #ddd';
+                        newRow.style.backgroundColor = rowNum % 2 === 0 ? '#ffffff' : '#f9f9f9';
+                        newRow.style.padding = '8px';
+                        rowNum++;
+                        
+                        const cells = [
+                            produit.nom || 'N/A',
+                            produit.categorie || 'N/A',
+                            produit.type || 'N/A',
+                            produit.qualite || 'N/A',
+                            (parseFloat(produit.prix) || 0).toFixed(2),
+                            produit.stock || '0',
+                            produit.dateProduction || 'N/A',
+                            produit.dateExpiration || 'N/A',
+                            produit.statut || 'N/A'
+                        ];
+                        
+                        cells.forEach((cellText) => {
+                            const td = document.createElement('td');
+                            td.style.padding = '8px';
+                            td.style.borderBottom = '1px solid #eee';
+                            td.style.borderRight = '1px solid #eee';
+                            td.textContent = cellText;
+                            newRow.appendChild(td);
+                        });
+                        tbody.appendChild(newRow);
+                    });
+                    table.appendChild(tbody);
+                    element.appendChild(table);
+                    
+                    // Footer
+                    const footer = document.createElement('div');
+                    footer.style.marginTop = '30px';
+                    footer.style.paddingTop = '15px';
+                    footer.style.borderTop = '2px solid #2d5016';
+                    footer.style.textAlign = 'center';
+                    footer.style.fontSize = '9px';
+                    footer.style.color = '#666';
+                    footer.innerHTML = `
+                        <p style="margin: 5px 0;">© Elfirma - Agricultural Management System</p>
+                        <p style="margin: 5px 0;">This document contains confidential information about your agricultural products inventory.</p>
+                        <p style="margin: 5px 0; color: #999;">Printed on ${new Date().toLocaleString()}</p>
+                    `;
+                    element.appendChild(footer);
+                    
+                    // Generate PDF
+                    const opt = {
+                        margin: [10, 10, 10, 10],
+                        filename: 'Elfirma_Products_' + new Date().toISOString().slice(0, 10) + '.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true, logging: false },
+                        jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+                    };
+                    
+                    html2pdf().set(opt).from(element).save();
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                    alert('Error generating PDF');
+                });
         }
     </script>
 </body>

@@ -343,4 +343,125 @@ final class ElfirmaController extends AbstractController
 
         return $this->redirectToRoute('elfirma_page', ['module' => 'produits']);
     }
+
+    #[Route('/elfirma/produit/api/list', name: 'produit_api_list', methods: ['GET'])]
+    public function getProduitsList(EntityManagerInterface $em): Response
+    {
+        $produits = $em->getRepository(Produit::class)->findAll();
+        
+        $data = array_map(function(Produit $produit) {
+            return [
+                'id' => $produit->getIdProduit(),
+                'nom' => $produit->getNom(),
+                'type' => $produit->getType(),
+                'qualite' => $produit->getQualite(),
+                'prix' => $produit->getPrixUnitaire(),
+                'stock' => $produit->getQuantiteStock(),
+                'categorie' => $produit->getCategorie()?->getNom(),
+                'statut' => $produit->getStatut(),
+                'dateProduction' => $produit->getDateProduction()?->format('d/m/Y'),
+                'dateExpiration' => $produit->getDateExpiration()?->format('d/m/Y'),
+            ];
+        }, $produits);
+        
+        return $this->json($data);
+    }
+
+    private function generatePDFContent(array $produits): string
+    {
+        $html = <<<'HTML'
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Product List</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; color: #333; }
+        .header { background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); color: white; padding: 30px; text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .content { padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: #2d5016; color: white; padding: 12px; text-align: left; font-weight: bold; font-size: 12px; }
+        td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 11px; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 10px; border-top: 1px solid #ddd; margin-top: 30px; }
+        .status-available { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .status-rupture { background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .status-expired { background: #d3d3d3; color: #333; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .price { font-weight: bold; color: #2d5016; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Elfirma - Product List</h1>
+        <p>Generated on HTML
+HTML;
+        
+        $html .= date('Y-m-d H:i:s');
+        
+        $html .= <<<'HTML'
+</p>
+    </div>
+    
+    <div class="content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Quality</th>
+                    <th>Price (DT)</th>
+                    <th>Stock</th>
+                    <th>Prod. Date</th>
+                    <th>Exp. Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+HTML;
+        
+        if (count($produits) === 0) {
+            $html .= '<tr><td colspan="9" style="text-align: center; color: #999;">No products found</td></tr>';
+        } else {
+            foreach ($produits as $produit) {
+                $status = $produit->getStatut();
+                $statusClass = match($status) {
+                    'Disponible' => 'status-available',
+                    'Rupture' => 'status-rupture',
+                    'Expiré' => 'status-expired',
+                    default => 'status-available'
+                };
+                
+                $html .= '<tr>';
+                $html .= '<td><strong>' . htmlspecialchars($produit->getNom() ?? 'N/A') . '</strong></td>';
+                $html .= '<td>' . htmlspecialchars($produit->getCategorie()?->getNom() ?? 'N/A') . '</td>';
+                $html .= '<td>' . htmlspecialchars($produit->getType() ?? 'N/A') . '</td>';
+                $html .= '<td>' . htmlspecialchars($produit->getQualite() ?? 'N/A') . '</td>';
+                $html .= '<td class="price">' . number_format((float)$produit->getPrixUnitaire(), 2, ',', ' ') . ' DT</td>';
+                $html .= '<td><strong>' . $produit->getQuantiteStock() . '</strong></td>';
+                $html .= '<td>' . ($produit->getDateProduction()?->format('d/m/Y') ?? 'N/A') . '</td>';
+                $html .= '<td>' . ($produit->getDateExpiration()?->format('d/m/Y') ?? 'N/A') . '</td>';
+                $html .= '<td><span class="' . $statusClass . '">' . htmlspecialchars($status) . '</span></td>';
+                $html .= '</tr>';
+            }
+        }
+        
+        $html .= <<<'HTML'
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="footer">
+        <p>© Elfirma Agricultural Management System</p>
+        <p>This document was automatically generated and contains confidential information.</p>
+    </div>
+</body>
+</html>
+HTML;
+        
+        return $html;
+    }
 }
