@@ -1,0 +1,286 @@
+<script>
+(function () {
+    const navItems = [
+        {
+            label: "User Management",
+            icon: "group",
+            href: "{{ path('elfirma_page', { module: 'utilisateurs' }) }}"
+        },
+        {
+            label: "Field Management",
+            icon: "agriculture",
+            href: "{{ path('elfirma_page', { module: 'parcelles-cultures' }) }}"
+        },
+        {
+            label: "Livestock Management",
+            icon: "pets",
+            href: "{{ path('elfirma_page', { module: 'animaux-elevages' }) }}"
+        },
+        {
+            label: "Product Management",
+            icon: "shopping_basket",
+            href: "{{ path('elfirma_page', { module: 'produits-commandes' }) }}",
+            submenu: [
+                {
+                    label: "Categories",
+                    icon: "category",
+                    href: "{{ path('elfirma_page', { module: 'categories' }) }}"
+                },
+                {
+                    label: "Products",
+                    icon: "inventory_2",
+                    href: "{{ path('elfirma_page', { module: 'produits' }) }}"
+                }
+            ]
+        },
+        {
+            label: "Equipment Management",
+            icon: "handyman",
+            href: "{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}"
+        },
+        {
+            label: "Contract Management",
+            icon: "contract",
+            href: "{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}"
+        }
+    ];
+
+    const englishReplacements = [
+        ["Gestion Agricole", "Farm Management"],
+        ["Tableau de Bord", "Dashboard"],
+        ["Utilisateurs", "Users"],
+        ["Parcelles & Cultures", "Fields & Crops"],
+        ["Animaux & Élevages", "Livestock"],
+        ["Animaux & Elevages", "Livestock"],
+        ["Product Management", "Product Management"],
+        ["Catégories", "Categories"],
+        ["Produits", "Products"],
+        ["Gestion des Catégories", "Category Management"],
+        ["Gestion des Produits", "Product Management"],
+        ["Produits Agricoles", "Agricultural Products"],
+        ["Catégories de Produits", "Product Categories"],
+        ["Produits & Commandes", "Products & Orders"],
+        ["Équipements & Maintenance", "Equipment & Maintenance"],
+        ["Equipements & Maintenance", "Equipment & Maintenance"],
+        ["Fournisseurs & Contrats", "Suppliers & Contracts"],
+        ["Réclamations", "Claims"],
+        ["Reclamations", "Claims"],
+        ["Aide", "Help"],
+        ["Déconnexion", "Logout"],
+        ["Support Technique", "Technical Support"],
+        ["Mentions Légales", "Legal Notice"],
+        ["Confidentialité", "Privacy"],
+        ["Nouvelle Saison", "New Season"],
+        ["Nouvelle Catégorie", "New Category"],
+        ["Nouveau Produit", "New Product"],
+        ["Ajouter un utilisateur", "Add user"],
+        ["Ajouter une parcelle", "Add field"],
+        ["Ajouter un animal", "Add animal"],
+        ["Nouveau contrat", "New contract"],
+        ["Ajouter un fournisseur", "Add supplier"],
+        ["Rechercher", "Search"],
+        ["Voir tout", "View all"],
+        ["Maintenance", "Maintenance"],
+        ["Récolte", "Harvest"],
+        ["Sélectionnez", "Select"],
+        ["Ouvrir le module dans Symfony", "Open module in Symfony"]
+    ];
+
+    const normalizePath = (value) => (value || "").replace(/\/$/, "") || "/";
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
+
+    const translateValue = (value) => {
+        if (!value) {
+            return value;
+        }
+
+        return englishReplacements.reduce((accumulator, replacement) => {
+            return accumulator.split(replacement[0]).join(replacement[1]);
+        }, value);
+    };
+
+    const applyEnglishLocalization = () => {
+        document.documentElement.lang = "en";
+
+        document.querySelectorAll("[placeholder]").forEach((element) => {
+            element.placeholder = translateValue(element.placeholder);
+        });
+
+        const textWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        let textNode = textWalker.nextNode();
+
+        while (textNode) {
+            const parent = textNode.parentElement;
+
+            if (parent && !parent.closest("script, style")) {
+                const translated = translateValue(textNode.nodeValue);
+                if (translated !== textNode.nodeValue) {
+                    textNode.nodeValue = translated;
+                }
+            }
+
+            textNode = textWalker.nextNode();
+        }
+    };
+
+    const syncToggleIcon = (button) => {
+        if (!button) {
+            return;
+        }
+
+        const icon = button.querySelector(".material-symbols-outlined");
+        if (!icon) {
+            return;
+        }
+
+        if (isMobile()) {
+            icon.textContent = document.body.classList.contains("elf-sidebar-open") ? "close" : "menu";
+            return;
+        }
+
+        icon.textContent = document.body.classList.contains("elf-sidebar-collapsed") ? "menu_open" : "menu";
+    };
+
+    const mountSidebarToggle = () => {
+        if (document.querySelector(".elf-sidebar-toggle")) {
+            return;
+        }
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "elf-sidebar-toggle";
+        toggle.setAttribute("aria-label", "Show or hide sidebar");
+        toggle.innerHTML = '<span class="material-symbols-outlined">menu</span>';
+
+        const overlay = document.createElement("div");
+        overlay.className = "elf-sidebar-overlay";
+
+        const closeSidebar = () => {
+            document.body.classList.remove("elf-sidebar-open");
+            syncToggleIcon(toggle);
+        };
+
+        toggle.addEventListener("click", () => {
+            if (isMobile()) {
+                document.body.classList.toggle("elf-sidebar-open");
+                syncToggleIcon(toggle);
+                return;
+            }
+
+            document.body.classList.toggle("elf-sidebar-collapsed");
+            syncToggleIcon(toggle);
+        });
+
+        overlay.addEventListener("click", closeSidebar);
+
+        window.addEventListener("resize", () => {
+            if (!isMobile()) {
+                document.body.classList.remove("elf-sidebar-open");
+            }
+            syncToggleIcon(toggle);
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeSidebar();
+            }
+        });
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(toggle);
+        syncToggleIcon(toggle);
+    };
+
+    const buildSideNavigation = (container) => {
+        container.classList.add("elf-side-links");
+        container.innerHTML = "";
+
+        const currentPath = normalizePath(window.location.pathname);
+
+        navItems.forEach((item) => {
+            const link = document.createElement("a");
+            const isActive = currentPath === normalizePath(item.href);
+            const hasActiveSubmenu = item.submenu && item.submenu.some(sub => currentPath === normalizePath(sub.href));
+            
+            link.className = "elf-side-link" + (isActive || hasActiveSubmenu ? " is-active" : "");
+            link.href = item.href;
+            link.innerHTML = '<span class="material-symbols-outlined">' + item.icon + '</span><span>' + item.label + "</span>";
+            
+            // Add submenu indicator if submenu exists
+            if (item.submenu) {
+                link.innerHTML += '<span class="material-symbols-outlined ml-auto text-sm">expand_more</span>';
+                link.style.position = 'relative';
+                
+                // Create submenu container
+                const submenuContainer = document.createElement("div");
+                submenuContainer.className = "elf-submenu" + (hasActiveSubmenu ? " is-open" : "");
+                submenuContainer.style.cssText = "padding-left: 3rem; display: " + (hasActiveSubmenu ? "block" : "none") + ";";
+                
+                item.submenu.forEach((subItem) => {
+                    const subLink = document.createElement("a");
+                    const isSubActive = currentPath === normalizePath(subItem.href);
+                    subLink.className = "elf-side-link elf-sub-link" + (isSubActive ? " is-active" : "");
+                    subLink.href = subItem.href;
+                    subLink.style.cssText = "padding-left: 2rem; font-size: 0.9rem;";
+                    subLink.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">' + subItem.icon + '</span><span>' + subItem.label + "</span>";
+                    submenuContainer.appendChild(subLink);
+                });
+                
+                // Toggle submenu on click
+                link.addEventListener("click", (e) => {
+                    if (item.submenu) {
+                        e.preventDefault();
+                        const isOpen = submenuContainer.style.display === "block";
+                        submenuContainer.style.display = isOpen ? "none" : "block";
+                        const arrow = link.querySelector(".material-symbols-outlined:last-child");
+                        if (arrow) {
+                            arrow.textContent = isOpen ? "expand_more" : "expand_less";
+                        }
+                    }
+                });
+                
+                container.appendChild(link);
+                container.appendChild(submenuContainer);
+            } else {
+                container.appendChild(link);
+            }
+        });
+    };
+
+    const sideRoots = Array.from(document.querySelectorAll("aside, body > nav"));
+
+    if (!sideRoots.length) {
+        return;
+    }
+
+    document.body.classList.add("elf-has-sidebar");
+
+    applyEnglishLocalization();
+
+    sideRoots.forEach((root) => {
+        root.querySelectorAll("button").forEach((button) => {
+            const label = (button.textContent || "").toLowerCase();
+            if (label.includes("nouvelle") || label.includes("new season")) {
+                button.remove();
+            }
+        });
+
+        const possibleContainers = Array.from(root.querySelectorAll("nav, div")).filter((element) => {
+            return element.querySelectorAll(":scope > a").length >= 5;
+        });
+
+        if (!possibleContainers.length) {
+            return;
+        }
+
+        const bestContainer = possibleContainers.sort((a, b) => {
+            return b.querySelectorAll(":scope > a").length - a.querySelectorAll(":scope > a").length;
+        })[0];
+
+        buildSideNavigation(bestContainer);
+    });
+
+    mountSidebarToggle();
+})();
+</script>
+

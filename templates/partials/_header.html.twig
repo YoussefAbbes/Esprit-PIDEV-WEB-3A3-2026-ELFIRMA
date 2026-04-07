@@ -1,13 +1,13 @@
 <header id="header" class="header d-flex align-items-center position-relative">
   <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
 
-    <a href="{{ path('app_home') }}" class="logo d-flex align-items-center">
-      <img src="{{ asset('assets/img/logo.png') }}" alt="AgriCulture">
+    <a href="{{ path('app_pages_home') }}" class="logo d-flex align-items-center">
+      <img src="{{ asset('assets/img/logo.png') }}" alt="EL FIRMA">
     </a>
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a href="{{ path('app_home') }}" class="{% if app.request.get('_route') == 'app_home' %}active{% endif %}">Home</a></li>
+        <li><a href="{{ path('app_pages_home') }}" class="{% if app.request.get('_route') == 'app_pages_home' %}active{% endif %}">Home</a></li>
         <li><a href="{{ path('app_about') }}" class="{% if app.request.get('_route') == 'app_about' %}active{% endif %}">About Us</a></li>
         <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
         <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
@@ -30,6 +30,7 @@
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
+        <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>

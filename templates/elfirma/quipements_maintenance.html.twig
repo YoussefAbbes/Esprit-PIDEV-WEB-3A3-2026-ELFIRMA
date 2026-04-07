@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+<title>Elfirma - Équipements &amp; Maintenance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Open_Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f5f5dc",
+                    "outline-variant": "#c3c9b9",
+                    "surface-container-highest": "#e4e4cc",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#a8d389",
+                    "on-surface": "#1b1d0e",
+                    "primary-fixed-dim": "#a8d389",
+                    "surface-container-high": "#eaead1",
+                    "on-primary-fixed-variant": "#2c4f15",
+                    "on-secondary-container": "#753502",
+                    "outline": "#73796c",
+                    "inverse-surface": "#303221",
+                    "on-secondary-fixed": "#321200",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#43682b",
+                    "on-surface-variant": "#43493d",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1b1d0e",
+                    "background": "#fbfbe2",
+                    "inverse-on-surface": "#f2f2d9",
+                    "surface-bright": "#fbfbe2",
+                    "secondary-fixed-dim": "#ffb68c",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#cc83af",
+                    "on-secondary-fixed-variant": "#753401",
+                    "tertiary-fixed": "#ffd8ec",
+                    "on-tertiary-fixed": "#39042c",
+                    "surface-container": "#efefd7",
+                    "tertiary-container": "#541c43",
+                    "surface-variant": "#e4e4cc",
+                    "surface": "#fbfbe2",
+                    "on-primary-container": "#7ca560",
+                    "on-primary-fixed": "#0a2100",
+                    "secondary-fixed": "#ffdbc9",
+                    "tertiary-fixed-dim": "#fdafde",
+                    "primary-fixed": "#c3efa3",
+                    "tertiary": "#3a052d",
+                    "secondary": "#934b19",
+                    "primary-container": "#173901",
+                    "surface-dim": "#dbdcc3",
+                    "secondary-container": "#fc9f66",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#0a2200",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#6d3259"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Open Sans"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #fbfbe2; font-family: 'Open Sans', sans-serif; }
+        .font-headline { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .filled-icon { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar Shell -->
+<nav class="h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] dark:bg-[#173901] flex flex-col py-8 pr-4 z-40">
+<div class="px-8 mb-12">
+<h1 class="text-3xl font-black text-[#0a2200] dark:text-[#fbfbe2] tracking-tighter">Elfirma</h1>
+<p class="font-['Inter'] font-semibold text-[#43493d] dark:text-[#c3c9b9] text-xs">Gestion Agricole</p>
+</div>
+<div class="flex-1 space-y-1 overflow-y-auto">
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] font-semibold">Tableau de Bord</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-['Inter'] font-semibold">Utilisateurs</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="agriculture">agriculture</span>
+<span class="font-['Inter'] font-semibold">Parcelles &amp; Cultures</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="pets">pets</span>
+<span class="font-['Inter'] font-semibold">Animaux &amp; Élevages</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_basket">shopping_basket</span>
+<span class="font-['Inter'] font-semibold">Produits &amp; Commandes</span>
+</a>
+<!-- Active Navigation -->
+<a class="flex items-center gap-4 py-3 px-8 bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg transition-transform hover:translate-x-1 opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="handyman">handyman</span>
+<span class="font-['Inter'] font-semibold">Équipements &amp; Maintenance</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="contract">contract</span>
+<span class="font-['Inter'] font-semibold">Fournisseurs &amp; Contrats</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="report_problem">report_problem</span>
+<span class="font-['Inter'] font-semibold">Réclamations</span>
+</a>
+</div>
+<button class="mx-8 mt-6 mb-8 py-3 bg-[#934b19] text-[#ffffff] rounded-full font-headline font-bold text-sm hover:opacity-90 transition-opacity">
+            Nouvelle Saison
+        </button>
+<div class="border-t border-[#c3c9b9]/30 pt-4 space-y-1">
+<a class="flex items-center gap-4 py-2 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Aide</span>
+</a>
+<a class="flex items-center gap-4 py-2 px-8 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Déconnexion</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="ml-72 min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="sticky top-0 z-30 bg-[#fbfbe2]/70 backdrop-blur-xl flex justify-between items-center w-full px-12 py-6">
+<div class="flex items-center gap-8">
+<h2 class="text-2xl font-black text-[#0a2200] tracking-tighter font-headline">Maintenance</h2>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+<input class="pl-12 pr-6 py-2.5 bg-surface-container-low border-none rounded-full w-80 focus:ring-2 focus:ring-primary text-sm" placeholder="Rechercher un équipement..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-[#f5f5dc]/50 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-[#f5f5dc]/50 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary">
+<img alt="Profil de l'administrateur" data-alt="portrait of a confident middle-aged Tunisian man with a professional smile, warm olive skin tone, outdoors in a sunlit farm setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAalZx4e-XHP-gcqTGxgDShTPDOt9DC7e0OO31Oz0YZpVbs8ivRuzHN2rsflFLmRgCHPs9Fxl8aVCCBNQFpEJ03JmJgFuqS4WJ-mKoOsr8yaYx7AytI0LBxbJ9JqGFcMH8df5U73GvHq-Bt-6wbix-KdjuBBYXFG87-3bvBesde8mPZHuVjOTwKMD0Khhb_ktLUOfB1EHyH5qgDOMRHOaHJM7nXC5Rd9kwdTVzJIcEUXUEi7EfRWyEAJGepxQne2sR97qvCtR6f_jGv"/>
+</div>
+</div>
+</header>
+<!-- Content Page -->
+<div class="p-12 space-y-12">
+<!-- Action Bar -->
+<section class="flex justify-between items-end">
+<div class="space-y-1">
+<h3 class="text-4xl font-black text-primary font-headline tracking-tight">Parc d'Équipements</h3>
+<p class="text-on-surface-variant text-lg">Gérez vos actifs et planifiez les révisions périodiques.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-4 bg-secondary-fixed text-on-secondary-fixed rounded-xl font-headline font-bold flex items-center gap-2 hover:shadow-lg transition-shadow">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                        Ajouter un équipement
+                    </button>
+<button class="px-6 py-4 bg-primary text-on-primary rounded-xl font-headline font-bold flex items-center gap-2 hover:shadow-lg transition-shadow">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+                        Planifier une maintenance
+                    </button>
+</div>
+</section>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Main Asset List (Bento Large) -->
+<div class="col-span-8 bg-surface-container-low rounded-xl p-8">
+<div class="flex justify-between items-center mb-8">
+<h4 class="text-xl font-black text-primary font-headline">Inventaire des Actifs</h4>
+<div class="flex gap-2">
+<button class="p-2 bg-surface rounded-lg text-primary hover:bg-surface-variant">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="text-label-md text-on-surface-variant font-headline uppercase tracking-widest text-xs">
+<tr>
+<th class="pb-6">Équipement</th>
+<th class="pb-6">S/N</th>
+<th class="pb-6">Localisation</th>
+<th class="pb-6">État de Santé</th>
+<th class="pb-6 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/15 font-body">
+<tr class="group hover:bg-white/30 transition-colors">
+<td class="py-6 flex items-center gap-4">
+<div class="h-12 w-12 rounded-xl bg-surface-container-highest overflow-hidden">
+<img alt="Tracteur Kubota" data-alt="close-up of a modern red Kubota tractor engine and bodywork in a sunny field, macro details of heavy machinery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnMPyaSi35vc5ieaRYXLZc1yJ-J2qZv9YxFSLYmJ5M9bYowSNKq9ZxsEd22XcaYceu5CvwxA6Jo8ciTjFXNQzOZMEZ-Crx4_NP5FcpguKyj1WMKh2gVjqmwPkyFz2gnuJEfyE1Z8Mdjd6Ehg2lJ1c7wOUD5nv2jpe5quj7Dk1OStjSvsjlt6kej_Jve9_fwry89HeNSmoWSMJTx-xhPJSfEg_scnbt8eYlpegV0gfoq2nG0S0jglAj3b3ZU2q1bldU5xMUhg1st_By"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Tracteur Kubota M5</p>
+<p class="text-xs text-on-surface-variant">Machines Lourdes</p>
+</div>
+</td>
+<td class="py-6 font-mono text-sm text-on-surface-variant">KB-M5-09228</td>
+<td class="py-6 text-on-surface">Hangar A - Jendouba</td>
+<td class="py-6">
+<span class="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-primary mr-2"></span>
+                                            Opérationnel
+                                        </span>
+</td>
+<td class="py-6 text-right">
+<button class="material-symbols-outlined text-outline hover:text-primary" data-icon="more_vert">more_vert</button>
+</td>
+</tr>
+<tr class="group hover:bg-white/30 transition-colors">
+<td class="py-6 flex items-center gap-4">
+<div class="h-12 w-12 rounded-xl bg-surface-container-highest overflow-hidden">
+<img alt="Irrigation" data-alt="drip irrigation system pipes in a field of young vegetable plants with water droplets visible on green leaves" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbHByk8XaeoeMmXxY8NofHXoox2CZEViOLZiakv4WDfzhgaEuj7buYZXwlIv5vgn8cc_44apL2c1wCyiWVyiUiD_0A4cCJ2xC4t7V21AOA4GEqkaid-YlYjE2bkxGQnCAvhr-JvUQucfl6CrehEhqpxcMhQ2b5uY2LoDxGPZk49pS_DZOM6OsqNy6WBdBNiPTxKXsTOd3UnsIxVbb2YWXyjF4SnOUDTlNslZ03dcT2l9k_QAdT4J_uX5q71hHgH6mueQzDmZAjAgjV"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Système Goutte-à-goutte</p>
+<p class="text-xs text-on-surface-variant">Irrigation</p>
+</div>
+</td>
+<td class="py-6 font-mono text-sm text-on-surface-variant">IR-GG-44910</td>
+<td class="py-6 text-on-surface">Parcelle Sud #4</td>
+<td class="py-6">
+<span class="inline-flex items-center px-3 py-1 bg-secondary/10 text-secondary rounded-full text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-secondary mr-2"></span>
+                                            Maintenance requise
+                                        </span>
+</td>
+<td class="py-6 text-right">
+<button class="material-symbols-outlined text-outline hover:text-primary" data-icon="more_vert">more_vert</button>
+</td>
+</tr>
+<tr class="group hover:bg-white/30 transition-colors">
+<td class="py-6 flex items-center gap-4">
+<div class="h-12 w-12 rounded-xl bg-surface-container-highest overflow-hidden">
+<img alt="Pompe à eau" data-alt="industrial water pump machinery in an agricultural setting, steel pipes and pressure gauges with sunlight reflecting off metal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmmf-BrMzCkHSBZOEA-O_mMX8isYlHumBbomEgzRjseZSVGhuYIuZgbc2wwosNhVcApYB1PfV395A31S7clKWwe4qOWJqF5TLoT9gssSfGJw5uKLqooKq7vud-lGah6wWvesp7HjLuL-fJzTjHoInU61tnYqOiPFLm6aqqoOtmKQnR1yLit151p-qbjMxQZr6nz-5mR5fIjju72JpeEpowPxkx-gJHKceleG-d5IkoNKANpNly8atDILJoRRIfaC6M-Dw5IKDDVBrK"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Pompe Hydraulique #4</p>
+<p class="text-xs text-on-surface-variant">Infrastructures</p>
+</div>
+</td>
+<td class="py-6 font-mono text-sm text-on-surface-variant">PH-X8-22001</td>
+<td class="py-6 text-on-surface">Puits Principal</td>
+<td class="py-6">
+<span class="inline-flex items-center px-3 py-1 bg-error/10 text-error rounded-full text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-error mr-2 animate-pulse"></span>
+                                            En réparation
+                                        </span>
+</td>
+<td class="py-6 text-right">
+<button class="material-symbols-outlined text-outline hover:text-primary" data-icon="more_vert">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Maintenance Schedule (Bento Side) -->
+<div class="col-span-4 space-y-8">
+<!-- Calendar Preview / Task List -->
+<div class="bg-surface-container-highest rounded-xl p-8 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h4 class="text-xl font-black text-primary font-headline">Agenda Maintenance</h4>
+<span class="text-sm font-bold text-secondary">Aujourd'hui</span>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-white/60 rounded-xl border-l-4 border-secondary">
+<div class="flex justify-between mb-1">
+<span class="text-xs font-bold uppercase tracking-wider text-secondary">08:00 — 10:00</span>
+<span class="material-symbols-outlined text-sm" data-icon="notifications_active">notifications_active</span>
+</div>
+<p class="font-bold text-on-surface">Vidange Tracteur #2</p>
+<p class="text-xs text-on-surface-variant">Remplacement filtre et huile SAE 15W-40</p>
+</div>
+<div class="p-4 bg-white/40 rounded-xl border-l-4 border-outline-variant">
+<div class="flex justify-between mb-1">
+<span class="text-xs font-bold uppercase tracking-wider text-outline">Demain</span>
+</div>
+<p class="font-bold text-on-surface">Révision Pompe #4</p>
+<p class="text-xs text-on-surface-variant">Vérification de l'étanchéité des joints</p>
+</div>
+<div class="p-4 bg-white/40 rounded-xl border-l-4 border-outline-variant">
+<div class="flex justify-between mb-1">
+<span class="text-xs font-bold uppercase tracking-wider text-outline">24 Mars</span>
+</div>
+<p class="font-bold text-on-surface">Nettoyage Buse Irrigation</p>
+<p class="text-xs text-on-surface-variant">Secteur Nord - Oliveraies</p>
+</div>
+</div>
+<button class="w-full mt-6 py-3 border-2 border-outline-variant text-outline rounded-xl font-bold hover:bg-surface transition-colors">
+                            Voir tout le calendrier
+                        </button>
+</div>
+<!-- Health Gauge (Custom Component) -->
+<div class="bg-primary-container text-surface rounded-xl p-8 relative overflow-hidden">
+<div class="relative z-10 space-y-4">
+<h4 class="text-lg font-bold font-headline leading-tight">Disponibilité du Parc</h4>
+<div class="flex items-end gap-2">
+<span class="text-5xl font-black">84%</span>
+<span class="text-sm pb-1 opacity-70">Opérationnel</span>
+</div>
+<div class="h-3 w-full bg-surface/20 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-[#a8d389]" style="width: 84%"></div>
+</div>
+<p class="text-xs opacity-80 leading-relaxed">3 machines nécessitent une attention immédiate pour éviter les retards de récolte.</p>
+</div>
+<!-- Abstract Texture -->
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="settings">settings</span>
+</div>
+</div>
+</div>
+<!-- Lower Bento Row -->
+<div class="col-span-12 grid grid-cols-3 gap-8">
+<!-- Stat Card 1 -->
+<div class="bg-surface rounded-xl p-8 border border-outline-variant/15 flex items-center gap-6">
+<div class="h-16 w-16 bg-secondary-fixed rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-fixed text-3xl" data-icon="build">build</span>
+</div>
+<div>
+<p class="text-on-surface-variant text-sm font-bold">Main d'œuvre</p>
+<h5 class="text-2xl font-black text-primary font-headline">124 Heures</h5>
+<p class="text-xs text-on-surface-variant">Total maintenance ce mois</p>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface rounded-xl p-8 border border-outline-variant/15 flex items-center gap-6">
+<div class="h-16 w-16 bg-primary-fixed-dim rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed-variant text-3xl" data-icon="savings">savings</span>
+</div>
+<div>
+<p class="text-on-surface-variant text-sm font-bold">Coût Estimé</p>
+<h5 class="text-2xl font-black text-primary font-headline">4,200 TND</h5>
+<p class="text-xs text-on-surface-variant">Budget maintenance trimestriel</p>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface rounded-xl p-8 border border-outline-variant/15 flex items-center gap-6">
+<div class="h-16 w-16 bg-surface-container-highest rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="analytics">analytics</span>
+</div>
+<div>
+<p class="text-on-surface-variant text-sm font-bold">Efficience</p>
+<h5 class="text-2xl font-black text-primary font-headline">+12%</h5>
+<p class="text-xs text-on-surface-variant">Vs l'année précédente</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full py-6 mt-12 bg-[#fbfbe2] flex justify-between items-center px-12 border-t border-[#c3c9b9]/15">
+<p class="font-['Open_Sans'] text-sm tracking-wide text-[#934b19]">Elfirma © 2026</p>
+<div class="flex gap-8">
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Support Technique</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Mentions Légales</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Confidentialité</a>
+</div>
+</footer>
+</main>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body></html>
+
