@@ -7,7 +7,7 @@
     <title>Elfirma - Produits</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols_Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
         body { font-family: 'Open Sans', sans-serif; }
         h1, h2, h3 { font-family: 'Inter', sans-serif; }
@@ -32,43 +32,43 @@
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
                 <span class="material-symbols-outlined">group</span>
-                <span>User Management</span>
+                <span>Gestion Utilisateurs</span>
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'parcelles-cultures' }) }}">
                 <span class="material-symbols-outlined">agriculture</span>
-                <span>Field Management</span>
+                <span>Gestion Parcelles</span>
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
                 <span class="material-symbols-outlined">pets</span>
-                <span>Livestock Management</span>
+                <span>Gestion Élevage</span>
             </a>
             
-            <!-- Product Management with submenu -->
+            <!-- Gestion des Produits avec sous-menu -->
             <div class="py-1">
                 <div class="flex items-center gap-4 py-3 px-8 bg-[#2d5016] text-white rounded-l-full ml-auto">
-                    <span class="material-symbols-outlined">shopping_basket</span>
-                    <span class="flex-1">Product Management</span>
+                
+                    <span class="flex-1">Gestion Produits</span>
                     <span class="material-symbols-outlined text-sm">expand_less</span>
                 </div>
                 <div class="mt-1 ml-8">
                     <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_page', { module: 'categories' }) }}">
                         <span class="material-symbols-outlined text-sm">category</span>
-                        <span>Categories</span>
+                        <span>Catégories</span>
                     </a>
                     <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('elfirma_page', { module: 'produits' }) }}">
-                        <span class="material-symbols-outlined text-sm">inventory_2</span>
-                        <span>Products</span>
+                        
+                        <span>Produits</span>
                     </a>
                 </div>
             </div>
             
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
                 <span class="material-symbols-outlined">handyman</span>
-                <span>Equipment Management</span>
+                <span>Gestion Équipements</span>
             </a>
             <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
                 <span class="material-symbols-outlined">description</span>
-                <span>Contract Management</span>
+                <span>Gestion Contrats</span>
             </a>
         </nav>
     </aside>
@@ -101,90 +101,57 @@
         <!-- Content -->
         <div class="p-8 lg:p-12 space-y-8">
             <!-- Statistics Cards -->
-            <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Total Products -->
                 <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-lg">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <p class="text-green-100 text-sm font-semibold uppercase tracking-wide">Total Produits</p>
-                            <p class="text-4xl font-black mt-2">{{ produits|length }}</p>
-                        </div>
-                        <div class="bg-white/20 p-4 rounded-xl">
-                            <span class="material-symbols-outlined text-4xl">inventory_2</span>
-                        </div>
+                    <div class="mb-4">
+                        <p class="text-green-100 text-sm font-semibold uppercase tracking-wide">Total Products</p>
+                        <p class="text-4xl font-black mt-2">{{ produits|length }}</p>
                     </div>
+                    <p class="text-green-100 text-sm">Available products in catalog</p>
                 </div>
 
                 <!-- Total Stock -->
                 <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wide">Stock Total</p>
-                            <p class="text-4xl font-black mt-2">
-                                {% set totalStock = 0 %}
-                                {% for produit in produits %}
-                                    {% set totalStock = totalStock + produit.quantiteStock %}
-                                {% endfor %}
-                                {{ totalStock }}
-                            </p>
-                        </div>
-                        <div class="bg-white/20 p-4 rounded-xl">
-                            <span class="material-symbols-outlined text-4xl">warehouse</span>
-                        </div>
+                    <div class="mb-4">
+                        <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wide">Total Stock</p>
+                        <p class="text-4xl font-black mt-2">
+                            {% set totalStock = 0 %}
+                            {% for produit in produits %}
+                                {% set totalStock = totalStock + produit.quantiteStock %}
+                            {% endfor %}
+                            {{ totalStock }}
+                        </p>
                     </div>
-                </div>
-
-                <!-- Low Stock Alert -->
-                <div class="bg-gradient-to-br from-orange-600 to-orange-700 rounded-2xl p-6 text-white shadow-lg">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <p class="text-orange-100 text-sm font-semibold uppercase tracking-wide">Stock Faible</p>
-                            <p class="text-4xl font-black mt-2">
-                                {% set lowStock = 0 %}
-                                {% for produit in produits %}
-                                    {% if produit.quantiteStock < 20 %}
-                                        {% set lowStock = lowStock + 1 %}
-                                    {% endif %}
-                                {% endfor %}
-                                {{ lowStock }}
-                            </p>
-                        </div>
-                        <div class="bg-white/20 p-4 rounded-xl">
-                            <span class="material-symbols-outlined text-4xl">warning</span>
-                        </div>
-                    </div>
+                    <p class="text-emerald-100 text-sm">Units in inventory</p>
                 </div>
 
                 <!-- Total Value -->
                 <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-6 text-white shadow-lg">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <p class="text-teal-100 text-sm font-semibold uppercase tracking-wide">Valeur Stock</p>
-                            <p class="text-3xl font-black mt-2">
-                                {% set totalValue = 0 %}
-                                {% for produit in produits %}
-                                    {% set totalValue = totalValue + (produit.prixUnitaire * produit.quantiteStock) %}
-                                {% endfor %}
-                                {{ totalValue|number_format(2, ',', ' ') }} DT
-                            </p>
-                        </div>
-                        <div class="bg-white/20 p-4 rounded-xl">
-                            <span class="material-symbols-outlined text-4xl">payments</span>
-                        </div>
+                    <div class="mb-4">
+                        <p class="text-teal-100 text-sm font-semibold uppercase tracking-wide">Stock Value</p>
+                        <p class="text-3xl font-black mt-2">
+                            {% set totalValue = 0 %}
+                            {% for produit in produits %}
+                                {% set totalValue = totalValue + (produit.prixUnitaire * produit.quantiteStock) %}
+                            {% endfor %}
+                            {{ totalValue|number_format(2, ',', ' ') }} DT
+                        </p>
                     </div>
+                    <p class="text-teal-100 text-sm">Total value of stock</p>
                 </div>
             </section>
 
             <!-- Header Section -->
             <section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h2 class="text-4xl font-black text-[#0a2200] tracking-tight leading-none mb-2">Products Agricoles</h2>
-                    <p class="text-[#43493d] max-w-xl">Gérez votre inventaire de produits et stocks.</p>
-                </div>
-                <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
-                    <span class="material-symbols-outlined">add_circle</span>
-                    <span>New Product</span>
-                </button>
+                        <div>
+                            <h2 class="text-4xl font-black text-[#0a2200] tracking-tight leading-none mb-2">Produits Agricoles</h2>
+                            <p class="text-[#43493d] max-w-xl">Gérez votre inventaire de produits et stocks.</p>
+                        </div>
+                        <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
+                          
+                            <span>Nouveau Produit</span>
+                        </button>
             </section>
 
             <!-- Search, Filter and Sort Section -->
@@ -266,12 +233,14 @@
                     <table class="w-full" id="produitsTable">
                         <thead>
                             <tr class="text-left text-[#43493d] text-xs uppercase tracking-widest font-black border-b-2 border-green-200">
-                                <th class="pb-4 px-4">ID</th>
+                                <th class="pb-4 px-4">Image</th>
                                 <th class="pb-4 px-4">Nom</th>
                                 <th class="pb-4 px-4">Catégorie</th>
                                 <th class="pb-4 px-4">Type</th>
+                                <th class="pb-4 px-4">Qualité</th>
                                 <th class="pb-4 px-4">Prix (DT)</th>
                                 <th class="pb-4 px-4">Stock</th>
+                                <th class="pb-4 px-4">Dates</th>
                                 <th class="pb-4 px-4">Statut</th>
                                 <th class="pb-4 px-4">Actions</th>
                             </tr>
@@ -285,29 +254,82 @@
                                 data-stock="{{ produit.quantiteStock }}"
                                 data-price="{{ produit.prixUnitaire }}"
                                 data-id="{{ produit.idProduit }}">
-                                <td class="py-5 px-4 font-mono font-bold text-green-700">#{{ produit.idProduit }}</td>
-                                <td class="py-5 px-4 font-bold text-[#1b1d0e]">{{ produit.nom }}</td>
-                                <td class="py-5 px-4">
+                                <!-- Image -->
+                                <td class="py-4 px-4">
+                                    <div class="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center border-2 border-green-200 shadow-sm">
+                                        {% if produit.image %}
+                                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.nom }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <span class="material-symbols-outlined text-3xl text-green-600">image</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <!-- Name & ID -->
+                                <td class="py-4 px-4">
+                                    <p class="font-bold text-[#1b1d0e]">{{ produit.nom }}</p>
+                                    <p class="text-xs text-gray-500 font-mono">#{{ produit.idProduit }}</p>
+                                </td>
+                                <!-- Category -->
+                                <td class="py-4 px-4">
                                     {% if produit.categorie %}
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
                                             <span class="material-symbols-outlined text-xs">category</span>
                                             {{ produit.categorie.nom }}
                                         </span>
                                     {% else %}
-                                        <span class="text-red-500">Non définie</span>
+                                        <span class="text-red-500 text-xs">Non définie</span>
                                     {% endif %}
                                 </td>
-                                <td class="py-5 px-4 text-[#43493d]">{{ produit.type }}</td>
-                                <td class="py-5 px-4 font-black text-green-700">{{ produit.prixUnitaire }} DT</td>
-                                <td class="py-5 px-4">
+                                <!-- Type -->
+                                <td class="py-4 px-4">
+                                    <span class="text-[#43493d] font-medium">{{ produit.type }}</span>
+                                </td>
+                                <!-- Quality -->
+                                <td class="py-4 px-4">
+                                    {% if produit.qualite %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">
+                                            <span class="material-symbols-outlined text-xs">star</span>
+                                            {{ produit.qualite }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-gray-400 text-xs">-</span>
+                                    {% endif %}
+                                </td>
+                                <!-- Price -->
+                                <td class="py-4 px-4">
+                                    <span class="font-black text-green-700">{{ produit.prixUnitaire }} DT</span>
+                                </td>
+                                <!-- Stock -->
+                                <td class="py-4 px-4">
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
                                         {% if produit.quantiteStock < 20 %}bg-gradient-to-r from-red-100 to-orange-100 text-red-700 border border-red-200
                                         {% else %}bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200{% endif %}">
-                                        <span class="material-symbols-outlined text-xs">inventory</span>
+                                    
                                         {{ produit.quantiteStock }}
                                     </span>
                                 </td>
-                                <td class="py-5 px-4">
+                                <!-- Dates -->
+                                <td class="py-4 px-4">
+                                    <div class="text-xs space-y-1">
+                                        {% if produit.dateProduction %}
+                                            <div class="flex items-center gap-1 text-green-700">
+                                                <span class="material-symbols-outlined text-xs">event</span>
+                                                Prod: {{ produit.dateProduction|date('d/m/Y') }}
+                                            </div>
+                                        {% endif %}
+                                        {% if produit.dateExpiration %}
+                                            <div class="flex items-center gap-1 text-orange-700">
+                                                <span class="material-symbols-outlined text-xs">alarm</span>
+                                                Exp: {{ produit.dateExpiration|date('d/m/Y') }}
+                                            </div>
+                                        {% endif %}
+                                        {% if not produit.dateProduction and not produit.dateExpiration %}
+                                            <span class="text-gray-400">-</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <!-- Status -->
+                                <td class="py-4 px-4">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
                                         {% if produit.statut == 'Disponible' %}bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200
                                         {% elseif produit.statut == 'Rupture' %}bg-gradient-to-r from-red-100 to-orange-100 text-red-700 border border-red-200
@@ -315,15 +337,18 @@
                                         {{ produit.statut }}
                                     </span>
                                 </td>
-                                <td class="py-5 px-4">
+                                <!-- Actions -->
+                                <td class="py-4 px-4">
                                     <div class="flex gap-2">
                                         <button onclick='openEditModal({{ produit.idProduit }}, {{ produit|json_encode|raw }})' 
-                                                class="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm">
+                                                class="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
+                                                title="Modifier">
                                             <span class="material-symbols-outlined text-sm">edit</span>
                                         </button>
                                         <form method="POST" action="{{ path('produit_delete', { id: produit.idProduit }) }}" 
                                               onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');" style="display: inline;">
-                                            <button type="submit" class="p-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm">
+                                            <button type="submit" class="p-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm"
+                                                    title="Supprimer">
                                                 <span class="material-symbols-outlined text-sm">delete</span>
                                             </button>
                                         </form>
@@ -332,9 +357,9 @@
                             </tr>
                             {% else %}
                             <tr id="emptyRow">
-                                <td colspan="8" class="py-12 px-4 text-center">
+                                <td colspan="10" class="py-12 px-4 text-center">
                                     <div class="flex flex-col items-center gap-4">
-                                        <span class="material-symbols-outlined text-6xl text-gray-300">inventory_off</span>
+                                       
                                         <p class="text-gray-500 text-lg">Aucun produit trouvé. Créez votre premier produit !</p>
                                     </div>
                                 </td>
@@ -356,24 +381,24 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <form method="POST" action="{{ path('produit_create') }}">
+            <form method="POST" action="{{ path('produit_create') }}" enctype="multipart/form-data">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Nom du produit *</label>
                         <input type="text" name="nom" required minlength="3" maxlength="100" 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
                                placeholder="Ex: Huile d'olive extra vierge">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Type *</label>
                         <input type="text" name="type" required minlength="3" maxlength="30" 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
                                placeholder="Ex: Biologique, Premium">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Catégorie *</label>
                         <select name="categorie_id" required 
-                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                             <option value="">Sélectionner une catégorie</option>
                             {% for categorie in categories %}
                                 <option value="{{ categorie.id }}">{{ categorie.nom }}</option>
@@ -383,39 +408,56 @@
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Prix Unitaire (DT) *</label>
                         <input type="number" name="prix_unitaire" step="0.01" min="0" required 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
                                placeholder="0.00">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Quantité en Stock *</label>
                         <input type="number" name="quantite_stock" min="0" required 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
                                placeholder="0">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Qualité</label>
                         <input type="text" name="qualite" maxlength="20" 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
                                placeholder="Ex: Grade A">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Date de Production</label>
                         <input type="date" name="date_production" 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Date d'Expiration</label>
                         <input type="date" name="date_expiration" 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Statut</label>
                         <select name="statut" 
-                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                             <option value="Disponible">Disponible</option>
                             <option value="Rupture">Rupture</option>
                             <option value="Expiré">Expiré</option>
                         </select>
+                    </div>
+                    <!-- Image Upload -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-green-600">image</span>
+                                Image du Produit
+                            </span>
+                        </label>
+                        <div class="relative">
+                            <input type="file" name="image" accept="image/*" id="imageInput"
+                                   class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
+                            <p class="mt-2 text-xs text-gray-500">PNG, JPG, JPEG jusqu'à 5MB</p>
+                        </div>
+                        <div id="imagePreview" class="mt-4 hidden">
+                            <img src="" alt="Aperçu" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
+                        </div>
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -440,7 +482,7 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <form id="editForm" method="POST" action="">
+            <form id="editForm" method="POST" action="" enctype="multipart/form-data">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Nom du produit *</label>
@@ -490,11 +532,26 @@
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Statut</label>
                         <select id="editStatut" name="statut" 
-                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                             <option value="Disponible">Disponible</option>
                             <option value="Rupture">Rupture</option>
                             <option value="Expiré">Expiré</option>
                         </select>
+                    </div>
+                    <!-- Image Upload Edit -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-green-600">image</span>
+                                Modifier l'Image
+                            </span>
+                        </label>
+                        <input type="file" name="image" accept="image/*" id="editImageInput"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
+                        <p class="mt-2 text-xs text-gray-500">Laissez vide pour conserver l'image actuelle</p>
+                        <div id="editImagePreview" class="mt-4 hidden">
+                            <img src="" alt="Aperçu" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
+                        </div>
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -607,6 +664,35 @@
             filterTable();
             sortTable();
         }
+        
+        // Image Preview Functions
+        document.getElementById('imageInput')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    const img = preview.querySelector('img');
+                    img.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        document.getElementById('editImageInput')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('editImagePreview');
+                    const img = preview.querySelector('img');
+                    img.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
         
         // Close modal when clicking outside
         window.onclick = function(event) {

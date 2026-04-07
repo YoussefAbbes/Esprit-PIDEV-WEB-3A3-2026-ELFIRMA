@@ -1,0 +1,182 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer une commande - EL FIRMA{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); padding: 25px; color: white;">
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 15px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px;">shopping_bag</span>
+                        Finaliser votre commande
+                    </h2>
+                </div>
+
+                <form method="POST" style="padding: 30px;">
+                    <!-- Informations client -->
+                    <div style="margin-bottom: 30px;">
+                        <h4 style="color: #2d5016; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <span class="material-symbols-outlined">person</span>
+                            Informations client
+                        </h4>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nom_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Nom complet *</label>
+                                <input type="text" id="nom_client" name="nom_client" required 
+                                       style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Email *</label>
+                                <input type="email" id="email_client" name="email_client" required 
+                                       style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="telephone_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Téléphone *</label>
+                                <input type="tel" id="telephone_client" name="telephone_client" required 
+                                       style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Mode de paiement</label>
+                                <select id="mode_paiement" name="mode_paiement" 
+                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                                    <option value="Cash">Cash (à la livraison)</option>
+                                    <option value="Carte bancaire">Carte bancaire</option>
+                                    <option value="Virement">Virement bancaire</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="adresse_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Adresse de livraison *</label>
+                                <textarea id="adresse_client" name="adresse_client" rows="3" required 
+                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="commentaires" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Commentaires (optionnel)</label>
+                                <textarea id="commentaires" name="commentaires" rows="2" 
+                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;" 
+                                          placeholder="Instructions spéciales pour la livraison..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif de la commande -->
+                    <div style="margin-bottom: 30px;">
+                        <h4 style="color: #2d5016; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <span class="material-symbols-outlined">receipt</span>
+                            Récapitulatif de votre commande
+                        </h4>
+                        
+                        <div style="background: #f9fafb; border-radius: 10px; padding: 20px;">
+                            {% for item in items %}
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; {% if not loop.last %}border-bottom: 1px solid #e5e7eb;{% endif %}">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="width: 60px; height: 60px; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%);">
+                                        {% if item.produit.image %}
+                                            <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" alt="{{ item.produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                                <span class="material-symbols-outlined" style="color: rgba(255,255,255,0.5); font-size: 24px;">package_2</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h6 style="margin: 0 0 5px 0; font-weight: 700;">{{ item.produit.nom }}</h6>
+                                        <p style="margin: 0; font-size: 14px; color: #6b7280;">{{ item.produit.prixUnitaire }} DT x {{ item.quantite }}</p>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ item.subtotal }} DT</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div style="border-top: 2px solid #e5e7eb; margin-top: 20px; padding-top: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total:</span>
+                                    <span style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total }} DT</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div style="display: flex; gap: 15px; justify-content: space-between;">
+                        <a href="{{ path('app_panier_index') }}" style="background: #6b7280; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+                            Retour au panier
+                        </a>
+                        <button type="submit" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; max-width: 300px;">
+                            Confirmer la commande
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; position: sticky; top: 20px;">
+                <div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); padding: 25px; color: white;">
+                    <h4 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <span class="material-symbols-outlined">info</span>
+                        Informations importantes
+                    </h4>
+                </div>
+
+                <div style="padding: 30px;">
+                    <div style="margin-bottom: 20px;">
+                        <h6 style="color: #2d5016; font-weight: 700; margin-bottom: 10px;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">local_shipping</span>
+                            Livraison
+                        </h6>
+                        <p style="font-size: 14px; color: #6b7280; margin: 0;">
+                            Livraison gratuite pour toute commande. Délai de livraison : 2-3 jours ouvrables.
+                        </p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h6 style="color: #2d5016; font-weight: 700; margin-bottom: 10px;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">payment</span>
+                            Paiement
+                        </h6>
+                        <p style="font-size: 14px; color: #6b7280; margin: 0;">
+                            Paiement sécurisé. Possibilité de payer à la livraison ou par virement.
+                        </p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h6 style="color: #2d5016; font-weight: 700; margin-bottom: 10px;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">support_agent</span>
+                            Support
+                        </h6>
+                        <p style="font-size: 14px; color: #6b7280; margin: 0;">
+                            Notre équipe est disponible pour vous aider. Contactez-nous en cas de besoin.
+                        </p>
+                    </div>
+
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px;">
+                        <p style="font-size: 12px; color: #166534; margin: 0; text-align: center;">
+                            <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">verified</span>
+                            Commande sécurisée et garantie
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endfor %}
+{% endblock %}

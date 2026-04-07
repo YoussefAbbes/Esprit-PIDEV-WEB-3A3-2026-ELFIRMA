@@ -6,6 +6,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Produit;
 
 final class AuthController extends AbstractController
 {
@@ -28,8 +30,20 @@ final class AuthController extends AbstractController
     }
 
     #[Route('/home', name: 'app_pages_home')]
-    public function home(): Response
+    public function home(EntityManagerInterface $em): Response
     {
-        return $this->render('pages/index.html.twig');
+        // Get all available products for the catalog
+        $produits = $em->getRepository(Produit::class)->findBy(
+            ['statut' => 'Disponible'],
+            ['nom' => 'ASC']
+        );
+
+        // Get all categories that have products
+        $categories = $em->getRepository(\App\Entity\Categorie::class)->findAll();
+
+        return $this->render('pages/index.html.twig', [
+            'produits' => $produits,
+            'categories' => $categories
+        ]);
     }
 }

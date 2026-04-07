@@ -1,0 +1,260 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Panier - EL FIRMA{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); padding: 25px; color: white;">
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 15px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px;">shopping_cart</span>
+                        Mon Panier
+                    </h2>
+                </div>
+
+                <div style="padding: 30px;">
+                    {% if items is empty %}
+                        <div style="text-align: center; padding: 50px 20px;">
+                            <span class="material-symbols-outlined" style="font-size: 80px; color: #d1d5db; margin-bottom: 20px;">shopping_cart</span>
+                            <h4 style="color: #6b7280; margin-bottom: 15px;">Votre panier est vide</h4>
+                            <p class="text-muted mb-4">Découvrez nos produits et ajoutez-les à votre panier</p>
+                            <a href="{{ path('app_pages_home') }}#products" class="btn" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 12px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+                                Voir les produits
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid #f3f4f6;">
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Produit</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Prix unitaire</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Quantité</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: right;">Sous-total</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr style="border-bottom: 1px solid #f3f4f6;" data-product-id="{{ item.produit.idProduit }}">
+                                        <td style="border: none; padding: 20px 15px;">
+                                            <div style="display: flex; align-items: center; gap: 15px;">
+                                                <div style="width: 80px; height: 80px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%);">
+                                                    {% if item.produit.image %}
+                                                        <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" alt="{{ item.produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    {% else %}
+                                                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                                            <span class="material-symbols-outlined" style="color: rgba(255,255,255,0.5); font-size: 32px;">package_2</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <h6 style="margin: 0 0 5px 0; color: #2d5016; font-weight: 700;">{{ item.produit.nom }}</h6>
+                                                    <p style="margin: 0; font-size: 14px; color: #6b7280;">{{ item.produit.categorie ? item.produit.categorie.nom : 'Non catégorisé' }}</p>
+                                                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #6b7280;">Stock: {{ item.produit.quantiteStock }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                            <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ item.produit.prixUnitaire }} DT</span>
+                                        </td>
+                                        <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                                <button onclick="updateQuantity({{ item.produit.id }}, {{ item.quantite - 1 }})" style="background: #f3f4f6; border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                    <span class="material-symbols-outlined" style="font-size: 18px;">remove</span>
+                                                </button>
+                                                <span id="qty-{{ item.produit.id }}" style="font-size: 18px; font-weight: 700; min-width: 30px; text-align: center;">{{ item.quantite }}</span>
+                                                <button onclick="updateQuantity({{ item.produit.id }}, {{ item.quantite + 1 }})" style="background: #f3f4f6; border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                    <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td style="border: none; padding: 20px 15px; text-align: right; vertical-align: middle;">
+                                            <span id="subtotal-{{ item.produit.id }}" style="font-size: 20px; font-weight: 800; color: #16a34a;">{{ item.subtotal }} DT</span>
+                                        </td>
+                                        <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                            <button onclick="removeFromCart({{ item.produit.id }})" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                                                <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="padding: 20px; background: #f9fafb; margin: 20px -30px -30px -30px; border-top: 2px solid #f3f4f6;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <button onclick="clearCart()" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                    Vider le panier
+                                </button>
+                                <a href="{{ path('app_pages_home') }}#products" style="background: #f3f4f6; color: #374151; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                                    Continuer les achats
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if items is not empty %}
+        <div class="col-lg-4">
+            <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; position: sticky; top: 20px;">
+                <div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); padding: 25px; color: white;">
+                    <h4 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <span class="material-symbols-outlined">receipt_long</span>
+                        Résumé de commande
+                    </h4>
+                </div>
+
+                <div style="padding: 30px;">
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <span style="color: #6b7280;">Sous-total:</span>
+                            <span id="cart-subtotal" style="font-weight: 600;">{{ total }} DT</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <span style="color: #6b7280;">Livraison:</span>
+                            <span style="color: #16a34a; font-weight: 600;">Gratuite</span>
+                        </div>
+                        <hr style="border: none; border-top: 2px solid #f3f4f6; margin: 20px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total:</span>
+                            <span id="cart-total" style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total }} DT</span>
+                        </div>
+                    </div>
+
+                    <a href="{{ path('app_commande_create') }}" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 15px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; text-align: center; display: block; margin-bottom: 15px;">
+                        Passer la commande
+                    </a>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <p style="font-size: 12px; color: #6b7280; margin: 0;">
+                            <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">security</span>
+                            Paiement sécurisé
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+async function updateQuantity(productId, newQuantity) {
+    if (newQuantity < 0) return;
+    
+    try {
+        const response = await fetch('/api/panier/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantite: newQuantity
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            if (newQuantity === 0) {
+                location.reload();
+            } else {
+                // Mettre à jour l'affichage
+                document.getElementById('qty-' + productId).textContent = newQuantity;
+                
+                // Calculer le nouveau sous-total
+                const row = document.querySelector(`tr[data-product-id="${productId}"]`);
+                const priceText = row.querySelector('td:nth-child(2) span').textContent;
+                const price = parseFloat(priceText.replace(' DT', ''));
+                const newSubtotal = price * newQuantity;
+                
+                document.getElementById('subtotal-' + productId).textContent = newSubtotal + ' DT';
+                
+                // Recalculer le total
+                calculateTotal();
+            }
+        } else {
+            alert(result.error || 'Erreur lors de la mise à jour');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de la mise à jour du panier');
+    }
+}
+
+async function removeFromCart(productId) {
+    if (!confirm('Voulez-vous vraiment supprimer ce produit du panier ?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/panier/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            location.reload();
+        } else {
+            alert(result.error || 'Erreur lors de la suppression');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de la suppression du produit');
+    }
+}
+
+async function clearCart() {
+    if (!confirm('Voulez-vous vraiment vider votre panier ?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/panier/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            location.reload();
+        } else {
+            alert(result.error || 'Erreur lors du vidage du panier');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors du vidage du panier');
+    }
+}
+
+function calculateTotal() {
+    let total = 0;
+    const subtotalElements = document.querySelectorAll('[id^="subtotal-"]');
+    
+    subtotalElements.forEach(element => {
+        const subtotal = parseFloat(element.textContent.replace(' DT', ''));
+        total += subtotal;
+    });
+    
+    document.getElementById('cart-subtotal').textContent = total + ' DT';
+    document.getElementById('cart-total').textContent = total + ' DT';
+}
+</script>
+{% endblock %}

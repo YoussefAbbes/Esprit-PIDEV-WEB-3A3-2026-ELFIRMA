@@ -8,6 +8,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Categorie;
 use App\Entity\Produit;
@@ -184,7 +187,7 @@ final class ElfirmaController extends AbstractController
     // ========== CRUD PRODUIT ==========
 
     #[Route('/elfirma/produit/create', name: 'produit_create', methods: ['POST'])]
-    public function createProduit(Request $request, EntityManagerInterface $em): Response
+    public function createProduit(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $produit = new Produit();
         $produit->setNom($request->request->get('nom'));
@@ -210,6 +213,26 @@ final class ElfirmaController extends AbstractController
             }
         }
 
+        // Handle image upload
+        /** @var UploadedFile $imageFile */
+        $imageFile = $request->files->get('image');
+        if ($imageFile) {
+            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+            try {
+                $uploadsDirectory = $this->getParameter('kernel.project_dir').'/public/uploads/produits';
+                if (!is_dir($uploadsDirectory)) {
+                    mkdir($uploadsDirectory, 0777, true);
+                }
+                $imageFile->move($uploadsDirectory, $newFilename);
+                $produit->setImage($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+            }
+        }
+
         try {
             $em->persist($produit);
             $em->flush();
@@ -222,7 +245,7 @@ final class ElfirmaController extends AbstractController
     }
 
     #[Route('/elfirma/produit/edit/{id}', name: 'produit_edit', methods: ['POST'])]
-    public function editProduit(int $id, Request $request, EntityManagerInterface $em): Response
+    public function editProduit(int $id, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $produit = $em->getRepository(Produit::class)->find($id);
         
@@ -254,6 +277,34 @@ final class ElfirmaController extends AbstractController
             }
         }
 
+        // Handle image upload
+        /** @var UploadedFile $imageFile */
+        $imageFile = $request->files->get('image');
+        if ($imageFile) {
+            // Delete old image if exists
+            if ($produit->getImage()) {
+                $oldImagePath = $this->getParameter('kernel.project_dir').'/public/uploads/produits/'.$produit->getImage();
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+            try {
+                $uploadsDirectory = $this->getParameter('kernel.project_dir').'/public/uploads/produits';
+                if (!is_dir($uploadsDirectory)) {
+                    mkdir($uploadsDirectory, 0777, true);
+                }
+                $imageFile->move($uploadsDirectory, $newFilename);
+                $produit->setImage($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+            }
+        }
+
         try {
             $em->flush();
             $this->addFlash('success', 'Produit modifié avec succès');
@@ -272,6 +323,14 @@ final class ElfirmaController extends AbstractController
         if (!$produit) {
             $this->addFlash('error', 'Produit non trouvé');
             return $this->redirectToRoute('elfirma_page', ['module' => 'produits']);
+        }
+
+        // Delete image if exists
+        if ($produit->getImage()) {
+            $imagePath = $this->getParameter('kernel.project_dir').'/public/uploads/produits/'.$produit->getImage();
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
         }
 
         try {

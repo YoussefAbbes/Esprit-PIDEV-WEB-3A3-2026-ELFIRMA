@@ -7,30 +7,39 @@
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a href="{{ path('app_pages_home') }}" class="{% if app.request.get('_route') == 'app_pages_home' %}active{% endif %}">Home</a></li>
-        <li><a href="{{ path('app_about') }}" class="{% if app.request.get('_route') == 'app_about' %}active{% endif %}">About Us</a></li>
-        <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
-        <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
+        <li><a href="{{ path('app_pages_home') }}" class="{% if app.request.get('_route') == 'app_pages_home' %}active{% endif %}">Accueil</a></li>
+        <li><a href="{{ path('app_about') }}" class="{% if app.request.get('_route') == 'app_about' %}active{% endif %}">À propos</a></li>
+        <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Nos Services</a></li>
+        <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Témoignages</a></li>
         <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Blog</a></li>
-        <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+        <li class="dropdown"><a href="#"><span>Services</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
           <ul>
-            <li><a href="#">Dropdown 1</a></li>
-            <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <li><a href="#products">Produits Agricoles</a></li>
+            <li><a href="{{ path('app_panier_index') }}">Mon Panier</a></li>
+            <li><a href="{{ path('app_commandes_index') }}">Mes Commandes</a></li>
+            <li class="dropdown"><a href="#"><span>Gestion</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
               <ul>
-                <li><a href="#">Deep Dropdown 1</a></li>
-                <li><a href="#">Deep Dropdown 2</a></li>
-                <li><a href="#">Deep Dropdown 3</a></li>
-                <li><a href="#">Deep Dropdown 4</a></li>
-                <li><a href="#">Deep Dropdown 5</a></li>
+                <li><a href="{{ path('elfirma_page', { module: 'produits' }) }}">Gestion Produits</a></li>
+                <li><a href="{{ path('elfirma_page', { module: 'commandes' }) }}">Gestion Commandes</a></li>
+                <li><a href="{{ path('elfirma_page', { module: 'categories' }) }}">Catégories</a></li>
+                <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">Utilisateurs</a></li>
               </ul>
             </li>
-            <li><a href="#">Dropdown 2</a></li>
-            <li><a href="#">Dropdown 3</a></li>
-            <li><a href="#">Dropdown 4</a></li>
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
-        <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
+        <li><a href="{{ path('app_panier_index') }}" class="panier-link {% if app.request.get('_route') starts with 'app_panier' %}active{% endif %}" style="position: relative; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); color: white; padding: 8px 16px; border-radius: 25px; margin: 0 8px; transition: all 0.3s; display: flex; align-items: center; gap: 6px;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">shopping_cart</span>
+          Mon Panier
+        </a></li>
+        <li><a href="{{ path('app_commandes_index') }}" class="commandes-link {% if app.request.get('_route') starts with 'app_commande' %}active{% endif %}" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 8px 16px; border-radius: 25px; margin: 0 8px; transition: all 0.3s; display: flex; align-items: center; gap: 6px;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">assignment</span>
+          Commandes
+        </a></li>
+        <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="admin-link" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white; padding: 8px 16px; border-radius: 25px; margin: 0 8px; transition: all 0.3s; display: flex; align-items: center; gap: 6px;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">admin_panel_settings</span>
+          Administration
+        </a></li>
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
