@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elfirma | Symfony Modules</title>
+    <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+</head>
+<body class="elfirma-index-body">
+<main class="elfirma-index-shell">
+    <header class="elfirma-index-header">
+        <h1>Elfirma, Digital Terroir</h1>
+        <p>Stitch to Symfony migration completed. Select a module to open its corresponding Twig screen.</p>
+    </header>
+
+    <section class="elfirma-grid" aria-label="Elfirma modules">
+        {% for slug, module in modules %}
+            <a class="elfirma-card" href="{{ path('elfirma_page', { module: slug }) }}">
+                <img src="{{ asset('images/stitch/' ~ module.folder ~ '.png') }}" alt="Preview of {{ module.title }} module">
+                <div>
+                    <h2>{{ module.title }}</h2>
+                    <p>Open module in Symfony</p>
+                </div>
+            </a>
+        {% endfor %}
+    </section>
+</main>
+</body>
+</html>
+

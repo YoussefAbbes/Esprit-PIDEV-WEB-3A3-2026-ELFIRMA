@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CommandeRepository;
+
+#[ORM\Entity(repositoryClass: CommandeRepository::class)]
+#[ORM\Table(name: 'commande')]
+class Commande
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id_commande = null;
+
+    public function getIdCommande(): ?int
+    {
+        return $this->id_commande;
+    }
+
+    #[ORM\Column(type: 'integer')]
+    private ?int $quantite = null;
+
+    public function getQuantite(): ?int
+    {
+        return $this->quantite;
+    }
+
+    public function setQuantite(int $quantite): self
+    {
+        $this->quantite = $quantite;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    private ?string $prix_total = null;
+
+    public function getPrixTotal(): ?string
+    {
+        return $this->prix_total;
+    }
+
+    public function setPrixTotal(string $prix_total): self
+    {
+        $this->prix_total = $prix_total;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $statut_commande = null;
+
+    public function getStatutCommande(): ?string
+    {
+        return $this->statut_commande;
+    }
+
+    public function setStatutCommande(?string $statut_commande): self
+    {
+        $this->statut_commande = $statut_commande;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    private ?string $mode_paiement = null;
+
+    public function getModePaiement(): ?string
+    {
+        return $this->mode_paiement;
+    }
+
+    public function setModePaiement(?string $mode_paiement): self
+    {
+        $this->mode_paiement = $mode_paiement;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    private ?string $statut_paiement = null;
+
+    public function getStatutPaiement(): ?string
+    {
+        return $this->statut_paiement;
+    }
+
+    public function setStatutPaiement(?string $statut_paiement): self
+    {
+        $this->statut_paiement = $statut_paiement;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $facture = null;
+
+    public function getFacture(): ?string
+    {
+        return $this->facture;
+    }
+
+    public function setFacture(?string $facture): self
+    {
+        $this->facture = $facture;
+        return $this;
+    }
+
+    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'commandes')]
+    #[ORM\JoinColumn(name: 'id_produit', referencedColumnName: 'id_produit', nullable: true)]
+    private ?Produit $produit = null;
+
+    public function getProduit(): ?Produit
+    {
+        return $this->produit;
+    }
+
+    public function setProduit(?Produit $produit): self
+    {
+        $this->produit = $produit;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $nom_client = null;
+
+    public function getNomClient(): ?string
+    {
+        return $this->nom_client;
+    }
+
+    public function setNomClient(?string $nom_client): self
+    {
+        $this->nom_client = $nom_client;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $date_commande = null;
+
+    public function getDateCommande(): ?\DateTimeInterface
+    {
+        return $this->date_commande;
+    }
+
+    public function setDateCommande(\DateTimeInterface $date_commande): self
+    {
+        $this->date_commande = $date_commande;
+        return $this;
+    }
+}

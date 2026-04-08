@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Open_Sans:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Open_Sans', sans-serif;
+            background-color: #fbfbe2;
+            color: #1b1d0e;
+        }
+        h1, h2, h3, h4, .font-headline {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(251, 251, 226, 0.7);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f5f5dc",
+                        "outline-variant": "#c3c9b9",
+                        "surface-container-highest": "#e4e4cc",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#a8d389",
+                        "on-surface": "#1b1d0e",
+                        "primary-fixed-dim": "#a8d389",
+                        "surface-container-high": "#eaead1",
+                        "on-primary-fixed-variant": "#2c4f15",
+                        "on-secondary-container": "#753502",
+                        "outline": "#73796c",
+                        "inverse-surface": "#303221",
+                        "on-secondary-fixed": "#321200",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#43682b",
+                        "on-surface-variant": "#43493d",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1b1d0e",
+                        "background": "#fbfbe2",
+                        "inverse-on-surface": "#f2f2d9",
+                        "surface-bright": "#fbfbe2",
+                        "secondary-fixed-dim": "#ffb68c",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#cc83af",
+                        "on-secondary-fixed-variant": "#753401",
+                        "tertiary-fixed": "#ffd8ec",
+                        "on-tertiary-fixed": "#39042c",
+                        "surface-container": "#efefd7",
+                        "tertiary-container": "#541c43",
+                        "surface-variant": "#e4e4cc",
+                        "surface": "#fbfbe2",
+                        "on-primary-container": "#7ca560",
+                        "on-primary-fixed": "#0a2100",
+                        "secondary-fixed": "#ffdbc9",
+                        "tertiary-fixed-dim": "#fdafde",
+                        "primary-fixed": "#c3efa3",
+                        "tertiary": "#3a052d",
+                        "secondary": "#934b19",
+                        "primary-container": "#173901",
+                        "surface-dim": "#dbdcc3",
+                        "secondary-container": "#fc9f66",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#0a2200",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#6d3259"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface selection:bg-secondary-container">
+<!-- SideNavBar Shell -->
+<aside class="hidden md:flex h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] flex-col py-8 pr-4 z-40">
+<div class="px-8 mb-8">
+<h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+<p class="font-['Inter'] font-semibold text-[#43493d] text-sm">Gestion Agricole</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] font-semibold">Tableau de Bord</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-['Inter'] font-semibold">Utilisateurs</span>
+</a>
+<!-- Active Tab: Parcelles & Cultures -->
+<a class="flex items-center gap-4 py-3 px-8 bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg transition-all" href="#">
+<span class="material-symbols-outlined">agriculture</span>
+<span class="font-['Inter'] font-semibold">Parcelles &amp; Cultures</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="#">
+<span class="material-symbols-outlined">pets</span>
+<span class="font-['Inter'] font-semibold">Animaux &amp; Élevages</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="#">
+<span class="material-symbols-outlined">shopping_basket</span>
+<span class="font-['Inter'] font-semibold">Produits &amp; Commandes</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="#">
+<span class="material-symbols-outlined">handyman</span>
+<span class="font-['Inter'] font-semibold">Équipements &amp; Maintenance</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="#">
+<span class="material-symbols-outlined">contract</span>
+<span class="font-['Inter'] font-semibold">Fournisseurs &amp; Contrats</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-['Inter'] font-semibold">Réclamations</span>
+</a>
+</nav>
+<div class="px-8 mt-auto pt-8 border-t border-outline-variant/15 flex flex-col gap-4">
+<button class="bg-secondary text-on-secondary px-6 py-3 rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
+                Nouvelle Saison
+            </button>
+<div class="space-y-2">
+<a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">help</span> Aide
+                </a>
+<a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span> Déconnexion
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-72 min-h-screen p-4 md:p-8 space-y-8">
+<!-- Top Navigation / Header Shell -->
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div>
+<h2 class="text-4xl font-black text-primary tracking-tighter leading-none mb-2">Parcelles &amp; Cultures</h2>
+<p class="text-on-surface-variant text-lg">Supervision du terroir et calendrier des récoltes</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<input class="bg-surface-container-high border-none rounded-full px-6 py-3 w-64 text-sm focus:ring-2 focus:ring-primary transition-all" placeholder="Rechercher une parcelle..." type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 duration-150 transition-all">
+<span class="material-symbols-outlined">add</span>
+                    Ajouter une parcelle
+                </button>
+</div>
+</header>
+<!-- Bento Grid Layout for Main Content -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Map View Placeholder (Bento Large Item) -->
+<div class="lg:col-span-8 bg-surface-container-highest rounded-xl overflow-hidden relative min-h-[500px]">
+<div class="absolute inset-0 bg-cover bg-center mix-blend-multiply opacity-80" data-alt="Satellite top-down view of geometric agricultural fields in Tunisia with rich olive green and golden soil colors" data-location="Tunisia" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCohanTykgogBPGMOr1O-NV7_ZPBkc3_Vprk7xC0yqbUn2WwQ-VkXUzc4s7RLQDYyWE8JkBG3VZAfnkYT5HAz3eE9mqm-sbA_wPKsDracP5HObaBvZ9TGQkkftCLzOJV-GtVlqChTX___eatziBYsm5DUy6IvbHHY0y07GNVO-0fNcqaQYR7OUq6FGYaIPdj2BdBBXT5Zy-O_ZgnhT_gqhaagDsjaRm5-jcTwh6VP9nX-5xKfrd22dqtxTzB_nN3XgNNlWj4FPSd75O')">
+</div>
+<div class="absolute top-6 left-6 flex gap-2">
+<div class="glass-panel px-4 py-2 rounded-full text-sm font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">wb_sunny</span>
+                        32°C Sidi Bouzid
+                    </div>
+</div>
+<!-- Interactive Markers Simulation -->
+<div class="absolute bottom-10 left-10 flex flex-col gap-3">
+<div class="bg-white/90 backdrop-blur p-4 rounded-xl shadow-xl flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">eco</span>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Parcelle Active</p>
+<p class="font-bold text-primary">Oliveraie Nord-Est</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Filters & Quick Stats (Bento Side Column) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Filters Card -->
+<div class="bg-surface-container-low p-8 rounded-xl space-y-6">
+<h3 class="text-xl font-bold text-primary tracking-tight">Filtres de Vue</h3>
+<div class="space-y-4">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-on-surface-variant px-1">Cultures</label>
+<select class="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 text-sm font-semibold focus:ring-primary">
+<option>Toutes les cultures</option>
+<option>Olives Chemlali</option>
+<option>Blé Dur</option>
+<option>Dattes Deglet Nour</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-on-surface-variant px-1">Statut</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary">Tous</button>
+<button class="px-4 py-2 rounded-full text-xs font-bold bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant/20">Bonne santé</button>
+<button class="px-4 py-2 rounded-full text-xs font-bold bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant/20">À surveiller</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Harvest Gauge Card -->
+<div class="bg-primary text-on-primary p-8 rounded-xl shadow-2xl relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="text-xl font-bold mb-6">Maturité de Récolte</h3>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold uppercase opacity-80">
+<span>Olives Chemlali</span>
+<span>85%</span>
+</div>
+<div class="h-3 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-inverse-primary" style="width: 85%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold uppercase opacity-80">
+<span>Blé Dur</span>
+<span>42%</span>
+</div>
+<div class="h-3 w-full bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-inverse-primary" style="width: 42%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- List View (Table-like Interface) -->
+<div class="lg:col-span-12">
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high text-on-surface-variant">
+<th class="px-8 py-5 text-xs font-black uppercase tracking-widest">Parcelle</th>
+<th class="px-8 py-5 text-xs font-black uppercase tracking-widest">Culture</th>
+<th class="px-8 py-5 text-xs font-black uppercase tracking-widest">Superficie (ha)</th>
+<th class="px-8 py-5 text-xs font-black uppercase tracking-widest">Santé</th>
+<th class="px-8 py-5 text-xs font-black uppercase tracking-widest">Prochaine Récolte</th>
+<th class="px-8 py-5 text-xs font-black uppercase tracking-widest"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">filter_hdr</span>
+</div>
+<span class="font-bold text-primary">Oliveraie Nord</span>
+</div>
+</td>
+<td class="px-8 py-6 text-on-surface-variant font-medium">Olives Chemlali</td>
+<td class="px-8 py-6 text-on-surface font-bold">45.5</td>
+<td class="px-8 py-6">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-tighter">Bonne</span>
+</td>
+<td class="px-8 py-6 text-on-surface-variant">15 Nov 2026</td>
+<td class="px-8 py-6 text-right">
+<button class="p-2 rounded-full hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">grass</span>
+</div>
+<span class="font-bold text-primary">Champ de Blé Sud</span>
+</div>
+</td>
+<td class="px-8 py-6 text-on-surface-variant font-medium">Blé Dur</td>
+<td class="px-8 py-6 text-on-surface font-bold">120.0</td>
+<td class="px-8 py-6">
+<span class="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-xs font-black uppercase tracking-tighter">À surveiller</span>
+</td>
+<td class="px-8 py-6 text-on-surface-variant">10 Mai 2026</td>
+<td class="px-8 py-6 text-right">
+<button class="p-2 rounded-full hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">spa</span>
+</div>
+<span class="font-bold text-primary">Verger Figues</span>
+</div>
+</td>
+<td class="px-8 py-6 text-on-surface-variant font-medium">Figues de Djebba</td>
+<td class="px-8 py-6 text-on-surface font-bold">12.5</td>
+<td class="px-8 py-6">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-black uppercase tracking-tighter">Bonne</span>
+</td>
+<td class="px-8 py-6 text-on-surface-variant">22 Juil 2026</td>
+<td class="px-8 py-6 text-right">
+<button class="p-2 rounded-full hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Detail Snippet / Soil Health Panel (Bottom Bento Area) -->
+<div class="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-white/40 backdrop-blur-md p-10 rounded-xl space-y-6">
+<div class="flex justify-between items-start">
+<h4 class="text-2xl font-black text-primary tracking-tighter">Santé du Sol</h4>
+<div class="flex items-center gap-1 text-secondary font-bold">
+<span class="material-symbols-outlined">analytics</span>
+                            Analyse 48h
+                        </div>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<div class="space-y-1">
+<p class="text-[10px] font-black uppercase text-on-surface-variant tracking-widest">Humidité</p>
+<p class="text-3xl font-black text-primary">64%</p>
+<p class="text-[10px] text-primary font-bold">Optimale</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] font-black uppercase text-on-surface-variant tracking-widest">Azote (N)</p>
+<p class="text-3xl font-black text-primary">12.4</p>
+<p class="text-[10px] text-secondary font-bold">Ajout requis</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] font-black uppercase text-on-surface-variant tracking-widest">pH</p>
+<p class="text-3xl font-black text-primary">7.2</p>
+<p class="text-[10px] text-primary font-bold">Neutre</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-10 rounded-xl">
+<h4 class="text-2xl font-black text-primary tracking-tighter mb-8">Timeline de Culture</h4>
+<div class="relative flex items-center justify-between">
+<!-- Horizontal Timeline Line -->
+<div class="absolute h-1 w-full bg-outline-variant/30 top-1/2 -translate-y-1/2 z-0"></div>
+<div class="relative z-10 flex flex-col items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white ring-8 ring-surface-container-low">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-tighter">Semis</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white ring-8 ring-surface-container-low">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-tighter">Irrigation</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-white ring-8 ring-surface-container-low animate-pulse">
+<span class="material-symbols-outlined">agriculture</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-tighter text-secondary">Fertilisation</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-3 opacity-30">
+<div class="w-10 h-10 rounded-full bg-outline flex items-center justify-center text-white ring-8 ring-surface-container-low">
+<span class="material-symbols-outlined text-sm">agriculture</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-tighter">Récolte</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Shell -->
+<footer class="md:ml-72 flex justify-between items-center px-12 py-8 bg-[#fbfbe2] border-t border-[#c3c9b9]/15">
+<p class="font-['Open_Sans'] text-sm tracking-wide text-on-surface-variant">Elfirma © 2026</p>
+<div class="flex gap-8">
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Support Technique</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Mentions Légales</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Confidentialité</a>
+</div>
+</footer>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body></html>
+
