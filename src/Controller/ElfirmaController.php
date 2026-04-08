@@ -110,7 +110,7 @@ final class ElfirmaController extends AbstractController
                 }
                 $livestockStats = $livestockRepository->fetchStats();
 
-                return $this->render('elfirma/Livestock&Animal Management/livestock.twig', [
+                return $this->render('elfirma/Livestock&Animal Management/livestock.html.twig', [
                     'elevages' => $elevages,
                     'livestock_stats' => $livestockStats,
                     'livestock_states' => $livestockStates,
@@ -149,7 +149,7 @@ final class ElfirmaController extends AbstractController
             }
             $animalStats = $animalRepository->fetchStats();
 
-            return $this->render('elfirma/Livestock&Animal Management/animal.twig', [
+            return $this->render('elfirma/Livestock&Animal Management/animal.html.twig', [
                 'animals' => $animals,
                 'livestock_options' => $livestockOptions,
                 'animal_stats' => $animalStats,
