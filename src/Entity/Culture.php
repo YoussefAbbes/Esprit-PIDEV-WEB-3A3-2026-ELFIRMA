@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CultureRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CultureRepository::class)]
 #[ORM\Table(name: 'culture')]
@@ -35,6 +36,13 @@ class Culture
     }
 
     #[ORM\Column(name: "nom_culture", type: "string", length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de la culture est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le nom de la culture doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom de la culture ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $nomCulture = null;
 
     public function getNomCulture(): ?string
@@ -105,6 +113,11 @@ class Culture
     }
 
     #[ORM\Column(name: "quantite_plantee", type: "float", columnDefinition: "DOUBLE NOT NULL")]
+    #[Assert\NotNull(message: 'La quantité plantée est obligatoire')]
+    #[Assert\GreaterThanOrEqual(
+        value: 0,
+        message: 'La quantité plantée doit être supérieure ou égale à 0'
+    )]
     private float $quantitePlantee;
 
     public function getQuantitePlantee(): float
@@ -119,6 +132,11 @@ class Culture
     }
 
     #[ORM\Column(name: "quantite_recoltee", type: "float", columnDefinition: "DOUBLE NOT NULL")]
+    #[Assert\NotNull(message: 'La quantité récoltée est obligatoire')]
+    #[Assert\GreaterThanOrEqual(
+        value: 0,
+        message: 'La quantité récoltée doit être supérieure ou égale à 0'
+    )]
     private float $quantiteRecoltee;
 
     public function getQuantiteRecoltee(): float
@@ -133,6 +151,11 @@ class Culture
     }
 
     #[ORM\Column(name: "cout_production", type: "float", columnDefinition: "DOUBLE NOT NULL")]
+    #[Assert\NotNull(message: 'Le coût de production est obligatoire')]
+    #[Assert\GreaterThanOrEqual(
+        value: 0,
+        message: 'Le coût de production doit être supérieur ou égal à 0'
+    )]
     private float $coutProduction;
 
 

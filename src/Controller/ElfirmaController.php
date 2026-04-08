@@ -82,7 +82,14 @@ final class ElfirmaController extends AbstractController
         ]);
     }
 
-    #[Route('/elfirma/{module}', name: 'elfirma_page', methods: ['GET'])]
+    #[Route('/elfirma/parcelles-cultures', name: 'elfirma_parcelles_cultures_legacy', methods: ['GET'])]
+    #[Route('/elfirma/parcelles-cultures/', name: 'elfirma_parcelles_cultures_legacy_slash', methods: ['GET'])]
+    public function legacyFieldsModule(): Response
+    {
+        return $this->redirectToRoute('parcelle_index');
+    }
+
+    #[Route('/elfirma/{module}', name: 'elfirma_page', methods: ['GET'], requirements: ['module' => '^(?!parcelles$|cultures$)[^/]+$'])]
     public function page(string $module, EntityManagerInterface $em): Response
     {
         if (!isset(self::MODULES[$module])) {

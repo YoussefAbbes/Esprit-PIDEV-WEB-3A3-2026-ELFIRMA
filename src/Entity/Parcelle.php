@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\ParcelleRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ParcelleRepository::class)]
 #[ORM\Table(name: 'parcelle')]
@@ -22,6 +23,13 @@ class Parcelle
     }
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de la parcelle est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le nom de la parcelle doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom de la parcelle ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $nom = null;
 
     public function getNom(): ?string
@@ -36,6 +44,13 @@ class Parcelle
     }
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'La localisation est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'La localisation doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'La localisation ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $localisation = null;
 
     public function getLocalisation(): ?string
@@ -50,6 +65,11 @@ class Parcelle
     }
 
     #[ORM\Column(type: 'float')]
+    #[Assert\NotNull(message: 'La superficie est obligatoire')]
+    #[Assert\GreaterThan(
+        value: 0,
+        message: 'La superficie doit être strictement supérieure à 0'
+    )]
     private ?float $superficie = null;
 
     public function getSuperficie(): ?float

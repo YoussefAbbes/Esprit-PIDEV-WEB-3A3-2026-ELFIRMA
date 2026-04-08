@@ -7,6 +7,7 @@
     <title>Elfirma - Products</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
@@ -17,6 +18,15 @@
         .modal.active { display: flex; align-items: center; justify-content: center; }
         .submenu-item { transition: all 0.2s ease; }
         .submenu-item:hover { transform: translateX(4px); }
+        .stats-appear { opacity: 0; transform: translateY(18px) scale(0.98); animation: statsEntrance 0.8s ease forwards; }
+        .stats-appear.delay-1 { animation-delay: 0.08s; }
+        .stats-appear.delay-2 { animation-delay: 0.16s; }
+        .stats-appear.delay-3 { animation-delay: 0.24s; }
+        .stats-appear.delay-4 { animation-delay: 0.32s; }
+        @keyframes statsEntrance {
+            from { opacity: 0; transform: translateY(18px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
     </style>
 </head>
 <body class="bg-[#fbfbe2] text-[#1b1d0e] min-h-screen flex">
@@ -35,7 +45,7 @@
                 <span class="material-symbols-outlined">group</span>
                 <span>User Management</span>
             </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'parcelles-cultures' }) }}">
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('parcelle_index') }}">
                 <span class="material-symbols-outlined">agriculture</span>
                 <span>Field Management</span>
             </a>
@@ -147,6 +157,77 @@
                         </p>
                     </div>
                     <p class="text-teal-100 text-sm">Total value of stock</p>
+                </div>
+            </section>
+
+            <!-- Advanced Analytics -->
+            <section class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-6 lg:p-8 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)]">
+                <div class="pointer-events-none absolute -top-14 -right-14 h-52 w-52 rounded-full bg-[#9ac75f]/25 blur-3xl"></div>
+                <div class="pointer-events-none absolute -bottom-10 -left-10 h-44 w-44 rounded-full bg-[#2d5016]/15 blur-2xl"></div>
+
+                <div class="relative z-10 mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="inline-flex items-center gap-2 rounded-full border border-[#bad19a] bg-[#f9fde6] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#2d5016]">
+                            <span class="material-symbols-outlined text-sm">monitoring</span>
+                            Product Insights
+                        </p>
+                        <h3 class="mt-3 text-2xl lg:text-3xl font-black tracking-tight text-[#0a2200]">Statistiques Intelligentes</h3>
+                        <p class="mt-1 text-sm text-[#355025]">Vue dynamique sur le stock, la valeur et la distribution de vos produits.</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/80 px-4 py-2 text-right shadow-sm border border-[#d8e5c8]">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-[#4f6b38]">Dernière mise à jour</p>
+                        <p class="text-sm font-bold text-[#123b12]" id="statsLastUpdated">--</p>
+                    </div>
+                </div>
+
+                <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="stats-appear rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Valeur Moyenne / Produit</p>
+                        <p class="mt-2 text-3xl font-black text-[#123b12]" id="avgValueCard">0 DT</p>
+                        <p class="mt-1 text-xs text-[#5e6f4f]">Basée sur votre stock actuel</p>
+                    </div>
+                    <div class="stats-appear delay-1 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Catégorie Dominante</p>
+                        <p class="mt-2 text-2xl font-black text-[#123b12]" id="topCategoryCard">-</p>
+                        <p class="mt-1 text-xs text-[#5e6f4f]" id="topCategoryCount">0 produit</p>
+                    </div>
+                    <div class="stats-appear delay-2 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Taux Disponibilité</p>
+                        <p class="mt-2 text-3xl font-black text-[#123b12]" id="availabilityRateCard">0%</p>
+                        <p class="mt-1 text-xs text-[#5e6f4f]">Produits au statut disponible</p>
+                    </div>
+                </div>
+
+                <div class="relative z-10 grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <article class="stats-appear delay-2 xl:col-span-7 rounded-2xl border border-[#d9e6cb] bg-white/90 p-5 shadow-sm">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h4 class="text-lg font-black text-[#123b12]">Top Produits Par Valeur De Stock</h4>
+                            <span class="text-xs font-semibold text-[#5f7350]">Quantité × Prix unitaire</span>
+                        </div>
+                        <div class="h-72">
+                            <canvas id="stockValueChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="stats-appear delay-3 xl:col-span-5 rounded-2xl border border-[#d9e6cb] bg-white/90 p-5 shadow-sm">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h4 class="text-lg font-black text-[#123b12]">Répartition Par Statut</h4>
+                            <span class="text-xs font-semibold text-[#5f7350]">Disponible, Rupture, Expiré</span>
+                        </div>
+                        <div class="h-72">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="stats-appear delay-4 xl:col-span-12 rounded-2xl border border-[#d9e6cb] bg-white/90 p-5 shadow-sm">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h4 class="text-lg font-black text-[#123b12]">Volume De Stock Par Catégorie</h4>
+                            <span class="text-xs font-semibold text-[#5f7350]">Lecture rapide des priorités d'approvisionnement</span>
+                        </div>
+                        <div class="h-80">
+                            <canvas id="categoryStockChart"></canvas>
+                        </div>
+                    </article>
                 </div>
             </section>
 
@@ -701,6 +782,204 @@
     </div>
 
     <script>
+        function formatStatDate() {
+            const formatter = new Intl.DateTimeFormat('fr-FR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            return formatter.format(new Date());
+        }
+
+        function buildProductCharts() {
+            const productsData = [
+                {% for produit in produits %}
+                {
+                    name: {{ produit.nom|json_encode|raw }},
+                    category: {{ (produit.categorie ? produit.categorie.nom : 'Sans catégorie')|json_encode|raw }},
+                    stock: {{ produit.quantiteStock|default(0) }},
+                    unitPrice: {{ produit.prixUnitaire|default(0) }},
+                    status: {{ produit.statut|default('Inconnu')|json_encode|raw }}
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            if (!productsData.length) {
+                return;
+            }
+
+            const palette = {
+                green: '#2d5016',
+                emerald: '#16a34a',
+                lime: '#84cc16',
+                sand: '#b7c88a',
+                muted: '#6a7f5f',
+                red: '#dc2626',
+                orange: '#ea580c',
+                gray: '#64748b'
+            };
+
+            const stockByCategory = {};
+            const countByCategory = {};
+            const statusMap = { Disponible: 0, Rupture: 0, Expiré: 0, Autre: 0 };
+
+            const rankedByValue = productsData
+                .map((p) => ({ ...p, totalValue: (Number(p.stock) || 0) * (Number(p.unitPrice) || 0) }))
+                .sort((a, b) => b.totalValue - a.totalValue)
+                .slice(0, 7);
+
+            let totalValue = 0;
+            let totalDisponible = 0;
+
+            productsData.forEach((p) => {
+                const category = p.category || 'Sans catégorie';
+                const normalizedStatus = p.status || 'Autre';
+
+                stockByCategory[category] = (stockByCategory[category] || 0) + (Number(p.stock) || 0);
+                countByCategory[category] = (countByCategory[category] || 0) + 1;
+                totalValue += (Number(p.stock) || 0) * (Number(p.unitPrice) || 0);
+
+                if (normalizedStatus === 'Disponible') {
+                    statusMap.Disponible += 1;
+                    totalDisponible += 1;
+                } else if (normalizedStatus === 'Rupture') {
+                    statusMap.Rupture += 1;
+                } else if (normalizedStatus === 'Expiré') {
+                    statusMap.Expiré += 1;
+                } else {
+                    statusMap.Autre += 1;
+                }
+            });
+
+            const topCategoryEntry = Object.entries(countByCategory).sort((a, b) => b[1] - a[1])[0] || ['-', 0];
+            const avgValue = totalValue / productsData.length;
+            const availabilityRate = (totalDisponible / productsData.length) * 100;
+
+            document.getElementById('avgValueCard').textContent = `${avgValue.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} DT`;
+            document.getElementById('topCategoryCard').textContent = topCategoryEntry[0];
+            document.getElementById('topCategoryCount').textContent = `${topCategoryEntry[1]} produit(s)`;
+            document.getElementById('availabilityRateCard').textContent = `${availabilityRate.toFixed(1)}%`;
+            document.getElementById('statsLastUpdated').textContent = formatStatDate();
+
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1300,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: { family: 'Inter', weight: 700 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#123b12',
+                        titleFont: { family: 'Inter', weight: 700 },
+                        bodyFont: { family: 'Open Sans' },
+                        padding: 12,
+                        cornerRadius: 10
+                    }
+                }
+            };
+
+            const stockValueCtx = document.getElementById('stockValueChart');
+            if (stockValueCtx) {
+                new Chart(stockValueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: rankedByValue.map((p) => p.name),
+                        datasets: [{
+                            label: 'Valeur de stock (DT)',
+                            data: rankedByValue.map((p) => Number(p.totalValue.toFixed(2))),
+                            borderRadius: 10,
+                            backgroundColor: [
+                                '#2d5016', '#1f6a2f', '#2a8546', '#34a853', '#5ec16f', '#84cc16', '#a3d977'
+                            ]
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            x: {
+                                ticks: { color: palette.muted, font: { family: 'Open Sans', weight: 600 } },
+                                grid: { display: false }
+                            },
+                            y: {
+                                ticks: {
+                                    color: palette.muted,
+                                    callback: (v) => `${v} DT`,
+                                    font: { family: 'Open Sans', weight: 600 }
+                                },
+                                grid: { color: 'rgba(106,127,95,0.15)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Disponible', 'Rupture', 'Expiré', 'Autre'],
+                        datasets: [{
+                            data: [statusMap.Disponible, statusMap.Rupture, statusMap.Expiré, statusMap.Autre],
+                            backgroundColor: [palette.emerald, palette.red, palette.orange, palette.gray],
+                            borderColor: '#ffffff',
+                            borderWidth: 3,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        cutout: '64%'
+                    }
+                });
+            }
+
+            const categoryCtx = document.getElementById('categoryStockChart');
+            if (categoryCtx) {
+                const orderedCategoryEntries = Object.entries(stockByCategory).sort((a, b) => b[1] - a[1]);
+
+                new Chart(categoryCtx, {
+                    type: 'line',
+                    data: {
+                        labels: orderedCategoryEntries.map((entry) => entry[0]),
+                        datasets: [{
+                            label: 'Stock total par catégorie',
+                            data: orderedCategoryEntries.map((entry) => entry[1]),
+                            borderColor: palette.green,
+                            backgroundColor: 'rgba(45, 80, 22, 0.15)',
+                            pointBackgroundColor: palette.green,
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            tension: 0.35,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            x: {
+                                ticks: { color: palette.muted, font: { family: 'Open Sans', weight: 700 } },
+                                grid: { display: false }
+                            },
+                            y: {
+                                ticks: { color: palette.muted, font: { family: 'Open Sans', weight: 700 } },
+                                grid: { color: 'rgba(106,127,95,0.15)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
         }
@@ -924,6 +1203,8 @@
             }
         }
 
+        buildProductCharts();
+
         {% if produitCreateErrors is not empty %}
             openModal('createModal');
         {% endif %}
@@ -943,180 +1224,298 @@
             });
         {% endif %}
         
+        async function loadImageAsDataURL(url) {
+            const response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(`Failed to load image: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            return await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
         // Professional PDF Export Function
-        function generatePDF() {
-            // Fetch product data from API
-            fetch('/elfirma/produit/api/list')
-                .then(response => response.json())
-                .then(produits => {
-                    if (produits.length === 0) {
-                        alert('No products to export');
-                        return;
+        async function generatePDF() {
+            const exportButton = document.querySelector('button[onclick="generatePDF()"]');
+            const originalLabel = exportButton ? exportButton.innerHTML : '';
+
+            if (exportButton) {
+                exportButton.disabled = true;
+                exportButton.classList.add('opacity-70', 'cursor-not-allowed');
+                exportButton.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span>Export en cours...</span>';
+            }
+
+            let mount = null;
+
+            try {
+                let produits = [];
+
+                try {
+                    const response = await fetch('/elfirma/produit/api/list', { headers: { 'Accept': 'application/json' } });
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
                     }
-                    
-                    // Create PDF content
-                    const element = document.createElement('div');
-                    element.style.padding = '20px';
-                    element.style.backgroundColor = '#ffffff';
-                    element.style.fontFamily = 'Arial, sans-serif';
-                    
-                    // Header with Logo
-                    const header = document.createElement('div');
-                    header.style.display = 'flex';
-                    header.style.justifyContent = 'space-between';
-                    header.style.alignItems = 'center';
-                    header.style.borderBottom = '3px solid #2d5016';
-                    header.style.paddingBottom = '15px';
-                    header.style.marginBottom = '20px';
-                    
-                    const logoSection = document.createElement('div');
-                    logoSection.innerHTML = '<img src="/assets/img/logo.png" style="height: 60px; width: auto;">';
-                    
-                    const titleSection = document.createElement('div');
-                    titleSection.style.textAlign = 'right';
-                    titleSection.innerHTML = `
-                        <h1 style="margin: 0; color: #2d5016; font-size: 24px; font-weight: bold;">ELFIRMA</h1>
-                        <p style="margin: 5px 0 0 0; color: #43493d; font-size: 12px;">Agricultural Management System</p>
-                        <p style="margin: 2px 0 0 0; color: #666; font-size: 10px;">Generated: ${new Date().toLocaleString()}</p>
+                    produits = await response.json();
+                } catch (fetchError) {
+                    console.warn('API fetch failed, fallback to table extraction:', fetchError);
+                }
+
+                if (!Array.isArray(produits) || produits.length === 0) {
+                    const rows = Array.from(document.querySelectorAll('#tableBody tr:not(#emptyRow)'));
+                    produits = rows.map((row) => {
+                        const cells = row.querySelectorAll('td');
+                        return {
+                            nom: cells[1]?.querySelector('p')?.textContent?.trim() || 'N/A',
+                            categorie: cells[2]?.textContent?.trim() || 'N/A',
+                            type: cells[3]?.textContent?.trim() || 'N/A',
+                            qualite: cells[4]?.textContent?.trim() || 'N/A',
+                            prix: parseFloat(row.dataset.price || '0') || 0,
+                            stock: parseInt(row.dataset.stock || '0', 10) || 0,
+                            dateProduction: cells[7]?.textContent?.includes('Prod:') ? cells[7].textContent.split('Prod:')[1].trim().split('Exp:')[0].trim() : 'N/A',
+                            dateExpiration: cells[7]?.textContent?.includes('Exp:') ? cells[7].textContent.split('Exp:')[1].trim() : 'N/A',
+                            statut: cells[8]?.textContent?.trim() || 'N/A'
+                        };
+                    });
+                }
+
+                if (!produits.length) {
+                    alert('Aucun produit à exporter.');
+                    return;
+                }
+
+                const element = document.createElement('div');
+                element.style.width = '1120px';
+                element.style.padding = '24px';
+                element.style.backgroundColor = '#ffffff';
+                element.style.fontFamily = 'Arial, sans-serif';
+                element.style.color = '#1f2937';
+
+                let logoDataUrl = null;
+                try {
+                    logoDataUrl = await loadImageAsDataURL('/assets/img/logo.png');
+                } catch (logoError) {
+                    console.warn('Logo load failed for PDF export:', logoError);
+                }
+
+                const header = document.createElement('div');
+                header.style.display = 'flex';
+                header.style.justifyContent = 'space-between';
+                header.style.alignItems = 'center';
+                header.style.borderBottom = '3px solid #2d5016';
+                header.style.paddingBottom = '14px';
+                header.style.marginBottom = '18px';
+
+                const leftBlock = document.createElement('div');
+                leftBlock.style.display = 'flex';
+                leftBlock.style.alignItems = 'center';
+                leftBlock.style.gap = '12px';
+
+                const logoWrap = document.createElement('div');
+                logoWrap.style.width = '72px';
+                logoWrap.style.height = '72px';
+                logoWrap.style.border = '1px solid #cfe0c1';
+                logoWrap.style.borderRadius = '999px';
+                logoWrap.style.display = 'flex';
+                logoWrap.style.alignItems = 'center';
+                logoWrap.style.justifyContent = 'center';
+                logoWrap.style.backgroundColor = '#ffffff';
+
+                if (logoDataUrl) {
+                    const logo = document.createElement('img');
+                    logo.src = logoDataUrl;
+                    logo.alt = 'Elfirma Logo';
+                    logo.style.maxWidth = '56px';
+                    logo.style.maxHeight = '56px';
+                    logo.style.objectFit = 'contain';
+                    logoWrap.appendChild(logo);
+                } else {
+                    logoWrap.innerHTML = '<span style="font-size:10px;color:#2d5016;font-weight:700;">EL FIRMA</span>';
+                }
+
+                const identity = document.createElement('div');
+                identity.innerHTML = `
+                    <div style="font-size: 13px; font-weight: 700; color: #2d5016; letter-spacing: .5px;">ELFIRMA</div>
+                    <div style="font-size: 11px; color: #4b5563;">Agricultural Management System</div>
+                `;
+
+                leftBlock.appendChild(logoWrap);
+                leftBlock.appendChild(identity);
+
+                const badge = document.createElement('div');
+                badge.style.display = 'inline-block';
+                badge.style.padding = '6px 12px';
+                badge.style.borderRadius = '999px';
+                badge.style.backgroundColor = '#edf8e8';
+                badge.style.color = '#2d5016';
+                badge.style.fontSize = '11px';
+                badge.style.fontWeight = '700';
+                badge.textContent = 'ELFIRMA • PRODUCTS REPORT';
+
+                const titleSection = document.createElement('div');
+                titleSection.style.textAlign = 'right';
+                titleSection.innerHTML = `
+                    <h1 style="margin: 0; color: #2d5016; font-size: 24px; font-weight: bold;">Inventaire Produits</h1>
+                    <p style="margin: 5px 0 0 0; color: #4b5563; font-size: 12px;">Generated: ${new Date().toLocaleString('fr-FR')}</p>
+                `;
+
+                leftBlock.appendChild(badge);
+                header.appendChild(leftBlock);
+                header.appendChild(titleSection);
+                element.appendChild(header);
+
+                const totalProducts = produits.length;
+                const totalStock = produits.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
+                const totalValue = produits.reduce((sum, p) => sum + ((Number(p.prix) || 0) * (Number(p.stock) || 0)), 0);
+
+                const statsDiv = document.createElement('div');
+                statsDiv.style.display = 'grid';
+                statsDiv.style.gridTemplateColumns = '1fr 1fr 1fr';
+                statsDiv.style.gap = '14px';
+                statsDiv.style.marginBottom = '22px';
+
+                const statCards = [
+                    { label: 'Total Produits', value: totalProducts, color: '#2d5016' },
+                    { label: 'Total Stock', value: `${totalStock} unités`, color: '#16a34a' },
+                    { label: 'Valeur Stock', value: `${totalValue.toFixed(2)} DT`, color: '#0f766e' }
+                ];
+
+                statCards.forEach((stat) => {
+                    const card = document.createElement('div');
+                    card.style.backgroundColor = stat.color;
+                    card.style.color = 'white';
+                    card.style.padding = '14px';
+                    card.style.borderRadius = '10px';
+                    card.style.textAlign = 'center';
+                    card.innerHTML = `
+                        <div style="font-size: 11px; opacity: 0.9; margin-bottom: 5px; text-transform: uppercase;">${stat.label}</div>
+                        <div style="font-size: 22px; font-weight: 700;">${stat.value}</div>
                     `;
-                    
-                    header.appendChild(logoSection);
-                    header.appendChild(titleSection);
-                    element.appendChild(header);
-                    
-                    // Summary Stats
-                    const totalProducts = produits.length;
-                    const totalStock = produits.reduce((sum, p) => sum + (p.stock || 0), 0);
-                    const totalValue = produits.reduce((sum, p) => sum + ((parseFloat(p.prix) || 0) * (p.stock || 0)), 0);
-                    
-                    const statsDiv = document.createElement('div');
-                    statsDiv.style.display = 'grid';
-                    statsDiv.style.gridTemplateColumns = '1fr 1fr 1fr';
-                    statsDiv.style.gap = '15px';
-                    statsDiv.style.marginBottom = '25px';
-                    
-                    const statCards = [
-                        { label: 'Total Products', value: totalProducts, color: '#2d5016' },
-                        { label: 'Total Stock', value: totalStock + ' units', color: '#16a34a' },
-                        { label: 'Stock Value', value: totalValue.toFixed(2) + ' DT', color: '#059669' }
-                    ];
-                    
-                    statCards.forEach(stat => {
-                        const card = document.createElement('div');
-                        card.style.backgroundColor = stat.color;
-                        card.style.color = 'white';
-                        card.style.padding = '15px';
-                        card.style.borderRadius = '8px';
-                        card.style.textAlign = 'center';
-                        card.innerHTML = `
-                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">${stat.label}</div>
-                            <div style="font-size: 24px; font-weight: bold;">${stat.value}</div>
-                        `;
-                        statsDiv.appendChild(card);
-                    });
-                    element.appendChild(statsDiv);
-                    
-                    // Title
-                    const title = document.createElement('h2');
-                    title.style.color = '#2d5016';
-                    title.style.fontSize = '18px';
-                    title.style.marginBottom = '15px';
-                    title.style.borderBottom = '2px solid #2d5016';
-                    title.style.paddingBottom = '10px';
-                    title.textContent = '📋 Product List';
-                    element.appendChild(title);
-                    
-                    // Table
-                    const table = document.createElement('table');
-                    table.style.width = '100%';
-                    table.style.borderCollapse = 'collapse';
-                    table.style.fontSize = '9px';
-                    
-                    // Table Header
-                    const thead = document.createElement('thead');
-                    const headerRow = document.createElement('tr');
-                    headerRow.style.backgroundColor = '#2d5016';
-                    headerRow.style.color = 'white';
-                    
-                    const headers = ['Product', 'Category', 'Type', 'Quality', 'Price (DT)', 'Stock', 'Prod. Date', 'Exp. Date', 'Status'];
-                    headers.forEach(headerText => {
-                        const th = document.createElement('th');
-                        th.style.padding = '10px';
-                        th.style.textAlign = 'left';
-                        th.style.fontWeight = 'bold';
-                        th.style.fontSize = '10px';
-                        th.style.borderBottom = '2px solid #1e3a0f';
-                        th.textContent = headerText;
-                        headerRow.appendChild(th);
-                    });
-                    thead.appendChild(headerRow);
-                    table.appendChild(thead);
-                    
-                    // Table Body - Use API data
-                    const tbody = document.createElement('tbody');
-                    let rowNum = 0;
-                    produits.forEach((produit) => {
-                        const newRow = document.createElement('tr');
-                        newRow.style.borderBottom = '1px solid #ddd';
-                        newRow.style.backgroundColor = rowNum % 2 === 0 ? '#ffffff' : '#f9f9f9';
-                        newRow.style.padding = '8px';
-                        rowNum++;
-                        
-                        const cells = [
-                            produit.nom || 'N/A',
-                            produit.categorie || 'N/A',
-                            produit.type || 'N/A',
-                            produit.qualite || 'N/A',
-                            (parseFloat(produit.prix) || 0).toFixed(2),
-                            produit.stock || '0',
-                            produit.dateProduction || 'N/A',
-                            produit.dateExpiration || 'N/A',
-                            produit.statut || 'N/A'
-                        ];
-                        
-                        cells.forEach((cellText) => {
-                            const td = document.createElement('td');
-                            td.style.padding = '8px';
-                            td.style.borderBottom = '1px solid #eee';
-                            td.style.borderRight = '1px solid #eee';
-                            td.textContent = cellText;
-                            newRow.appendChild(td);
-                        });
-                        tbody.appendChild(newRow);
-                    });
-                    table.appendChild(tbody);
-                    element.appendChild(table);
-                    
-                    // Footer
-                    const footer = document.createElement('div');
-                    footer.style.marginTop = '30px';
-                    footer.style.paddingTop = '15px';
-                    footer.style.borderTop = '2px solid #2d5016';
-                    footer.style.textAlign = 'center';
-                    footer.style.fontSize = '9px';
-                    footer.style.color = '#666';
-                    footer.innerHTML = `
-                        <p style="margin: 5px 0;">© Elfirma - Agricultural Management System</p>
-                        <p style="margin: 5px 0;">This document contains confidential information about your agricultural products inventory.</p>
-                        <p style="margin: 5px 0; color: #999;">Printed on ${new Date().toLocaleString()}</p>
-                    `;
-                    element.appendChild(footer);
-                    
-                    // Generate PDF
-                    const opt = {
-                        margin: [10, 10, 10, 10],
-                        filename: 'Elfirma_Products_' + new Date().toISOString().slice(0, 10) + '.pdf',
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2, useCORS: true, logging: false },
-                        jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
-                    };
-                    
-                    html2pdf().set(opt).from(element).save();
-                })
-                .catch(error => {
-                    console.error('Error fetching products:', error);
-                    alert('Error generating PDF');
+                    statsDiv.appendChild(card);
                 });
+                element.appendChild(statsDiv);
+
+                const title = document.createElement('h2');
+                title.style.color = '#2d5016';
+                title.style.fontSize = '17px';
+                title.style.marginBottom = '12px';
+                title.style.borderBottom = '2px solid #2d5016';
+                title.style.paddingBottom = '8px';
+                title.textContent = 'Liste des produits';
+                element.appendChild(title);
+
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.style.fontSize = '9px';
+
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                headerRow.style.backgroundColor = '#2d5016';
+                headerRow.style.color = 'white';
+
+                const headers = ['Produit', 'Catégorie', 'Type', 'Qualité', 'Prix (DT)', 'Stock', 'Prod', 'Exp', 'Statut'];
+                headers.forEach((headerText) => {
+                    const th = document.createElement('th');
+                    th.style.padding = '9px';
+                    th.style.textAlign = 'left';
+                    th.style.fontWeight = 'bold';
+                    th.style.fontSize = '10px';
+                    th.textContent = headerText;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                produits.forEach((produit, index) => {
+                    const newRow = document.createElement('tr');
+                    newRow.style.borderBottom = '1px solid #e5e7eb';
+                    newRow.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+
+                    const cells = [
+                        produit.nom || 'N/A',
+                        produit.categorie || 'N/A',
+                        produit.type || 'N/A',
+                        produit.qualite || 'N/A',
+                        (Number(produit.prix) || 0).toFixed(2),
+                        Number(produit.stock) || 0,
+                        produit.dateProduction || 'N/A',
+                        produit.dateExpiration || 'N/A',
+                        produit.statut || 'N/A'
+                    ];
+
+                    cells.forEach((cellText) => {
+                        const td = document.createElement('td');
+                        td.style.padding = '8px';
+                        td.style.borderRight = '1px solid #f1f5f9';
+                        td.textContent = String(cellText);
+                        newRow.appendChild(td);
+                    });
+                    tbody.appendChild(newRow);
+                });
+                table.appendChild(tbody);
+                element.appendChild(table);
+
+                const footer = document.createElement('div');
+                footer.style.marginTop = '22px';
+                footer.style.paddingTop = '10px';
+                footer.style.borderTop = '1px solid #d1d5db';
+                footer.style.textAlign = 'center';
+                footer.style.fontSize = '9px';
+                footer.style.color = '#6b7280';
+                footer.textContent = `© Elfirma • Document exporté le ${new Date().toLocaleString('fr-FR')}`;
+                element.appendChild(footer);
+
+                mount = document.createElement('div');
+                mount.style.position = 'fixed';
+                mount.style.inset = '0';
+                mount.style.width = '100vw';
+                mount.style.height = '100vh';
+                mount.style.overflow = 'auto';
+                mount.style.background = '#ffffff';
+                mount.style.opacity = '0.01';
+                mount.style.pointerEvents = 'none';
+                mount.style.zIndex = '-1';
+                mount.appendChild(element);
+                document.body.appendChild(mount);
+
+                await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+                const opt = {
+                    margin: [8, 8, 8, 8],
+                    filename: `Elfirma_Products_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        windowWidth: 1400,
+                        scrollY: 0
+                    },
+                    jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' },
+                    pagebreak: { mode: ['css', 'legacy'] }
+                };
+
+                await html2pdf().set(opt).from(element).save();
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Erreur lors de la génération du PDF.');
+            } finally {
+                if (mount && mount.parentNode) {
+                    mount.parentNode.removeChild(mount);
+                }
+                if (exportButton) {
+                    exportButton.disabled = false;
+                    exportButton.classList.remove('opacity-70', 'cursor-not-allowed');
+                    exportButton.innerHTML = originalLabel;
+                }
+            }
         }
     </script>
 </body>

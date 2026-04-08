@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Parcel Details - Elfirma</title>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        body { font-family: 'Open_Sans', sans-serif; background-color: #fbfbe2; color: #1b1d0e; }
+        h1, h2, h3, h4, .font-headline { font-family: 'Inter', sans-serif; }
+        .dropdown-menu { display: none; }
+        .dropdown:hover .dropdown-menu { display: block; }
+        #parcel-map { height: 350px; width: 100%; border-radius: 12px; z-index: 1; }
+        
+        /* Image lightbox */
+        .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; }
+        .lightbox.active { display: flex; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; transition: transform 0.2s; }
+        .lightbox-close:hover { transform: scale(1.1); }
+        
+        /* Image hover effect */
+        .parcel-image-container { position: relative; overflow: hidden; border-radius: 16px; cursor: pointer; }
+        .parcel-image-container img { transition: transform 0.4s ease; }
+        .parcel-image-container:hover img { transform: scale(1.05); }
+        .parcel-image-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%); opacity: 0; transition: opacity 0.3s; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; }
+        .parcel-image-container:hover .parcel-image-overlay { opacity: 1; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#f5f5dc", "outline-variant": "#c3c9b9", "surface-container-highest": "#e4e4cc",
+                        "on-surface": "#1b1d0e", "surface-container-high": "#eaead1", "on-surface-variant": "#43493d",
+                        "background": "#fbfbe2", "surface": "#fbfbe2", "primary": "#0a2200", "on-primary": "#ffffff",
+                        "secondary": "#934b19", "on-secondary": "#ffffff",
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] flex-col py-8 pr-4 z-40">
+        <div class="px-8 mb-8">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="font-semibold text-[#43493d] text-sm">Farm Management</p>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-semibold">Dashboard</span>
+            </a>
+            <div class="dropdown relative">
+                <button class="flex items-center justify-between gap-4 py-3 px-8 w-full text-[#43493d] bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg">
+                    <div class="flex items-center gap-4">
+                        <span class="material-symbols-outlined">agriculture</span>
+                        <span class="font-semibold">Field Management</span>
+                    </div>
+                    <span class="material-symbols-outlined text-sm">expand_more</span>
+                </button>
+                <div class="dropdown-menu pl-12 mt-1 space-y-1">
+                    <a class="flex items-center gap-3 py-2 px-4 text-[#fbfbe2] bg-[#0a2200] rounded-r-full text-sm font-semibold" href="{{ path('parcelle_index') }}">
+                        <span class="material-symbols-outlined text-lg">terrain</span>
+                        Parcels Management
+                    </a>
+                    <a class="flex items-center gap-3 py-2 px-4 text-[#43493d] hover:bg-[#e4e4cc] rounded-r-full text-sm font-semibold" href="{{ path('culture_index') }}">
+                        <span class="material-symbols-outlined text-lg">eco</span>
+                        Crops Management
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+                    <a href="{{ path('parcelle_index') }}" class="hover:text-primary">Parcels</a>
+                    <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    <span class="text-primary font-semibold">{{ parcelle.nom }}</span>
+                </nav>
+                <h2 class="text-4xl font-black text-primary tracking-tighter leading-none mb-2">{{ parcelle.nom }}</h2>
+                <p class="text-on-surface-variant text-lg">Parcel details and associated crops</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ path('parcelle_edit', {id: parcelle.id}) }}" class="flex items-center gap-2 bg-yellow-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:opacity-90 transition-all">
+                    <span class="material-symbols-outlined">edit</span>
+                    Edit
+                </a>
+                <a href="{{ path('parcelle_index') }}" class="flex items-center gap-2 bg-surface-container-high text-on-surface px-6 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-all">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Back
+                </a>
+            </div>
+        </header>
+
+        <!-- Parcel Info Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">location_on</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase text-on-surface-variant">Location</p>
+                        <p class="text-lg font-bold text-primary">{{ parcelle.localisation }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-blue-600">straighten</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase text-on-surface-variant">Area</p>
+                        <p class="text-lg font-bold text-blue-600">{{ parcelle.superficie|number_format(2) }} ha</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-orange-600">landscape</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase text-on-surface-variant">Soil Type</p>
+                        <p class="text-lg font-bold text-orange-600">{{ parcelle.typeSol ?? 'Not specified' }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-green-600">info</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase text-on-surface-variant">Status</p>
+                        {% if parcelle.statut == 'Available' %}
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">{{ parcelle.statut }}</span>
+                        {% elseif parcelle.statut == 'Occupied' %}
+                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold">{{ parcelle.statut }}</span>
+                        {% else %}
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-bold">{{ parcelle.statut ?? 'N/A' }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Image and Map Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Parcel Image -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h3 class="text-xl font-black text-primary tracking-tighter mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined">image</span>
+                    Parcel Image
+                </h3>
+                {% if parcelle.image %}
+                <div class="parcel-image-container" onclick="openLightbox()">
+                    <img src="{{ path('parcelle_image', {id: parcelle.id}) }}" alt="{{ parcelle.nom }}" class="w-full h-64 object-cover rounded-xl">
+                    <div class="parcel-image-overlay">
+                        <span class="text-white font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined">zoom_in</span>
+                            Click to enlarge
+                        </span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="h-64 bg-surface-container-low rounded-xl flex flex-col items-center justify-center text-on-surface-variant">
+                    <span class="material-symbols-outlined text-6xl opacity-30">hide_image</span>
+                    <p class="mt-2 font-semibold">No image available</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Map Location -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h3 class="text-xl font-black text-primary tracking-tighter mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined">map</span>
+                    Location on Map
+                </h3>
+                {% if parcelle.latitude and parcelle.longitude %}
+                <div id="parcel-map" class="shadow-md border border-outline-variant/30"></div>
+                <div class="mt-3 flex items-center gap-4 text-sm text-on-surface-variant">
+                    <span class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">my_location</span>
+                        Lat: <strong class="text-primary">{{ parcelle.latitude }}</strong>
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">explore</span>
+                        Lng: <strong class="text-primary">{{ parcelle.longitude }}</strong>
+                    </span>
+                </div>
+                {% else %}
+                <div class="h-64 bg-surface-container-low rounded-xl flex flex-col items-center justify-center text-on-surface-variant">
+                    <span class="material-symbols-outlined text-6xl opacity-30">location_off</span>
+                    <p class="mt-2 font-semibold">No coordinates set</p>
+                    <a href="{{ path('parcelle_edit', {id: parcelle.id}) }}" class="text-primary font-bold hover:underline mt-2">Add location</a>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        
+        <!-- Additional Details -->
+        <section class="bg-white rounded-xl p-8 shadow-sm">
+            <h3 class="text-2xl font-black text-primary tracking-tighter mb-6">Additional Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="p-4 bg-surface-container-low rounded-lg">
+                    <p class="text-xs font-bold uppercase text-on-surface-variant mb-1">Creation Date</p>
+                    <p class="text-lg font-semibold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">calendar_today</span>
+                        {{ parcelle.dateCreation ? parcelle.dateCreation|date('d M Y') : 'Not set' }}
+                    </p>
+                </div>
+                <div class="p-4 bg-surface-container-low rounded-lg">
+                    <p class="text-xs font-bold uppercase text-on-surface-variant mb-1">Latitude</p>
+                    <p class="text-lg font-semibold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600">north</span>
+                        {{ parcelle.latitude ?? 'Not set' }}
+                    </p>
+                </div>
+                <div class="p-4 bg-surface-container-low rounded-lg">
+                    <p class="text-xs font-bold uppercase text-on-surface-variant mb-1">Longitude</p>
+                    <p class="text-lg font-semibold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-600">east</span>
+                        {{ parcelle.longitude ?? 'Not set' }}
+                    </p>
+                </div>
+                <div class="p-4 bg-surface-container-low rounded-lg">
+                    <p class="text-xs font-bold uppercase text-on-surface-variant mb-1">Total Crops</p>
+                    <p class="text-lg font-semibold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-orange-600">eco</span>
+                        {{ parcelle.cultures|length }} crop(s)
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Associated Crops -->
+        <section class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-outline-variant/20">
+                <h3 class="text-2xl font-black text-primary tracking-tighter">Associated Crops ({{ parcelle.cultures|length }})</h3>
+            </div>
+            {% if parcelle.cultures|length > 0 %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-surface-container-high text-on-surface-variant">
+                            <th class="px-6 py-4 text-xs font-black uppercase">Crop Name</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase">Variety</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase">Planting Date</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase">Status</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        {% for culture in parcelle.cultures %}
+                        <tr class="hover:bg-surface-container-low transition-colors">
+                            <td class="px-6 py-4 font-bold text-primary">{{ culture.nomCulture }}</td>
+                            <td class="px-6 py-4 text-on-surface-variant">{{ culture.variete ?? '-' }}</td>
+                            <td class="px-6 py-4">{{ culture.datePlantation ? culture.datePlantation|date('d M Y') : '-' }}</td>
+                            <td class="px-6 py-4">
+                                <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">{{ culture.statut ?? 'N/A' }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{{ path('culture_show', {id: culture.id}) }}" class="text-blue-600 hover:underline font-semibold">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-6xl opacity-30">eco</span>
+                <p class="mt-4 text-lg font-semibold">No crops associated with this parcel</p>
+                <a href="{{ path('culture_new') }}" class="text-primary font-bold hover:underline">Add a crop</a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer class="md:ml-64 flex justify-between items-center px-12 py-8 bg-[#fbfbe2] border-t border-[#c3c9b9]/15">
+        <p class="text-sm tracking-wide text-on-surface-variant">Elfirma © 2026</p>
+    </footer>
+
+    <!-- Image Lightbox -->
+    {% if parcelle.image %}
+    <div class="lightbox" id="imageLightbox" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img src="{{ path('parcelle_image', {id: parcelle.id}) }}" alt="{{ parcelle.nom }}">
+    </div>
+    {% endif %}
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        // Dropdown toggle
+        document.querySelectorAll('.dropdown > button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const menu = this.nextElementSibling;
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+        
+        // Lightbox functions
+        function openLightbox() {
+            document.getElementById('imageLightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeLightbox() {
+            document.getElementById('imageLightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Close lightbox with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        {% if parcelle.latitude and parcelle.longitude %}
+        // Initialize map
+        const parcelLat = {{ parcelle.latitude }};
+        const parcelLng = {{ parcelle.longitude }};
+        
+        const map = L.map('parcel-map').setView([parcelLat, parcelLng], 15);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Custom marker icon
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="background: #0a2200; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30]
+        });
+
+        const marker = L.marker([parcelLat, parcelLng], {icon: customIcon}).addTo(map);
+        marker.bindPopup(`
+            <div style="text-align: center; padding: 5px;">
+                <strong style="font-size: 14px; color: #0a2200;">{{ parcelle.nom }}</strong><br>
+                <span style="color: #666; font-size: 12px;">{{ parcelle.localisation }}</span><br>
+                <span style="color: #888; font-size: 11px;">{{ parcelle.superficie }} ha</span>
+            </div>
+        `).openPopup();
+        {% endif %}
+    </script>
+</body>
+</html>
+

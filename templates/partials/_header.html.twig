@@ -19,8 +19,10 @@
             <li><a href="{{ path('app_commandes_index') }}">Mes Commandes</a></li>
             <li class="dropdown"><a href="#"><span>Gestion</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
               <ul>
+                <li><a href="{{ path('parcelle_index') }}">Gestion Parcelles</a></li>
+                <li><a href="{{ path('culture_index') }}">Gestion Cultures</a></li>
                 <li><a href="{{ path('elfirma_page', { module: 'produits' }) }}">Gestion Produits</a></li>
-                <li><a href="{{ path('elfirma_page', { module: 'commandes' }) }}">Gestion Commandes</a></li>
+                <li><a href="{{ path('app_admin_commandes') }}">Gestion Commandes</a></li>
                 <li><a href="{{ path('elfirma_page', { module: 'categories' }) }}">Catégories</a></li>
                 <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">Utilisateurs</a></li>
               </ul>

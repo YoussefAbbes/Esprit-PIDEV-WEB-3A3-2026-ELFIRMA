@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Add New Crop - Elfirma</title>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        body { font-family: 'Open_Sans', sans-serif; background-color: #fbfbe2; color: #1b1d0e; }
+        
+        .field-errors ul { margin: 0; padding-left: 0; list-style: none; }
+        .field-errors li { margin-top: 0.25rem; }
+.dropdown-menu { display: none; }
+        .dropdown:hover .dropdown-menu { display: block; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#f5f5dc", "outline-variant": "#c3c9b9", "surface-container-highest": "#e4e4cc",
+                        "on-surface": "#1b1d0e", "surface-container-high": "#eaead1", "on-surface-variant": "#43493d",
+                        "background": "#fbfbe2", "surface": "#fbfbe2", "primary": "#0a2200", "on-primary": "#ffffff",
+                        "secondary": "#934b19", "on-secondary": "#ffffff", "secondary-container": "#fc9f66", "primary-container": "#173901",
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] flex-col py-8 pr-4 z-40">
+        <div class="px-8 mb-8">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="font-semibold text-[#43493d] text-sm">Farm Management</p>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-semibold">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
+                <span class="material-symbols-outlined">group</span>
+                <span class="font-semibold">Users</span>
+            </a>
+            
+            <!-- Field Management Dropdown -->
+            <div class="dropdown relative">
+                <button class="flex items-center justify-between gap-4 py-3 px-8 w-full text-[#43493d] bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg transition-all">
+                    <div class="flex items-center gap-4">
+                        <span class="material-symbols-outlined">agriculture</span>
+                        <span class="font-semibold">Field Management</span>
+                    </div>
+                    <span class="material-symbols-outlined text-sm">expand_more</span>
+                </button>
+                <div class="dropdown-menu pl-12 mt-1 space-y-1">
+                    <a class="flex items-center gap-3 py-2 px-4 text-[#43493d] hover:bg-[#e4e4cc] rounded-r-full text-sm font-semibold transition-all" href="{{ path('parcelle_index') }}">
+                        <span class="material-symbols-outlined text-lg">terrain</span>
+                        Parcels Management
+                    </a>
+                    <a class="flex items-center gap-3 py-2 px-4 text-[#fbfbe2] bg-[#0a2200] rounded-r-full text-sm font-semibold" href="{{ path('culture_index') }}">
+                        <span class="material-symbols-outlined text-lg">eco</span>
+                        Crops Management
+                    </a>
+                </div>
+            </div>
+            
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
+                <span class="material-symbols-outlined">pets</span>
+                <span class="font-semibold">Livestock</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'produits-commandes' }) }}">
+                <span class="material-symbols-outlined">shopping_basket</span>
+                <span class="font-semibold">Products & Orders</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
+                <span class="material-symbols-outlined">handyman</span>
+                <span class="font-semibold">Equipment & Maintenance</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
+                <span class="material-symbols-outlined">contract</span>
+                <span class="font-semibold">Suppliers & Contracts</span>
+            </a>
+        </nav>
+        <div class="px-8 mt-auto pt-8 border-t border-outline-variant/15 flex flex-col gap-4">
+            <div class="space-y-2">
+                <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
+                    <span class="material-symbols-outlined">help</span> Help
+                </a>
+                <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
+                    <span class="material-symbols-outlined">logout</span> Logout
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
+        <!-- Header -->
+        <header class="flex items-center gap-4">
+            <a href="{{ path('culture_index') }}" class="p-2 rounded-lg hover:bg-surface-container-low transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-4xl font-black text-primary tracking-tighter leading-none mb-2">Add New Crop</h2>
+                <p class="text-on-surface-variant text-lg">Fill in the details to add a new crop</p>
+            </div>
+        </header>
+
+        <!-- Form -->
+        <section class="bg-white rounded-xl shadow-sm p-6 lg:p-8 w-full">
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}}) }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Crop Name -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Crop Name *</label>
+                    {{ form_widget(form.nomCulture, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low', 'placeholder': 'e.g., Wheat, Corn, Tomatoes'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.nomCulture) }}</div>
+                </div>
+
+                <!-- Variety -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Variety</label>
+                    {{ form_widget(form.variete, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low', 'placeholder': 'e.g., Hard Red Winter'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.variete) }}</div>
+                </div>
+
+                <!-- Parcel -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Parcel</label>
+                    {{ form_widget(form.parcelle, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.parcelle) }}</div>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Status</label>
+                    {{ form_widget(form.statut, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.statut) }}</div>
+                </div>
+
+                <!-- Planting Date -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Planting Date</label>
+                    {{ form_widget(form.datePlantation, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.datePlantation) }}</div>
+                </div>
+
+                <!-- Expected Harvest Date -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Expected Harvest Date</label>
+                    {{ form_widget(form.dateRecoltePrevue, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.dateRecoltePrevue) }}</div>
+                </div>
+
+                <!-- Actual Harvest Date -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Actual Harvest Date</label>
+                    {{ form_widget(form.dateRecolteReelle, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.dateRecolteReelle) }}</div>
+                </div>
+
+                <!-- Quantity Planted -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Quantity Planted *</label>
+                    {{ form_widget(form.quantitePlantee, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low', 'placeholder': 'e.g., 1000'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.quantitePlantee) }}</div>
+                </div>
+
+                <!-- Quantity Harvested -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Quantity Harvested</label>
+                    {{ form_widget(form.quantiteRecoltee, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low', 'placeholder': 'e.g., 950'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.quantiteRecoltee) }}</div>
+                </div>
+
+                <!-- Production Cost -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Production Cost *</label>
+                    {{ form_widget(form.coutProduction, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low', 'placeholder': 'e.g., 5000'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.coutProduction) }}</div>
+                </div>
+
+                <!-- Yield -->
+                <div>
+                    <label class="block text-sm font-bold text-on-surface-variant mb-2">Yield (kg/ha)</label>
+                    {{ form_widget(form.rendement, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low', 'placeholder': 'e.g., 3500'}}) }}
+                    <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.rendement) }}</div>
+                </div>
+            </div>
+
+            <!-- Observations -->
+            <div>
+                <label class="block text-sm font-bold text-on-surface-variant mb-2">Observations</label>
+                {{ form_widget(form.observations, {'attr': {'class': 'w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-surface-container-low h-32 resize-none', 'placeholder': 'Any notes or observations about this crop...'}}) }}
+                <div class="field-errors text-red-600 text-sm mt-1">{{ form_errors(form.observations) }}</div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex items-center gap-4 pt-6 border-t border-outline-variant/15">
+                <button type="submit" class="flex items-center gap-2 bg-primary text-on-primary px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 duration-150 transition-all hover:opacity-90">
+                    <span class="material-symbols-outlined">add</span>
+                    Add Crop
+                </button>
+                <a href="{{ path('culture_index') }}" class="flex items-center gap-2 bg-surface-container-high text-on-surface-variant px-8 py-3 rounded-full font-bold transition-all hover:bg-surface-container-highest">
+                    Cancel
+                </a>
+            </div>
+
+            {{ form_end(form) }}
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="md:ml-64 flex justify-between items-center px-12 py-8 bg-[#fbfbe2] border-t border-[#c3c9b9]/15">
+        <p class="text-sm tracking-wide text-on-surface-variant">Elfirma © 2026</p>
+        <div class="flex gap-8">
+            <a class="text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Technical Support</a>
+            <a class="text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Legal Notice</a>
+            <a class="text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Privacy</a>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.dropdown > button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const menu = this.nextElementSibling;
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+

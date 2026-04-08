@@ -9,7 +9,19 @@
         {
             label: "Field Management",
             icon: "agriculture",
-            href: "{{ path('elfirma_page', { module: 'parcelles-cultures' }) }}"
+            href: "{{ path('parcelle_index') }}",
+            submenu: [
+                {
+                    label: "Parcels",
+                    icon: "terrain",
+                    href: "{{ path('parcelle_index') }}"
+                },
+                {
+                    label: "Crops",
+                    icon: "grass",
+                    href: "{{ path('culture_index') }}"
+                }
+            ]
         },
         {
             label: "Livestock Management",
