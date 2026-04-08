@@ -12,11 +12,19 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Categorie;
 use App\Entity\Produit;
 
 final class ElfirmaController extends AbstractController
 {
+    private ValidatorInterface $validator;
+
+    public function __construct(ValidatorInterface $validator)
+    {
+        $this->validator = $validator;
+    }
+
     private const MODULES = [
         'tableau-de-bord' => [
             'folder' => 'tableau_de_bord',
@@ -108,22 +116,27 @@ final class ElfirmaController extends AbstractController
     #[Route('/elfirma/categorie/create', name: 'categorie_create', methods: ['POST'])]
     public function createCategorie(Request $request, EntityManagerInterface $em): Response
     {
-        $nom = $request->request->get('nom');
+        $categorie = new Categorie();
+        $nom = (string) $request->request->get('nom', '');
+        $categorie->setNom($nom);
+
+        // VALIDATION AVEC LE VALIDATOR
+        $errors = $this->validator->validate($categorie);
         
-        if (!$nom || strlen(trim($nom)) < 3) {
-            $this->addFlash('error', 'Le nom de la catégorie doit contenir au moins 3 caractères');
+        if (count($errors) > 0) {
+            $this->addFlash('form_errors_categorie_create', $this->buildFieldErrors($errors));
+            $this->addFlash('form_old_categorie_create', [
+                'nom' => $nom,
+            ]);
             return $this->redirectToRoute('elfirma_page', ['module' => 'categories']);
         }
-
-        $categorie = new Categorie();
-        $categorie->setNom($nom);
 
         try {
             $em->persist($categorie);
             $em->flush();
             $this->addFlash('success', 'Catégorie créée avec succès');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la création de la catégorie');
+            $this->addFlash('error', 'Erreur lors de la création de la catégorie: ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('elfirma_page', ['module' => 'categories']);
@@ -139,20 +152,26 @@ final class ElfirmaController extends AbstractController
             return $this->redirectToRoute('elfirma_page', ['module' => 'categories']);
         }
 
-        $nom = $request->request->get('nom');
+        $nom = (string) $request->request->get('nom', '');
+        $categorie->setNom($nom);
+
+        // VALIDATION AVEC LE VALIDATOR
+        $errors = $this->validator->validate($categorie);
         
-        if (!$nom || strlen(trim($nom)) < 3) {
-            $this->addFlash('error', 'Le nom de la catégorie doit contenir au moins 3 caractères');
+        if (count($errors) > 0) {
+            $this->addFlash('form_errors_categorie_edit', $this->buildFieldErrors($errors));
+            $this->addFlash('form_old_categorie_edit', [
+                'id' => $id,
+                'nom' => $nom,
+            ]);
             return $this->redirectToRoute('elfirma_page', ['module' => 'categories']);
         }
-
-        $categorie->setNom($nom);
 
         try {
             $em->flush();
             $this->addFlash('success', 'Catégorie modifiée avec succès');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la modification de la catégorie');
+            $this->addFlash('error', 'Erreur lors de la modification de la catégorie: ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('elfirma_page', ['module' => 'categories']);
@@ -190,22 +209,32 @@ final class ElfirmaController extends AbstractController
     public function createProduit(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $produit = new Produit();
-        $produit->setNom($request->request->get('nom'));
-        $produit->setType($request->request->get('type'));
-        $produit->setPrixUnitaire($request->request->get('prix_unitaire'));
-        $produit->setQuantiteStock((int)$request->request->get('quantite_stock'));
-        $produit->setQualite($request->request->get('qualite'));
-        $produit->setStatut($request->request->get('statut', 'Disponible'));
+        $nom = (string) $request->request->get('nom', '');
+        $type = (string) $request->request->get('type', '');
+        $prixUnitaire = (string) $request->request->get('prix_unitaire', '');
+        $quantiteStockRaw = (string) $request->request->get('quantite_stock', '');
+        $quantiteStock = $quantiteStockRaw === '' ? null : (int) $quantiteStockRaw;
+        $qualite = $request->request->get('qualite');
+        $statut = (string) $request->request->get('statut', 'Disponible');
+        $dateProductionRaw = (string) $request->request->get('date_production', '');
+        $dateExpirationRaw = (string) $request->request->get('date_expiration', '');
+        $categorieId = (string) $request->request->get('categorie_id', '');
+
+        $produit->setNom($nom);
+        $produit->setType($type);
+        $produit->setPrixUnitaire($prixUnitaire);
+        $produit->setQuantiteStock($quantiteStock);
+        $produit->setQualite($qualite);
+        $produit->setStatut($statut);
         
-        if ($request->request->get('date_production')) {
-            $produit->setDateProduction(new \DateTime($request->request->get('date_production')));
+        if ($dateProductionRaw !== '') {
+            $produit->setDateProduction(new \DateTime($dateProductionRaw));
         }
         
-        if ($request->request->get('date_expiration')) {
-            $produit->setDateExpiration(new \DateTime($request->request->get('date_expiration')));
+        if ($dateExpirationRaw !== '') {
+            $produit->setDateExpiration(new \DateTime($dateExpirationRaw));
         }
 
-        $categorieId = $request->request->get('categorie_id');
         if ($categorieId) {
             $categorie = $em->getRepository(Categorie::class)->find($categorieId);
             if ($categorie) {
@@ -233,6 +262,25 @@ final class ElfirmaController extends AbstractController
             }
         }
 
+        // VALIDATION AVEC LE VALIDATOR
+        $errors = $this->validator->validate($produit);
+        
+        if (count($errors) > 0) {
+            $this->addFlash('form_errors_produit_create', $this->buildFieldErrors($errors));
+            $this->addFlash('form_old_produit_create', [
+                'nom' => $nom,
+                'type' => $type,
+                'prix_unitaire' => $prixUnitaire,
+                'quantite_stock' => $quantiteStockRaw,
+                'qualite' => (string) $qualite,
+                'statut' => $statut,
+                'date_production' => $dateProductionRaw,
+                'date_expiration' => $dateExpirationRaw,
+                'categorie_id' => $categorieId,
+            ]);
+            return $this->redirectToRoute('elfirma_page', ['module' => 'produits']);
+        }
+
         try {
             $em->persist($produit);
             $em->flush();
@@ -254,22 +302,36 @@ final class ElfirmaController extends AbstractController
             return $this->redirectToRoute('elfirma_page', ['module' => 'produits']);
         }
 
-        $produit->setNom($request->request->get('nom'));
-        $produit->setType($request->request->get('type'));
-        $produit->setPrixUnitaire($request->request->get('prix_unitaire'));
-        $produit->setQuantiteStock((int)$request->request->get('quantite_stock'));
-        $produit->setQualite($request->request->get('qualite'));
-        $produit->setStatut($request->request->get('statut', 'Disponible'));
+        $nom = (string) $request->request->get('nom', '');
+        $type = (string) $request->request->get('type', '');
+        $prixUnitaire = (string) $request->request->get('prix_unitaire', '');
+        $quantiteStockRaw = (string) $request->request->get('quantite_stock', '');
+        $quantiteStock = $quantiteStockRaw === '' ? null : (int) $quantiteStockRaw;
+        $qualite = $request->request->get('qualite');
+        $statut = (string) $request->request->get('statut', 'Disponible');
+        $dateProductionRaw = (string) $request->request->get('date_production', '');
+        $dateExpirationRaw = (string) $request->request->get('date_expiration', '');
+        $categorieId = (string) $request->request->get('categorie_id', '');
+
+        $produit->setNom($nom);
+        $produit->setType($type);
+        $produit->setPrixUnitaire($prixUnitaire);
+        $produit->setQuantiteStock($quantiteStock);
+        $produit->setQualite($qualite);
+        $produit->setStatut($statut);
         
-        if ($request->request->get('date_production')) {
-            $produit->setDateProduction(new \DateTime($request->request->get('date_production')));
+        if ($dateProductionRaw !== '') {
+            $produit->setDateProduction(new \DateTime($dateProductionRaw));
+        } else {
+            $produit->setDateProduction(null);
         }
         
-        if ($request->request->get('date_expiration')) {
-            $produit->setDateExpiration(new \DateTime($request->request->get('date_expiration')));
+        if ($dateExpirationRaw !== '') {
+            $produit->setDateExpiration(new \DateTime($dateExpirationRaw));
+        } else {
+            $produit->setDateExpiration(null);
         }
 
-        $categorieId = $request->request->get('categorie_id');
         if ($categorieId) {
             $categorie = $em->getRepository(Categorie::class)->find($categorieId);
             if ($categorie) {
@@ -303,6 +365,27 @@ final class ElfirmaController extends AbstractController
             } catch (FileException $e) {
                 $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
             }
+        }
+
+        // VALIDATION AVEC LE VALIDATOR
+        $errors = $this->validator->validate($produit);
+        
+        if (count($errors) > 0) {
+            $this->addFlash('form_errors_produit_edit', $this->buildFieldErrors($errors));
+            $this->addFlash('form_old_produit_edit', [
+                'id' => $id,
+                'nom' => $nom,
+                'type' => $type,
+                'prix_unitaire' => $prixUnitaire,
+                'quantite_stock' => $quantiteStockRaw,
+                'qualite' => (string) $qualite,
+                'statut' => $statut,
+                'date_production' => $dateProductionRaw,
+                'date_expiration' => $dateExpirationRaw,
+                'categorie_id' => $categorieId,
+                'image' => $produit->getImage(),
+            ]);
+            return $this->redirectToRoute('elfirma_page', ['module' => 'produits']);
         }
 
         try {
@@ -463,5 +546,20 @@ HTML;
 HTML;
         
         return $html;
+    }
+
+    private function buildFieldErrors(iterable $errors): array
+    {
+        $fieldErrors = [];
+
+        foreach ($errors as $error) {
+            $propertyPath = $error->getPropertyPath() ?: '_global';
+            if (!isset($fieldErrors[$propertyPath])) {
+                $fieldErrors[$propertyPath] = [];
+            }
+            $fieldErrors[$propertyPath][] = $error->getMessage();
+        }
+
+        return $fieldErrors;
     }
 }

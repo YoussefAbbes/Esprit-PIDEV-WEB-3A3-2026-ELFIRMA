@@ -87,6 +87,11 @@
             </div>
         </header>
 
+        {% set produitCreateErrors = app.flashes('form_errors_produit_create')|first|default({}) %}
+        {% set produitCreateOld = app.flashes('form_old_produit_create')|first|default({}) %}
+        {% set produitEditErrors = app.flashes('form_errors_produit_edit')|first|default({}) %}
+        {% set produitEditOld = app.flashes('form_old_produit_edit')|first|default({}) %}
+
         <!-- Flash Messages -->
         {% for message in app.flashes('success') %}
             <div class="mx-8 mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
@@ -411,64 +416,103 @@
             </div>
             <form method="POST" action="{{ path('produit_create') }}" enctype="multipart/form-data">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {% if produitCreateErrors._global is defined %}
+                        <div class="md:col-span-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            {{ produitCreateErrors._global|first }}
+                        </div>
+                    {% endif %}
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Nom du produit *</label>
-                        <input type="text" name="nom" required minlength="3" maxlength="100" 
+                        <input type="text" name="nom" 
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.nom|default('') }}"
                                placeholder="Ex: Huile d'olive extra vierge">
+                        {% if produitCreateErrors.nom is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.nom|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Type *</label>
-                        <input type="text" name="type" required minlength="3" maxlength="30" 
+                        <input type="text" name="type" 
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.type|default('') }}"
                                placeholder="Ex: Biologique, Premium">
+                        {% if produitCreateErrors.type is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.type|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Catégorie *</label>
-                        <select name="categorie_id" required 
+                        <select name="categorie_id" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                             <option value="">Sélectionner une catégorie</option>
                             {% for categorie in categories %}
-                                <option value="{{ categorie.id }}">{{ categorie.nom }}</option>
+                                <option value="{{ categorie.id }}" {% if produitCreateOld.categorie_id|default('') == categorie.id %}selected{% endif %}>{{ categorie.nom }}</option>
                             {% endfor %}
                         </select>
+                        {% if produitCreateErrors.categorie is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.categorie|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Prix Unitaire (DT) *</label>
-                        <input type="number" name="prix_unitaire" step="0.01" min="0" required 
+                        <input type="number" name="prix_unitaire" step="0.01" 
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.prix_unitaire|default('') }}"
                                placeholder="0.00">
+                        {% if produitCreateErrors.prix_unitaire is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.prix_unitaire|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Quantité en Stock *</label>
-                        <input type="number" name="quantite_stock" min="0" required 
+                        <input type="number" name="quantite_stock" 
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.quantite_stock|default('') }}"
                                placeholder="0">
+                        {% if produitCreateErrors.quantite_stock is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.quantite_stock|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Qualité</label>
-                        <input type="text" name="qualite" maxlength="20" 
+                        <input type="text" name="qualite" 
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.qualite|default('') }}"
                                placeholder="Ex: Grade A">
+                        {% if produitCreateErrors.qualite is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.qualite|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Date de Production</label>
                         <input type="date" name="date_production" 
+                               value="{{ produitCreateOld.date_production|default('') }}"
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                        {% if produitCreateErrors.date_production is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.date_production|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Date d'Expiration</label>
                         <input type="date" name="date_expiration" 
+                               value="{{ produitCreateOld.date_expiration|default('') }}"
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                        {% if produitCreateErrors.date_expiration is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.date_expiration|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Statut</label>
                         <select name="statut" 
                                 class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
-                            <option value="Disponible">Disponible</option>
-                            <option value="Rupture">Rupture</option>
-                            <option value="Expiré">Expiré</option>
+                            <option value="Disponible" {% if produitCreateOld.statut|default('Disponible') == 'Disponible' %}selected{% endif %}>Disponible</option>
+                            <option value="Rupture" {% if produitCreateOld.statut|default('') == 'Rupture' %}selected{% endif %}>Rupture</option>
+                            <option value="Expiré" {% if produitCreateOld.statut|default('') == 'Expiré' %}selected{% endif %}>Expiré</option>
                         </select>
+                        {% if produitCreateErrors.statut is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.statut|first }}</p>
+                        {% endif %}
                     </div>
                     <!-- Image Upload -->
                     <div class="md:col-span-2">
@@ -482,6 +526,9 @@
                             <input type="file" name="image" accept="image/*" id="imageInput"
                                    class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
                             <p class="mt-2 text-xs text-gray-500">PNG, JPG, JPEG jusqu'à 5MB</p>
+                            {% if produitCreateErrors.image is defined %}
+                                <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.image|first }}</p>
+                            {% endif %}
                         </div>
                         <div id="imagePreview" class="mt-4 hidden">
                             <img src="" alt="Aperçu" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
@@ -512,50 +559,79 @@
             </div>
             <form id="editForm" method="POST" action="" enctype="multipart/form-data">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {% if produitEditErrors._global is defined %}
+                        <div class="md:col-span-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            {{ produitEditErrors._global|first }}
+                        </div>
+                    {% endif %}
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Nom du produit *</label>
-                        <input type="text" id="editNom" name="nom" required minlength="3" maxlength="100" 
+                        <input type="text" id="editNom" name="nom" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.nom is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.nom|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Type *</label>
-                        <input type="text" id="editType" name="type" required minlength="3" maxlength="30" 
+                        <input type="text" id="editType" name="type" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.type is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.type|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Catégorie *</label>
-                        <select id="editCategorieId" name="categorie_id" required 
+                        <select id="editCategorieId" name="categorie_id" 
                                 class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
                             <option value="">Sélectionner une catégorie</option>
                             {% for categorie in categories %}
                                 <option value="{{ categorie.id }}">{{ categorie.nom }}</option>
                             {% endfor %}
                         </select>
+                        {% if produitEditErrors.categorie is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.categorie|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Prix Unitaire (DT) *</label>
-                        <input type="number" id="editPrix" name="prix_unitaire" step="0.01" min="0" required 
+                        <input type="number" id="editPrix" name="prix_unitaire" step="0.01" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.prix_unitaire is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.prix_unitaire|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Quantité en Stock *</label>
-                        <input type="number" id="editQuantite" name="quantite_stock" min="0" required 
+                        <input type="number" id="editQuantite" name="quantite_stock" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.quantite_stock is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.quantite_stock|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Qualité</label>
-                        <input type="text" id="editQualite" name="qualite" maxlength="20" 
+                        <input type="text" id="editQualite" name="qualite" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.qualite is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.qualite|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Date de Production</label>
                         <input type="date" id="editDateProduction" name="date_production" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.date_production is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.date_production|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Date d'Expiration</label>
                         <input type="date" id="editDateExpiration" name="date_expiration" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.date_expiration is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.date_expiration|first }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Statut</label>
@@ -565,6 +641,9 @@
                             <option value="Rupture">Rupture</option>
                             <option value="Expiré">Expiré</option>
                         </select>
+                        {% if produitEditErrors.statut is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.statut|first }}</p>
+                        {% endif %}
                     </div>
                     <!-- Image Upload Edit -->
                     <div class="md:col-span-2">
@@ -581,6 +660,9 @@
                         <input type="file" name="image" accept="image/*" id="editImageInput"
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 cursor-pointer">
                         <p class="mt-2 text-xs text-gray-500">Leave empty to keep the current image, or select a new one to replace it</p>
+                        {% if produitEditErrors.image is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.image|first }}</p>
+                        {% endif %}
                         <div id="editImagePreview" class="mt-4 hidden">
                             <p class="text-xs text-gray-600 mb-2">New Image Preview:</p>
                             <img src="" alt="Preview" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
@@ -823,6 +905,25 @@
                 event.target.classList.remove('active');
             }
         }
+
+        {% if produitCreateErrors is not empty %}
+            openModal('createModal');
+        {% endif %}
+
+        {% if produitEditErrors is not empty and produitEditOld.id is defined %}
+            openEditModal({{ produitEditOld.id }}, {
+                nom: {{ produitEditOld.nom|default('')|json_encode|raw }},
+                type: {{ produitEditOld.type|default('')|json_encode|raw }},
+                prix_unitaire: {{ produitEditOld.prix_unitaire|default('')|json_encode|raw }},
+                quantite_stock: {{ produitEditOld.quantite_stock|default('')|json_encode|raw }},
+                qualite: {{ produitEditOld.qualite|default('')|json_encode|raw }},
+                statut: {{ produitEditOld.statut|default('Disponible')|json_encode|raw }},
+                image: {{ produitEditOld.image|default('')|json_encode|raw }},
+                categorie: {id: {{ produitEditOld.categorie_id|default('null') }}},
+                date_production: {{ produitEditOld.date_production|default('')|json_encode|raw }},
+                date_expiration: {{ produitEditOld.date_expiration|default('')|json_encode|raw }}
+            });
+        {% endif %}
         
         // Professional PDF Export Function
         function generatePDF() {
