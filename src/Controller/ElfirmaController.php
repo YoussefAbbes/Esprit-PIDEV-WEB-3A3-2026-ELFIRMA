@@ -82,6 +82,9 @@ final class ElfirmaController extends AbstractController
                 $view = 'livestock';
             }
 
+            $searchTerm = trim($request->query->getString('search', ''));
+            $searchError = $this->validateSearchTerm($searchTerm);
+
             if ($view === 'livestock') {
                 $editId = $request->query->getInt('edit', 0);
                 $editLivestock = null;
@@ -93,12 +96,26 @@ final class ElfirmaController extends AbstractController
 
                 $livestockStates = $livestockRepository->findDistinctStates();
                 $elevages = $livestockRepository->findAllForManagement();
+                if ($searchTerm !== '' && $searchError === null) {
+                    $elevages = array_values(array_filter(
+                        $elevages,
+                        function (array $item) use ($searchTerm): bool {
+                            return $this->matchesSearch($searchTerm, [
+                                $item['type_elevage'] ?? '',
+                                $item['etat_elevage'] ?? '',
+                                $item['production'] ?? '',
+                            ]);
+                        }
+                    ));
+                }
                 $livestockStats = $livestockRepository->fetchStats();
 
                 return $this->render('elfirma/Livestock&Animal Management/livestock.twig', [
                     'elevages' => $elevages,
                     'livestock_stats' => $livestockStats,
                     'livestock_states' => $livestockStates,
+                    'search_term' => $searchTerm,
+                    'search_error' => $searchError,
                     'show_add_form' => $showAddForm,
                     'edit_livestock' => $editLivestock,
                 ]);
@@ -117,6 +134,19 @@ final class ElfirmaController extends AbstractController
             $animalStatuses = $animalRepository->findDistinctStatuses();
             $animalHealthOptions = $animalRepository->findDistinctHealthOptions();
             $animals = $animalRepository->findAllForManagement();
+            if ($searchTerm !== '' && $searchError === null) {
+                $animals = array_values(array_filter(
+                    $animals,
+                    function (array $item) use ($searchTerm): bool {
+                        return $this->matchesSearch($searchTerm, [
+                            $item['type_animal'] ?? '',
+                            $item['sexe'] ?? '',
+                            $item['etat_sante'] ?? '',
+                            $item['statut'] ?? '',
+                        ]);
+                    }
+                ));
+            }
             $animalStats = $animalRepository->fetchStats();
 
             return $this->render('elfirma/Livestock&Animal Management/animal.twig', [
@@ -125,6 +155,8 @@ final class ElfirmaController extends AbstractController
                 'animal_stats' => $animalStats,
                 'animal_statuses' => $animalStatuses,
                 'animal_health_options' => $animalHealthOptions,
+                'search_term' => $searchTerm,
+                'search_error' => $searchError,
                 'show_add_animal_form' => $showAddAnimalForm,
                 'edit_animal' => $editAnimal,
             ]);
@@ -135,5 +167,32 @@ final class ElfirmaController extends AbstractController
             'current_module' => $module,
             'modules' => self::MODULES,
         ]);
+    }
+
+    private function validateSearchTerm(string $searchTerm): ?string
+    {
+        if ($searchTerm === '') {
+            return null;
+        }
+
+        return preg_match('/^[A-Za-z\s]+$/', $searchTerm) === 1
+            ? null
+            : 'Search can contain letters and spaces only';
+    }
+
+    /**
+     * @param list<mixed> $values
+     */
+    private function matchesSearch(string $searchTerm, array $values): bool
+    {
+        $needle = strtolower($searchTerm);
+
+        foreach ($values as $value) {
+            if (str_contains(strtolower((string) $value), $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -34,6 +34,27 @@
             background: #fef2f2;
             box-shadow: 0 8px 18px -12px rgba(220, 38, 38, 0.65);
         }
+
+        .table-sort-btn {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
+            font-weight: 800;
+            color: #f7fff9;
+            text-align: left;
+        }
+
+        .table-sort-btn .sort-indicator {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            line-height: 1;
+        }
+
+        .table-sort-btn.is-active .sort-indicator {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen overflow-hidden">
@@ -83,24 +104,38 @@
                 </a>
             </div>
 
+            <div class="mb-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <form id="animal-search-form" method="get" action="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}" class="md:col-span-1">
+                    <input type="hidden" name="view" value="animal">
+                    <input id="animal-search-input" name="search" value="{{ search_term|default('') }}" type="text" autocomplete="off" placeholder="Search animal..." class="w-full rounded-full border-2 border-emerald-500 bg-white px-5 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                </form>
+                <select id="animal-type-filter" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                    <option value="">All Type</option>
+                </select>
+                <select id="animal-status-filter" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                    <option value="">All Status</option>
+                </select>
+            </div>
+            <p id="animal-search-error" class="mb-3 text-sm text-red-600 font-semibold {{ search_error is defined and search_error ? '' : 'hidden' }}">{{ search_error|default('Search can contain letters and spaces only') }}</p>
+
             <section class="rounded-xl border border-slate-300 bg-white shadow-sm overflow-hidden flex-1 min-h-0">
                 <div class="overflow-auto">
-                    <table class="w-full text-sm min-w-[760px] border-separate border-spacing-0">
+                    <table id="animal-table" class="w-full text-sm min-w-[760px] border-separate border-spacing-0">
                         <thead>
                         <tr class="bg-emerald-500">
-                            <th class="py-3 px-3 font-extrabold border-r border-emerald-400/80 last:border-r-0" style="color:#f7fff9;">Type</th>
-                            <th class="py-3 px-3 font-extrabold border-r border-emerald-400/80 last:border-r-0" style="color:#f7fff9;">Gender</th>
-                            <th class="py-3 px-3 font-extrabold border-r border-emerald-400/80 last:border-r-0" style="color:#f7fff9;">Age</th>
-                            <th class="py-3 px-3 font-extrabold border-r border-emerald-400/80 last:border-r-0" style="color:#f7fff9;">Health Status</th>
-                            <th class="py-3 px-3 font-extrabold border-r border-emerald-400/80 last:border-r-0" style="color:#f7fff9;">Status</th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="type" data-sort-type="text">Type <span class="sort-indicator" data-sort-indicator="type">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="gender" data-sort-type="text">Gender <span class="sort-indicator" data-sort-indicator="gender">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="age" data-sort-type="number">Age <span class="sort-indicator" data-sort-indicator="age">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="health" data-sort-type="text">Health Status <span class="sort-indicator" data-sort-indicator="health">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="status" data-sort-type="text">Status <span class="sort-indicator" data-sort-indicator="status">&uarr;&darr;</span></button></th>
                             <th class="py-3 px-3 font-extrabold text-center border-r border-emerald-400/80 last:border-r-0" style="color:#f7fff9;">Actions</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="animal-table-body">
                         {% for item in animals %}
                             {% set sexe = item.sexe|default('')|lower %}
                             {% set health = item.etat_sante|default('')|lower %}
-                            <tr class="hover:bg-emerald-50/35 transition-colors">
+                            <tr class="hover:bg-emerald-50/35 transition-colors" data-row="animal" data-type="{{ item.type_animal|default('')|e('html_attr') }}" data-gender="{{ item.sexe|default('')|e('html_attr') }}" data-age="{{ item.age|default(0) }}" data-health="{{ item.etat_sante|default('')|e('html_attr') }}" data-status="{{ item.statut|default('')|e('html_attr') }}">
                                 <td class="py-3 px-3 font-semibold text-slate-800 border-b border-r border-emerald-100">{{ item.type_animal }}</td>
                                 <td class="py-3 px-3 font-semibold border-b border-r border-emerald-100 {{ sexe == 'male' ? 'text-blue-600' : (sexe == 'female' ? 'text-pink-600' : 'text-slate-700') }}">
                                     <span class="inline-flex items-center gap-1.5">
@@ -134,6 +169,7 @@
                         {% else %}
                             <tr><td colspan="6" class="py-6 px-3 text-slate-500 text-center border-b border-emerald-100">No animal found.</td></tr>
                         {% endfor %}
+                            <tr id="animal-no-results" class="hidden"><td colspan="6" class="py-6 px-3 text-slate-500 text-center border-b border-emerald-100">No matching animals found.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -308,6 +344,141 @@
 
 <script>
 (function () {
+    const normalize = function (value) {
+        return String(value || '').trim().toLowerCase();
+    };
+
+    const table = document.getElementById('animal-table');
+    const tableBody = document.getElementById('animal-table-body');
+    const searchInput = document.getElementById('animal-search-input');
+    const searchError = document.getElementById('animal-search-error');
+    const typeFilter = document.getElementById('animal-type-filter');
+    const statusFilter = document.getElementById('animal-status-filter');
+    const noResultsRow = document.getElementById('animal-no-results');
+
+    if (searchInput && searchError) {
+        searchInput.addEventListener('input', function () {
+            searchError.classList.add('hidden');
+        });
+    }
+
+    if (table && tableBody && searchInput && typeFilter && statusFilter) {
+        const rows = Array.from(tableBody.querySelectorAll('tr[data-row="animal"]'));
+        const sortButtons = Array.from(table.querySelectorAll('.js-animal-sort'));
+        let sortState = { key: null, direction: 'asc', type: 'text' };
+
+        const fillFilterOptions = function (selectElement, key) {
+            const uniqueValues = Array.from(new Set(rows
+                .map(function (row) { return row.dataset[key] || ''; })
+                .filter(function (value) { return normalize(value) !== ''; })))
+                .sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base' }); });
+
+            uniqueValues.forEach(function (value) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                selectElement.appendChild(option);
+            });
+        };
+
+        const compareRows = function (rowA, rowB, key, type, direction) {
+            const factor = direction === 'asc' ? 1 : -1;
+            const valueA = rowA.dataset[key] || '';
+            const valueB = rowB.dataset[key] || '';
+
+            if (type === 'number') {
+                return (Number(valueA) - Number(valueB)) * factor;
+            }
+
+            return valueA.localeCompare(valueB, undefined, { sensitivity: 'base' }) * factor;
+        };
+
+        const renderSortIndicators = function () {
+            sortButtons.forEach(function (button) {
+                const key = button.dataset.sortKey || '';
+                const indicator = table.querySelector('[data-sort-indicator="' + key + '"]');
+                button.classList.remove('is-active');
+
+                if (indicator) {
+                    indicator.innerHTML = '&uarr;&darr;';
+                }
+
+                if (sortState.key === key) {
+                    button.classList.add('is-active');
+                    if (indicator) {
+                        indicator.innerHTML = sortState.direction === 'asc' ? '&uarr;' : '&darr;';
+                    }
+                }
+            });
+        };
+
+        const applyFilters = function () {
+            const selectedType = normalize(typeFilter.value);
+            const selectedStatus = normalize(statusFilter.value);
+            let visibleCount = 0;
+
+            rows.forEach(function (row) {
+                const matchesType = selectedType === '' || normalize(row.dataset.type) === selectedType;
+                const matchesStatus = selectedStatus === '' || normalize(row.dataset.status) === selectedStatus;
+                const isVisible = matchesType && matchesStatus;
+
+                row.classList.toggle('hidden', !isVisible);
+                if (isVisible) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (noResultsRow) {
+                noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
+            }
+        };
+
+        const sortRows = function () {
+            if (!sortState.key) {
+                return;
+            }
+
+            const sortedRows = rows.slice().sort(function (rowA, rowB) {
+                return compareRows(rowA, rowB, sortState.key, sortState.type, sortState.direction);
+            });
+
+            sortedRows.forEach(function (row) {
+                tableBody.appendChild(row);
+            });
+
+            if (noResultsRow) {
+                tableBody.appendChild(noResultsRow);
+            }
+        };
+
+        fillFilterOptions(typeFilter, 'type');
+        fillFilterOptions(statusFilter, 'status');
+
+        typeFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+
+        sortButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                const key = button.dataset.sortKey || '';
+                const type = button.dataset.sortType || 'text';
+
+                if (sortState.key === key) {
+                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortState.key = key;
+                    sortState.direction = 'asc';
+                }
+
+                sortState.type = type;
+                sortRows();
+                renderSortIndicators();
+                applyFilters();
+            });
+        });
+
+        applyFilters();
+    }
+
     const modal = document.getElementById('delete-confirm-modal');
     const title = document.getElementById('delete-modal-title');
     const text = document.getElementById('delete-modal-text');
