@@ -38,10 +38,10 @@ class Animal
     }
 
     #[ORM\Column(type: 'string', length: 50)]
-    #[Assert\NotBlank(message: 'Le type est obligatoire.')]
+    #[Assert\NotBlank(message: 'Type is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
-        message: 'Le type accepte uniquement des lettres et des espaces.'
+        message: 'Type can contain letters and spaces only.'
     )]
     private ?string $type_animal = null;
 

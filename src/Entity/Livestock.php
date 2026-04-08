@@ -23,10 +23,10 @@ class Livestock
     }
 
     #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\NotBlank(message: 'Le type est obligatoire.')]
+    #[Assert\NotBlank(message: 'Type is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
-        message: 'Le type accepte uniquement des lettres et des espaces.'
+        message: 'Type can contain letters and spaces only.'
     )]
     private ?string $type_elevage = null;
 
@@ -42,7 +42,7 @@ class Livestock
     }
 
     #[ORM\Column(type: 'string', length: 50)]
-    #[Assert\NotBlank(message: "L'etat est obligatoire.")]
+    #[Assert\NotBlank(message: 'State is required.')]
     private ?string $etat_elevage = null;
 
     public function getEtatElevage(): ?string
@@ -57,8 +57,8 @@ class Livestock
     }
 
     #[ORM\Column(type: 'integer')]
-    #[Assert\NotNull(message: 'La capacite est obligatoire.')]
-    #[Assert\PositiveOrZero(message: 'La capacite doit etre un nombre positif ou zero.')]
+    #[Assert\NotNull(message: 'Capacity is required.')]
+    #[Assert\PositiveOrZero(message: 'Capacity must be greater than or equal to 0.')]
     private ?int $capacite = null;
 
     public function getCapacite(): ?int
@@ -73,8 +73,8 @@ class Livestock
     }
 
     #[ORM\Column(type: 'integer')]
-    #[Assert\NotNull(message: 'Le nombre des animaux est obligatoire.')]
-    #[Assert\PositiveOrZero(message: 'Le nombre des animaux doit etre un nombre positif ou zero.')]
+    #[Assert\NotNull(message: 'Number of animals is required.')]
+    #[Assert\PositiveOrZero(message: 'Number of animals must be greater than or equal to 0.')]
     private ?int $nombre_animaux = null;
 
     public function getNombreAnimaux(): ?int
@@ -89,10 +89,10 @@ class Livestock
     }
 
     #[ORM\Column(type: 'string', length: 200)]
-    #[Assert\NotBlank(message: 'La production est obligatoire.')]
+    #[Assert\NotBlank(message: 'Production is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
-        message: 'La production accepte uniquement des lettres et des espaces.'
+        message: 'Production can contain letters and spaces only.'
     )]
     private ?string $production = null;
 

@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class AnimalController extends AbstractController
@@ -28,19 +29,20 @@ final class AnimalController extends AbstractController
             'view' => 'animal',
             'add' => '1',
         ];
+        $input = $this->collectAnimalInput($request);
 
         if (!$this->isCsrfTokenValid('animal_create', (string) $request->request->get('_token', ''))) {
-            return $this->redirectToAnimalList();
+            return $this->redirectToAnimalFormWithFieldErrors($formRedirect, [
+                '_form' => 'Session expired. Please try again.',
+            ], $input);
         }
 
-        $payload = $this->extractAnimalPayload($request);
-        if ($payload === null) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
+        $errors = $this->validateAnimalInput($input, $livestockRepository);
+        if ($errors !== []) {
+            return $this->redirectToAnimalFormWithFieldErrors($formRedirect, $errors, $input);
         }
 
-        if (!$livestockRepository->existsById($payload['id_elevage'])) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
-        }
+        $payload = $this->toAnimalPayload($input);
 
         $violations = $validator->validate(
             (new Animal())
@@ -52,7 +54,11 @@ final class AnimalController extends AbstractController
         );
 
         if (count($violations) > 0) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
+            return $this->redirectToAnimalFormWithFieldErrors(
+                $formRedirect,
+                $this->collectViolationFieldErrors($violations),
+                $input
+            );
         }
 
         $animalRepository->createAnimal($payload);
@@ -74,32 +80,37 @@ final class AnimalController extends AbstractController
             'module' => 'animaux-elevages',
             'view' => 'animal',
         ];
+        $input = $this->collectAnimalInput($request);
 
         if ($idAnimal > 0) {
             $formRedirect['edit'] = (string) $idAnimal;
         }
 
         if (!$this->isCsrfTokenValid('animal_update', (string) $request->request->get('_token', ''))) {
-            return $this->redirectToAnimalList();
+            return $this->redirectToAnimalFormWithFieldErrors($formRedirect, [
+                '_form' => 'Session expired. Please try again.',
+            ], $input);
         }
 
         if ($idAnimal <= 0) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
-        }
-
-        $payload = $this->extractAnimalPayload($request);
-        if ($payload === null) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
-        }
-
-        if (!$livestockRepository->existsById($payload['id_elevage'])) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
+            return $this->redirectToAnimalFormWithFieldErrors($formRedirect, [
+                '_form' => 'Invalid animal.',
+            ], $input);
         }
 
         $previousElevageId = $animalRepository->findElevageIdByAnimalId($idAnimal);
         if ($previousElevageId === null || $previousElevageId <= 0) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
+            return $this->redirectToAnimalFormWithFieldErrors($formRedirect, [
+                '_form' => 'Animal not found.',
+            ], $input);
         }
+
+        $errors = $this->validateAnimalInput($input, $livestockRepository);
+        if ($errors !== []) {
+            return $this->redirectToAnimalFormWithFieldErrors($formRedirect, $errors, $input);
+        }
+
+        $payload = $this->toAnimalPayload($input);
 
         $violations = $validator->validate(
             (new Animal())
@@ -111,7 +122,11 @@ final class AnimalController extends AbstractController
         );
 
         if (count($violations) > 0) {
-            return $this->redirectToRoute('elfirma_page', $formRedirect);
+            return $this->redirectToAnimalFormWithFieldErrors(
+                $formRedirect,
+                $this->collectViolationFieldErrors($violations),
+                $input
+            );
         }
 
         $animalRepository->updateAnimal($idAnimal, $payload);
@@ -150,33 +165,84 @@ final class AnimalController extends AbstractController
     }
 
     /**
-     * @return array{id_elevage:int,type_animal:string,sexe:string,age:int,etat_sante:string,statut:string}|null
+     * @return array{id_elevage:string,type_animal:string,sexe:string,age:string,etat_sante:string,statut:string}
      */
-    private function extractAnimalPayload(Request $request): ?array
+    private function collectAnimalInput(Request $request): array
     {
-        $idElevage = filter_var((string) $request->request->get('id_elevage', ''), FILTER_VALIDATE_INT, [
+        return [
+            'id_elevage' => trim((string) $request->request->get('id_elevage', '')),
+            'type_animal' => trim((string) $request->request->get('type_animal', '')),
+            'sexe' => trim((string) $request->request->get('sexe', '')),
+            'age' => trim((string) $request->request->get('age', '')),
+            'etat_sante' => trim((string) $request->request->get('etat_sante', '')),
+            'statut' => trim((string) $request->request->get('statut', '')),
+        ];
+    }
+
+    /**
+     * @param array{id_elevage:string,type_animal:string,sexe:string,age:string,etat_sante:string,statut:string} $input
+     *
+     * @return array<string,string>
+     */
+    private function validateAnimalInput(array $input, LivestockRepository $livestockRepository): array
+    {
+        $errors = [];
+
+        $idElevage = filter_var($input['id_elevage'], FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1],
         ]);
-        $age = filter_var((string) $request->request->get('age', ''), FILTER_VALIDATE_INT, [
-            'options' => ['min_range' => 0],
-        ]);
-
-        $typeAnimal = trim((string) $request->request->get('type_animal', ''));
-        $sexe = trim((string) $request->request->get('sexe', ''));
-        $etatSante = trim((string) $request->request->get('etat_sante', ''));
-        $statut = trim((string) $request->request->get('statut', ''));
-
-        if ($idElevage === false || $age === false || $typeAnimal === '' || $sexe === '' || $etatSante === '' || $statut === '') {
-            return null;
+        if ($idElevage === false) {
+            $errors['id_elevage'] = 'Please select a valid farm.';
+        } elseif (!$livestockRepository->existsById((int) $idElevage)) {
+            $errors['id_elevage'] = 'Selected farm was not found.';
         }
 
+        if ($input['type_animal'] === '') {
+            $errors['type_animal'] = 'Type is required.';
+        } elseif (!preg_match('/^[\p{L}\s]+$/u', $input['type_animal'])) {
+            $errors['type_animal'] = 'Type can contain letters and spaces only.';
+        }
+
+        if ($input['sexe'] === '') {
+            $errors['sexe'] = 'Gender is required.';
+        }
+
+        if ($input['age'] === '') {
+            $errors['age'] = 'Age is required.';
+        } else {
+            $age = filter_var($input['age'], FILTER_VALIDATE_INT, [
+                'options' => ['min_range' => 0],
+            ]);
+            if ($age === false) {
+                $errors['age'] = 'Age must be a whole number greater than or equal to 0.';
+            }
+        }
+
+        if ($input['etat_sante'] === '') {
+            $errors['etat_sante'] = 'Health status is required.';
+        }
+
+        if ($input['statut'] === '') {
+            $errors['statut'] = 'Status is required.';
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param array{id_elevage:string,type_animal:string,sexe:string,age:string,etat_sante:string,statut:string} $input
+     *
+     * @return array{id_elevage:int,type_animal:string,sexe:string,age:int,etat_sante:string,statut:string}
+     */
+    private function toAnimalPayload(array $input): array
+    {
         return [
-            'id_elevage' => (int) $idElevage,
-            'type_animal' => $typeAnimal,
-            'sexe' => $sexe,
-            'age' => (int) $age,
-            'etat_sante' => $etatSante,
-            'statut' => $statut,
+            'id_elevage' => (int) $input['id_elevage'],
+            'type_animal' => $input['type_animal'],
+            'sexe' => $input['sexe'],
+            'age' => (int) $input['age'],
+            'etat_sante' => $input['etat_sante'],
+            'statut' => $input['statut'],
         ];
     }
 
@@ -186,5 +252,52 @@ final class AnimalController extends AbstractController
             'module' => 'animaux-elevages',
             'view' => 'animal',
         ]);
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function collectViolationFieldErrors(ConstraintViolationListInterface $violations): array
+    {
+        $errors = [];
+        foreach ($violations as $violation) {
+            $field = $this->normalizeFieldName((string) $violation->getPropertyPath());
+            if ($field === '') {
+                $field = '_form';
+            }
+
+            if (!isset($errors[$field])) {
+                $errors[$field] = $violation->getMessage();
+            }
+        }
+
+        return $errors;
+    }
+
+    private function normalizeFieldName(string $field): string
+    {
+        $field = trim($field);
+        if ($field === '') {
+            return '';
+        }
+
+        $field = preg_replace('/([a-z])([A-Z])/', '$1_$2', $field);
+
+        return strtolower((string) $field);
+    }
+
+    /**
+     * @param array{module:string,view:string,add?:string,edit?:string} $routeParams
+     * @param array<string,string> $fieldErrors
+     * @param array<string,string> $input
+     */
+    private function redirectToAnimalFormWithFieldErrors(array $routeParams, array $fieldErrors, array $input): Response
+    {
+        if ($fieldErrors !== []) {
+            $this->addFlash('form_errors', $fieldErrors);
+        }
+        $this->addFlash('form_input', $input);
+
+        return $this->redirectToRoute('elfirma_page', $routeParams);
     }
 }

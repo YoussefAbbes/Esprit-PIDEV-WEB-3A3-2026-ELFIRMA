@@ -153,7 +153,9 @@ final class LivestockRepository extends ServiceEntityRepository
         return $this->connection()->fetchFirstColumn(
             "SELECT DISTINCT etat_elevage
              FROM elevage
-             WHERE etat_elevage IS NOT NULL AND etat_elevage <> ''
+             WHERE etat_elevage IS NOT NULL
+               AND etat_elevage <> ''
+               AND LOWER(TRIM(etat_elevage)) NOT IN ('under treatment', 'en traitement')
              ORDER BY etat_elevage ASC"
         );
     }
