@@ -62,20 +62,20 @@
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                             <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                                <button onclick="updateQuantity({{ item.produit.id }}, {{ item.quantite - 1 }})" style="background: #f3f4f6; border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                <button onclick="updateQuantity({{ item.produit.idProduit }}, {{ item.quantite - 1 }})" style="background: #f3f4f6; border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                                     <span class="material-symbols-outlined" style="font-size: 18px;">remove</span>
                                                 </button>
-                                                <span id="qty-{{ item.produit.id }}" style="font-size: 18px; font-weight: 700; min-width: 30px; text-align: center;">{{ item.quantite }}</span>
-                                                <button onclick="updateQuantity({{ item.produit.id }}, {{ item.quantite + 1 }})" style="background: #f3f4f6; border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                <span id="qty-{{ item.produit.idProduit }}" style="font-size: 18px; font-weight: 700; min-width: 30px; text-align: center;">{{ item.quantite }}</span>
+                                                <button onclick="updateQuantity({{ item.produit.idProduit }}, {{ item.quantite + 1 }})" style="background: #f3f4f6; border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                                     <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
                                                 </button>
                                             </div>
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: right; vertical-align: middle;">
-                                            <span id="subtotal-{{ item.produit.id }}" style="font-size: 20px; font-weight: 800; color: #16a34a;">{{ item.subtotal }} DT</span>
+                                            <span id="subtotal-{{ item.produit.idProduit }}" style="font-size: 20px; font-weight: 800; color: #16a34a;">{{ item.subtotal }} DT</span>
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
-                                            <button onclick="removeFromCart({{ item.produit.id }})" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                                            <button onclick="removeFromCart({{ item.produit.idProduit }})" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
                                                 <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
                                             </button>
                                         </td>
