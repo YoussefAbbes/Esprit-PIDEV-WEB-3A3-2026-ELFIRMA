@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=Open_Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f5f5dc",
+                    "outline-variant": "#c3c9b9",
+                    "surface-container-highest": "#e4e4cc",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#a8d389",
+                    "on-surface": "#1b1d0e",
+                    "primary-fixed-dim": "#a8d389",
+                    "surface-container-high": "#eaead1",
+                    "on-primary-fixed-variant": "#2c4f15",
+                    "on-secondary-container": "#753502",
+                    "outline": "#73796c",
+                    "inverse-surface": "#303221",
+                    "on-secondary-fixed": "#321200",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#43682b",
+                    "on-surface-variant": "#43493d",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1b1d0e",
+                    "background": "#fbfbe2",
+                    "inverse-on-surface": "#f2f2d9",
+                    "surface-bright": "#fbfbe2",
+                    "secondary-fixed-dim": "#ffb68c",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#cc83af",
+                    "on-secondary-fixed-variant": "#753401",
+                    "tertiary-fixed": "#ffd8ec",
+                    "on-tertiary-fixed": "#39042c",
+                    "surface-container": "#efefd7",
+                    "tertiary-container": "#541c43",
+                    "surface-variant": "#e4e4cc",
+                    "surface": "#fbfbe2",
+                    "on-primary-container": "#7ca560",
+                    "on-primary-fixed": "#0a2100",
+                    "secondary-fixed": "#ffdbc9",
+                    "tertiary-fixed-dim": "#fdafde",
+                    "primary-fixed": "#c3efa3",
+                    "tertiary": "#3a052d",
+                    "secondary": "#934b19",
+                    "primary-container": "#173901",
+                    "surface-dim": "#dbdcc3",
+                    "secondary-container": "#fc9f66",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#0a2200",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#6d3259"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Open_Sans', sans-serif; background-color: #fbfbe2; }
+        h1, h2, h3, .headline { font-family: 'Inter', sans-serif; }
+        .glass-nav { backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="text-on-surface antialiased">
+<!-- SideNavBar Shell -->
+<aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] dark:bg-[#173901] py-8 pr-4 z-50">
+<div class="px-8">
+<h1 class="text-3xl font-black text-[#0a2200] dark:text-[#fbfbe2] mb-8 tracking-tighter">Elfirma</h1>
+<p class="text-[#0a2200] dark:text-[#fbfbe2] font-semibold opacity-60 -mt-6 mb-8">Gestion Agricole</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">dashboard</span>
+<span class="font-semibold">Tableau de Bord</span>
+</a>
+<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">group</span>
+<span class="font-semibold">Utilisateurs</span>
+</a>
+<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">agriculture</span>
+<span class="font-semibold">Parcelles &amp; Cultures</span>
+</a>
+<a class="flex items-center px-8 py-3 bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg opacity-100 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">pets</span>
+<span class="font-semibold">Animaux &amp; Élevages</span>
+</a>
+<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">shopping_basket</span>
+<span class="font-semibold">Produits &amp; Commandes</span>
+</a>
+<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">handyman</span>
+<span class="font-semibold">Équipements &amp; Maintenance</span>
+</a>
+<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">contract</span>
+<span class="font-semibold">Fournisseurs &amp; Contrats</span>
+</a>
+<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined mr-4">report_problem</span>
+<span class="font-semibold">Réclamations</span>
+</a>
+</nav>
+<div class="px-8 mt-auto space-y-4">
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-full font-bold shadow-lg hover:opacity-90 transition-opacity">Nouvelle Saison</button>
+<div class="pt-4 space-y-2">
+<a class="flex items-center text-[#43493d] dark:text-[#c3c9b9] hover:text-primary transition-colors text-sm font-semibold" href="#">
+<span class="material-symbols-outlined mr-2 text-xl">help</span> Aide
+                </a>
+<a class="flex items-center text-[#43493d] dark:text-[#c3c9b9] hover:text-primary transition-colors text-sm font-semibold" href="#">
+<span class="material-symbols-outlined mr-2 text-xl">logout</span> Déconnexion
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-72 min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 bg-[#fbfbe2]/70 dark:bg-[#0a2200]/70 backdrop-blur-xl flex justify-between items-center w-full px-8 py-6">
+<div class="flex items-center gap-6">
+<div class="headline text-2xl font-black text-[#0a2200] dark:text-[#fbfbe2] tracking-tighter">Élevages</div>
+<div class="hidden lg:flex items-center bg-surface-container-low px-4 py-2 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Rechercher un animal ou une race..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-[#f5f5dc]/50 transition-colors rounded-full relative">
+<span class="material-symbols-outlined text-primary text-2xl">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-[#f5f5dc]/50 transition-colors rounded-full">
+<span class="material-symbols-outlined text-primary text-2xl">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-primary-container overflow-hidden">
+<img alt="Admin" class="w-full h-full object-cover" data-alt="portrait of a Tunisian agricultural administrator in professional attire with soft natural lighting and warm tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALZPo02g8smlUusOxZcNjNHZM71p1W4ZhFi0WhQdCTeB2nOMBg2RDAdVeEjZgs-gfDwp2zklyRVQq4wspTXm3yVPcbbZDU7vXZ3Whfag0h3wF_-3rz_F7arIbJlciNC4u9t-Wqv2wKxz7c4_crbNe9HUeu-EaYEofMYskbj4oV9PGKT3vvtayznxQcnAaLOKmuSRMgsxcdE1hvJMTgFzSPwuAwgQuanbyb4TlhsKqByiSYAxBDMY97aiA801fy-57JX3qRAkwkjDxU"/>
+</div>
+</div>
+</header>
+<div class="px-8 py-8 space-y-10">
+<!-- Action Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h2 class="text-3xl font-black text-primary tracking-tight">Vue d'ensemble du cheptel</h2>
+<p class="text-on-surface-variant">Dernière mise à jour : Aujourd'hui, 09:42</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-xl active:scale-95 duration-150">
+<span class="material-symbols-outlined mr-2">add</span> Ajouter un animal
+                    </button>
+<button class="flex items-center px-6 py-3 bg-surface-container-highest text-primary rounded-full font-bold active:scale-95 duration-150">
+<span class="material-symbols-outlined mr-2">description</span> Rapport de santé
+                    </button>
+</div>
+</div>
+<!-- Inventory Summary Cards (Asymmetric Bento Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Ovins -->
+<div class="md:col-span-4 bg-surface-container-highest p-8 rounded-xl shadow-sm border-l-8 border-primary relative overflow-hidden group">
+<div class="relative z-10">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-4xl p-3 bg-white/50 rounded-2xl">pets</span>
+<span class="text-secondary font-bold text-sm bg-secondary-fixed px-3 py-1 rounded-full">+12%</span>
+</div>
+<h3 class="text-5xl font-black text-primary mt-6 tracking-tighter">482</h3>
+<p class="text-on-surface-variant font-bold uppercase tracking-widest text-xs mt-1">Ovins (Moutons)</p>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+<span class="material-symbols-outlined text-[12rem]">pets</span>
+</div>
+</div>
+<!-- Bovins -->
+<div class="md:col-span-5 bg-primary text-on-primary p-8 rounded-xl shadow-xl relative overflow-hidden group">
+<div class="relative z-10">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-on-primary text-4xl p-3 bg-primary_container rounded-2xl">pets</span>
+<span class="text-on-primary-container font-bold text-sm bg-primary-fixed px-3 py-1 rounded-full">Stable</span>
+</div>
+<h3 class="text-5xl font-black text-on-primary mt-6 tracking-tighter">156</h3>
+<p class="text-primary-fixed font-bold uppercase tracking-widest text-xs mt-1">Bovins (Vaches)</p>
+<div class="mt-4 flex gap-2">
+<div class="h-2 w-2/3 bg-primary_container rounded-full overflow-hidden">
+<div class="h-full bg-on-primary-container w-[85%]"></div>
+</div>
+<span class="text-xs font-semibold opacity-70">Soin optimal</span>
+</div>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+<span class="material-symbols-outlined text-[12rem]">pets</span>
+</div>
+</div>
+<!-- Caprins -->
+<div class="md:col-span-3 bg-surface-container-low p-8 rounded-xl shadow-sm border-r-8 border-secondary-container group">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-secondary text-4xl p-3 bg-white/50 rounded-2xl">gate</span>
+<span class="text-error font-bold text-sm bg-error-container px-3 py-1 rounded-full">-2%</span>
+</div>
+<h3 class="text-5xl font-black text-on-surface mt-6 tracking-tighter">84</h3>
+<p class="text-on-surface-variant font-bold uppercase tracking-widest text-xs mt-1">Caprins (Chèvres)</p>
+</div>
+</section>
+<!-- Main Interactive Section -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+<!-- Health Records Table -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-0 rounded-lg shadow-[0_40px_40px_-20px_rgba(27,29,14,0.06)] overflow-hidden">
+<div class="p-8 pb-4 flex justify-between items-end">
+<h3 class="text-2xl font-black text-primary">Registre de Santé</h3>
+<button class="text-secondary font-bold text-sm hover:underline">Voir tout le registre</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-none">
+<tr>
+<th class="px-8 py-4 font-black text-primary text-sm uppercase tracking-wider">ID Animal</th>
+<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider">Race</th>
+<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider text-center">Âge</th>
+<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider">Statut</th>
+<th class="px-8 py-4 font-black text-primary text-sm uppercase tracking-wider">Vaccination</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-8 py-5 font-bold text-primary">#OB-2024-042</td>
+<td class="px-6 py-5 text-on-surface-variant">Brebis Noire de Thibar</td>
+<td class="px-6 py-5 text-center text-on-surface-variant">2.4 ans</td>
+<td class="px-6 py-5">
+<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Sain</span>
+</td>
+<td class="px-8 py-5 text-on-surface-variant text-sm">12/05/2026</td>
+</tr>
+<tr class="bg-surface-container-high/30 hover:bg-surface-container-low transition-colors cursor-pointer border-l-4 border-secondary">
+<td class="px-8 py-5 font-bold text-primary">#BV-2024-009</td>
+<td class="px-6 py-5 text-on-surface-variant">Holstein-Friesian</td>
+<td class="px-6 py-5 text-center text-on-surface-variant">4.1 ans</td>
+<td class="px-6 py-5">
+<span class="px-4 py-1.5 rounded-full bg-secondary-container/20 text-secondary text-xs font-black uppercase">Traitement</span>
+</td>
+<td class="px-8 py-5 text-on-surface-variant text-sm font-bold text-error">En retard</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-8 py-5 font-bold text-primary">#CP-2024-112</td>
+<td class="px-6 py-5 text-on-surface-variant">Chèvre de Béjaïa</td>
+<td class="px-6 py-5 text-center text-on-surface-variant">1.8 ans</td>
+<td class="px-6 py-5">
+<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Sain</span>
+</td>
+<td class="px-8 py-5 text-on-surface-variant text-sm">28/05/2026</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-8 py-5 font-bold text-primary">#OB-2024-055</td>
+<td class="px-6 py-5 text-on-surface-variant">Brebis Noire de Thibar</td>
+<td class="px-6 py-5 text-center text-on-surface-variant">3.0 ans</td>
+<td class="px-6 py-5">
+<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Sain</span>
+</td>
+<td class="px-8 py-5 text-on-surface-variant text-sm">15/06/2026</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Detail Panel -->
+<div class="bg-surface-container-highest rounded-lg p-8 space-y-8 sticky top-24">
+<div class="flex items-center gap-4 border-b border-outline-variant/30 pb-6">
+<div class="w-16 h-16 rounded-2xl bg-white overflow-hidden shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">pets</span>
+</div>
+<div>
+<h4 class="text-xl font-black text-primary">#OB-2024-042</h4>
+<p class="text-sm font-bold text-secondary">Brebis Noire de Thibar</p>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Suivi du Poids (kg)</p>
+<!-- Visualizing weight tracking graph with an SVG -->
+<div class="h-32 w-full bg-white/40 rounded-xl p-2 flex items-end justify-between">
+<div class="w-full h-full relative">
+<svg class="w-full h-full preserve-aspect-ratio-none" viewbox="0 0 100 40">
+<path d="M0 35 Q 25 32, 50 25 T 100 10" fill="none" stroke="#934b19" stroke-width="2.5"></path>
+<circle cx="0" cy="35" fill="#934b19" r="2"></circle>
+<circle cx="50" cy="25" fill="#934b19" r="2"></circle>
+<circle cx="100" cy="10" fill="#0a2200" r="3"></circle>
+</svg>
+<div class="absolute top-0 right-0 font-black text-primary text-lg">74.2 kg</div>
+</div>
+</div>
+</div>
+<div>
+<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Régime Alimentaire</p>
+<div class="bg-white/40 p-4 rounded-xl space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-semibold">Fourrage sec</span>
+<span class="font-black text-primary">2.5 kg/j</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="font-semibold">Concentré protéiné</span>
+<span class="font-black text-primary">400g/j</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="font-semibold">Complément Minéral</span>
+<span class="font-black text-primary">Libre</span>
+</div>
+</div>
+</div>
+<div>
+<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Historique Médical</p>
+<ul class="space-y-3">
+<li class="flex gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5"></span>
+<div>
+<p class="text-sm font-black">Vaccination Annuelle</p>
+<p class="text-xs text-on-surface-variant italic">Effectuée le 12/05/2026</p>
+</div>
+</li>
+<li class="flex gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5"></span>
+<div>
+<p class="text-sm font-black">Contrôle Parasitaire</p>
+<p class="text-xs text-on-surface-variant italic">Effectué le 02/02/2026</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<button class="w-full py-4 border-2 border-primary text-primary font-black rounded-xl hover:bg-primary hover:text-on-primary transition-all">Générer Carnet Complet</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="md:ml-72 bg-[#fbfbe2] dark:bg-[#0a2200] w-full py-6 mt-auto flex justify-between items-center px-12 border-t border-[#c3c9b9]/15">
+<p class="font-['Open_Sans'] text-sm tracking-wide text-[#934b19]">Elfirma © 2026</p>
+<div class="flex gap-8">
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Support Technique</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Mentions Légales</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Confidentialité</a>
+</div>
+</footer>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body></html>
+

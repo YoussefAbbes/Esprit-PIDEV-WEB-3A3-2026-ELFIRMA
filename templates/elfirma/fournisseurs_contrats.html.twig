@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+<title>Elfirma - Fournisseurs &amp; Contrats</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Open_Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f5f5dc",
+                    "outline-variant": "#c3c9b9",
+                    "surface-container-highest": "#e4e4cc",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#a8d389",
+                    "on-surface": "#1b1d0e",
+                    "primary-fixed-dim": "#a8d389",
+                    "surface-container-high": "#eaead1",
+                    "on-primary-fixed-variant": "#2c4f15",
+                    "on-secondary-container": "#753502",
+                    "outline": "#73796c",
+                    "inverse-surface": "#303221",
+                    "on-secondary-fixed": "#321200",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#43682b",
+                    "on-surface-variant": "#43493d",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1b1d0e",
+                    "background": "#fbfbe2",
+                    "inverse-on-surface": "#f2f2d9",
+                    "surface-bright": "#fbfbe2",
+                    "secondary-fixed-dim": "#ffb68c",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#cc83af",
+                    "on-secondary-fixed-variant": "#753401",
+                    "tertiary-fixed": "#ffd8ec",
+                    "on-tertiary-fixed": "#39042c",
+                    "surface-container": "#efefd7",
+                    "tertiary-container": "#541c43",
+                    "surface-variant": "#e4e4cc",
+                    "surface": "#fbfbe2",
+                    "on-primary-container": "#7ca560",
+                    "on-primary-fixed": "#0a2100",
+                    "secondary-fixed": "#ffdbc9",
+                    "tertiary-fixed-dim": "#fdafde",
+                    "primary-fixed": "#c3efa3",
+                    "tertiary": "#3a052d",
+                    "secondary": "#934b19",
+                    "primary-container": "#173901",
+                    "surface-dim": "#dbdcc3",
+                    "secondary-container": "#fc9f66",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#0a2200",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#6d3259"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Open Sans"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Open Sans', sans-serif;
+      }
+      h1, h2, h3, .headline {
+        font-family: 'Inter', sans-serif;
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="h-screen w-72 fixed left-0 top-0 bg-surface-container-low text-primary flex flex-col py-8 pr-4 font-headline font-semibold z-40">
+<div class="px-8 mb-8">
+<h1 class="text-3xl font-black tracking-tighter text-primary">Elfirma</h1>
+<p class="text-xs font-label text-on-surface-variant uppercase tracking-widest opacity-70">Gestion Agricole</p>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Tableau de Bord</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Utilisateurs</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+<span class="material-symbols-outlined">agriculture</span>
+<span>Parcelles &amp; Cultures</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+<span class="material-symbols-outlined">pets</span>
+<span>Animaux &amp; Élevages</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+<span class="material-symbols-outlined">shopping_basket</span>
+<span>Produits &amp; Commandes</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+<span class="material-symbols-outlined">handyman</span>
+<span>Équipements &amp; Maintenance</span>
+</a>
+<!-- Active State: Fournisseurs & Contrats -->
+<a class="flex items-center gap-4 px-8 py-4 bg-primary text-surface rounded-r-full shadow-lg opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined">contract</span>
+<span>Fournisseurs &amp; Contrats</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+<span class="material-symbols-outlined">report_problem</span>
+<span>Réclamations</span>
+</a>
+</nav>
+<div class="px-8 mt-auto pt-8 flex flex-col gap-2">
+<button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">add</span>
+<span>Nouvelle Saison</span>
+</button>
+<div class="pt-6 border-t border-outline-variant/20 flex flex-col gap-1">
+<a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-sm">Aide</span>
+</a>
+<a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-error transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm">Déconnexion</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-72 flex-grow min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- TopNavBar (Authority: JSON) -->
+<header class="sticky top-0 z-30 bg-surface/70 backdrop-blur-xl flex justify-between items-center w-full px-12 py-6 font-headline font-bold tracking-tight">
+<div class="flex items-center gap-6 flex-grow">
+<div class="relative w-96">
+<input class="w-full bg-surface-container-low border-none rounded-full py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Rechercher un contrat ou fournisseur..." type="text"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-3 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+<button class="p-3 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-primary-container overflow-hidden">
+<img alt="Profil de l'administrateur" data-alt="portrait of a professional man in a beige linen shirt smiling in a bright naturally lit office space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATRPrH2ofAa1hmXCfNXooPqxZvn_uLQCZfMKfy9SjEItdcLRuf5M3lG9mfplqGk0IE61ON1TvFJT9xnMKCcRD9sEnE-qiMUDfajGCso6fnT6s8bVYqAAc3RPb8zVxVEGm86MAjM3NqmgTPFcZJtuOiDUL9Pl3Y-JCdwPaAEQoJCcqnEpw4l1EsB2ElUEPM-XJsbg_IHrqPMDrvbmFBqmzpjjDWGCR86rlu9W4TymkMCZ9-oe8cABzpZ5q6TfdJXJpksbWEVKXmv3ta"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="px-12 py-8 space-y-12">
+<!-- Hero Header & Actions -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-5xl font-black text-primary tracking-tighter mb-2">Fournisseurs &amp; Contrats</h2>
+<p class="text-on-surface-variant max-w-xl text-lg">Gérez vos relations commerciales et le suivi des engagements contractuels pour la saison 2026.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-8 py-4 rounded-full bg-surface-container-highest text-primary font-bold hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">person_add</span>
+                        Ajouter un fournisseur
+                    </button>
+<button class="px-8 py-4 rounded-full bg-primary text-surface font-bold shadow-xl hover:opacity-90 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+                        Nouveau contrat
+                    </button>
+</div>
+</div>
+<!-- Bento Grid: Supplier List -->
+<section>
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-2xl font-bold text-primary flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">local_shipping</span>
+                        Partenaires Stratégiques
+                    </h3>
+<button class="text-secondary font-bold text-sm uppercase tracking-widest hover:underline transition-all">Tout voir</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Supplier Card 1 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border-none flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500">
+<div class="space-y-4">
+<div class="flex justify-between items-start">
+<div class="bg-surface-container-low w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-surface">
+<span class="material-symbols-outlined text-3xl text-primary">factory</span>
+</div>
+<span class="bg-secondary-fixed px-4 py-1 rounded-full text-xs font-bold text-on-secondary-fixed">Emballage</span>
+</div>
+<div>
+<h4 class="text-xl font-bold text-primary group-hover:text-surface">SOTUVER</h4>
+<p class="text-on-surface-variant group-hover:text-surface/70 text-sm">Tunis, Zone Industrielle Megrine</p>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/10 group-hover:border-surface/20">
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant group-hover:text-surface/80">Contrats actifs</span>
+<span class="font-bold text-primary group-hover:text-surface">04</span>
+</div>
+<div class="mt-4 flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-dim flex items-center justify-center text-[10px] font-bold">JD</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-primary-container flex items-center justify-center text-[10px] font-bold text-surface">SA</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-secondary-container flex items-center justify-center text-[10px] font-bold text-surface">+2</div>
+</div>
+</div>
+</div>
+<!-- Supplier Card 2 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500">
+<div class="space-y-4">
+<div class="flex justify-between items-start">
+<div class="bg-surface-container-low w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-surface">
+<span class="material-symbols-outlined text-3xl text-primary">agriculture</span>
+</div>
+<span class="bg-primary-fixed px-4 py-1 rounded-full text-xs font-bold text-on-primary-fixed">Fertilisants</span>
+</div>
+<div>
+<h4 class="text-xl font-bold text-primary group-hover:text-surface">Comptoir Agricole de Béja</h4>
+<p class="text-on-surface-variant group-hover:text-surface/70 text-sm">Béja, Route de Mateur</p>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/10 group-hover:border-surface/20">
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant group-hover:text-surface/80">Contrats actifs</span>
+<span class="font-bold text-primary group-hover:text-surface">02</span>
+</div>
+<div class="mt-4 text-on-surface-variant group-hover:text-surface/80 text-xs flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">call</span>
+                                +216 78 456 123
+                            </div>
+</div>
+</div>
+<!-- Supplier Card 3 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500">
+<div class="space-y-4">
+<div class="flex justify-between items-start">
+<div class="bg-surface-container-low w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-surface">
+<span class="material-symbols-outlined text-3xl text-primary">construction</span>
+</div>
+<span class="bg-tertiary-fixed px-4 py-1 rounded-full text-xs font-bold text-on-tertiary-fixed">Matériel</span>
+</div>
+<div>
+<h4 class="text-xl font-bold text-primary group-hover:text-surface">Agri-Maintenance S.A.</h4>
+<p class="text-on-surface-variant group-hover:text-surface/70 text-sm">Sousse, Sidi Abdelhamid</p>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/10 group-hover:border-surface/20">
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant group-hover:text-surface/80">Contrats actifs</span>
+<span class="font-bold text-primary group-hover:text-surface">01</span>
+</div>
+<div class="mt-4 text-on-surface-variant group-hover:text-surface/80 text-xs flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">mail</span>
+                                contact@agrimaintenance.tn
+                            </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Contract Tracking Table Section -->
+<section class="bg-surface-container-low rounded-xl p-8 space-y-8">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold text-primary flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">description</span>
+                        Suivi des Engagements
+                    </h3>
+<div class="flex items-center gap-2 bg-surface p-1 rounded-full shadow-inner">
+<button class="px-6 py-2 rounded-full bg-primary text-surface text-sm font-bold transition-all">Tous</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant text-sm font-semibold hover:bg-surface-variant transition-colors">Actifs</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant text-sm font-semibold hover:bg-surface-variant transition-colors">Expirés</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-3">
+<thead>
+<tr class="text-on-surface-variant text-xs uppercase tracking-widest font-bold">
+<th class="px-6 py-4">Nom du Contrat / ID</th>
+<th class="px-6 py-4">Fournisseur</th>
+<th class="px-6 py-4">Validité</th>
+<th class="px-6 py-4">Valeur (DT)</th>
+<th class="px-6 py-4">Statut</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody>
+<!-- Table Row 1 -->
+<tr class="bg-surface-container-lowest hover:bg-surface transition-colors">
+<td class="px-6 py-5 rounded-l-2xl border-none">
+<div class="flex flex-col">
+<span class="font-bold text-primary">Maintenance Tracteurs 2026</span>
+<span class="text-xs text-on-surface-variant">#CNT-7782-TN</span>
+</div>
+</td>
+<td class="px-6 py-5 font-semibold text-on-surface">Agri-Maintenance S.A.</td>
+<td class="px-6 py-5">
+<div class="flex flex-col text-sm">
+<span>Du 01/01/2026</span>
+<span class="text-on-surface-variant text-xs">Au 31/12/2026</span>
+</div>
+</td>
+<td class="px-6 py-5 font-black text-primary">45,500 DT</td>
+<td class="px-6 py-5">
+<span class="px-4 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed text-xs font-bold flex items-center gap-2 w-fit">
+<span class="w-2 h-2 rounded-full bg-on-primary-fixed animate-pulse"></span>
+                                        Actif
+                                    </span>
+</td>
+<td class="px-6 py-5 rounded-r-2xl text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 2 -->
+<tr class="bg-surface-container-lowest hover:bg-surface transition-colors">
+<td class="px-6 py-5 rounded-l-2xl border-none">
+<div class="flex flex-col">
+<span class="font-bold text-primary">Achat Engrais Azotés</span>
+<span class="text-xs text-on-surface-variant">#CNT-9901-BEJ</span>
+</div>
+</td>
+<td class="px-6 py-5 font-semibold text-on-surface">Comptoir Agricole de Béja</td>
+<td class="px-6 py-5">
+<div class="flex flex-col text-sm">
+<span>Du 15/02/2026</span>
+<span class="text-on-surface-variant text-xs">Au 15/08/2026</span>
+</div>
+</td>
+<td class="px-6 py-5 font-black text-primary">128,000 DT</td>
+<td class="px-6 py-5">
+<span class="px-4 py-1.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-xs font-bold flex items-center gap-2 w-fit">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+                                        En négociation
+                                    </span>
+</td>
+<td class="px-6 py-5 rounded-r-2xl text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 3 -->
+<tr class="bg-surface-container-lowest hover:bg-surface transition-colors opacity-70">
+<td class="px-6 py-5 rounded-l-2xl border-none">
+<div class="flex flex-col">
+<span class="font-bold text-primary">Fourniture Bouteilles Huile</span>
+<span class="text-xs text-on-surface-variant">#CNT-4452-SOT</span>
+</div>
+</td>
+<td class="px-6 py-5 font-semibold text-on-surface">SOTUVER</td>
+<td class="px-6 py-5">
+<div class="flex flex-col text-sm">
+<span>Du 01/01/2025</span>
+<span class="text-on-surface-variant text-xs">Au 31/12/2025</span>
+</div>
+</td>
+<td class="px-6 py-5 font-black text-primary">82,300 DT</td>
+<td class="px-6 py-5">
+<span class="px-4 py-1.5 rounded-full bg-surface-variant text-on-surface-variant text-xs font-bold flex items-center gap-2 w-fit">
+<span class="material-symbols-outlined text-[14px]">history</span>
+                                        Expiré
+                                    </span>
+</td>
+<td class="px-6 py-5 rounded-r-2xl text-right">
+<button class="p-2 hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Bottom Insights & Visual Content -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-20">
+<div class="relative h-64 rounded-xl overflow-hidden group">
+<img alt="Terres agricoles tunisiennes" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="vibrant landscape of tunisian olive groves and green fields under a bright mediterranean sky at sunrise" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNIXx8Ci_FB1HUA2LF2kTZfoW2nyGerTI2SXkopJdzKmcL-TUXy3HQmi9OXApwY4edX6-TBsKtkmeGp6OC376t1E_rtxlCNz2Ztrhz7EE1rsJinhN_AvwwQK1XIdLNi-QtRM1LCO4L0ZOK7MXJB57Y9mMO3kZDogoI742TLQh1UwrH4g7butGyrPFPlvXvT4mrriISZXF_bVPgwSQ4geCv5BYTPwmDHw00Wfl7fHzAfeSsh0cA_0yvl-1VJIQQLwCN-dmt9iXUQ-Ry"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex items-end p-8">
+<div>
+<span class="text-surface/70 text-xs font-bold uppercase tracking-widest">Aperçu Localisation</span>
+<h4 class="text-surface text-2xl font-bold">Zone de Béja &amp; Mateur</h4>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-high rounded-xl p-8 flex flex-col justify-center gap-4">
+<h4 class="text-xl font-bold text-primary">Répartition Budgétaire des Contrats</h4>
+<div class="w-full h-4 bg-surface rounded-full overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 45%;"></div>
+<div class="h-full bg-secondary" style="width: 25%;"></div>
+<div class="h-full bg-primary-container" style="width: 30%;"></div>
+</div>
+<div class="flex flex-wrap gap-4 mt-2">
+<div class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="w-3 h-3 rounded-full bg-primary"></span> Fertilisants (45%)
+                        </div>
+<div class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="w-3 h-3 rounded-full bg-secondary"></span> Emballage (25%)
+                        </div>
+<div class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span> Maintenance (30%)
+                        </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer (Authority: JSON) -->
+<footer class="w-full py-6 mt-auto flex justify-between items-center px-12 border-t border-outline-variant/15 bg-surface text-primary font-body text-sm tracking-wide">
+<span class="text-on-surface-variant">Elfirma © 2026</span>
+<div class="flex gap-8">
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Support Technique</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Mentions Légales</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Confidentialité</a>
+</div>
+</footer>
+</main>
+<!-- Contextual FAB (Logic Check: Primary screen - show) -->
+<button class="fixed bottom-12 right-12 w-16 h-16 rounded-full bg-primary text-surface shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-transform z-50">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body></html>
+
