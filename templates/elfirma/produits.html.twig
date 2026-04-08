@@ -91,6 +91,8 @@
         {% set produitCreateOld = app.flashes('form_old_produit_create')|first|default({}) %}
         {% set produitEditErrors = app.flashes('form_errors_produit_edit')|first|default({}) %}
         {% set produitEditOld = app.flashes('form_old_produit_edit')|first|default({}) %}
+        {% set typeOptions = ['Frais', 'Transformé', 'Biologique', 'Séché', 'Conditionné'] %}
+        {% set qualiteOptions = ['Premium', 'Standard', 'Économique', 'Bio', 'Certifié'] %}
 
         <!-- Flash Messages -->
         {% for message in app.flashes('success') %}
@@ -433,10 +435,13 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Type *</label>
-                        <input type="text" name="type" 
-                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
-                               value="{{ produitCreateOld.type|default('') }}"
-                               placeholder="Ex: Biologique, Premium">
+                        <select name="type" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                            <option value="">Sélectionner un type</option>
+                            {% for typeOption in typeOptions %}
+                                <option value="{{ typeOption }}" {% if produitCreateOld.type|default('') == typeOption %}selected{% endif %}>{{ typeOption }}</option>
+                            {% endfor %}
+                        </select>
                         {% if produitCreateErrors.type is defined %}
                             <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.type|first }}</p>
                         {% endif %}
@@ -476,10 +481,13 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Qualité</label>
-                        <input type="text" name="qualite" 
-                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
-                               value="{{ produitCreateOld.qualite|default('') }}"
-                               placeholder="Ex: Grade A">
+                        <select name="qualite" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                            <option value="">Sélectionner une qualité</option>
+                            {% for qualiteOption in qualiteOptions %}
+                                <option value="{{ qualiteOption }}" {% if produitCreateOld.qualite|default('') == qualiteOption %}selected{% endif %}>{{ qualiteOption }}</option>
+                            {% endfor %}
+                        </select>
                         {% if produitCreateErrors.qualite is defined %}
                             <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.qualite|first }}</p>
                         {% endif %}
@@ -574,8 +582,13 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Type *</label>
-                        <input type="text" id="editType" name="type" 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        <select id="editType" name="type" 
+                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                            <option value="">Sélectionner un type</option>
+                            {% for typeOption in typeOptions %}
+                                <option value="{{ typeOption }}">{{ typeOption }}</option>
+                            {% endfor %}
+                        </select>
                         {% if produitEditErrors.type is defined %}
                             <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.type|first }}</p>
                         {% endif %}
@@ -611,8 +624,13 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Qualité</label>
-                        <input type="text" id="editQualite" name="qualite" 
-                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        <select id="editQualite" name="qualite" 
+                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                            <option value="">Sélectionner une qualité</option>
+                            {% for qualiteOption in qualiteOptions %}
+                                <option value="{{ qualiteOption }}">{{ qualiteOption }}</option>
+                            {% endfor %}
+                        </select>
                         {% if produitEditErrors.qualite is defined %}
                             <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.qualite|first }}</p>
                         {% endif %}
