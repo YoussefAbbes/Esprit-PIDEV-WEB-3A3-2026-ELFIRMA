@@ -1,0 +1,96 @@
+{% extends 'auth_base.html.twig' %}
+
+{% block title %}Sign In - EL FIRMA{% endblock %}
+
+{% block content %}
+  <!-- Left Side -->
+  <div class="auth-brand">
+    <div class="auth-logo-section">
+      <h2>Welcome Back</h2>
+      <p>Manage your agricultural operations efficiently</p>
+    </div>
+
+    <div class="auth-features">
+      <div class="auth-feature">
+        <i class="bi bi-check-circle"></i>
+        <span>Organize seasonal agricultural work</span>
+      </div>
+      <div class="auth-feature">
+        <i class="bi bi-check-circle"></i>
+        <span>Track production from plot to harvest</span>
+      </div>
+      <div class="auth-feature">
+        <i class="bi bi-check-circle"></i>
+        <span>Sustainable farming practices</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side -->
+  <div class="auth-form-section">
+    <div class="auth-form-header">
+      <h2>Sign In</h2>
+      <p>Access your account</p>
+    </div>
+
+    <form method="POST" action="{{ path('app_login') }}" class="auth-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <div class="form-check">
+        <input type="checkbox" id="remember" name="remember" class="form-check-input">
+        <label class="form-check-label" for="remember">
+          Remember me on this device
+        </label>
+      </div>
+
+      <button type="submit" class="btn-auth"><span>Sign In</span></button>
+    </form>
+
+    <div class="form-divider">
+      <span>New to EL FIRMA?</span>
+    </div>
+
+    <div class="auth-footer">
+      <p><a href="{{ path('app_signup') }}">Create a new account</a></p>
+    </div>
+  </div>
+
+<script>
+  // Smooth form focus animation
+  const inputs = document.querySelectorAll('.form-control');
+  inputs.forEach(input => {
+    input.addEventListener('focus', function() {
+      this.parentElement.style.transform = 'scale(1.01)';
+      this.parentElement.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    });
+    input.addEventListener('blur', function() {
+      this.parentElement.style.transform = 'scale(1)';
+    });
+  });
+
+  // Parallax effect on mouse move
+  const formSection = document.querySelector('.auth-form-section');
+  document.addEventListener('mousemove', function(e) {
+    const x = (window.innerWidth / 2 - e.clientX) / 100;
+    const y = (window.innerHeight / 2 - e.clientY) / 100;
+
+    if (formSection) {
+      formSection.style.transform = `perspective(1000px) rotateY(${x}deg) rotateX(${y}deg)`;
+    }
+  });
+
+  document.addEventListener('mouseleave', function() {
+    if (formSection) {
+      formSection.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg)';
+    }
+  });
+</script>
+{% endblock %}

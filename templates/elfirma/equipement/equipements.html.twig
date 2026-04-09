@@ -1,0 +1,1070 @@
+{% extends 'baseback.html.twig' %}
+
+{% block body %}
+
+<!-- Main Content -->
+<main class="flex-1 min-h-screen">
+<!-- HEADER -->
+<header class="sticky top-0 z-30 bg-[#fbfbe2]/70 backdrop-blur-xl flex justify-between items-center w-full px-12 py-6">
+    <h2 class="text-2xl font-black text-[#0a2200]">Equipment Management</h2>
+</header>
+
+<div class="p-12 space-y-12">
+
+<!-- FLASH MESSAGES -->
+{% if app.flashes('success') %}
+    {% for message in app.flashes('success') %}
+    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center gap-2">
+        <span class="material-symbols-outlined">check_circle</span>
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+{% if app.flashes('error') %}
+    {% for message in app.flashes('error') %}
+    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
+        <span class="material-symbols-outlined">error</span>
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Action Bar -->
+<section class="flex justify-between items-end gap-4">
+    <div>
+        <h3 class="text-4xl font-black text-primary">Parc d'Équipements</h3>
+        <p class="text-gray-600 mt-2"><strong id="totalCount">{{ equipements|length }}</strong></p>
+    </div>
+
+    <button onclick="openModal()" 
+        class="px-6 py-4 bg-secondary-fixed rounded-xl flex items-center gap-2 hover:opacity-90 transition">
+        <span class="material-symbols-outlined">add</span>
+        Ajouter un équipement
+    </button>
+
+    <button onclick="openMaintenanceModal()" 
+        class="px-6 py-4 bg-secondary-fixed rounded-xl flex items-center gap-2 hover:opacity-90 transition">
+        <span class="material-symbols-outlined">event</span>
+        Planifier une maintenance
+    </button>
+</section>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+
+    <div class="bg-white rounded-xl p-5 shadow">
+        <p class="text-gray-500 text-sm">Total équipements</p>
+        <h2 id="stat-total" class="text-2xl font-bold">0</h2>
+    </div>
+
+    <div class="bg-green-100 rounded-xl p-5 shadow">
+        <p>Disponibles</p>
+        <h2 id="stat-dispo" class="text-xl font-bold text-green-700">0</h2>
+    </div>
+
+    <div class="bg-yellow-100 rounded-xl p-5 shadow">
+        <p>Maintenance</p>
+        <h2 id="stat-maintenance" class="text-xl font-bold text-yellow-700">0</h2>
+    </div>
+
+    <div class="bg-red-100 rounded-xl p-5 shadow">
+        <p>Panne</p>
+        <h2 id="stat-panne" class="text-xl font-bold text-red-700">0</h2>
+    </div>
+
+</div>
+
+<!-- SEARCH & FILTER BAR -->
+<div class="flex flex-wrap items-center gap-3 mb-6">
+
+    <!-- SEARCH -->
+    <div class="relative flex-1 min-w-[220px]">
+        <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">
+            search
+        </span>
+
+        <input type="text" id="searchInput"
+               placeholder="Rechercher équipement..."
+               class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+                      focus:ring-2 focus:ring-blue-500 outline-none transition">
+    </div>
+
+    <!-- FILTRE ÉTAT -->
+    <select id="filterEtat"
+            class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+                   focus:ring-2 focus:ring-blue-500 transition">
+
+        <option value="">État</option>
+        <option value="disponible">✅ Disponible</option>
+        <option value="maintenance">🔧 Maintenance</option>
+        <option value="panne">❌ Panne</option>
+
+    </select>
+
+
+
+    <!-- RESET -->
+    <button onclick="resetFilters()"
+            class="p-2 rounded-lg hover:bg-gray-200 transition">
+
+        <span class="material-symbols-outlined text-gray-600 text-[20px]">
+            refresh
+        </span>
+
+    </button>
+
+    <!-- INFO -->
+    <div id="filterInfo"
+         class="hidden items-center gap-1 text-xs text-gray-500">
+
+        <span class="material-symbols-outlined text-yellow-500 text-[18px]">
+            info
+        </span>
+
+        <span id="filterInfoText"></span>
+
+    </div>
+
+</div>
+
+<!-- TABLE -->
+<div class="bg-surface-container-low rounded-xl p-8">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+
+<thead class="border-b-2 border-gray-300">
+<tr>
+    <th class="pb-3 cursor-pointer hover:text-blue-600">Nom</th>
+    <th class="pb-3">Type</th>
+    <th class="pb-3 cursor-pointer hover:text-blue-600">Date Achat</th>
+    <th class="pb-3">État</th>
+    <th class="pb-3 cursor-pointer hover:text-blue-600">Coût</th>
+    <th class="pb-3">Description</th>
+    <th class="pb-3">Actions</th>
+</tr>
+</thead>
+
+<tbody id="equipementTableBody">
+
+{% for eq in equipements %}
+<tr class="hover:bg-white/30 border-b border-gray-200 equipement-row" 
+    data-nom="{{ eq.nomEq|lower }}" 
+    data-type="{{ eq.typeEq|lower }}" 
+    data-date="{{ eq.dateAchat|date('Y-m-d') }}" 
+    data-etat="{{ eq.etat.value }}" 
+    data-cout="{{ eq.coutAchat }}" 
+    data-desc="{{ eq.descriptionEq|lower }}">
+
+
+    <!-- NOM -->
+    <td class="py-3">
+        <span id="text-nom-{{ eq.idEq }}" class="font-medium">{{ eq.nomEq }}</span>
+        <input id="input-nom-{{ eq.idEq }}" value="{{ eq.nomEq }}"
+               class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500" 
+               minlength="3" maxlength="100">
+        <small id="error-nom-{{ eq.idEq }}" class="text-red-600 hidden"></small>
+    </td>
+
+    <!-- TYPE -->
+    <td class="py-3">
+        <span id="text-type-{{ eq.idEq }}">{{ eq.typeEq }}</span>
+        <input id="input-type-{{ eq.idEq }}" value="{{ eq.typeEq }}"
+               class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500"
+               minlength="3" maxlength="100">
+        <small id="error-type-{{ eq.idEq }}" class="text-red-600 hidden"></small>
+    </td>
+
+    <!-- DATE -->
+    <td class="py-3">
+        <span id="text-date-{{ eq.idEq }}">
+            {{ eq.dateAchat ? eq.dateAchat|date('d/m/Y') : 'N/A' }}
+        </span>
+        <input type="date" id="input-date-{{ eq.idEq }}"
+               value="{{ eq.dateAchat ? eq.dateAchat|date('Y-m-d') : '' }}"
+               class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500">
+        <small id="error-date-{{ eq.idEq }}" class="text-red-600 hidden"></small>
+    </td>
+
+    <!-- ETAT -->
+    <td class="py-3">
+        <span id="text-etat-{{ eq.idEq }}" class="px-3 py-1 rounded text-sm font-medium
+            {% if eq.etat.value == 'disponible' %}bg-green-100 text-green-800
+            {% elseif eq.etat.value == 'maintenance' %}bg-yellow-100 text-yellow-800
+            {% else %}bg-red-100 text-red-800
+            {% endif %}">
+            {{ eq.etat.value|capitalize }}
+        </span>
+
+        <select id="input-etat-{{ eq.idEq }}" class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500">
+            <option value="disponible" {% if eq.etat.value == 'disponible' %}selected{% endif %}>Disponible</option>
+            <option value="maintenance" {% if eq.etat.value == 'maintenance' %}selected{% endif %}>Maintenance</option>
+            <option value="panne" {% if eq.etat.value == 'panne' %}selected{% endif %}>En panne</option>
+        </select>
+        <small id="error-etat-{{ eq.idEq }}" class="text-red-600 hidden"></small>
+    </td>
+
+    <!-- COUT -->
+    <td class="py-3 font-mono">
+        <span id="text-cout-{{ eq.idEq }}">{{ eq.coutAchat|number_format(2, ',', ' ') }}€</span>
+        <input type="number" step="0.01" id="input-cout-{{ eq.idEq }}"
+               value="{{ eq.coutAchat }}"
+               class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500" min="0">
+        <small id="error-cout-{{ eq.idEq }}" class="text-red-600 hidden"></small>
+    </td>
+
+    <!-- DESCRIPTION -->
+    <td class="py-3 max-w-xs">
+        <span id="text-desc-{{ eq.idEq }}" class="truncate block" title="{{ eq.descriptionEq }}">
+            {{ eq.descriptionEq }}
+        </span>
+        <textarea id="input-desc-{{ eq.idEq }}" maxlength="200"
+                  class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500" 
+                  rows="2" minlength="5">{{ eq.descriptionEq }}</textarea>
+        <small id="error-desc-{{ eq.idEq }}" class="text-red-600 hidden"></small>
+    </td>
+
+    <!-- ACTIONS -->
+    <td class="py-3 flex gap-2">
+        <button onclick="editRow({{ eq.idEq }})"
+                id="edit-{{ eq.idEq }}"
+                class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 rounded transition"
+                title="Modifier">
+            <span class="material-symbols-outlined">edit</span>
+        </button>
+
+        <button onclick="openDeleteModal({{ eq.idEq }})"
+                class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition"
+                title="Supprimer">
+            <span class="material-symbols-outlined">delete</span>
+        </button>
+
+        <a href="{{ path('maintenance_list', { equipement: eq.idEq }) }}"
+       class="text-yellow-500 hover:text-yellow-700 hover:bg-yellow-50 p-2 rounded transition"
+       title="Voir les maintenances">
+        <span class="material-symbols-outlined">build</span>
+    </a>
+
+        <button onclick="saveRow({{ eq.idEq }})"
+                id="save-{{ eq.idEq }}"
+                class="hidden text-green-600 hover:text-green-800 hover:bg-green-50 p-2 rounded transition"
+                title="Enregistrer">
+            <span class="material-symbols-outlined">check</span>
+        </button>
+    
+
+        <button onclick="cancelEdit({{ eq.idEq }})"
+                id="cancel-{{ eq.idEq }}"
+                class="hidden text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition"
+                title="Annuler">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </td>
+</tr>
+{% else %}
+<tr id="emptyRow">
+    <td colspan="9" class="text-center py-6 text-gray-500">
+        <span class="material-symbols-outlined text-4xl block mb-2">inbox</span>
+        Aucun équipement trouvé
+    </td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+</main>
+
+<!-- ================= NOTIFICATION TOAST ================= -->
+<div id="notificationToast" class="fixed bottom-6 right-6 px-6 py-4 rounded-lg shadow-xl hidden z-50 max-w-sm flex items-center gap-2 animate-fade-in">
+    <span class="material-symbols-outlined" id="toastIcon">check_circle</span>
+    <span id="notificationMessage">Opération réussie</span>
+</div>
+
+<!-- ================= MODAL AJOUTER ÉQUIPEMENT ================= -->
+<div id="equipementModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+<div class="bg-white rounded-xl p-8 w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
+
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <span class="material-symbols-outlined">add_circle</span>
+        Ajouter un équipement
+    </h2>
+    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+</div>
+
+{{ form_start(form, {
+    'action': path('app_equipement_new'),
+    'method': 'POST',
+    'attr': {
+        'novalidate': 'novalidate',
+        'id': 'equipementForm',
+        'class': 'space-y-4'
+    }
+}) }}
+
+<!-- NOM -->
+<div>
+    {{ form_label(form.nomEq, 'Nom de l\'équipement', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(form.nomEq, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (form.nomEq.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+            'placeholder': 'Ex: Forklift #1',
+            'minlength': '3',
+            'maxlength': '100'
+        }
+    }) }}
+    {% if form.nomEq.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+            <div>
+                {% for error in form.nomEq.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- TYPE -->
+<div>
+    {{ form_label(form.typeEq, 'Type', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(form.typeEq, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (form.typeEq.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+            'placeholder': 'Ex: Chariot élévateur',
+            'minlength': '3',
+            'maxlength': '100'
+        }
+    }) }}
+    {% if form.typeEq.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+            <div>
+                {% for error in form.typeEq.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- DATE ACHAT -->
+<div>
+    {{ form_label(form.dateAchat, 'Date d\'achat', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(form.dateAchat, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (form.dateAchat.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300')
+        }
+    }) }}
+    {% if form.dateAchat.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+            <div>
+                {% for error in form.dateAchat.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- ETAT -->
+<div>
+    {{ form_label(form.etat, 'État', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(form.etat, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (form.etat.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300')
+        }
+    }) }}
+    {% if form.etat.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+            <div>
+                {% for error in form.etat.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- COUT ACHAT -->
+<div>
+    {{ form_label(form.coutAchat, 'Coût d\'achat (€)', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(form.coutAchat, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (form.coutAchat.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+            'placeholder': '0.00',
+            'step': '0.01',
+            'min': '0'
+        }
+    }) }}
+    {% if form.coutAchat.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+            <div>
+                {% for error in form.coutAchat.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- DESCRIPTION -->
+<div>
+    {{ form_label(form.descriptionEq, 'Description', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(form.descriptionEq, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (form.descriptionEq.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+            'placeholder': 'Détails supplémentaires...',
+            'rows': '3',
+            'minlength': '5',
+            'maxlength': '200'
+        }
+    }) }}
+    {% if form.descriptionEq.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+            <div>
+                {% for error in form.descriptionEq.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- CSRF Token et autres champs cachés -->
+{{ form_rest(form) }}
+
+<div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+    <button type="submit"
+            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition flex items-center gap-2">
+        <span class="material-symbols-outlined">add</span>
+        Ajouter
+    </button>
+</div>
+
+{{ form_end(form) }}
+
+</div>
+</div>
+
+<!-- ================= MODAL SUPPRIMER ================= -->
+<div id="deleteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+<div class="bg-white rounded-xl p-6 w-full max-w-[400px] text-center">
+
+    <div class="flex justify-center mb-4">
+        <span class="material-symbols-outlined text-red-500 text-5xl">warning</span>
+    </div>
+
+    <h2 class="text-lg font-bold mb-2">Confirmer la suppression</h2>
+    <p class="text-gray-600 mb-6">
+        Êtes-vous sûr de vouloir supprimer cet équipement ? 
+        <strong>Cette action est irréversible.</strong>
+    </p>
+
+    <div class="flex justify-center gap-3">
+        <button onclick="closeDeleteModal()"
+                class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition">
+            Annuler
+        </button>
+
+        <button onclick="confirmDelete()"
+                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-2">
+            <span class="material-symbols-outlined">delete</span>
+            Supprimer
+        </button>
+    </div>
+
+</div>
+</div>
+
+<!-- ================= MODAL MAINTENANCE ================= -->
+<div id="maintenanceModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+<div class="bg-white rounded-xl p-8 w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
+
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-xl font-bold flex items-center gap-2">
+        <span class="material-symbols-outlined">event</span>
+        Planifier une maintenance
+    </h2>
+    <button onclick="closeMaintenanceModal()" class="text-gray-500 hover:text-gray-700">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+</div>
+
+{{ form_start(formMaintenance, {
+    'action': path('maintenance_new'),
+    'method': 'POST',
+    'attr': {
+        'novalidate': 'novalidate',
+        'id': 'maintenanceForm',
+        'class': 'space-y-4'
+    }
+}) }}
+
+<!-- TYPE -->
+<div>
+    {{ form_label(formMaintenance.typeM, 'Type de maintenance', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(formMaintenance.typeM, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (formMaintenance.typeM.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+            'placeholder': 'Ex: Révision moteur'
+        }
+    }) }}
+    {% if formMaintenance.typeM.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base">error</span>
+            <div>
+                {% for error in formMaintenance.typeM.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- DATE -->
+<div>
+    {{ form_label(formMaintenance.dateM, 'Date de maintenance', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(formMaintenance.dateM, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (formMaintenance.dateM.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300')
+        }
+    }) }}
+    {% if formMaintenance.dateM.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base">error</span>
+            <div>
+                {% for error in formMaintenance.dateM.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- DESCRIPTION -->
+<div>
+    {{ form_label(formMaintenance.description, 'Description', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(formMaintenance.description, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (formMaintenance.description.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+            'rows': '3'
+        }
+    }) }}
+    {% if formMaintenance.description.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base">error</span>
+            <div>
+                {% for error in formMaintenance.description.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- COUT -->
+<div>
+    {{ form_label(formMaintenance.cout, 'Coût (€)', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(formMaintenance.cout, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (formMaintenance.cout.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300'),
+            'step': '0.01'
+        }
+    }) }}
+    {% if formMaintenance.cout.vars.errors|length %}
+        <div class="text-red-600 text-sm mt-2 flex items-start gap-2">
+            <span class="material-symbols-outlined text-base">error</span>
+            <div>
+                {% for error in formMaintenance.cout.vars.errors %}
+                    <p>{{ error.message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- STATUT -->
+<div>
+    {{ form_label(formMaintenance.statut, 'Statut', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(formMaintenance.statut, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (formMaintenance.statut.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300')
+        }
+    }) }}
+</div>
+
+<!-- PRIORITE -->
+<div>
+    {{ form_label(formMaintenance.priorite, 'Priorité', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(formMaintenance.priorite, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (formMaintenance.priorite.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300')
+        }
+    }) }}
+</div>
+
+<!-- TECHNICIEN -->
+<div>
+    {{ form_label(formMaintenance.technicien, 'Technicien', {'label_attr': {'class': 'block text-sm font-medium mb-2'}}) }}
+    {{ form_widget(formMaintenance.technicien, {
+        'attr': {
+            'class': 'w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ' ~ (formMaintenance.technicien.vars.errors|length ? 'border-red-500 bg-red-50' : 'border-gray-300')
+        }
+    }) }}
+</div>
+
+<!-- EQUIPEMENT -->
+{{ form_row(formMaintenance.equipement) }}
+
+{{ form_rest(formMaintenance) }}
+
+<div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+    <button type="button" onclick="closeMaintenanceModal()"
+            class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+        Annuler
+    </button>
+    <button type="submit"
+            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-2">
+        <span class="material-symbols-outlined">check</span>
+        Confirmer
+    </button>
+</div>
+
+{{ form_end(formMaintenance) }}
+
+</div>
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+<script>
+
+// ===== UTILITIES =====
+
+function showNotification(message, type = 'success') {
+    const toast = document.getElementById('notificationToast');
+    const messageEl = document.getElementById('notificationMessage');
+    const iconEl = document.getElementById('toastIcon');
+    
+    messageEl.textContent = message;
+    
+    if (type === 'success') {
+        toast.className = 'fixed bottom-6 right-6 px-6 py-4 rounded-lg shadow-xl z-50 max-w-sm flex items-center gap-2 bg-green-600 text-white animate-fade-in';
+        iconEl.textContent = 'check_circle';
+    } else if (type === 'error') {
+        toast.className = 'fixed bottom-6 right-6 px-6 py-4 rounded-lg shadow-xl z-50 max-w-sm flex items-center gap-2 bg-red-600 text-white animate-fade-in';
+        iconEl.textContent = 'error';
+    } else {
+        toast.className = 'fixed bottom-6 right-6 px-6 py-4 rounded-lg shadow-xl z-50 max-w-sm flex items-center gap-2 bg-blue-600 text-white animate-fade-in';
+        iconEl.textContent = 'info';
+    }
+    
+    toast.classList.remove('hidden');
+    
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3500);
+}
+
+function saveSelectedEquipement(id) {
+    localStorage.setItem('selectedEquipement', id);
+}
+
+function getSelectedEquipement() {
+    return localStorage.getItem('selectedEquipement');
+}
+
+function restoreSelectedEquipement() {
+    const selected = getSelectedEquipement();
+    if (selected) {
+        const radio = document.querySelector(`input[name="selectedEquipement"][value="${selected}"]`);
+        if (radio) {
+            radio.checked = true;
+        }
+    }
+}
+
+function calculateEquipementStats() {
+
+    const equipements = document.querySelectorAll('.equipement-row');
+
+    let total = equipements.length;
+    let dispo = 0;
+    let maintenance = 0;
+    let panne = 0;
+
+    equipements.forEach(e => {
+        const etat = e.dataset.etat;
+
+        if (etat === 'disponible') dispo++;
+        else if (etat === 'maintenance') maintenance++;
+        else if (etat === 'panne') panne++;
+    });
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-dispo').textContent = dispo;
+    document.getElementById('stat-maintenance').textContent = maintenance;
+    document.getElementById('stat-panne').textContent = panne;
+}
+document.addEventListener('DOMContentLoaded', function() {
+    calculateEquipementStats();
+});
+// ===== SEARCH, FILTER & SORT =====
+
+function applyFilters() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const filterEtat = document.getElementById('filterEtat').value;
+    
+    const rows = Array.from(document.querySelectorAll('.equipement-row'));
+    let visibleRows = [];
+    let filteredCount = 0;
+
+    // FILTRER
+    rows.forEach(row => {
+        const nom = row.dataset.nom;
+        const type = row.dataset.type;
+        const desc = row.dataset.desc;
+        const etat = row.dataset.etat;
+        
+        const matchesSearch = !searchTerm || nom.includes(searchTerm) || type.includes(searchTerm) || desc.includes(searchTerm);
+        const matchesEtat = !filterEtat || etat === filterEtat;
+        
+        if (matchesSearch && matchesEtat) {
+            row.style.display = '';
+            visibleRows.push(row);
+            filteredCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+
+    // RÉAFFICHER LES LIGNES TRIÉES
+    const tbody = document.getElementById('equipementTableBody');
+    const emptyRow = document.getElementById('emptyRow');
+    
+    if (visibleRows.length === 0) {
+        emptyRow.style.display = '';
+    } else {
+        emptyRow.style.display = 'none';
+        visibleRows.forEach(row => {
+            tbody.appendChild(row);
+        });
+    }
+
+    // METTRE À JOUR LES STATS
+    updateFilterInfo(filteredCount, rows.length);
+}
+
+function updateFilterInfo(visibleCount, totalCount) {
+    const totalCountEl = document.getElementById('totalCount');
+    const filterInfo = document.getElementById('filterInfo');
+    const filterInfoText = document.getElementById('filterInfoText');
+    
+    totalCountEl.textContent = visibleCount;
+    
+    if (visibleCount < totalCount) {
+        filterInfo.classList.remove('hidden');
+        filterInfoText.textContent = `${visibleCount}/${totalCount} équipements affichés`;
+    } else {
+        filterInfo.classList.add('hidden');
+    }
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('filterEtat').value = '';    
+    document.querySelectorAll('.equipement-row').forEach(row => {
+        row.style.display = '';
+    });
+    document.getElementById('emptyRow').style.display = 'none';
+    document.getElementById('filterInfo').classList.add('hidden');
+    document.getElementById('totalCount').textContent = '{{ equipements|length }}';
+}
+
+// ===== MODAL ÉQUIPEMENT =====
+
+function openModal() {
+    document.getElementById('equipementModal').classList.remove('hidden');
+    document.getElementById('equipementModal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('equipementModal').classList.add('hidden');
+    document.getElementById('equipementModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+document.getElementById('equipementModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
+// ===== MODAL SUPPRESSION =====
+
+let deleteId = null;
+
+function openDeleteModal(id) {
+    deleteId = id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+    document.getElementById('deleteModal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+    deleteId = null;
+    document.getElementById('deleteModal').classList.add('hidden');
+    document.getElementById('deleteModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+function confirmDelete() {
+    if (!deleteId) return;
+    
+    fetch(`/equipements/${deleteId}/delete`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification('✅ Équipement supprimé avec succès');
+            closeDeleteModal();
+            setTimeout(() => location.reload(), 600);
+        } else {
+            showNotification(data.message || 'Erreur lors de la suppression', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('❌ Erreur lors de la suppression', 'error');
+    });
+}
+
+document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+
+// ===== ÉDITION LIGNE =====
+
+function editRow(id) {
+    ['nom', 'type', 'date', 'etat', 'cout', 'desc'].forEach(field => {
+        const textEl = document.getElementById('text-' + field + '-' + id);
+        const inputEl = document.getElementById('input-' + field + '-' + id);
+        const errorEl = document.getElementById('error-' + field + '-' + id);
+        
+        if (textEl) textEl.classList.add('hidden');
+        if (inputEl) inputEl.classList.remove('hidden');
+        if (errorEl) errorEl.classList.add('hidden');
+    });
+
+    document.getElementById('edit-' + id).classList.add('hidden');
+    document.getElementById('save-' + id).classList.remove('hidden');
+    document.getElementById('cancel-' + id).classList.remove('hidden');
+}
+
+function cancelEdit(id) {
+    location.reload();
+}
+
+function validateEquipement(id) {
+    const nomValue = document.getElementById('input-nom-' + id).value?.trim();
+    const typeValue = document.getElementById('input-type-' + id).value?.trim();
+    const dateValue = document.getElementById('input-date-' + id).value;
+    const etatValue = document.getElementById('input-etat-' + id).value;
+    const coutValue = document.getElementById('input-cout-' + id).value;
+    const descValue = document.getElementById('input-desc-' + id).value?.trim();
+
+    let hasErrors = false;
+
+    // Validation NOM
+    if (!nomValue || nomValue.length < 3 || nomValue.length > 100) {
+        document.getElementById('error-nom-' + id).textContent = 'Le nom doit avoir entre 3 et 100 caractères';
+        document.getElementById('error-nom-' + id).classList.remove('hidden');
+        hasErrors = true;
+    } else {
+        document.getElementById('error-nom-' + id).classList.add('hidden');
+    }
+
+    // Validation TYPE
+    if (!typeValue || typeValue.length < 3 || typeValue.length > 100) {
+        document.getElementById('error-type-' + id).textContent = 'Le type doit avoir entre 3 et 100 caractères';
+        document.getElementById('error-type-' + id).classList.remove('hidden');
+        hasErrors = true;
+    } else {
+        document.getElementById('error-type-' + id).classList.add('hidden');
+    }
+
+    // Validation DATE
+    if (!dateValue) {
+        document.getElementById('error-date-' + id).textContent = 'La date est obligatoire';
+        document.getElementById('error-date-' + id).classList.remove('hidden');
+        hasErrors = true;
+    } else {
+        const selectedDate = new Date(dateValue);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate > today) {
+            document.getElementById('error-date-' + id).textContent = 'La date ne peut pas être dans le futur';
+            document.getElementById('error-date-' + id).classList.remove('hidden');
+            hasErrors = true;
+        } else {
+            document.getElementById('error-date-' + id).classList.add('hidden');
+        }
+    }
+
+    // Validation ETAT
+    if (!etatValue) {
+        document.getElementById('error-etat-' + id).textContent = 'L\'état est obligatoire';
+        document.getElementById('error-etat-' + id).classList.remove('hidden');
+        hasErrors = true;
+    } else {
+        document.getElementById('error-etat-' + id).classList.add('hidden');
+    }
+
+    // Validation COUT
+    const coutNum = parseFloat(coutValue);
+    if (!coutValue || isNaN(coutNum) || coutNum < 0) {
+        document.getElementById('error-cout-' + id).textContent = 'Le coût doit être un nombre positif';
+        document.getElementById('error-cout-' + id).classList.remove('hidden');
+        hasErrors = true;
+    } else {
+        document.getElementById('error-cout-' + id).classList.add('hidden');
+    }
+
+    // Validation DESCRIPTION
+    if (!descValue || descValue.length < 5 || descValue.length > 200) {
+        document.getElementById('error-desc-' + id).textContent = 'La description doit avoir entre 5 et 200 caractères';
+        document.getElementById('error-desc-' + id).classList.remove('hidden');
+        hasErrors = true;
+    } else {
+        document.getElementById('error-desc-' + id).classList.add('hidden');
+    }
+
+    return !hasErrors;
+}
+
+function saveRow(id) {
+    // Validation côté client avant envoi
+    if (!validateEquipement(id)) {
+        showNotification('Veuillez corriger les erreurs', 'error');
+        return;
+    }
+
+    const data = {
+        nomEq: document.getElementById('input-nom-' + id).value?.trim(),
+        typeEq: document.getElementById('input-type-' + id).value?.trim(),
+        dateAchat: document.getElementById('input-date-' + id).value,
+        etat: document.getElementById('input-etat-' + id).value,
+        coutAchat: parseFloat(document.getElementById('input-cout-' + id).value),
+        descriptionEq: document.getElementById('input-desc-' + id).value?.trim()
+    };
+
+    fetch(`/equipements/${id}/edit`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification('✅ Équipement modifié avec succès');
+            setTimeout(() => location.reload(), 600);
+        } else {
+            const errorMsg = Array.isArray(data.errors) ? data.errors.join(', ') : data.message;
+            showNotification('❌ ' + errorMsg, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('❌ Erreur lors de la sauvegarde', 'error');
+    });
+}
+
+// ===== MODAL MAINTENANCE =====
+
+function openMaintenanceModal() {
+
+    const modal = document.getElementById('maintenanceModal');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMaintenanceModal() {
+    document.getElementById('maintenanceModal').classList.add('hidden');
+    document.getElementById('maintenanceModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+document.getElementById('maintenanceModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeMaintenanceModal();
+    }
+});
+
+// ===== EVENT LISTENERS POUR FILTRAGE DYNAMIQUE =====
+
+document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+document.getElementById('filterEtat')?.addEventListener('change', applyFilters);
+document.getElementById('sortBy')?.addEventListener('change', applyFilters);
+
+// ===== INITIALISATION =====
+
+document.addEventListener("DOMContentLoaded", function() {
+    restoreSelectedEquipement();
+});
+
+</script>
+
+{% if form.vars.submitted and not form.vars.valid %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        openModal();
+        showNotification('❌ Le formulaire contient des erreurs', 'error');
+    });
+</script>
+{% endif %}
+
+{% if formMaintenance.vars.submitted and not formMaintenance.vars.valid %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        openMaintenanceModal();
+        showNotification('❌ Le formulaire contient des erreurs', 'error');
+    });
+</script>
+{% endif %}
+
+{% endblock %}
