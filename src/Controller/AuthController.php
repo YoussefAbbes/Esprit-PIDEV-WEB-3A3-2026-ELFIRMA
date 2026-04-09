@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Categorie;
+use App\Entity\Produit;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,8 +31,18 @@ final class AuthController extends AbstractController
     }
 
     #[Route('/home', name: 'app_pages_home')]
-    public function home(): Response
+    public function home(EntityManagerInterface $em): Response
     {
-        return $this->render('pages/index.html.twig');
+        $produits = $em->getRepository(Produit::class)->findBy(
+            ['statut' => 'Disponible'],
+            ['nom' => 'ASC']
+        );
+
+        $categories = $em->getRepository(Categorie::class)->findBy([], ['nom' => 'ASC']);
+
+        return $this->render('pages/index.html.twig', [
+            'produits' => $produits,
+            'categories' => $categories,
+        ]);
     }
 }

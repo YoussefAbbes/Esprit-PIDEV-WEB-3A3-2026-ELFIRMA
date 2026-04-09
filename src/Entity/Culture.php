@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CultureRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CultureRepository::class)]
 #[ORM\Table(name: 'culture')]
@@ -21,6 +22,7 @@ class Culture
 
     #[ORM\ManyToOne(targetEntity: Parcelle::class, inversedBy: 'cultures')]
     #[ORM\JoinColumn(name: 'parcelleId', referencedColumnName: 'id', nullable: true)]
+    #[Assert\NotNull(message: 'Parcel is required.')]
     private ?Parcelle $parcelle = null;
 
     public function getParcelle(): ?Parcelle
@@ -35,6 +37,13 @@ class Culture
     }
 
     #[ORM\Column(name: "nom_culture", type: "string", length: 255)]
+    #[Assert\NotBlank(message: 'Crop name is required.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Crop name must be at least {{ limit }} characters long.',
+        maxMessage: 'Crop name cannot exceed {{ limit }} characters.'
+    )]
     private ?string $nomCulture = null;
 
     public function getNomCulture(): ?string
@@ -44,11 +53,18 @@ class Culture
 
     public function setNomCulture(string $nomCulture): self
     {
-        $this->nomCulture = $nomCulture;
+        $this->nomCulture = trim($nomCulture);
         return $this;
     }
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Variety is required.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Variety must be at least {{ limit }} characters long.',
+        maxMessage: 'Variety cannot exceed {{ limit }} characters.'
+    )]
     private ?string $variete = null;
 
     public function getVariete(): ?string
@@ -63,6 +79,7 @@ class Culture
     }
 
     #[ORM\Column(name: "date_plantation", type: "date", nullable: true)]
+    #[Assert\NotNull(message: 'Planting date is required.')]
     private ?\DateTimeInterface $datePlantation = null;
 
     public function getDatePlantation(): ?\DateTimeInterface
@@ -77,6 +94,11 @@ class Culture
     }
 
     #[ORM\Column(name: "date_recolte_prevue", type: "date", nullable: true)]
+    #[Assert\NotNull(message: 'Expected harvest date is required.')]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'datePlantation',
+        message: 'Expected harvest date must be on or after planting date.'
+    )]
     private ?\DateTimeInterface $dateRecoltePrevue = null;
 
     public function getDateRecoltePrevue(): ?\DateTimeInterface
@@ -91,6 +113,11 @@ class Culture
     }
 
     #[ORM\Column(name: "date_recolte_reelle", type: "date", nullable: true)]
+    #[Assert\NotNull(message: 'Actual harvest date is required.')]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'datePlantation',
+        message: 'Actual harvest date must be on or after planting date.'
+    )]
     private ?\DateTimeInterface $dateRecolteReelle = null;
 
     public function getDateRecolteReelle(): ?\DateTimeInterface
@@ -105,6 +132,8 @@ class Culture
     }
 
     #[ORM\Column(name: "quantite_plantee", type: "float", columnDefinition: "DOUBLE NOT NULL")]
+    #[Assert\NotNull(message: 'Quantity planted is required.')]
+    #[Assert\Positive(message: 'Quantity planted must be greater than 0.')]
     private float $quantitePlantee;
 
     public function getQuantitePlantee(): float
@@ -119,6 +148,8 @@ class Culture
     }
 
     #[ORM\Column(name: "quantite_recoltee", type: "float", columnDefinition: "DOUBLE NOT NULL")]
+    #[Assert\NotNull(message: 'Quantity harvested is required.')]
+    #[Assert\PositiveOrZero(message: 'Quantity harvested must be greater than or equal to 0.')]
     private float $quantiteRecoltee;
 
     public function getQuantiteRecoltee(): float
@@ -133,6 +164,8 @@ class Culture
     }
 
     #[ORM\Column(name: "cout_production", type: "float", columnDefinition: "DOUBLE NOT NULL")]
+    #[Assert\NotNull(message: 'Production cost is required.')]
+    #[Assert\Positive(message: 'Production cost must be greater than 0.')]
     private float $coutProduction;
 
 
@@ -148,6 +181,11 @@ class Culture
     }
 
     #[ORM\Column(type: "string", length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Status is required.')]
+    #[Assert\Choice(
+        choices: ['Harvested', 'In Progress', 'Planned'],
+        message: 'Status must be one of: Harvested, In Progress, Planned.'
+    )]
 private ?string $statut = null;
 
 public function getStatut(): ?string
@@ -162,6 +200,8 @@ public function setStatut(?string $statut): self
 }
 
     #[ORM\Column(type: "float", nullable: true)]
+    #[Assert\NotNull(message: 'Yield is required.')]
+    #[Assert\PositiveOrZero(message: 'Yield must be greater than or equal to 0.')]
     private ?float $rendement = null;
 
     public function getRendement(): float
@@ -176,6 +216,11 @@ public function setStatut(?string $statut): self
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: 'Observations are required.')]
+    #[Assert\Length(
+        min: 5,
+        minMessage: 'Observations must contain at least {{ limit }} characters.'
+    )]
     private ?string $observations = null;
 
     public function getObservations(): ?string

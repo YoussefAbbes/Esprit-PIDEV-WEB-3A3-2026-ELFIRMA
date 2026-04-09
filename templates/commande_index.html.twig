@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Commandes - EL FIRMA{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); padding: 25px; color: white;">
+            <h2 style="margin: 0; display: flex; align-items: center; gap: 15px;">
+                <span class="material-symbols-outlined" style="font-size: 32px;">receipt_long</span>
+                Mes Commandes
+            </h2>
+        </div>
+
+        <div style="padding: 30px;">
+            {% if commandes is empty %}
+                <div style="text-align: center; padding: 50px 20px;">
+                    <span class="material-symbols-outlined" style="font-size: 80px; color: #d1d5db; margin-bottom: 20px;">receipt_long</span>
+                    <h4 style="color: #6b7280; margin-bottom: 15px;">Aucune commande</h4>
+                    <p class="text-muted mb-4">Vous n'avez encore passé aucune commande</p>
+                    <a href="{{ path('app_pages_home') }}#products" class="btn" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 12px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+                        Découvrir nos produits
+                    </a>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #f3f4f6;">
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Commande</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Produit</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Quantité</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Total</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Statut</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Date</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for commande in commandes %}
+                            <tr style="border-bottom: 1px solid #f3f4f6;">
+                                <td style="border: none; padding: 20px 15px;">
+                                    <div>
+                                        <h6 style="margin: 0 0 5px 0; font-weight: 700; color: #2d5016;">#{{ commande.idCommande }}</h6>
+                                        <p style="margin: 0; font-size: 12px; color: #6b7280;">{{ commande.nomClient }}</p>
+                                    </div>
+                                </td>
+                                <td style="border: none; padding: 20px 15px;">
+                                    {% if commande.produit %}
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <div style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%);">
+                                            {% if commande.produit.image %}
+                                                <img src="{{ asset('uploads/produits/' ~ commande.produit.image) }}" alt="{{ commande.produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% else %}
+                                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                                    <span class="material-symbols-outlined" style="color: rgba(255,255,255,0.5); font-size: 20px;">package_2</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h6 style="margin: 0 0 5px 0; font-weight: 600;">{{ commande.produit.nom }}</h6>
+                                            <p style="margin: 0; font-size: 12px; color: #6b7280;">{{ commande.produit.categorie ? commande.produit.categorie.nom : 'Non catégorisé' }}</p>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                        <span style="color: #ef4444;">Produit supprimé</span>
+                                    {% endif %}
+                                </td>
+                                <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                    <span style="font-size: 16px; font-weight: 600;">{{ commande.quantite }}</span>
+                                </td>
+                                <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ commande.prixTotal }} DT</span>
+                                </td>
+                                <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                    {% set statusColor = commande.statutCommande == 'En attente' ? '#f59e0b' : (commande.statutCommande == 'Confirmée' ? '#3b82f6' : (commande.statutCommande == 'Livrée' ? '#10b981' : '#ef4444')) %}
+                                    <span style="background: {{ statusColor }}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                        {{ commande.statutCommande }}
+                                    </span>
+                                </td>
+                                <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                    <span style="font-size: 14px; color: #6b7280;">{{ commande.dateCommande|date('d/m/Y') }}</span>
+                                </td>
+                                <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
+                                    <a href="{{ path('app_commande_show', {id: commande.idCommande}) }}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                        Voir détails
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

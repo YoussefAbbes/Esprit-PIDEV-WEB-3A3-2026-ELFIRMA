@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Livestock;
 use App\Repository\LivestockRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -121,15 +122,34 @@ final class LivestockController extends AbstractController
     public function delete(Request $request, LivestockRepository $livestockRepository): Response
     {
         if (!$this->isCsrfTokenValid('livestock_delete', (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Action refusée : session expirée, veuillez réessayer.');
             return $this->redirectToLivestockList();
         }
 
         $idElevage = (int) $request->request->get('id_elevage', 0);
         if ($idElevage <= 0) {
+            $this->addFlash('error', 'Suppression impossible : identifiant d\'élevage invalide.');
             return $this->redirectToLivestockList();
         }
 
-        $livestockRepository->deleteLivestock($idElevage);
+        $linkedAnimals = $livestockRepository->countAnimalsForLivestock($idElevage);
+        if ($linkedAnimals > 0) {
+            $this->addFlash('error', sprintf(
+                'Suppression impossible : %d animal(aux) sont liés à cet élevage. Déplacez ou supprimez d\'abord ces animaux.',
+                $linkedAnimals
+            ));
+
+            return $this->redirectToLivestockList();
+        }
+
+        try {
+            $livestockRepository->deleteLivestock($idElevage);
+            $this->addFlash('success', 'Élevage supprimé avec succès.');
+        } catch (ForeignKeyConstraintViolationException) {
+            $this->addFlash('error', 'Suppression impossible : des animaux liés existent encore pour cet élevage.');
+
+            return $this->redirectToLivestockList();
+        }
 
         return $this->redirectToLivestockList();
     }

@@ -269,14 +269,25 @@
                     {% endif %}
                 {% endfor %}
 
-                <div class="fixed inset-0 z-[120] bg-slate-900/35 backdrop-blur-[1px] flex items-center justify-center p-2 md:p-3">
-                    <div class="management-form-modal w-full max-w-xl -translate-y-4 md:-translate-y-6 max-h-[95vh] md:max-h-none overflow-auto md:overflow-visible rounded-2xl border-2 border-emerald-600 bg-[#cfe3cf] shadow-2xl">
+                <div class="fixed inset-0 z-[120] bg-slate-900/35 backdrop-blur-[1px] flex items-start justify-center pt-4 md:pt-8 pb-3 px-2 md:px-3 overflow-y-auto">
+                    <div class="management-form-modal w-full max-w-2xl min-h-[70vh] md:min-h-[74vh] max-h-[96vh] overflow-y-auto rounded-2xl border-2 border-emerald-600 bg-[#cfe3cf] shadow-2xl">
                         <div class="p-4 md:p-5">
                             <div class="flex items-center justify-end">
                                 <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=animal" class="text-slate-800 hover:text-slate-900 text-3xl leading-none" aria-label="Close">&times;</a>
                             </div>
 
-                            <h3 class="text-center text-xl md:text-2xl font-black tracking-wide text-emerald-800">{{ is_edit_animal_mode ? 'EDIT ANIMAL' : 'CREATE NEW ANIMAL' }}</h3>
+                            <h3 class="text-center text-xl md:text-2xl font-black tracking-wide text-emerald-800 flex items-center justify-center gap-3">
+                                <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-200 text-emerald-800 border border-emerald-400">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true">
+                                        <circle cx="5" cy="8" r="1.5"/>
+                                        <circle cx="10" cy="5.5" r="1.5"/>
+                                        <circle cx="14" cy="5.5" r="1.5"/>
+                                        <circle cx="19" cy="8" r="1.5"/>
+                                        <path d="M8 16.5c0-2.4 1.8-4.2 4-4.2s4 1.8 4 4.2c0 1.9-1.4 3.2-4 3.2s-4-1.3-4-3.2z"/>
+                                    </svg>
+                                </span>
+                                <span>{{ is_edit_animal_mode ? 'EDIT ANIMAL' : 'CREATE NEW ANIMAL' }}</span>
+                            </h3>
                             <div class="h-px bg-emerald-300 mt-3 mb-4"></div>
 
                             {% if form_errors._form is defined %}
@@ -291,7 +302,7 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
                                     <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Farm:</label>
-                                    <div class="md:col-span-4 md:max-w-[24rem]">
+                                    <div class="md:col-span-4">
                                         <select name="id_elevage" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                             {% if livestock_options is empty %}
                                                 <option value="">No livestock available</option>
@@ -317,7 +328,7 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
                                     <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Gender:</label>
-                                    <div class="md:col-span-4 md:max-w-[24rem]">
+                                    <div class="md:col-span-4">
                                         <select name="sexe" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                             {% for gender_option in gender_options %}
                                                 <option value="{{ gender_option }}" {{ current_sexe == gender_option ? 'selected' : '' }}>{{ gender_option }}</option>
@@ -339,7 +350,7 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
                                     <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Health Status:</label>
-                                    <div class="md:col-span-4 md:max-w-[24rem]">
+                                    <div class="md:col-span-4">
                                         <select name="etat_sante" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                             {% for health_option in health_options %}
                                                 <option value="{{ health_option }}" {{ current_etat_sante == health_option ? 'selected' : '' }}>{{ health_option }}</option>
@@ -353,7 +364,7 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
                                     <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Status:</label>
-                                    <div class="md:col-span-4 md:max-w-[24rem]">
+                                    <div class="md:col-span-4">
                                         <select name="statut" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                             {% for status_option in status_options %}
                                                 <option value="{{ status_option }}" {{ current_statut == status_option ? 'selected' : '' }}>{{ status_option }}</option>
@@ -564,8 +575,6 @@
             if (noResultsRow) {
                 noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
             }
-
-            refreshStatistics();
         };
 
         const sortRows = function () {
@@ -584,12 +593,6 @@
             if (noResultsRow) {
                 tableBody.appendChild(noResultsRow);
             }
-        };
-
-        const getVisibleRows = function () {
-            return rows.filter(function (row) {
-                return !row.classList.contains('hidden');
-            });
         };
 
         const buildStatsModel = function (visibleRows) {
@@ -832,8 +835,8 @@
         };
 
         const refreshStatistics = function () {
-            const visibleRows = getVisibleRows();
-            const model = buildStatsModel(visibleRows);
+            // Keep statistics independent from table filters.
+            const model = buildStatsModel(rows);
 
             if (totalStat) {
                 totalStat.textContent = String(model.total);
@@ -893,6 +896,7 @@
 
         applyFilters();
         renderTabVisualState();
+        refreshStatistics();
     }
 
     const modal = document.getElementById('delete-confirm-modal');

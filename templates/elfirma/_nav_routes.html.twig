@@ -9,26 +9,44 @@
         {
             label: "Field Management",
             icon: "agriculture",
-            href: "{{ path('elfirma_page', { module: 'parcelles-cultures' }) }}"
+            children: [
+                {
+                    label: "Parcels",
+                    href: "{{ path('parcelle_index') }}"
+                },
+                {
+                    label: "Crops",
+                    href: "{{ path('culture_index') }}"
+                }
+            ]
         },
         {
             label: "Livestock & Animals Management",
             icon: "pets",
             children: [
                 {
-                    label: "Livestock Management",
-                    href: "{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=livestock"
+                    label: "Livestock",
+                    href: "{{ path('elfirma_livestock') }}"
                 },
                 {
-                    label: "Animal\nManagement",
-                    href: "{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=animal"
+                    label: "Animals",
+                    href: "{{ path('elfirma_animals') }}"
                 }
             ]
         },
         {
             label: "Product Management",
             icon: "shopping_basket",
-            href: "{{ path('elfirma_page', { module: 'produits-commandes' }) }}"
+            children: [
+                {
+                    label: "Products",
+                    href: "{{ path('elfirma_page', { module: 'produits' }) }}"
+                },
+                {
+                    label: "Catalog",
+                    href: "{{ path('elfirma_page', { module: 'categories' }) }}"
+                }
+            ]
         },
         {
             label: "Equipment Management",
@@ -71,7 +89,18 @@
         ["Maintenance", "Maintenance"],
         ["Récolte", "Harvest"],
         ["Sélectionnez", "Select"],
-        ["Ouvrir le module dans Symfony", "Open module in Symfony"]
+        ["Ouvrir le module dans Symfony", "Open module in Symfony"],
+        ["Huile", "Oil"],
+        ["Frais", "Fresh"],
+        ["Transformé", "Processed"],
+        ["Biologique", "Organic"],
+        ["Séché", "Dried"],
+        ["Conditionné", "Packaged"],
+        ["Économique", "Economy"],
+        ["Certifié", "Certified"],
+        ["Disponible", "Available"],
+        ["Rupture", "Out of Stock"],
+        ["Expiré", "Expired"]
     ];
 
     const normalizePath = (value) => (value || "").replace(/\/$/, "") || "/";
@@ -344,7 +373,20 @@
         });
     };
 
-    const sideRoots = Array.from(document.querySelectorAll("aside, body > nav"));
+    const sideRoots = Array.from(document.querySelectorAll("aside, body > nav")).filter((root) => {
+        const tagName = root.tagName.toLowerCase();
+
+        if (tagName === "nav" && root.parentElement === document.body) {
+            return true;
+        }
+
+        if (tagName !== "aside") {
+            return false;
+        }
+
+        const className = root.className || "";
+        return className.includes("fixed") || className.includes("left-0");
+    });
 
     if (!sideRoots.length) {
         return;
@@ -364,7 +406,7 @@
         });
 
         const possibleContainers = Array.from(root.querySelectorAll("nav, div")).filter((element) => {
-            return element.querySelectorAll(":scope > a").length >= 5;
+            return element.querySelectorAll(":scope > a").length >= 3;
         });
 
         if (!possibleContainers.length) {

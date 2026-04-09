@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="light" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <title>Elfirma - {{ produit.nom }}</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Open Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .submenu-item { transition: all 0.2s ease; }
+        .submenu-item:hover { transform: translateX(4px); }
+    </style>
+</head>
+<body class="bg-[#fbfbe2] text-[#1b1d0e] min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 py-8 pr-4 bg-[#f5f5dc]">
+        <div class="px-8 mb-8">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="text-[#43493d] text-sm">Gestion Agricole</p>
+        </div>
+        <nav class="flex-1 flex flex-col space-y-1">
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Tableau de Bord</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
+                <span class="material-symbols-outlined">group</span>
+                <span>User Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('parcelle_index') }}">
+                <span class="material-symbols-outlined">agriculture</span>
+                <span>Field Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
+                <span class="material-symbols-outlined">pets</span>
+                <span>Livestock Management</span>
+            </a>
+            
+            <!-- Product Management with submenu -->
+            <div class="py-1">
+                <div class="flex items-center gap-4 py-3 px-8 bg-[#2d5016] text-white rounded-l-full ml-auto">
+                    <span class="material-symbols-outlined">shopping_basket</span>
+                    <span class="flex-1">Product Management</span>
+                    <span class="material-symbols-outlined text-sm">expand_less</span>
+                </div>
+                <div class="mt-1 ml-8">
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_page', { module: 'categories' }) }}">
+                        <span class="material-symbols-outlined text-sm">category</span>
+                        <span>Categories</span>
+                    </a>
+                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('elfirma_page', { module: 'produits' }) }}">
+                        <span class="material-symbols-outlined text-sm">inventory_2</span>
+                        <span>Products</span>
+                    </a>
+                </div>
+            </div>
+            
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
+                <span class="material-symbols-outlined">handyman</span>
+                <span>Equipment Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
+                <span class="material-symbols-outlined">description</span>
+                <span>Contract Management</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-72 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-[#fbfbe2]/70 backdrop-blur-xl px-8 py-4 flex justify-between items-center border-b border-[#c3c9b9]/20">
+            <div class="flex items-center gap-3">
+                <a href="{{ path('elfirma_page', { module: 'produits' }) }}" class="p-2 hover:bg-[#f5f5dc] rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <h2 class="text-2xl font-black text-[#0a2200]">{{ produit.nom }}</h2>
+            </div>
+            <div class="flex items-center gap-3 bg-[#f5f5dc] px-4 py-1.5 rounded-full">
+                <div class="text-right">
+                    <p class="text-sm font-bold text-[#0a2200]">Admin Elfirma</p>
+                    <p class="text-xs text-[#43493d]">Directeur</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="p-8 lg:p-12 space-y-8">
+            <!-- Product Image & Basic Info -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Product Image -->
+                <div class="md:col-span-1">
+                    <div class="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-6 shadow-lg border-2 border-green-200 h-full flex items-center justify-center">
+                        {% if produit.image %}
+                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.nom }}" class="w-full h-auto rounded-lg object-cover">
+                        {% else %}
+                            <div class="text-center">
+                                <span class="material-symbols-outlined text-8xl text-green-400">image</span>
+                                <p class="text-green-700 font-semibold mt-4">Pas d'image</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Status & Quality -->
+                    <div class="flex gap-3 flex-wrap">
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold
+                            {% if produit.statut == 'Disponible' %}bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200
+                            {% elseif produit.statut == 'Rupture' %}bg-gradient-to-r from-red-100 to-orange-100 text-red-700 border border-red-200
+                            {% else %}bg-gray-100 text-gray-700 border border-gray-200{% endif %}">
+                            <span class="material-symbols-outlined text-base mr-2">
+                                {% if produit.statut == 'Disponible' %}check_circle{% elseif produit.statut == 'Rupture' %}error{% else %}info{% endif %}
+                            </span>
+                            {{ produit.statut }}
+                        </span>
+                        {% if produit.qualite %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border border-purple-200">
+                            <span class="material-symbols-outlined text-base mr-2">star</span>
+                            Qualité: {{ produit.qualite }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Key Info Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
+                            <p class="text-blue-600 text-xs font-bold uppercase tracking-wide mb-2">Category</p>
+                            <p class="text-xl font-black text-[#0a2200]">{{ produit.categorie ? produit.categorie.nom : 'N/A' }}</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border-2 border-purple-200">
+                            <p class="text-purple-600 text-xs font-bold uppercase tracking-wide mb-2">Type</p>
+                            <p class="text-xl font-black text-[#0a2200]">{{ produit.type }}</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-4 border-2 border-green-200">
+                            <p class="text-green-600 text-xs font-bold uppercase tracking-wide mb-2">Price</p>
+                            <p class="text-2xl font-black text-[#0a2200]">{{ produit.prixUnitaire }} DT</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-200">
+                            <p class="text-orange-600 text-xs font-bold uppercase tracking-wide mb-2">Stock</p>
+                            <p class="text-2xl font-black text-[#0a2200]">{{ produit.quantiteStock }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dates Section -->
+            <section class="bg-white rounded-xl p-8 shadow-sm border-2 border-green-100">
+                <h3 class="text-xl font-black text-[#0a2200] mb-6 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-green-600">calendar_today</span>
+                    Production & Expiration Dates
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Production Date -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-6 border-2 border-green-200">
+                        <p class="text-green-600 text-xs font-bold uppercase tracking-wide mb-3">Production Date</p>
+                        {% if produit.dateProduction %}
+                            <p class="text-3xl font-black text-[#0a2200]">{{ produit.dateProduction|date('d/m/Y') }}</p>
+                        {% else %}
+                            <p class="text-gray-400 font-semibold">Not specified</p>
+                        {% endif %}
+                    </div>
+                    <!-- Expiration Date -->
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border-2 border-orange-200">
+                        <p class="text-orange-600 text-xs font-bold uppercase tracking-wide mb-3">Expiration Date</p>
+                        {% if produit.dateExpiration %}
+                            <p class="text-3xl font-black text-[#0a2200]">{{ produit.dateExpiration|date('d/m/Y') }}</p>
+                        {% else %}
+                            <p class="text-gray-400 font-semibold">Not specified</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions -->
+            <section class="flex gap-4 justify-center">
+                <a href="{{ path('elfirma_page', { module: 'produits' }) }}" class="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-full transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Back to Products
+                </a>
+            </section>
+        </div>
+    </main>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>
