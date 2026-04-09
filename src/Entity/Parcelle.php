@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\ParcelleRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ParcelleRepository::class)]
 #[ORM\Table(name: 'parcelle')]
@@ -22,6 +23,13 @@ class Parcelle
     }
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'Parcel name is required.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Parcel name must be at least {{ limit }} characters long.',
+        maxMessage: 'Parcel name cannot exceed {{ limit }} characters.'
+    )]
     private ?string $nom = null;
 
     public function getNom(): ?string
@@ -31,11 +39,18 @@ class Parcelle
 
     public function setNom(string $nom): self
     {
-        $this->nom = $nom;
+        $this->nom = trim($nom);
         return $this;
     }
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'Location is required.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Location must be at least {{ limit }} characters long.',
+        maxMessage: 'Location cannot exceed {{ limit }} characters.'
+    )]
     private ?string $localisation = null;
 
     public function getLocalisation(): ?string
@@ -45,11 +60,13 @@ class Parcelle
 
     public function setLocalisation(string $localisation): self
     {
-        $this->localisation = $localisation;
+        $this->localisation = trim($localisation);
         return $this;
     }
 
     #[ORM\Column(type: 'float')]
+    #[Assert\NotNull(message: 'Area is required.')]
+    #[Assert\Positive(message: 'Area must be greater than 0.')]
     private ?float $superficie = null;
 
     public function getSuperficie(): ?float
@@ -64,6 +81,11 @@ class Parcelle
     }
 
     #[ORM\Column(name: "type_sol", type: "string", length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Soil type is required.')]
+    #[Assert\Choice(
+        choices: ['Sandy', 'Loamy', 'Clay', 'Humus'],
+        message: 'Soil type must be one of: Sandy, Loamy, Clay, Humus.'
+    )]
     private ?string $typeSol = null;
 
     public function getTypeSol(): ?string
@@ -78,6 +100,11 @@ class Parcelle
     }
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Status is required.')]
+    #[Assert\Choice(
+        choices: ['Available', 'Occupied', 'Resting'],
+        message: 'Status must be one of: Available, Occupied, Resting.'
+    )]
     private ?string $statut = null;
 
     public function getStatut(): ?string
@@ -106,6 +133,8 @@ class Parcelle
     }
 
     #[ORM\Column(name: "date_creation", type: "date", nullable: true)]
+    #[Assert\NotNull(message: 'Creation date is required.')]
+    #[Assert\LessThanOrEqual('today', message: 'Creation date cannot be in the future.')]
     private ?\DateTimeInterface $dateCreation = null;
 
     public function getDateCreation(): ?\DateTimeInterface
@@ -120,6 +149,12 @@ class Parcelle
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\NotNull(message: 'Latitude is required. Please select a point on the map.')]
+    #[Assert\Range(
+        min: -90,
+        max: 90,
+        notInRangeMessage: 'Latitude must be between {{ min }} and {{ max }}.'
+    )]
     private ?float $latitude = null;
 
     public function getLatitude(): ?float
@@ -134,6 +169,12 @@ class Parcelle
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\NotNull(message: 'Longitude is required. Please select a point on the map.')]
+    #[Assert\Range(
+        min: -180,
+        max: 180,
+        notInRangeMessage: 'Longitude must be between {{ min }} and {{ max }}.'
+    )]
     private ?float $longitude = null;
 
     public function getLongitude(): ?float

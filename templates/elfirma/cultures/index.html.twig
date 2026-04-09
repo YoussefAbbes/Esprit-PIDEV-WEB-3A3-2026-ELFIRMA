@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Crops Management - Elfirma</title>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Open_Sans:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        body { font-family: 'Inter', sans-serif; background: #f8f9ee; color: #1b1d0e; min-height: 100vh; }
+        h1, h2, h3, h4, .font-headline { font-family: 'Inter', sans-serif; }
+
+        /* Sidebar */
+        .sidebar { background: #f5f5dc; border-right: 1px solid #e4e4cc; box-shadow: none; }
+        .sidebar-link { transition: background-color 0.2s ease, color 0.2s ease; color: #43493d; }
+        .sidebar-link:hover { background: #ececd8; transform: none; }
+        .sidebar-link.active { background: #0a2200; color: #fbfbe2; box-shadow: none; }
+        .sidebar-dropdown-menu { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
+        .sidebar-dropdown.open .sidebar-dropdown-menu { max-height: 200px; }
+        .sidebar-dropdown.open .dropdown-arrow { transform: rotate(180deg); }
+        .dropdown-arrow { transition: transform 0.2s ease; }
+
+        /* Motion */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in-up { animation: fadeInUp 0.35s ease forwards; }
+        .animate-count { animation: countUp 0.45s ease forwards; }
+        .animate-slide-in, .animate-pulse-soft { animation: none; }
+        .stagger-1, .stagger-2, .stagger-3, .stagger-4, .stagger-5 { opacity: 0; }
+        .stagger-1 { animation-delay: 0.04s; }
+        .stagger-2 { animation-delay: 0.08s; }
+        .stagger-3 { animation-delay: 0.12s; }
+        .stagger-4 { animation-delay: 0.16s; }
+        .stagger-5 { animation-delay: 0.2s; }
+
+        /* Cards & containers */
+        .stat-card { background: #ffffff; border-radius: 14px; border: 1px solid #e8eadf; box-shadow: 0 2px 8px rgba(27, 29, 14, 0.04); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: none; border-color: #d9ddcc; box-shadow: 0 4px 12px rgba(27, 29, 14, 0.07); }
+        .stat-card .stat-icon { transition: none; }
+        .stat-card:hover .stat-icon { transform: none; }
+        .glass-card { background: #ffffff; border: 1px solid #e8eadf; backdrop-filter: none; }
+        .chart-container { position: relative; background: #ffffff; border-radius: 14px; padding: 20px; border: 1px solid #e8eadf; box-shadow: 0 2px 8px rgba(27, 29, 14, 0.04); }
+
+        /* Table */
+        .data-table { border-radius: 14px; overflow: hidden; border: 1px solid #e8eadf; box-shadow: none; }
+        .data-table thead { background: #eff2e4; }
+        .data-table tbody tr { transition: background-color 0.2s ease; }
+        .data-table tbody tr:hover { background: #f5f7ed; transform: none; }
+
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; letter-spacing: 0.2px; transition: none; }
+        .badge:hover { transform: none; }
+        .badge-progress { background: #e9f7ef; color: #13663f; }
+        .badge-planned { background: #edf3ff; color: #2b4f91; }
+        .badge-harvested { background: #fff1e8; color: #8d4c1d; }
+
+        /* Buttons & controls */
+        .btn-primary { background: #0a2200; color: #fff; transition: background-color 0.2s ease; box-shadow: none; }
+        .btn-primary:hover { transform: none; background: #173901; box-shadow: none; }
+        .form-input { transition: border-color 0.2s ease, box-shadow 0.2s ease; border: 1px solid #d9ddcc; }
+        .form-input:focus { border-color: #0a2200; box-shadow: 0 0 0 3px rgba(10, 34, 0, 0.08); }
+
+        /* Image & action buttons */
+        .image-thumb { transition: transform 0.2s ease; cursor: pointer; }
+        .image-thumb:hover { transform: scale(1.06); box-shadow: none; }
+        .action-btn { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: filter 0.2s ease; }
+        .action-btn:hover { transform: none; filter: brightness(0.96); }
+        .action-btn-view { background: #e8effc; color: #1d4ed8; }
+        .action-btn-edit { background: #fdf2db; color: #b56b00; }
+        .action-btn-delete { background: #fceaea; color: #c73636; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f8f9ee; }
+        ::-webkit-scrollbar-thumb { background: #c9cebc; border-radius: 999px; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#fbfbe2", "primary": "#0a2200", "on-primary": "#ffffff",
+                        "secondary": "#934b19", "on-secondary": "#ffffff", "secondary-container": "#fc9f66",
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar hidden md:flex h-screen w-64 fixed left-0 top-0 flex-col py-6 z-40">
+        <!-- Logo -->
+        <div class="px-6 mb-6">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="font-semibold text-[#43493d] text-sm">Gestion Agricole</p>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="flex-1 space-y-1 overflow-y-auto">
+            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-semibold">Tableau de Bord</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
+                <span class="material-symbols-outlined">group</span>
+                <span class="font-semibold">Utilisateurs</span>
+            </a>
+            
+            <!-- Field Management Dropdown -->
+            <div class="sidebar-dropdown open">
+                <button class="sidebar-link w-full flex items-center justify-between py-3 px-6 rounded-r-full" onclick="toggleDropdown(this.parentElement)">
+                    <div class="flex items-center gap-4">
+                        <span class="material-symbols-outlined">agriculture</span>
+                        <span class="font-semibold">Field Management</span>
+                    </div>
+                    <span class="material-symbols-outlined dropdown-arrow text-lg">expand_more</span>
+                </button>
+                <div class="sidebar-dropdown-menu pl-4 mt-2 space-y-1 pr-2">
+                    <a class="sidebar-link flex items-center gap-3 py-2.5 px-4 rounded-r-full text-sm font-semibold" href="{{ path('parcelle_index') }}">
+                        <span class="material-symbols-outlined">terrain</span>
+                        Parcels Management
+                    </a>
+                    <a class="sidebar-link active flex items-center gap-3 py-2.5 px-4 rounded-r-full text-sm font-semibold" href="{{ path('culture_index') }}">
+                        <span class="material-symbols-outlined">grass</span>
+                        Crops Management
+                    </a>
+                </div>
+            </div>
+            
+            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
+                <span class="material-symbols-outlined">pets</span>
+                <span class="font-semibold">Animaux & Élevages</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'produits-commandes' }) }}">
+                <span class="material-symbols-outlined">shopping_basket</span>
+                <span class="font-semibold">Produits & Commandes</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
+                <span class="material-symbols-outlined">handyman</span>
+                <span class="font-semibold">Équipements & Maintenance</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
+                <span class="material-symbols-outlined">contract</span>
+                <span class="font-semibold">Fournisseurs & Contrats</span>
+            </a>
+        </nav>
+        
+        <div class="px-6 mt-auto pt-6 border-t border-[#c3c9b9]/40 space-y-3">
+            <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-[#934b19] transition-colors" href="#">
+                <span class="material-symbols-outlined">help</span> Aide
+            </a>
+            <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-[#934b19] transition-colors" href="#">
+                <span class="material-symbols-outlined">logout</span> Déconnexion
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
+        <!-- Header -->
+        <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 animate-fade-in-up">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="material-symbols-outlined text-4xl text-[#0a2200]">grass</span>
+                    <div>
+                        <h2 class="text-4xl font-black text-[#0a2200] tracking-tight">Crops Management</h2>
+                        <p class="text-gray-500 mt-1">Monitor and manage your agricultural crops</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/60 rounded-full text-sm text-gray-600">
+                    <span class="material-symbols-outlined text-lg">schedule</span>
+                    <span id="currentTime"></span>
+                </div>
+                <a href="{{ path('culture_new') }}" class="btn-primary flex items-center gap-2 text-white px-6 py-3 rounded-full font-bold">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    New Crop
+                </a>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+        <div class="animate-fade-in-up bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                <span class="material-symbols-outlined text-green-600">check_circle</span>
+            </div>
+            <div>
+                <p class="font-bold">Success!</p>
+                <p class="text-sm text-green-700">{{ message }}</p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Stats Row -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% set inProgressCount = cultures|filter(c => c.statut == 'In Progress')|length %}
+            {% set plannedCount = cultures|filter(c => c.statut == 'Planned')|length %}
+            {% set harvestedCount = cultures|filter(c => c.statut == 'Harvested')|length %}
+            {% set totalPlanted = 0 %}
+            {% for c in cultures %}{% set totalPlanted = totalPlanted + c.quantitePlantee %}{% endfor %}
+            
+            <div class="stat-card p-6 animate-fade-in-up stagger-1">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0a2200] to-[#1a4d00] flex items-center justify-center shadow-lg">
+                        <span class="material-symbols-outlined text-white text-2xl">grass</span>
+                    </div>
+                    <span class="badge bg-green-50 text-green-700 text-xs">Total</span>
+                </div>
+                <p class="text-4xl font-black text-[#0a2200] counter" data-target="{{ pagination.total }}">0</p>
+                <p class="text-sm text-gray-500 mt-1 font-medium">Total Crops</p>
+            </div>
+            
+            <div class="stat-card p-6 animate-fade-in-up stagger-2">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
+                        <span class="material-symbols-outlined text-white text-2xl">trending_up</span>
+                    </div>
+                    <span class="badge badge-progress">Growing</span>
+                </div>
+                <p class="text-4xl font-black text-green-600 counter" data-target="{{ inProgressCount }}">0</p>
+                <p class="text-sm text-gray-500 mt-1 font-medium">In Progress</p>
+            </div>
+            
+            <div class="stat-card p-6 animate-fade-in-up stagger-3">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg">
+                        <span class="material-symbols-outlined text-white text-2xl">schedule</span>
+                    </div>
+                    <span class="badge badge-planned">Upcoming</span>
+                </div>
+                <p class="text-4xl font-black text-blue-600 counter" data-target="{{ plannedCount }}">0</p>
+                <p class="text-sm text-gray-500 mt-1 font-medium">Planned</p>
+            </div>
+            
+            <div class="stat-card p-6 animate-fade-in-up stagger-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
+                        <span class="material-symbols-outlined text-white text-2xl">inventory</span>
+                    </div>
+                    <span class="badge badge-harvested">Complete</span>
+                </div>
+                <p class="text-4xl font-black text-orange-600 counter" data-target="{{ harvestedCount }}">0</p>
+                <p class="text-sm text-gray-500 mt-1 font-medium">Harvested</p>
+            </div>
+        </section>
+
+        <!-- Charts Row -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up stagger-5">
+            <div class="chart-container">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Crop Status Overview</h3>
+                        <p class="text-sm text-gray-500">Distribution by growth stage</p>
+                    </div>
+                    <span class="material-symbols-outlined text-gray-400">pie_chart</span>
+                </div>
+                <div class="relative h-64">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Top Varieties</h3>
+                        <p class="text-sm text-gray-500">Most planted crop varieties</p>
+                    </div>
+                    <span class="material-symbols-outlined text-gray-400">bar_chart</span>
+                </div>
+                <div class="relative h-64">
+                    <canvas id="varietyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search and Filter Section -->
+        <section class="glass-card rounded-2xl p-6 animate-fade-in-up" style="animation-delay: 0.6s; opacity: 0;">
+            <form id="listingFilterForm" method="GET" action="{{ path('culture_index') }}" class="flex flex-col lg:flex-row gap-4">
+                <div class="relative flex-1">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                    <input type="text" name="search" value="{{ search }}" placeholder="Search crops by name, variety, status..." 
+                           class="form-input w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/80 focus:bg-white">
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <select name="sort" class="form-input px-4 py-3.5 rounded-xl bg-white/80 font-medium min-w-[160px]">
+                        <option value="nomCulture" {{ sortBy == 'nomCulture' ? 'selected' : '' }}>Sort by Name</option>
+                        <option value="variete" {{ sortBy == 'variete' ? 'selected' : '' }}>Sort by Variety</option>
+                        <option value="datePlantation" {{ sortBy == 'datePlantation' ? 'selected' : '' }}>Sort by Plant Date</option>
+                        <option value="quantitePlantee" {{ sortBy == 'quantitePlantee' ? 'selected' : '' }}>Sort by Quantity</option>
+                        <option value="statut" {{ sortBy == 'statut' ? 'selected' : '' }}>Sort by Status</option>
+                        <option value="parcelle" {{ sortBy == 'parcelle' ? 'selected' : '' }}>Sort by Parcel</option>
+                    </select>
+                    <select name="order" class="form-input px-4 py-3.5 rounded-xl bg-white/80 font-medium">
+                        <option value="DESC" {{ sortOrder == 'DESC' ? 'selected' : '' }}>↓ Desc</option>
+                        <option value="ASC" {{ sortOrder == 'ASC' ? 'selected' : '' }}>↑ Asc</option>
+                    </select>
+                    <button type="submit" class="btn-primary flex items-center gap-2 text-white px-6 py-3.5 rounded-xl font-bold">
+                        <span class="material-symbols-outlined">filter_list</span>
+                        Filter
+                    </button>
+                    {% if search %}
+                    <a href="{{ path('culture_index') }}" class="flex items-center gap-2 bg-red-50 text-red-600 px-5 py-3.5 rounded-xl font-bold hover:bg-red-100 transition-all">
+                        <span class="material-symbols-outlined">close</span>
+                        Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </section>
+
+        <!-- Data Table -->
+        <section id="listingResults" class="data-table bg-white animate-fade-in-up" style="animation-delay: 0.7s; opacity: 0;">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-white text-left">
+                            <th class="px-6 py-5 font-bold text-sm">
+                                <a href="{{ path('culture_index', {search: search, sort: 'nomCulture', order: sortBy == 'nomCulture' and sortOrder == 'ASC' ? 'DESC' : 'ASC'}) }}" class="flex items-center gap-2 hover:text-green-200 transition-colors">
+                                    Crop Name
+                                    {% if sortBy == 'nomCulture' %}<span class="material-symbols-outlined text-sm">{{ sortOrder == 'ASC' ? 'arrow_upward' : 'arrow_downward' }}</span>{% endif %}
+                                </a>
+                            </th>
+                            <th class="px-6 py-5 font-bold text-sm">Image</th>
+                            <th class="px-6 py-5 font-bold text-sm">
+                                <a href="{{ path('culture_index', {search: search, sort: 'variete', order: sortBy == 'variete' and sortOrder == 'ASC' ? 'DESC' : 'ASC'}) }}" class="flex items-center gap-2 hover:text-green-200 transition-colors">
+                                    Variety
+                                    {% if sortBy == 'variete' %}<span class="material-symbols-outlined text-sm">{{ sortOrder == 'ASC' ? 'arrow_upward' : 'arrow_downward' }}</span>{% endif %}
+                                </a>
+                            </th>
+                            <th class="px-6 py-5 font-bold text-sm">
+                                <a href="{{ path('culture_index', {search: search, sort: 'parcelle', order: sortBy == 'parcelle' and sortOrder == 'ASC' ? 'DESC' : 'ASC'}) }}" class="flex items-center gap-2 hover:text-green-200 transition-colors">
+                                    Parcel
+                                    {% if sortBy == 'parcelle' %}<span class="material-symbols-outlined text-sm">{{ sortOrder == 'ASC' ? 'arrow_upward' : 'arrow_downward' }}</span>{% endif %}
+                                </a>
+                            </th>
+                            <th class="px-6 py-5 font-bold text-sm">
+                                <a href="{{ path('culture_index', {search: search, sort: 'datePlantation', order: sortBy == 'datePlantation' and sortOrder == 'ASC' ? 'DESC' : 'ASC'}) }}" class="flex items-center gap-2 hover:text-green-200 transition-colors">
+                                    Plant Date
+                                    {% if sortBy == 'datePlantation' %}<span class="material-symbols-outlined text-sm">{{ sortOrder == 'ASC' ? 'arrow_upward' : 'arrow_downward' }}</span>{% endif %}
+                                </a>
+                            </th>
+                            <th class="px-6 py-5 font-bold text-sm">Quantity</th>
+                            <th class="px-6 py-5 font-bold text-sm">Status</th>
+                            <th class="px-6 py-5 font-bold text-sm text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for culture in cultures %}
+                        <tr class="group">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <span class="material-symbols-outlined text-green-700">grass</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-gray-800">{{ culture.nomCulture }}</p>
+                                        <p class="text-xs text-gray-400">ID: #{{ culture.id }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if culture.image %}
+                                    <button type="button" class="preview-image-btn image-thumb block rounded-xl overflow-hidden border-2 border-white shadow-md" 
+                                            data-image-url="{{ path('culture_image', {id: culture.id}) }}" 
+                                            data-image-title="{{ culture.nomCulture|e('html_attr') }}">
+                                        <img src="{{ path('culture_image', {id: culture.id}) }}" alt="{{ culture.nomCulture }}" class="w-14 h-14 object-cover">
+                                    </button>
+                                {% else %}
+                                    <div class="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-gray-300">
+                                        <span class="material-symbols-outlined">image</span>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if culture.variete %}
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
+                                        <span class="material-symbols-outlined text-sm">category</span>
+                                        {{ culture.variete }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-gray-300">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if culture.parcelle %}
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-gray-400 text-lg">terrain</span>
+                                        <span class="text-gray-600 font-medium">{{ culture.parcelle.nom }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-gray-300">No parcel</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if culture.datePlantation %}
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
+                                        <span class="text-gray-600 text-sm">{{ culture.datePlantation|date('M d, Y') }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-gray-300">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-bold text-gray-800">{{ culture.quantitePlantee|number_format(0) }}</span>
+                                <span class="text-gray-400 text-sm">units</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if culture.statut == 'In Progress' %}
+                                    <span class="badge badge-progress"><span class="w-2 h-2 rounded-full bg-green-500"></span> In Progress</span>
+                                {% elseif culture.statut == 'Planned' %}
+                                    <span class="badge badge-planned"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Planned</span>
+                                {% elseif culture.statut == 'Harvested' %}
+                                    <span class="badge badge-harvested"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Harvested</span>
+                                {% else %}
+                                    <span class="badge bg-gray-100 text-gray-600">{{ culture.statut ?? 'N/A' }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ path('culture_show', {id: culture.id}) }}" class="action-btn action-btn-view" title="View details">
+                                        <span class="material-symbols-outlined text-lg">visibility</span>
+                                    </a>
+                                    <a href="{{ path('culture_edit', {id: culture.id}) }}" class="action-btn action-btn-edit" title="Edit crop">
+                                        <span class="material-symbols-outlined text-lg">edit</span>
+                                    </a>
+                                    <form action="{{ path('culture_delete', {id: culture.id}) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this crop?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ culture.id) }}">
+                                        <button type="submit" class="action-btn action-btn-delete" title="Delete crop">
+                                            <span class="material-symbols-outlined text-lg">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-16 text-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                        <span class="material-symbols-outlined text-4xl text-gray-300">search_off</span>
+                                    </div>
+                                    <p class="text-gray-500 font-medium">No crops found</p>
+                                    <p class="text-gray-400 text-sm mt-1">Try adjusting your search criteria</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if pagination.totalPages > 1 %}
+            <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                <p class="text-sm text-gray-500">
+                    Showing <span class="font-bold text-gray-700">{{ ((pagination.page - 1) * pagination.limit) + 1 }}</span> 
+                    to <span class="font-bold text-gray-700">{{ min(pagination.page * pagination.limit, pagination.total) }}</span> 
+                    of <span class="font-bold text-gray-700">{{ pagination.total }}</span> crops
+                </p>
+                <div class="flex items-center gap-1">
+                    {% if pagination.page > 1 %}
+                        <a href="{{ path('culture_index', {page: 1, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="First">
+                            <span class="material-symbols-outlined text-lg">first_page</span>
+                        </a>
+                        <a href="{{ path('culture_index', {page: pagination.page - 1, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Previous">
+                            <span class="material-symbols-outlined text-lg">chevron_left</span>
+                        </a>
+                    {% endif %}
+                    
+                    {% for p in max(1, pagination.page - 2)..min(pagination.totalPages, pagination.page + 2) %}
+                        <a href="{{ path('culture_index', {page: p, search: search, sort: sortBy, order: sortOrder}) }}" 
+                           class="w-9 h-9 flex items-center justify-center rounded-lg font-bold text-sm transition-colors {{ p == pagination.page ? 'bg-[#0a2200] text-white' : 'hover:bg-gray-200 text-gray-600' }}">
+                            {{ p }}
+                        </a>
+                    {% endfor %}
+                    
+                    {% if pagination.page < pagination.totalPages %}
+                        <a href="{{ path('culture_index', {page: pagination.page + 1, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Next">
+                            <span class="material-symbols-outlined text-lg">chevron_right</span>
+                        </a>
+                        <a href="{{ path('culture_index', {page: pagination.totalPages, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Last">
+                            <span class="material-symbols-outlined text-lg">last_page</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <!-- Image Preview Modal -->
+    <div id="imagePreviewModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="relative bg-white rounded-3xl overflow-hidden max-w-4xl max-h-[90vh] shadow-2xl animate-fade-in-up">
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 id="imagePreviewTitle" class="font-bold text-lg text-gray-800">Image Preview</h3>
+                <button id="closeImagePreview" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-4">
+                <img id="imagePreviewContent" src="" alt="Preview" class="max-w-full max-h-[70vh] object-contain rounded-2xl mx-auto">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle sidebar dropdown
+        function toggleDropdown(el) {
+            el.classList.toggle('open');
+        }
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeEl = document.getElementById('currentTime');
+            if (timeEl) {
+                timeEl.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + 
+                                     now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Animated counters
+        function animateCounters() {
+            document.querySelectorAll('.counter').forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 1500;
+                const step = target / (duration / 16);
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        counter.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current);
+                    }
+                }, 16);
+            });
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            // Status Distribution Chart
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['In Progress', 'Planned', 'Harvested'],
+                        datasets: [{
+                            data: [{{ inProgressCount }}, {{ plannedCount }}, {{ harvestedCount }}],
+                            backgroundColor: ['#10b981', '#3b82f6', '#f97316'],
+                            borderWidth: 0,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { padding: 20, usePointStyle: true, font: { family: 'Inter', weight: '600' } }
+                            }
+                        },
+                        animation: { animateRotate: true, animateScale: true }
+                    }
+                });
+            }
+
+            // Variety Chart
+            const varietyCtx = document.getElementById('varietyChart');
+            if (varietyCtx) {
+                const varietyData = {};
+                {% for culture in cultures %}
+                    varietyData['{{ culture.nomCulture ?? "Unknown" }}'] = (varietyData['{{ culture.nomCulture ?? "Unknown" }}'] || 0) + 1;
+                {% endfor %}
+                
+                const labels = Object.keys(varietyData).slice(0, 5);
+                const values = Object.values(varietyData).slice(0, 5);
+                
+                new Chart(varietyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Count',
+                            data: values,
+                            backgroundColor: ['#0a2200', '#1a4d00', '#2d7000', '#409900', '#53c200'],
+                            borderRadius: 8,
+                            barThickness: 40
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f0f0f0' } },
+                            x: { grid: { display: false } }
+                        },
+                        animation: { duration: 1500 }
+                    }
+                });
+            }
+        }
+
+        // Image Preview
+        const imagePreviewModal = document.getElementById('imagePreviewModal');
+        const imagePreviewContent = document.getElementById('imagePreviewContent');
+        const imagePreviewTitle = document.getElementById('imagePreviewTitle');
+        const closeImagePreview = document.getElementById('closeImagePreview');
+
+        function initImagePreview(scope = document) {
+            scope.querySelectorAll('.preview-image-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    imagePreviewContent.src = this.dataset.imageUrl;
+                    imagePreviewTitle.textContent = this.dataset.imageTitle || 'Image preview';
+                    imagePreviewModal.classList.remove('hidden');
+                    imagePreviewModal.classList.add('flex');
+                });
+            });
+        }
+
+        function closePreview() {
+            imagePreviewModal.classList.add('hidden');
+            imagePreviewModal.classList.remove('flex');
+            imagePreviewContent.src = '';
+        }
+
+        closeImagePreview?.addEventListener('click', closePreview);
+        imagePreviewModal?.addEventListener('click', (e) => { if (e.target === imagePreviewModal) closePreview(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !imagePreviewModal?.classList.contains('hidden')) closePreview(); });
+
+        // Live Listing (AJAX)
+        function initLiveListing() {
+            const form = document.getElementById('listingFilterForm');
+            const searchInput = form?.querySelector('input[name="search"]');
+            const resultsContainer = document.getElementById('listingResults');
+            if (!form || !resultsContainer) return;
+
+            let debounceTimer;
+
+            const fetchAndReplace = async (url) => {
+                resultsContainer.style.opacity = '0.5';
+                resultsContainer.style.pointerEvents = 'none';
+                try {
+                    const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const html = await response.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const newResults = doc.getElementById('listingResults');
+                    if (newResults) {
+                        resultsContainer.replaceWith(newResults);
+                        history.replaceState({}, '', url);
+                        initLiveListing();
+                        initImagePreview(document);
+                    }
+                } finally {
+                    const updated = document.getElementById('listingResults');
+                    if (updated) {
+                        updated.style.opacity = '1';
+                        updated.style.pointerEvents = 'auto';
+                    }
+                }
+            };
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const params = new URLSearchParams(new FormData(form));
+                fetchAndReplace(form.action + '?' + params.toString());
+            });
+
+            form.querySelectorAll('select[name="sort"], select[name="order"]').forEach(select => {
+                select.addEventListener('change', () => {
+                    const params = new URLSearchParams(new FormData(form));
+                    fetchAndReplace(form.action + '?' + params.toString());
+                });
+            });
+
+            searchInput?.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const params = new URLSearchParams(new FormData(form));
+                    fetchAndReplace(form.action + '?' + params.toString());
+                }, 350);
+            });
+
+            resultsContainer.addEventListener('click', (e) => {
+                const link = e.target.closest('a[href]');
+                if (!link) return;
+                const isInternalLink = link.closest('#listingResults') && 
+                    (link.href.includes('/elfirma/cultures?') || link.classList.contains('sort-link') || 
+                     link.title === 'First' || link.title === 'Previous' || link.title === 'Next' || link.title === 'Last');
+                if (isInternalLink) {
+                    e.preventDefault();
+                    fetchAndReplace(link.href);
+                }
+            });
+        }
+
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            animateCounters();
+            initCharts();
+            initImagePreview();
+            initLiveListing();
+            
+            // Trigger animations
+            document.querySelectorAll('.animate-fade-in-up').forEach(el => {
+                el.style.opacity = '1';
+            });
+        });
+    </script>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>
+
