@@ -21,7 +21,7 @@ class Vaccination
         return $this->id_vaccination;
     }
 
-    #[ORM\ManyToOne(targetEntity: Animal::class, inversedBy: 'vaccinations')]
+    #[ORM\ManyToOne(targetEntity: Animal::class)]
     #[ORM\JoinColumn(name: 'id_animal', referencedColumnName: 'id_animal', nullable: true)]
     private ?Animal $animal = null;
 

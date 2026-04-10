@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Livestock;
 use App\Repository\LivestockRepository;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class LivestockController extends AbstractController
 {
     #[Route('/elfirma/animaux-elevages/livestock/create', name: 'livestock_create', methods: ['POST'])]
-    public function create(Request $request, LivestockRepository $livestockRepository, ValidatorInterface $validator): Response
+    public function create(Request $request, LivestockRepository $livestockRepository): Response
     {
         $formRedirect = [
             'module' => 'animaux-elevages',
@@ -39,30 +36,13 @@ final class LivestockController extends AbstractController
 
         $payload = $this->toLivestockPayload($input);
 
-        $violations = $validator->validate(
-            (new Livestock())
-                ->setTypeElevage($payload['type_elevage'])
-                ->setEtatElevage($payload['etat_elevage'])
-                ->setCapacite($payload['capacite'])
-                ->setNombreAnimaux(0)
-                ->setProduction($payload['production'])
-        );
-
-        if (count($violations) > 0) {
-            return $this->redirectToLivestockFormWithFieldErrors(
-                $formRedirect,
-                $this->collectViolationFieldErrors($violations),
-                $input
-            );
-        }
-
         $livestockRepository->createLivestock($payload);
 
         return $this->redirectToLivestockList();
     }
 
     #[Route('/elfirma/animaux-elevages/livestock/update', name: 'livestock_update', methods: ['POST'])]
-    public function update(Request $request, LivestockRepository $livestockRepository, ValidatorInterface $validator): Response
+    public function update(Request $request, LivestockRepository $livestockRepository): Response
     {
         $idElevage = (int) $request->request->get('id_elevage', 0);
         $formRedirect = [
@@ -95,23 +75,6 @@ final class LivestockController extends AbstractController
         $payload = $this->toLivestockPayload($input);
 
         $nombreAnimaux = $livestockRepository->countAnimalsForLivestock($idElevage);
-
-        $violations = $validator->validate(
-            (new Livestock())
-                ->setTypeElevage($payload['type_elevage'])
-                ->setEtatElevage($payload['etat_elevage'])
-                ->setCapacite($payload['capacite'])
-                ->setNombreAnimaux($nombreAnimaux)
-                ->setProduction($payload['production'])
-        );
-
-        if (count($violations) > 0) {
-            return $this->redirectToLivestockFormWithFieldErrors(
-                $formRedirect,
-                $this->collectViolationFieldErrors($violations),
-                $input
-            );
-        }
 
         $livestockRepository->updateLivestock($idElevage, $payload, $nombreAnimaux);
 
@@ -227,38 +190,6 @@ final class LivestockController extends AbstractController
             'module' => 'animaux-elevages',
             'view' => 'livestock',
         ]);
-    }
-
-    /**
-     * @return array<string,string>
-     */
-    private function collectViolationFieldErrors(ConstraintViolationListInterface $violations): array
-    {
-        $errors = [];
-        foreach ($violations as $violation) {
-            $field = $this->normalizeFieldName((string) $violation->getPropertyPath());
-            if ($field === '') {
-                $field = '_form';
-            }
-
-            if (!isset($errors[$field])) {
-                $errors[$field] = $violation->getMessage();
-            }
-        }
-
-        return $errors;
-    }
-
-    private function normalizeFieldName(string $field): string
-    {
-        $field = trim($field);
-        if ($field === '') {
-            return '';
-        }
-
-        $field = preg_replace('/([a-z])([A-Z])/', '$1_$2', $field);
-
-        return strtolower((string) $field);
     }
 
     /**

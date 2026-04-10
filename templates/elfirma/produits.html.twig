@@ -62,11 +62,11 @@
                     <span class="material-symbols-outlined text-sm">expand_less</span>
                 </div>
                 <div class="mt-1 ml-8">
-                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_page', { module: 'categories' }) }}">
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_categories') }}">
                         <span class="material-symbols-outlined text-sm">category</span>
                         <span>Categories</span>
                     </a>
-                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('elfirma_page', { module: 'produits' }) }}">
+                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('elfirma_products') }}">
                         
                         <span>Products</span>
                     </a>
@@ -127,7 +127,7 @@
                 <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-lg">
                     <div class="mb-4">
                         <p class="text-green-100 text-sm font-semibold uppercase tracking-wide">Total Products</p>
-                        <p class="text-4xl font-black mt-2">{{ produits|length }}</p>
+                        <p class="text-4xl font-black mt-2">{{ product_stats.total_products }}</p>
                     </div>
                     <p class="text-green-100 text-sm">Available products in catalog</p>
                 </div>
@@ -136,13 +136,7 @@
                 <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
                     <div class="mb-4">
                         <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wide">Total Stock</p>
-                        <p class="text-4xl font-black mt-2">
-                            {% set totalStock = 0 %}
-                            {% for produit in produits %}
-                                {% set totalStock = totalStock + produit.quantiteStock %}
-                            {% endfor %}
-                            {{ totalStock }}
-                        </p>
+                        <p class="text-4xl font-black mt-2">{{ product_stats.total_stock }}</p>
                     </div>
                     <p class="text-emerald-100 text-sm">Units in inventory</p>
                 </div>
@@ -151,13 +145,7 @@
                 <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-6 text-white shadow-lg">
                     <div class="mb-4">
                         <p class="text-teal-100 text-sm font-semibold uppercase tracking-wide">Stock Value</p>
-                        <p class="text-3xl font-black mt-2">
-                            {% set totalValue = 0 %}
-                            {% for produit in produits %}
-                                {% set totalValue = totalValue + (produit.prixUnitaire * produit.quantiteStock) %}
-                            {% endfor %}
-                            {{ totalValue|number_format(2, ',', ' ') }} DT
-                        </p>
+                        <p class="text-3xl font-black mt-2">{{ product_stats.total_value|number_format(2, ',', ' ') }} DT</p>
                     </div>
                     <p class="text-teal-100 text-sm">Total value of stock</p>
                 </div>
@@ -241,10 +229,10 @@
                             <p class="text-[#43493d] max-w-xl">Manage your product inventory and stock.</p>
                         </div>
                         <div class="flex gap-3">
-                            <button onclick="generatePDF()" class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105">
+                            <a href="{{ path('elfirma_products_export_pdf', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort }) }}" class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105">
                                 <span class="material-symbols-outlined">picture_as_pdf</span>
                                 <span>Export PDF</span>
-                            </button>
+                            </a>
                             <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
                                 <span class="material-symbols-outlined">add</span>
                                 <span>New Product</span>
@@ -254,16 +242,17 @@
 
             <!-- Search, Filter and Sort Section -->
             <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <form id="productFiltersForm" method="GET" action="{{ path('elfirma_products') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <!-- Search Bar -->
                     <div class="md:col-span-4 relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">search</span>
                         <input 
                             type="text" 
                             id="searchInput"
+                            name="q"
+                            value="{{ filters.q|default('') }}"
                             placeholder="Search for a product..." 
                             class="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
-                            onkeyup="filterTable()"
                         />
                     </div>
                     
@@ -271,11 +260,11 @@
                     <div class="md:col-span-3">
                         <select 
                             id="categoryFilter" 
-                            onchange="filterTable()"
+                            name="category"
                             class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer">
                             <option value="">All categories</option>
                             {% for categorie in categories %}
-                                <option value="{{ categorie.nom|lower }}">{{ categorie.nom }}</option>
+                                <option value="{{ categorie.nom|lower }}" {% if filters.category == categorie.nom|lower %}selected{% endif %}>{{ categorie.nom }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -284,12 +273,12 @@
                     <div class="md:col-span-2">
                         <select 
                             id="statusFilter" 
-                            onchange="filterTable()"
+                            name="status"
                             class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer">
                             <option value="">All statuses</option>
-                            <option value="disponible">Available</option>
-                            <option value="rupture">Out of Stock</option>
-                            <option value="expiré">Expired</option>
+                            <option value="disponible" {% if filters.status == 'disponible' %}selected{% endif %}>Available</option>
+                            <option value="rupture" {% if filters.status == 'rupture' %}selected{% endif %}>Out of Stock</option>
+                            <option value="expiré" {% if filters.status == 'expiré' %}selected{% endif %}>Expired</option>
                         </select>
                     </div>
                     
@@ -297,23 +286,31 @@
                     <div class="md:col-span-2">
                         <select 
                             id="sortSelect" 
-                            onchange="sortTable()"
+                            name="sort"
                             class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer">
-                            <option value="name-asc">Name A→Z</option>
-                            <option value="name-desc">Name Z→A</option>
-                            <option value="stock-desc">Stock ↓</option>
-                            <option value="stock-asc">Stock ↑</option>
-                            <option value="price-desc">Price ↓</option>
-                            <option value="price-asc">Price ↑</option>
+                            <option value="name-asc" {% if filters.sort == 'name-asc' %}selected{% endif %}>Name A→Z</option>
+                            <option value="name-desc" {% if filters.sort == 'name-desc' %}selected{% endif %}>Name Z→A</option>
+                            <option value="stock-desc" {% if filters.sort == 'stock-desc' %}selected{% endif %}>Stock ↓</option>
+                            <option value="stock-asc" {% if filters.sort == 'stock-asc' %}selected{% endif %}>Stock ↑</option>
+                            <option value="price-desc" {% if filters.sort == 'price-desc' %}selected{% endif %}>Price ↓</option>
+                            <option value="price-asc" {% if filters.sort == 'price-asc' %}selected{% endif %}>Price ↑</option>
+                            <option value="id-desc" {% if filters.sort == 'id-desc' or filters.sort is empty %}selected{% endif %}>Newest</option>
+                            <option value="id-asc" {% if filters.sort == 'id-asc' %}selected{% endif %}>Oldest</option>
                         </select>
                     </div>
                     
                     <div class="md:col-span-1">
-                        <button onclick="resetFilters()" class="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all">
-                            <span class="material-symbols-outlined">refresh</span>
+                        <button type="submit" class="w-full px-4 py-3 bg-[#1e3a0f] hover:bg-[#16300b] text-white font-semibold rounded-xl transition-all">
+                            <span class="material-symbols-outlined">check</span>
                         </button>
                     </div>
-                </div>
+
+                    <div class="md:col-span-1">
+                        <a href="{{ path('elfirma_products') }}" class="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all inline-flex items-center justify-center">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </a>
+                    </div>
+                </form>
                 
                 <!-- Results Counter -->
                 <div class="mt-4 text-sm text-gray-600">
@@ -331,32 +328,41 @@
                     <table class="w-full" id="produitsTable">
                         <thead>
                             <tr class="text-left text-[#43493d] text-xs uppercase tracking-widest font-black border-b-2 border-green-200">
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('image')">
-                                    <div class="flex items-center gap-2">Image <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Image</div>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('name')">
-                                    <div class="flex items-center gap-2">Name <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_products', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort == 'name-asc' ? 'name-desc' : 'name-asc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Name
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('category')">
-                                    <div class="flex items-center gap-2">Category <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Category</div>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('type')">
-                                    <div class="flex items-center gap-2">Type <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Type</div>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('quality')">
-                                    <div class="flex items-center gap-2">Quality <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Quality</div>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('price')">
-                                    <div class="flex items-center gap-2">Price (DT) <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_products', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort == 'price-desc' ? 'price-asc' : 'price-desc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Price (DT)
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('stock')">
-                                    <div class="flex items-center gap-2">Stock <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_products', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort == 'stock-desc' ? 'stock-asc' : 'stock-desc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Stock
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('dates')">
-                                    <div class="flex items-center gap-2">Dates <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Dates</div>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('status')">
-                                    <div class="flex items-center gap-2">Status <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Status</div>
                                 </th>
                                 <th class="pb-4 px-4">Actions</th>
                             </tr>
@@ -500,7 +506,7 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <form method="POST" action="{{ path('produit_create') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ path('produit_create') }}" enctype="multipart/form-data" novalidate>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     {% if produitCreateErrors._global is defined %}
                         <div class="md:col-span-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -578,7 +584,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Production Date</label>
-                        <input type="date" name="date_production" 
+                           <input type="date" name="date_production" 
                                value="{{ produitCreateOld.date_production|default('') }}"
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                         {% if produitCreateErrors.date_production is defined %}
@@ -587,7 +593,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Expiration Date</label>
-                        <input type="date" name="date_expiration" 
+                           <input type="date" name="date_expiration" 
                                value="{{ produitCreateOld.date_expiration|default('') }}"
                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
                         {% if produitCreateErrors.date_expiration is defined %}
@@ -656,7 +662,7 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <form id="editForm" method="POST" action="" enctype="multipart/form-data">
+            <form id="editForm" method="POST" action="" enctype="multipart/form-data" novalidate>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     {% if produitEditErrors._global is defined %}
                         <div class="md:col-span-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -728,7 +734,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Production Date</label>
-                        <input type="date" id="editDateProduction" name="date_production" 
+                           <input type="date" id="editDateProduction" name="date_production" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
                         {% if produitEditErrors.date_production is defined %}
                             <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.date_production|first }}</p>
@@ -736,7 +742,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Expiration Date</label>
-                        <input type="date" id="editDateExpiration" name="date_expiration" 
+                           <input type="date" id="editDateExpiration" name="date_expiration" 
                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
                         {% if produitEditErrors.date_expiration is defined %}
                             <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.date_expiration|first }}</p>
@@ -799,31 +805,10 @@
     </div>
 
     <script>
-        function formatStatDate() {
-            const formatter = new Intl.DateTimeFormat('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            return formatter.format(new Date());
-        }
-
         function buildProductCharts() {
-            const productsData = [
-                {% for produit in produits %}
-                {
-                    name: {{ produit.nom|json_encode|raw }},
-                    category: {{ (produit.categorie ? produit.categorie.nom : 'Uncategorized')|json_encode|raw }},
-                    stock: {{ produit.quantiteStock|default(0) }},
-                    unitPrice: {{ produit.prixUnitaire|default(0) }},
-                    status: {{ produit.statut|default('Unknown')|json_encode|raw }}
-                }{% if not loop.last %},{% endif %}
-                {% endfor %}
-            ];
+            const chartData = {{ product_chart_data|json_encode|raw }};
 
-            if (!productsData.length) {
+            if (!chartData || !Array.isArray(chartData.top_value_names)) {
                 return;
             }
 
@@ -838,47 +823,11 @@
                 gray: '#64748b'
             };
 
-            const stockByCategory = {};
-            const countByCategory = {};
-            const statusMap = { Available: 0, 'Out of Stock': 0, Expired: 0, Other: 0 };
-
-            const rankedByValue = productsData
-                .map((p) => ({ ...p, totalValue: (Number(p.stock) || 0) * (Number(p.unitPrice) || 0) }))
-                .sort((a, b) => b.totalValue - a.totalValue)
-                .slice(0, 7);
-
-            let totalValue = 0;
-            let totalDisponible = 0;
-
-            productsData.forEach((p) => {
-                const category = p.category || 'Uncategorized';
-                const normalizedStatus = p.status || 'Other';
-
-                stockByCategory[category] = (stockByCategory[category] || 0) + (Number(p.stock) || 0);
-                countByCategory[category] = (countByCategory[category] || 0) + 1;
-                totalValue += (Number(p.stock) || 0) * (Number(p.unitPrice) || 0);
-
-                if (normalizedStatus === 'Disponible' || normalizedStatus === 'Available') {
-                    statusMap.Available += 1;
-                    totalDisponible += 1;
-                } else if (normalizedStatus === 'Rupture' || normalizedStatus === 'Out of Stock') {
-                    statusMap['Out of Stock'] += 1;
-                } else if (normalizedStatus === 'Expiré' || normalizedStatus === 'Expired') {
-                    statusMap.Expired += 1;
-                } else {
-                    statusMap.Other += 1;
-                }
-            });
-
-            const topCategoryEntry = Object.entries(countByCategory).sort((a, b) => b[1] - a[1])[0] || ['-', 0];
-            const avgValue = totalValue / productsData.length;
-            const availabilityRate = (totalDisponible / productsData.length) * 100;
-
-            document.getElementById('avgValueCard').textContent = `${avgValue.toLocaleString('en-GB', { maximumFractionDigits: 2 })} DT`;
-            document.getElementById('topCategoryCard').textContent = topCategoryEntry[0];
-            document.getElementById('topCategoryCount').textContent = `${topCategoryEntry[1]} product(s)`;
-            document.getElementById('availabilityRateCard').textContent = `${availabilityRate.toFixed(1)}%`;
-            document.getElementById('statsLastUpdated').textContent = formatStatDate();
+            document.getElementById('avgValueCard').textContent = `{{ product_stats.average_value|number_format(2, '.', '') }} DT`;
+            document.getElementById('topCategoryCard').textContent = {{ product_stats.top_category|json_encode|raw }};
+            document.getElementById('topCategoryCount').textContent = `{{ product_stats.top_category_count }} product(s)`;
+            document.getElementById('availabilityRateCard').textContent = `{{ product_stats.availability_rate|number_format(1, '.', '') }}%`;
+            document.getElementById('statsLastUpdated').textContent = {{ product_chart_data.generated_at|json_encode|raw }};
 
             const commonOptions = {
                 responsive: true,
@@ -908,10 +857,10 @@
                 new Chart(stockValueCtx, {
                     type: 'bar',
                     data: {
-                        labels: rankedByValue.map((p) => p.name),
+                        labels: chartData.top_value_names,
                         datasets: [{
                             label: 'Stock Value (DT)',
-                            data: rankedByValue.map((p) => Number(p.totalValue.toFixed(2))),
+                            data: chartData.top_value_values,
                             borderRadius: 10,
                             backgroundColor: [
                                 '#2d5016', '#1f6a2f', '#2a8546', '#34a853', '#5ec16f', '#84cc16', '#a3d977'
@@ -945,7 +894,12 @@
                     data: {
                         labels: ['Available', 'Out of Stock', 'Expired', 'Other'],
                         datasets: [{
-                            data: [statusMap.Available, statusMap['Out of Stock'], statusMap.Expired, statusMap.Other],
+                            data: [
+                                chartData.status.available,
+                                chartData.status.out_of_stock,
+                                chartData.status.expired,
+                                chartData.status.other
+                            ],
                             backgroundColor: [palette.emerald, palette.red, palette.orange, palette.gray],
                             borderColor: '#ffffff',
                             borderWidth: 3,
@@ -961,15 +915,13 @@
 
             const categoryCtx = document.getElementById('categoryStockChart');
             if (categoryCtx) {
-                const orderedCategoryEntries = Object.entries(stockByCategory).sort((a, b) => b[1] - a[1]);
-
                 new Chart(categoryCtx, {
                     type: 'line',
                     data: {
-                        labels: orderedCategoryEntries.map((entry) => entry[0]),
+                        labels: chartData.category_labels,
                         datasets: [{
                             label: 'Total Stock by Category',
-                            data: orderedCategoryEntries.map((entry) => entry[1]),
+                            data: chartData.category_stock_values,
                             borderColor: palette.green,
                             backgroundColor: 'rgba(45, 80, 22, 0.15)',
                             pointBackgroundColor: palette.green,
@@ -1064,130 +1016,31 @@
             openModal('editModal');
         }
         
-        // Search and Filter Functions
-        function filterTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-            const rows = document.querySelectorAll('#tableBody tr:not(#emptyRow)');
-            let visibleCount = 0;
-            
-            rows.forEach(row => {
-                const name = row.dataset.name || '';
-                const category = row.dataset.category || '';
-                const status = row.dataset.status || '';
-                
-                const matchesSearch = name.includes(searchTerm);
-                const matchesCategory = !categoryFilter || category === categoryFilter;
-                const matchesStatus = !statusFilter || status === statusFilter;
-                
-                if (matchesSearch && matchesCategory && matchesStatus) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
+        const productFiltersForm = document.getElementById('productFiltersForm');
+        const productSearchInput = document.getElementById('searchInput');
+        const productCategoryFilter = document.getElementById('categoryFilter');
+        const productStatusFilter = document.getElementById('statusFilter');
+        const productSortSelect = document.getElementById('sortSelect');
+        let productFilterTimer = null;
+
+        if (productSearchInput && productFiltersForm) {
+            productSearchInput.addEventListener('input', function () {
+                clearTimeout(productFilterTimer);
+                productFilterTimer = setTimeout(function () {
+                    productFiltersForm.submit();
+                }, 280);
             });
-            
-            document.getElementById('resultCount').textContent = visibleCount;
         }
-        
-        // Sorting state
-        let sortState = {
-            column: null,
-            direction: 'asc' // 'asc' or 'desc'
-        };
-        
-        function sortTable(column) {
-            const tbody = document.getElementById('tableBody');
-            const rows = Array.from(tbody.querySelectorAll('tr:not(#emptyRow)'));
-            
-            // Toggle direction if same column clicked
-            if (sortState.column === column) {
-                sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
-            } else {
-                sortState.column = column;
-                sortState.direction = 'asc';
+
+        [productCategoryFilter, productStatusFilter, productSortSelect].forEach(function (element) {
+            if (!element || !productFiltersForm) {
+                return;
             }
-            
-            rows.sort((a, b) => {
-                let aVal, bVal;
-                
-                switch(column) {
-                    case 'name':
-                        aVal = a.dataset.name || '';
-                        bVal = b.dataset.name || '';
-                        return sortState.direction === 'asc' 
-                            ? aVal.localeCompare(bVal)
-                            : bVal.localeCompare(aVal);
-                    case 'category':
-                        aVal = a.dataset.category || '';
-                        bVal = b.dataset.category || '';
-                        return sortState.direction === 'asc' 
-                            ? aVal.localeCompare(bVal)
-                            : bVal.localeCompare(aVal);
-                    case 'type':
-                        aVal = a.dataset.type || '';
-                        bVal = b.dataset.type || '';
-                        return sortState.direction === 'asc' 
-                            ? aVal.localeCompare(bVal)
-                            : bVal.localeCompare(aVal);
-                    case 'quality':
-                        aVal = a.dataset.quality || '';
-                        bVal = b.dataset.quality || '';
-                        return sortState.direction === 'asc' 
-                            ? aVal.localeCompare(bVal)
-                            : bVal.localeCompare(aVal);
-                    case 'price':
-                        aVal = parseFloat(a.dataset.price) || 0;
-                        bVal = parseFloat(b.dataset.price) || 0;
-                        return sortState.direction === 'asc' ? aVal - bVal : bVal - aVal;
-                    case 'stock':
-                        aVal = parseInt(a.dataset.stock) || 0;
-                        bVal = parseInt(b.dataset.stock) || 0;
-                        return sortState.direction === 'asc' ? aVal - bVal : bVal - aVal;
-                    case 'status':
-                        aVal = a.dataset.status || '';
-                        bVal = b.dataset.status || '';
-                        return sortState.direction === 'asc' 
-                            ? aVal.localeCompare(bVal)
-                            : bVal.localeCompare(aVal);
-                    default:
-                        return 0;
-                }
+            element.addEventListener('change', function () {
+                productFiltersForm.submit();
             });
-            
-            rows.forEach(row => tbody.appendChild(row));
-            updateSortIndicators();
-        }
-        
-        function updateSortIndicators() {
-            document.querySelectorAll('th .material-symbols-outlined').forEach(icon => {
-                icon.textContent = 'unfold_more';
-            });
-            
-            if (sortState.column) {
-                const headers = document.querySelectorAll('th');
-                headers.forEach(h => {
-                    if (h.getAttribute('onclick') && h.getAttribute('onclick').includes(sortState.column)) {
-                        const icon = h.querySelector('.material-symbols-outlined');
-                        if (icon) {
-                            icon.textContent = sortState.direction === 'asc' ? 'arrow_upward' : 'arrow_downward';
-                        }
-                    }
-                });
-            }
-        }
-        
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('categoryFilter').selectedIndex = 0;
-            document.getElementById('statusFilter').selectedIndex = 0;
-            document.getElementById('sortSelect').selectedIndex = 0;
-            filterTable();
-            sortTable();
-        }
-        
+        });
+
         // Image Preview Functions
         document.getElementById('imageInput')?.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -1259,299 +1112,6 @@
             });
         {% endif %}
         
-        async function loadImageAsDataURL(url) {
-            const response = await fetch(url, { cache: 'no-store' });
-            if (!response.ok) {
-                throw new Error(`Failed to load image: ${response.status}`);
-            }
-
-            const blob = await response.blob();
-            return await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-
-        // Professional PDF Export Function
-        async function generatePDF() {
-            const exportButton = document.querySelector('button[onclick="generatePDF()"]');
-            const originalLabel = exportButton ? exportButton.innerHTML : '';
-
-            if (exportButton) {
-                exportButton.disabled = true;
-                exportButton.classList.add('opacity-70', 'cursor-not-allowed');
-                exportButton.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span><span>Exporting...</span>';
-            }
-
-            let mount = null;
-
-            try {
-                let produits = [];
-
-                try {
-                    const response = await fetch('/elfirma/produit/api/list', { headers: { 'Accept': 'application/json' } });
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    produits = await response.json();
-                } catch (fetchError) {
-                    console.warn('API fetch failed, fallback to table extraction:', fetchError);
-                }
-
-                if (!Array.isArray(produits) || produits.length === 0) {
-                    const rows = Array.from(document.querySelectorAll('#tableBody tr:not(#emptyRow)'));
-                    produits = rows.map((row) => {
-                        const cells = row.querySelectorAll('td');
-                        return {
-                            nom: cells[1]?.querySelector('p')?.textContent?.trim() || 'N/A',
-                            categorie: cells[2]?.textContent?.trim() || 'N/A',
-                            type: cells[3]?.textContent?.trim() || 'N/A',
-                            qualite: cells[4]?.textContent?.trim() || 'N/A',
-                            prix: parseFloat(row.dataset.price || '0') || 0,
-                            stock: parseInt(row.dataset.stock || '0', 10) || 0,
-                            dateProduction: cells[7]?.textContent?.includes('Prod:') ? cells[7].textContent.split('Prod:')[1].trim().split('Exp:')[0].trim() : 'N/A',
-                            dateExpiration: cells[7]?.textContent?.includes('Exp:') ? cells[7].textContent.split('Exp:')[1].trim() : 'N/A',
-                            statut: cells[8]?.textContent?.trim() || 'N/A'
-                        };
-                    });
-                }
-
-                if (!produits.length) {
-                    alert('No products to export.');
-                    return;
-                }
-
-                const element = document.createElement('div');
-                element.style.width = '1120px';
-                element.style.padding = '24px';
-                element.style.backgroundColor = '#ffffff';
-                element.style.fontFamily = 'Arial, sans-serif';
-                element.style.color = '#1f2937';
-
-                let logoDataUrl = null;
-                try {
-                    logoDataUrl = await loadImageAsDataURL('/assets/img/logo.png');
-                } catch (logoError) {
-                    console.warn('Logo load failed for PDF export:', logoError);
-                }
-
-                const header = document.createElement('div');
-                header.style.display = 'flex';
-                header.style.justifyContent = 'space-between';
-                header.style.alignItems = 'center';
-                header.style.borderBottom = '3px solid #2d5016';
-                header.style.paddingBottom = '14px';
-                header.style.marginBottom = '18px';
-
-                const leftBlock = document.createElement('div');
-                leftBlock.style.display = 'flex';
-                leftBlock.style.alignItems = 'center';
-                leftBlock.style.gap = '12px';
-
-                const logoWrap = document.createElement('div');
-                logoWrap.style.width = '72px';
-                logoWrap.style.height = '72px';
-                logoWrap.style.border = '1px solid #cfe0c1';
-                logoWrap.style.borderRadius = '999px';
-                logoWrap.style.display = 'flex';
-                logoWrap.style.alignItems = 'center';
-                logoWrap.style.justifyContent = 'center';
-                logoWrap.style.backgroundColor = '#ffffff';
-
-                if (logoDataUrl) {
-                    const logo = document.createElement('img');
-                    logo.src = logoDataUrl;
-                    logo.alt = 'Elfirma Logo';
-                    logo.style.maxWidth = '56px';
-                    logo.style.maxHeight = '56px';
-                    logo.style.objectFit = 'contain';
-                    logoWrap.appendChild(logo);
-                } else {
-                    logoWrap.innerHTML = '<span style="font-size:10px;color:#2d5016;font-weight:700;">EL FIRMA</span>';
-                }
-
-                const identity = document.createElement('div');
-                identity.innerHTML = `
-                    <div style="font-size: 13px; font-weight: 700; color: #2d5016; letter-spacing: .5px;">ELFIRMA</div>
-                    <div style="font-size: 11px; color: #4b5563;">Agricultural Management System</div>
-                `;
-
-                leftBlock.appendChild(logoWrap);
-                leftBlock.appendChild(identity);
-
-                const badge = document.createElement('div');
-                badge.style.display = 'inline-block';
-                badge.style.padding = '6px 12px';
-                badge.style.borderRadius = '999px';
-                badge.style.backgroundColor = '#edf8e8';
-                badge.style.color = '#2d5016';
-                badge.style.fontSize = '11px';
-                badge.style.fontWeight = '700';
-                badge.textContent = 'ELFIRMA • PRODUCTS REPORT';
-
-                const titleSection = document.createElement('div');
-                titleSection.style.textAlign = 'right';
-                titleSection.innerHTML = `
-                    <h1 style="margin: 0; color: #2d5016; font-size: 24px; font-weight: bold;">Product Inventory</h1>
-                    <p style="margin: 5px 0 0 0; color: #4b5563; font-size: 12px;">Generated: ${new Date().toLocaleString('en-GB')}</p>
-                `;
-
-                leftBlock.appendChild(badge);
-                header.appendChild(leftBlock);
-                header.appendChild(titleSection);
-                element.appendChild(header);
-
-                const totalProducts = produits.length;
-                const totalStock = produits.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
-                const totalValue = produits.reduce((sum, p) => sum + ((Number(p.prix) || 0) * (Number(p.stock) || 0)), 0);
-
-                const statsDiv = document.createElement('div');
-                statsDiv.style.display = 'grid';
-                statsDiv.style.gridTemplateColumns = '1fr 1fr 1fr';
-                statsDiv.style.gap = '14px';
-                statsDiv.style.marginBottom = '22px';
-
-                const statCards = [
-                    { label: 'Total Products', value: totalProducts, color: '#2d5016' },
-                    { label: 'Total Stock', value: `${totalStock} units`, color: '#16a34a' },
-                    { label: 'Stock Value', value: `${totalValue.toFixed(2)} DT`, color: '#0f766e' }
-                ];
-
-                statCards.forEach((stat) => {
-                    const card = document.createElement('div');
-                    card.style.backgroundColor = stat.color;
-                    card.style.color = 'white';
-                    card.style.padding = '14px';
-                    card.style.borderRadius = '10px';
-                    card.style.textAlign = 'center';
-                    card.innerHTML = `
-                        <div style="font-size: 11px; opacity: 0.9; margin-bottom: 5px; text-transform: uppercase;">${stat.label}</div>
-                        <div style="font-size: 22px; font-weight: 700;">${stat.value}</div>
-                    `;
-                    statsDiv.appendChild(card);
-                });
-                element.appendChild(statsDiv);
-
-                const title = document.createElement('h2');
-                title.style.color = '#2d5016';
-                title.style.fontSize = '17px';
-                title.style.marginBottom = '12px';
-                title.style.borderBottom = '2px solid #2d5016';
-                title.style.paddingBottom = '8px';
-                title.textContent = 'Product List';
-                element.appendChild(title);
-
-                const table = document.createElement('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                table.style.fontSize = '9px';
-
-                const thead = document.createElement('thead');
-                const headerRow = document.createElement('tr');
-                headerRow.style.backgroundColor = '#2d5016';
-                headerRow.style.color = 'white';
-
-                const headers = ['Product', 'Category', 'Type', 'Quality', 'Price (DT)', 'Stock', 'Production', 'Expiry', 'Status'];
-                headers.forEach((headerText) => {
-                    const th = document.createElement('th');
-                    th.style.padding = '9px';
-                    th.style.textAlign = 'left';
-                    th.style.fontWeight = 'bold';
-                    th.style.fontSize = '10px';
-                    th.textContent = headerText;
-                    headerRow.appendChild(th);
-                });
-                thead.appendChild(headerRow);
-                table.appendChild(thead);
-
-                const tbody = document.createElement('tbody');
-                produits.forEach((produit, index) => {
-                    const newRow = document.createElement('tr');
-                    newRow.style.borderBottom = '1px solid #e5e7eb';
-                    newRow.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
-
-                    const cells = [
-                        produit.nom || 'N/A',
-                        produit.categorie || 'N/A',
-                        produit.type || 'N/A',
-                        produit.qualite || 'N/A',
-                        (Number(produit.prix) || 0).toFixed(2),
-                        Number(produit.stock) || 0,
-                        produit.dateProduction || 'N/A',
-                        produit.dateExpiration || 'N/A',
-                        produit.statut || 'N/A'
-                    ];
-
-                    cells.forEach((cellText) => {
-                        const td = document.createElement('td');
-                        td.style.padding = '8px';
-                        td.style.borderRight = '1px solid #f1f5f9';
-                        td.textContent = String(cellText);
-                        newRow.appendChild(td);
-                    });
-                    tbody.appendChild(newRow);
-                });
-                table.appendChild(tbody);
-                element.appendChild(table);
-
-                const footer = document.createElement('div');
-                footer.style.marginTop = '22px';
-                footer.style.paddingTop = '10px';
-                footer.style.borderTop = '1px solid #d1d5db';
-                footer.style.textAlign = 'center';
-                footer.style.fontSize = '9px';
-                footer.style.color = '#6b7280';
-                footer.textContent = `© Elfirma • Document exported on ${new Date().toLocaleString('en-GB')}`;
-                element.appendChild(footer);
-
-                mount = document.createElement('div');
-                mount.style.position = 'fixed';
-                mount.style.inset = '0';
-                mount.style.width = '100vw';
-                mount.style.height = '100vh';
-                mount.style.overflow = 'auto';
-                mount.style.background = '#ffffff';
-                mount.style.opacity = '0.01';
-                mount.style.pointerEvents = 'none';
-                mount.style.zIndex = '-1';
-                mount.appendChild(element);
-                document.body.appendChild(mount);
-
-                await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-                const opt = {
-                    margin: [8, 8, 8, 8],
-                    filename: `Elfirma_Products_${new Date().toISOString().slice(0, 10)}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: '#ffffff',
-                        windowWidth: 1400,
-                        scrollY: 0
-                    },
-                    jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' },
-                    pagebreak: { mode: ['css', 'legacy'] }
-                };
-
-                await html2pdf().set(opt).from(element).save();
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('Error while generating the PDF.');
-            } finally {
-                if (mount && mount.parentNode) {
-                    mount.parentNode.removeChild(mount);
-                }
-                if (exportButton) {
-                    exportButton.disabled = false;
-                    exportButton.classList.remove('opacity-70', 'cursor-not-allowed');
-                    exportButton.innerHTML = originalLabel;
-                }
-            }
-        }
     </script>
 {{ include('elfirma/_nav_routes.html.twig') }}
 </body>

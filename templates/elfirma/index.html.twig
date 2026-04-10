@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elfirma | Symfony Modules</title>
     <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
 <body class="elfirma-index-body">
 <main class="elfirma-index-shell">
@@ -23,6 +25,313 @@
                 </div>
             </a>
         {% endfor %}
+    </section>
+    <!-- Complaint Form Section -->
+    <section class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-8 lg:p-12 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)] mb-12 animate-fadeIn mx-auto" style="max-width: 900px; margin-left: auto; margin-right: auto; margin-top: 60px;">
+      <div class="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-[#9ac75f]/20 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-16 -left-16 h-52 w-52 rounded-full bg-[#2d5016]/10 blur-2xl"></div>
+
+      <div class="relative z-10">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col gap-2">
+          <p class="inline-flex w-fit items-center gap-2 rounded-full border border-[#bad19a] bg-[#f9fde6] px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#2d5016]">
+            <span class="material-symbols-outlined text-sm">feedback</span>
+            Share Your Feedback
+          </p>
+          <h2 class="text-3xl lg:text-4xl font-black tracking-tight text-[#0a2200]">Submit a Complaint</h2>
+          <p class="text-base text-[#355025] max-w-2xl">We value your input! Please share any concerns or issues you've experienced. Your feedback helps us improve our services.</p>
+        </div>
+
+        <!-- Form -->
+        <form id="complaintForm" class="space-y-6 max-w-2xl">
+          <!-- Complaint Type -->
+          <div class="animate-slideUp" style="animation-delay: 0.1s;">
+            <label for="type" class="block font-bold text-[#0a2200] mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+              <span class="material-symbols-outlined text-lg">category</span>
+              Complaint Type
+            </label>
+            <select name="type" id="type" class="w-full px-5 py-3 rounded-2xl border-2 border-[#bad19a] bg-white text-[#0a2200] font-semibold focus:outline-none focus:border-[#116530] focus:ring-2 focus:ring-[#116530]/20 transition-all duration-300 appearance-none cursor-pointer hover:border-[#116530]" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23116530%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.5em; padding-right: 2.75rem;" required>
+              <option value="">Select a complaint type...</option>
+              <option value="Product Issue">Product Issue</option>
+              <option value="Service Issue">Service Issue</option>
+              <option value="Delivery Problem">Delivery Problem</option>
+              <option value="Quality Concern">Quality Concern</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="text-red-600 error-message small mt-2 text-xs font-semibold" id="typeError"></div>
+          </div>
+
+          <!-- Complaint Title -->
+          <div class="animate-slideUp" style="animation-delay: 0.2s;">
+            <label for="title" class="block font-bold text-[#0a2200] mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+              <span class="material-symbols-outlined text-lg">title</span>
+              Complaint Title
+            </label>
+            <input type="text" name="title" id="title" class="w-full px-5 py-3 rounded-2xl border-2 border-[#bad19a] bg-white text-[#0a2200] font-semibold placeholder-[#5e6f4f]/50 focus:outline-none focus:border-[#116530] focus:ring-2 focus:ring-[#116530]/20 transition-all duration-300 hover:border-[#116530]" placeholder="Brief title of your complaint (max 100 chars)" maxlength="100" required>
+            <small class="block text-xs text-[#5e6f4f] mt-1.5 font-medium">Maximum 100 characters</small>
+            <div class="text-red-600 error-message small mt-2 text-xs font-semibold" id="titleError"></div>
+          </div>
+
+          <!-- Complaint Description -->
+          <div class="animate-slideUp" style="animation-delay: 0.3s;">
+            <label for="description" class="block font-bold text-[#0a2200] mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+              <span class="material-symbols-outlined text-lg">description</span>
+              Description
+            </label>
+            <textarea name="description" id="description" class="w-full px-5 py-3 rounded-2xl border-2 border-[#bad19a] bg-white text-[#0a2200] font-semibold placeholder-[#5e6f4f]/50 focus:outline-none focus:border-[#116530] focus:ring-2 focus:ring-[#116530]/20 transition-all duration-300 hover:border-[#116530] resize-none" rows="5" placeholder="Describe your concern in detail..." maxlength="500" required></textarea>
+            <small class="block text-xs text-[#5e6f4f] mt-1.5 font-medium">Maximum 500 characters</small>
+            <div class="text-red-600 error-message small mt-2 text-xs font-semibold" id="descriptionError"></div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex gap-4 pt-4 animate-slideUp" style="animation-delay: 0.4s;">
+            <button type="submit" class="flex-1 px-8 py-4 rounded-2xl bg-[#116530] hover:bg-[#0c4a23] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:translate-y-[-2px] active:translate-y-0 flex items-center justify-center gap-3 group">
+              <span class="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">send</span>
+              <span>Submit Complaint</span>
+            </button>
+            <button type="reset" class="px-6 py-4 rounded-2xl bg-white border-2 border-[#bad19a] hover:bg-[#f9fde6] text-[#116530] font-bold transition-all duration-300 flex items-center gap-2">
+              <span class="material-symbols-outlined">restart_alt</span>
+              Clear
+            </button>
+          </div>
+
+          <!-- Messages -->
+          <div class="loading-message text-center py-4 px-6 rounded-2xl bg-blue-50 border-2 border-blue-200" style="display:none;">
+            <div class="flex items-center justify-center gap-3">
+              <div class="w-5 h-5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+              <span class="text-blue-700 font-semibold">Processing your complaint...</span>
+            </div>
+          </div>
+          <div class="error-message text-center py-4 px-6 rounded-2xl bg-red-50 border-2 border-red-200 text-red-700 font-semibold" id="formError" style="display:none;"></div>
+          <div class="sent-message text-center py-4 px-6 rounded-2xl bg-green-50 border-2 border-green-200 text-green-700 font-semibold flex items-center justify-center gap-2 animate-scaleIn" style="display:none;">
+            <span class="material-symbols-outlined text-2xl text-green-600">check_circle</span>
+            <span>Your complaint has been submitted successfully! Thank you for your feedback.</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- CSS Animations -->
+      <style>
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.6s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.5s ease-out forwards;
+          opacity: 0;
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.4s ease-out;
+        }
+        /* Enhanced error states */
+        #complaintForm input.border-red-600,
+        #complaintForm select.border-red-600,
+        #complaintForm textarea.border-red-600 {
+          border-color: #dc2626 !important;
+          background-color: rgba(220, 38, 38, 0.05) !important;
+        }
+        #complaintForm input.border-red-600:focus,
+        #complaintForm select.border-red-600:focus,
+        #complaintForm textarea.border-red-600:focus {
+          border-color: #dc2626 !important;
+          box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+        }
+      </style>
+
+      <!-- Complaint Form JavaScript Handler -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const complaintForm = document.getElementById('complaintForm');
+          if (!complaintForm) return;
+
+          const typeSelect = document.getElementById('type');
+          const titleInput = document.getElementById('title');
+          const descriptionTextarea = document.getElementById('description');
+          const loadingMessage = complaintForm.querySelector('.loading-message');
+          const errorMessageDiv = complaintForm.querySelector('#formError');
+          const sentMessageDiv = complaintForm.querySelector('.sent-message');
+
+          // Clear error messages
+          function clearErrors() {
+            document.querySelectorAll('#complaintForm .error-message').forEach(el => {
+              el.textContent = '';
+              el.style.display = 'none';
+            });
+            errorMessageDiv.textContent = '';
+            errorMessageDiv.style.display = 'none';
+          }
+
+          // Display field error
+          function showFieldError(fieldId, message) {
+            const errorEl = document.getElementById(fieldId + 'Error');
+            const fieldEl = document.getElementById(fieldId);
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.style.display = 'block';
+            }
+            if (fieldEl) {
+              fieldEl.classList.add('border-red-600');
+            }
+          }
+
+          // Real-time validation
+          typeSelect.addEventListener('change', function() {
+            if (this.value) {
+              const errorEl = document.getElementById('typeError');
+              if (errorEl) {
+                errorEl.textContent = '';
+                errorEl.style.display = 'none';
+              }
+              this.classList.remove('border-red-600');
+            }
+          });
+
+          titleInput.addEventListener('blur', function() {
+            const value = this.value.trim();
+            if (!value) {
+              showFieldError('title', 'Title is required');
+            } else if (value.length > 100) {
+              showFieldError('title', 'Title must not exceed 100 characters');
+            } else {
+              const errorEl = document.getElementById('titleError');
+              if (errorEl) {
+                errorEl.textContent = '';
+                errorEl.style.display = 'none';
+              }
+              this.classList.remove('border-red-600');
+            }
+          });
+
+          descriptionTextarea.addEventListener('blur', function() {
+            const value = this.value.trim();
+            if (!value) {
+              showFieldError('description', 'Description is required');
+            } else if (value.length > 500) {
+              showFieldError('description', 'Description must not exceed 500 characters');
+            } else {
+              const errorEl = document.getElementById('descriptionError');
+              if (errorEl) {
+                errorEl.textContent = '';
+                errorEl.style.display = 'none';
+              }
+              this.classList.remove('border-red-600');
+            }
+          });
+
+          // Form submission
+          complaintForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Clear previous messages
+            clearErrors();
+            sentMessageDiv.style.display = 'none';
+
+            // Validate fields
+            let hasErrors = false;
+            const type = typeSelect.value.trim();
+            const title = titleInput.value.trim();
+            const description = descriptionTextarea.value.trim();
+
+            if (!type) {
+              showFieldError('type', 'Please select a complaint type');
+              hasErrors = true;
+            }
+            if (!title) {
+              showFieldError('title', 'Title is required');
+              hasErrors = true;
+            } else if (title.length > 100) {
+              showFieldError('title', 'Title must not exceed 100 characters');
+              hasErrors = true;
+            }
+            if (!description) {
+              showFieldError('description', 'Description is required');
+              hasErrors = true;
+            } else if (description.length > 500) {
+              showFieldError('description', 'Description must not exceed 500 characters');
+              hasErrors = true;
+            }
+
+            if (hasErrors) return;
+
+            // Show loading state
+            loadingMessage.style.display = 'flex';
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('type', type);
+            formData.append('title', title);
+            formData.append('description', description);
+
+            try {
+              const response = await fetch('{{ path("elfirma_create_complaint") }}', {
+                method: 'POST',
+                body: formData
+              });
+
+              const data = await response.json();
+              loadingMessage.style.display = 'none';
+
+              if (data.success) {
+                // Show success message with animation
+                sentMessageDiv.style.display = 'flex';
+                sentMessageDiv.style.animation = 'scaleIn 0.4s ease-out';
+
+                // Reset form
+                complaintForm.reset();
+
+                // Auto-hide success message
+                setTimeout(() => {
+                  sentMessageDiv.style.display = 'none';
+                }, 5000);
+              } else {
+                // Show errors
+                if (data.errors && typeof data.errors === 'object') {
+                  for (const [field, message] of Object.entries(data.errors)) {
+                    showFieldError(field, message);
+                  }
+                  errorMessageDiv.textContent = 'Please correct the errors above.';
+                  errorMessageDiv.style.display = 'block';
+                } else {
+                  errorMessageDiv.textContent = data.message || 'An error occurred while submitting your complaint.';
+                  errorMessageDiv.style.display = 'block';
+                }
+              }
+            } catch (error) {
+              loadingMessage.style.display = 'none';
+              console.error('Error:', error);
+              errorMessageDiv.textContent = 'Network error: Unable to submit your complaint. Please try again.';
+              errorMessageDiv.style.display = 'block';
+            }
+          });
+        });
+      </script>
     </section>
 </main>
 </body>
