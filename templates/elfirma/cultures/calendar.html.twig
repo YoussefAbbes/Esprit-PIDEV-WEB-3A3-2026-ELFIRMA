@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Agricultural Calendar - Elfirma</title>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        body { font-family: 'Inter', sans-serif; background: #f8f9ee; color: #1b1d0e; }
+        .sidebar { background: #f5f5dc; border-right: 1px solid #e4e4cc; }
+        .sidebar-link { transition: background-color 0.2s ease, color 0.2s ease; color: #43493d; }
+        .sidebar-link:hover { background: #ececd8; }
+        .sidebar-link.active { background: #0a2200; color: #fbfbe2; }
+        /* FullCalendar overrides */
+        .fc { font-family: 'Inter', sans-serif; }
+        .fc .fc-toolbar-title { font-size: 1.2rem; font-weight: 700; color: #0a2200; }
+        .fc .fc-button-primary { background: #0a2200; border-color: #0a2200; }
+        .fc .fc-button-primary:hover { background: #173901; border-color: #173901; }
+        .fc .fc-button-primary:not(:disabled).fc-button-active { background: #173901; border-color: #173901; }
+        .fc .fc-daygrid-day.fc-day-today { background: #f0f7ec; }
+        .fc .fc-event { border-radius: 6px; padding: 1px 4px; font-size: 11px; cursor: pointer; }
+        .fc .fc-daygrid-day-frame { min-height: 80px; }
+        /* Event detail panel */
+        .event-detail { background: white; border: 1px solid #e8eadf; border-radius: 14px; padding: 20px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .stat-card { background: white; border: 1px solid #e8eadf; border-radius: 12px; padding: 16px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar hidden md:flex h-screen w-64 fixed left-0 top-0 flex-col py-6 z-40">
+        <div class="px-6 mb-6">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="font-semibold text-[#43493d] text-sm">Gestion Agricole</p>
+        </div>
+        <nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'tableau-de-bord'}) }}">
+                <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('parcelle_index') }}">
+                <span class="material-symbols-outlined text-xl">agriculture</span> Parcelles
+            </a>
+            <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('culture_index') }}">
+                <span class="material-symbols-outlined text-xl">grass</span> Cultures
+            </a>
+        </nav>
+    </aside>
+
+    <main class="md:ml-64 min-h-screen p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                    <a href="{{ path('culture_index') }}" class="hover:text-[#0a2200] transition-colors">Cultures</a>
+                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                    <span class="font-semibold text-[#0a2200]">Agricultural Calendar</span>
+                </div>
+                <h1 class="text-2xl font-bold text-[#0a2200]">Agricultural Calendar</h1>
+                <p class="text-sm text-gray-500 mt-1">Planting &amp; harvest schedule for {{ totalCount }} crop(s)</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ path('culture_index') }}" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all">
+                    <span class="material-symbols-outlined text-base">list</span> List View
+                </a>
+                <a href="{{ path('culture_new') }}" class="flex items-center gap-2 bg-[#0a2200] text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#173901] transition-all">
+                    <span class="material-symbols-outlined text-base">add</span> Add Crop
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        {% set inProgress = cultures|filter(c => c.statut == 'In Progress')|length %}
+        {% set planned = cultures|filter(c => c.statut == 'Planned')|length %}
+        {% set harvested = cultures|filter(c => c.statut == 'Harvested')|length %}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Total Crops</p>
+                <p class="text-2xl font-bold text-[#0a2200] mt-1">{{ totalCount }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-green-600 font-semibold uppercase tracking-wide">In Progress</p>
+                <p class="text-2xl font-bold text-green-700 mt-1">{{ inProgress }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Planned</p>
+                <p class="text-2xl font-bold text-blue-700 mt-1">{{ planned }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-orange-600 font-semibold uppercase tracking-wide">Harvested</p>
+                <p class="text-2xl font-bold text-orange-700 mt-1">{{ harvested }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Calendar -->
+            <div class="lg:col-span-3 bg-white border border-[#e8eadf] rounded-2xl p-5">
+                <!-- Legend -->
+                <div class="flex flex-wrap gap-4 mb-4 pb-4 border-b border-gray-100">
+                    <span class="flex items-center gap-2 text-sm"><span class="legend-dot" style="background:#10b981;"></span> Planting</span>
+                    <span class="flex items-center gap-2 text-sm"><span class="legend-dot" style="background:#f97316;"></span> Expected Harvest</span>
+                    <span class="flex items-center gap-2 text-sm"><span class="legend-dot" style="background:#6366f1;"></span> Actual Harvest</span>
+                    <span class="flex items-center gap-2 text-sm"><span class="legend-dot" style="background:#ef4444;"></span> Overdue</span>
+                </div>
+                <div id="calendar"></div>
+            </div>
+
+            <!-- Event detail panel -->
+            <div>
+                <div class="event-detail mb-4">
+                    <h3 class="font-bold text-[#0a2200] mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">info</span> Event Details
+                    </h3>
+                    <div id="eventDetail">
+                        <p class="text-sm text-gray-400 text-center py-4">Click on an event to see details</p>
+                    </div>
+                </div>
+
+                <!-- Upcoming events (next 30 days) -->
+                <div class="event-detail">
+                    <h3 class="font-bold text-[#0a2200] mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">upcoming</span> Upcoming (30 days)
+                    </h3>
+                    <div class="space-y-2">
+                        {% set today = 'now'|date('Y-m-d') %}
+                        {% set in30 = '+30 days'|date('Y-m-d') %}
+                        {% for c in cultures %}
+                            {% if c.dateRecoltePrevue and c.dateRecoltePrevue|date('Y-m-d') >= today and c.dateRecoltePrevue|date('Y-m-d') <= in30 %}
+                                <div class="flex items-start gap-2 p-2 rounded-lg bg-orange-50">
+                                    <span class="text-base">🌾</span>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-orange-800 truncate">{{ c.nomCulture }}</p>
+                                        <p class="text-xs text-orange-600">{{ c.dateRecoltePrevue|date('d M Y') }}</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% for c in cultures %}
+                            {% if c.datePlantation and c.datePlantation|date('Y-m-d') >= today and c.datePlantation|date('Y-m-d') <= in30 %}
+                                <div class="flex items-start gap-2 p-2 rounded-lg bg-green-50">
+                                    <span class="text-base">🌱</span>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-green-800 truncate">{{ c.nomCulture }}</p>
+                                        <p class="text-xs text-green-600">{{ c.datePlantation|date('d M Y') }}</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const eventDetailEl = document.getElementById('eventDetail');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                events: '{{ path('culture_calendar_events') }}',
+                eventClick: function(info) {
+                    const p = info.event.extendedProps;
+                    const colors = { 'Planting': '#10b981', 'Expected Harvest': '#f97316', 'Actual Harvest': '#6366f1', 'Overdue Harvest': '#ef4444' };
+                    const color = colors[p.type] || '#6b7280';
+                    eventDetailEl.innerHTML = `
+                        <div style="border-left: 4px solid ${color}; padding-left: 12px;">
+                            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:${color}">${p.type}</p>
+                            <p class="font-bold text-[#1b1d0e] text-base">${p.crop}</p>
+                            <p class="text-sm text-gray-500 mt-1">📍 ${p.parcel}</p>
+                            <p class="text-sm text-gray-500">📅 ${info.event.startStr}</p>
+                            <p class="text-sm text-gray-500">Status: <span class="font-semibold">${p.status}</span></p>
+                            <a href="${p.url}" class="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-[#0a2200] hover:underline">
+                                View crop →
+                            </a>
+                        </div>
+                    `;
+                },
+                eventMouseEnter: function(info) {
+                    info.el.style.opacity = '0.85';
+                },
+                eventMouseLeave: function(info) {
+                    info.el.style.opacity = '1';
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>

@@ -1,0 +1,13 @@
+ParcelName;CropName;Variety;PlantingDate;ExpectedHarvestDate;QuantityPlanted;Status;ProductionCost;Notes;ActualHarvestDate;HarvestedQty;Yield
+North Field;Tomatoes;Roma;01/03/2025;01/07/2025;500;In Progress;1500;Good growth observed;;;
+North Field;Bell Pepper;California Wonder;15/03/2025;15/08/2025;200;Planned;800;Soil well prepared;;;
+South Field;Wheat;Hard Wheat;15/01/2025;15/06/2025;1000;In Progress;3000;Good leaf development;;;
+South Field;Barley;Winter Barley;01/02/2025;01/07/2025;750;Planned;2200;Sowing completed;;;
+Central Field;Corn;Sweet Corn;01/04/2025;01/09/2025;800;Planned;2000;Soil preparation done;;;
+Central Field;Soybean;OAC Soy;10/04/2025;10/10/2025;600;Planned;1800;Awaiting season;;;
+North Field;Lettuce;Batavia;01/05/2025;15/07/2025;150;Harvested;400;Harvest successful;20/07/2025;145;96.7
+South Field;Carrot;Nantes;20/02/2025;20/06/2025;300;Harvested;900;Very good yield;25/06/2025;285;95.0
+North Field;Cucumber;Long Green;01/06/2025;01/09/2025;250;In Progress;700;Fast growth;;;
+Central Field;Zucchini;Ronde de Nice;15/05/2025;15/08/2025;180;In Progress;500;Normal development;;;
+South Field;Sunflower;Heliasol;01/03/2025;01/09/2025;400;In Progress;1200;Rain-fed crop;;;
+North Field;Green Beans;Contender;10/04/2025;10/07/2025;320;Harvested;950;Good harvest;15/07/2025;298;93.1

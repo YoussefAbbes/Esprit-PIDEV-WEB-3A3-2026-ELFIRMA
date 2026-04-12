@@ -36,39 +36,79 @@ class CultureRepository extends ServiceEntityRepository
 
     public function findAllWithParcelle(): array
     {
-        return $this->createQueryBuilder('c')
-            ->leftJoin('c.parcelle', 'p')
-            ->addSelect('p')
-            ->orderBy('c.id', 'DESC')
+        return $this->createQueryBuilder("c")
+            ->leftJoin("c.parcelle", "p")
+            ->addSelect("p")
+            ->orderBy("c.id", "DESC")
             ->getQuery()
             ->getResult();
     }
 
-    public function findPaginated(int $page = 1, int $limit = 10, ?string $search = null, string $sortBy = 'id', string $sortOrder = 'DESC'): array
-    {
-        $qb = $this->createQueryBuilder('c')
-            ->leftJoin('c.parcelle', 'p')
-            ->addSelect('p');
+    public function findPaginated(
+        int $page = 1,
+        int $limit = 10,
+        ?string $search = null,
+        string $sortBy = "id",
+        string $sortOrder = "DESC",
+        ?string $statut = null,
+        ?int $parcelleId = null,
+    ): array {
+        $qb = $this->createQueryBuilder("c")
+            ->leftJoin("c.parcelle", "p")
+            ->addSelect("p");
 
         // Search
         if ($search) {
-            $qb->andWhere('c.nomCulture LIKE :search OR c.variete LIKE :search OR c.statut LIKE :search OR p.nom LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+            $qb->andWhere(
+                "c.nomCulture LIKE :search OR c.variete LIKE :search OR c.statut LIKE :search OR p.nom LIKE :search",
+            )->setParameter("search", "%" . $search . "%");
+        }
+
+        // Statut filter
+        if ($statut) {
+            $qb->andWhere("c.statut = :statut")->setParameter(
+                "statut",
+                $statut,
+            );
+        }
+
+        // Parcelle filter
+        if ($parcelleId) {
+            $qb->andWhere("p.id = :parcelleId")->setParameter(
+                "parcelleId",
+                $parcelleId,
+            );
         }
 
         // Sorting
-        $allowedSortFields = ['id', 'nomCulture', 'variete', 'datePlantation', 'quantitePlantee', 'statut'];
+        $allowedSortFields = [
+            "id",
+            "nomCulture",
+            "variete",
+            "datePlantation",
+            "quantitePlantee",
+            "statut",
+        ];
         if (in_array($sortBy, $allowedSortFields)) {
-            $qb->orderBy('c.' . $sortBy, strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC');
-        } elseif ($sortBy === 'parcelle') {
-            $qb->orderBy('p.nom', strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC');
+            $qb->orderBy(
+                "c." . $sortBy,
+                strtoupper($sortOrder) === "ASC" ? "ASC" : "DESC",
+            );
+        } elseif ($sortBy === "parcelle") {
+            $qb->orderBy(
+                "p.nom",
+                strtoupper($sortOrder) === "ASC" ? "ASC" : "DESC",
+            );
         } else {
-            $qb->orderBy('c.id', 'DESC');
+            $qb->orderBy("c.id", "DESC");
         }
 
         // Get total count
         $countQb = clone $qb;
-        $total = $countQb->select('COUNT(DISTINCT c.id)')->getQuery()->getSingleScalarResult();
+        $total = $countQb
+            ->select("COUNT(DISTINCT c.id)")
+            ->getQuery()
+            ->getSingleScalarResult();
 
         // Pagination
         $offset = ($page - 1) * $limit;
@@ -77,11 +117,11 @@ class CultureRepository extends ServiceEntityRepository
         $cultures = $qb->getQuery()->getResult();
 
         return [
-            'data' => $cultures,
-            'total' => (int) $total,
-            'page' => $page,
-            'limit' => $limit,
-            'totalPages' => (int) ceil($total / $limit),
+            "data" => $cultures,
+            "total" => (int) $total,
+            "page" => $page,
+            "limit" => $limit,
+            "totalPages" => (int) ceil($total / $limit),
         ];
     }
 }

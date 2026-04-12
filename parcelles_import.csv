@@ -1,0 +1,13 @@
+Name;Location;Area;SoilType;Status;CreationDate
+North Field;Zone A - Sector 1;1500.5;Clay;Available;15/01/2025
+South Field;Zone B - Sector 2;2000.0;Sandy;Occupied;20/02/2025
+East Field;Zone C - Sector 3;1200.75;Loamy;Available;10/03/2025
+West Field;Zone D - Sector 4;1800.0;Humus;Occupied;05/04/2025
+Central Field;Central Region;2500.5;Clay;Available;01/05/2025
+Highland Field;Northern Region;950.75;Sandy;Resting;10/06/2025
+Olive Grove;Southern Zone;3200.0;Loamy;Occupied;15/07/2025
+Lakeside Field;East Shore;1100.25;Humus;Available;01/08/2025
+Sandy Dunes;Southern Dunes;780.5;Sandy;Available;20/08/2025
+Dark Soil Field;Central Humus Zone;2100.0;Humus;Occupied;01/09/2025
+Orchard Field;Fruit Sector 3;1300.75;Loamy;Available;10/10/2025
+Research Field;Research Center;350.25;Clay;Available;19/02/2026

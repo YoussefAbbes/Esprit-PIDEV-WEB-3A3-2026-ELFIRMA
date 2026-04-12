@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Parcels Map - Elfirma</title>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        body { font-family: 'Inter', sans-serif; background: #f8f9ee; color: #1b1d0e; }
+        .sidebar { background: #f5f5dc; border-right: 1px solid #e4e4cc; }
+        .sidebar-link { transition: background-color 0.2s ease, color 0.2s ease; color: #43493d; }
+        .sidebar-link:hover { background: #ececd8; }
+        .sidebar-link.active { background: #0a2200; color: #fbfbe2; }
+        #map { height: calc(100vh - 120px); border-radius: 16px; border: 1px solid #e8eadf; }
+        .map-sidebar { background: white; border: 1px solid #e8eadf; border-radius: 16px; overflow-y: auto; max-height: calc(100vh - 120px); }
+        .parcel-item { border-bottom: 1px solid #f0f0e8; transition: background 0.15s; cursor: pointer; }
+        .parcel-item:hover { background: #f8f9ee; }
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+        .badge-available { background: #e9f7ef; color: #13663f; }
+        .badge-occupied { background: #fff1e8; color: #8d4c1d; }
+        .badge-resting { background: #edf3ff; color: #2b4f91; }
+        .stat-card { background: white; border: 1px solid #e8eadf; border-radius: 12px; padding: 16px; }
+        .leaflet-popup-content-wrapper { border-radius: 12px; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { "primary": "#0a2200" } } }
+        }
+    </script>
+</head>
+<body>
+    <aside class="sidebar hidden md:flex h-screen w-64 fixed left-0 top-0 flex-col py-6 z-40">
+        <div class="px-6 mb-6">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="font-semibold text-[#43493d] text-sm">Gestion Agricole</p>
+        </div>
+        <nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'tableau-de-bord'}) }}">
+                <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
+            </a>
+            <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('parcelle_index') }}">
+                <span class="material-symbols-outlined text-xl">agriculture</span> Parcelles
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('culture_index') }}">
+                <span class="material-symbols-outlined text-xl">grass</span> Cultures
+            </a>
+        </nav>
+    </aside>
+
+    <main class="md:ml-64 min-h-screen p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                    <a href="{{ path('parcelle_index') }}" class="hover:text-[#0a2200] transition-colors">Parcelles</a>
+                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                    <span class="font-semibold text-[#0a2200]">Map View</span>
+                </div>
+                <h1 class="text-2xl font-bold text-[#0a2200]">Parcelles Map</h1>
+                <p class="text-sm text-gray-500 mt-1">{{ mappedCount }} of {{ totalCount }} parcels with coordinates</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ path('parcelle_index') }}" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all">
+                    <span class="material-symbols-outlined text-base">list</span> List View
+                </a>
+                <a href="{{ path('parcelle_new') }}" class="flex items-center gap-2 bg-[#0a2200] text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#173901] transition-all">
+                    <span class="material-symbols-outlined text-base">add</span> Add Parcel
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            {% set availCount = parcelles|filter(p => p.statut == 'Available')|length %}
+            {% set occCount = parcelles|filter(p => p.statut == 'Occupied')|length %}
+            {% set restCount = parcelles|filter(p => p.statut == 'Resting')|length %}
+            <div class="stat-card">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Total Parcels</p>
+                <p class="text-2xl font-bold text-[#0a2200] mt-1">{{ totalCount }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-green-600 font-semibold uppercase tracking-wide">Available</p>
+                <p class="text-2xl font-bold text-green-700 mt-1">{{ availCount }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-orange-600 font-semibold uppercase tracking-wide">Occupied</p>
+                <p class="text-2xl font-bold text-orange-700 mt-1">{{ occCount }}</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">On Map</p>
+                <p class="text-2xl font-bold text-blue-700 mt-1">{{ mappedCount }}</p>
+            </div>
+        </div>
+
+        <!-- Map + Sidebar -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Map -->
+            <div class="lg:col-span-3">
+                <div id="map"></div>
+            </div>
+
+            <!-- Parcelle list sidebar -->
+            <div class="map-sidebar p-4">
+                <h3 class="font-bold text-[#0a2200] mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">place</span> Parcels on Map
+                </h3>
+                {% if mappedCount == 0 %}
+                <div class="text-center py-8 text-gray-400">
+                    <span class="material-symbols-outlined text-4xl mb-2 block">location_off</span>
+                    <p class="text-sm">No parcels with coordinates.</p>
+                    <p class="text-xs mt-1">Add lat/lng when creating parcels.</p>
+                </div>
+                {% endif %}
+                <div id="parcelList">
+                    {% for p in parcelles %}
+                    {% if p.latitude is not null and p.longitude is not null %}
+                    <div class="parcel-item p-3 rounded-lg mb-1" data-lat="{{ p.latitude }}" data-lng="{{ p.longitude }}" data-id="{{ p.id }}" onclick="focusParcel({{ p.latitude }}, {{ p.longitude }}, {{ p.id }})">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-sm text-[#1b1d0e] truncate">{{ p.nom }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ p.localisation }}</p>
+                                <p class="text-xs text-gray-400 mt-1">{{ p.superficie }} ha · {{ p.typeSol }}</p>
+                            </div>
+                            <span class="badge badge-{{ p.statut|lower }} shrink-0">{{ p.statut }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% if parcelles|filter(p => p.latitude is null or p.longitude is null)|length > 0 %}
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-400 font-semibold mb-2">WITHOUT COORDINATES</p>
+                    {% for p in parcelles %}
+                    {% if p.latitude is null or p.longitude is null %}
+                    <div class="flex items-center justify-between py-2">
+                        <p class="text-sm text-gray-500 truncate">{{ p.nom }}</p>
+                        <a href="{{ path('parcelle_edit', {id: p.id}) }}" class="text-xs text-[#0a2200] font-semibold hover:underline ml-2">Add coords</a>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const parcellesData = {{ parcellesData|raw }};
+
+        // Status colors
+        const statusColors = {
+            'Available': '#10b981',
+            'Occupied': '#f97316',
+            'Resting': '#3b82f6',
+        };
+
+        // Init map
+        const map = L.map('map', { zoomControl: true });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        const markers = {};
+
+        if (parcellesData.length > 0) {
+            const bounds = [];
+
+            parcellesData.forEach(p => {
+                const color = statusColors[p.statut] || '#6b7280';
+
+                // Custom marker icon
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div style="background:${color};width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8],
+                });
+
+                const marker = L.marker([p.latitude, p.longitude], { icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width:180px;font-family:Inter,sans-serif;">
+                            <div style="background:#0a2200;color:white;padding:8px 12px;margin:-12px -12px 10px;border-radius:8px 8px 0 0;">
+                                <strong>${p.nom}</strong>
+                            </div>
+                            <p style="margin:0 0 4px;font-size:12px;color:#666;">📍 ${p.localisation}</p>
+                            <p style="margin:0 0 4px;font-size:12px;color:#666;">📐 ${p.superficie} ha · ${p.typeSol}</p>
+                            <p style="margin:0 0 8px;font-size:12px;color:#666;">🌱 ${p.cultures} culture(s)</p>
+                            <div style="display:flex;gap:6px;">
+                                <a href="${p.url}" style="flex:1;text-align:center;padding:4px 8px;background:#e8effc;color:#1d4ed8;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none;">View</a>
+                                <a href="${p.editUrl}" style="flex:1;text-align:center;padding:4px 8px;background:#fdf2db;color:#b56b00;border-radius:6px;font-size:11px;font-weight:600;text-decoration:none;">Edit</a>
+                            </div>
+                        </div>
+                    `, { maxWidth: 220 });
+
+                markers[p.id] = marker;
+                bounds.push([p.latitude, p.longitude]);
+            });
+
+            map.fitBounds(bounds, { padding: [30, 30] });
+        } else {
+            map.setView([36.8065, 10.1815], 7);
+        }
+
+        function focusParcel(lat, lng, id) {
+            map.setView([lat, lng], 14);
+            if (markers[id]) markers[id].openPopup();
+            // Highlight sidebar item
+            document.querySelectorAll('.parcel-item').forEach(el => el.style.background = '');
+            const el = document.querySelector(`.parcel-item[data-id="${id}"]`);
+            if (el) { el.style.background = '#f0f7ec'; el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        }
+    </script>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>
