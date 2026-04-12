@@ -45,6 +45,13 @@ final class ParcelleController extends AbstractController
             $typeSol ?: null,
         );
 
+        $globalStats = [
+            "available" => $parcelleRepository->countByStatus("Available"),
+            "occupied" => $parcelleRepository->countByStatus("Occupied"),
+            "resting" => $parcelleRepository->countByStatus("Resting"),
+            "totalArea" => $parcelleRepository->getTotalArea(),
+        ];
+
         return $this->render("elfirma/parcelles/index.html.twig", [
             "parcelles" => $result["data"],
             "pagination" => [
@@ -58,6 +65,7 @@ final class ParcelleController extends AbstractController
             "sortOrder" => $sortOrder,
             "statut" => $statut,
             "typeSol" => $typeSol,
+            "globalStats" => $globalStats,
         ]);
     }
 

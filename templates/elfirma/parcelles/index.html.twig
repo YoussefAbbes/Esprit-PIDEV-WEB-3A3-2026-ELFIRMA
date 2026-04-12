@@ -227,14 +227,29 @@
             </div>
         </div>
         {% endfor %}
+        {% for message in app.flashes('error') %}
+        <div class="animate-fade-in-up bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <span class="material-symbols-outlined text-red-600">error</span>
+            </div>
+            <div><p class="font-bold">Error</p><p class="text-sm text-red-700">{{ message }}</p></div>
+        </div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+        <div class="animate-fade-in-up bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-800 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <span class="material-symbols-outlined text-amber-600">warning</span>
+            </div>
+            <div><p class="font-bold">Warning</p><p class="text-sm text-amber-700">{{ message }}</p></div>
+        </div>
+        {% endfor %}
 
         <!-- Stats Row -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {% set availableCount = parcelles|filter(p => p.statut == 'Available')|length %}
-            {% set occupiedCount = parcelles|filter(p => p.statut == 'Occupied')|length %}
-            {% set restingCount = parcelles|filter(p => p.statut == 'Resting')|length %}
-            {% set totalArea = 0 %}
-            {% for p in parcelles %}{% set totalArea = totalArea + p.superficie %}{% endfor %}
+            {% set availableCount = globalStats.available %}
+            {% set occupiedCount = globalStats.occupied %}
+            {% set restingCount = globalStats.resting %}
+            {% set totalArea = globalStats.totalArea|round(2) %}
 
             <div class="stat-card p-6 animate-fade-in-up stagger-1">
                 <div class="flex items-center justify-between mb-4">
@@ -585,26 +600,26 @@
                 </p>
                 <div class="flex items-center gap-1">
                     {% if pagination.page > 1 %}
-                        <a href="{{ path('parcelle_index', {page: 1, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="First">
+                        <a href="{{ path('parcelle_index', {page: 1, search: search, sort: sortBy, order: sortOrder, statut: statut, typeSol: typeSol}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="First">
                             <span class="material-symbols-outlined text-lg">first_page</span>
                         </a>
-                        <a href="{{ path('parcelle_index', {page: pagination.page - 1, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Previous">
+                        <a href="{{ path('parcelle_index', {page: pagination.page - 1, search: search, sort: sortBy, order: sortOrder, statut: statut, typeSol: typeSol}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Previous">
                             <span class="material-symbols-outlined text-lg">chevron_left</span>
                         </a>
                     {% endif %}
 
                     {% for p in max(1, pagination.page - 2)..min(pagination.totalPages, pagination.page + 2) %}
-                        <a href="{{ path('parcelle_index', {page: p, search: search, sort: sortBy, order: sortOrder}) }}"
+                        <a href="{{ path('parcelle_index', {page: p, search: search, sort: sortBy, order: sortOrder, statut: statut, typeSol: typeSol}) }}"
                            class="w-9 h-9 flex items-center justify-center rounded-lg font-bold text-sm transition-colors {{ p == pagination.page ? 'bg-[#0a2200] text-white' : 'hover:bg-gray-200 text-gray-600' }}">
                             {{ p }}
                         </a>
                     {% endfor %}
 
                     {% if pagination.page < pagination.totalPages %}
-                        <a href="{{ path('parcelle_index', {page: pagination.page + 1, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Next">
+                        <a href="{{ path('parcelle_index', {page: pagination.page + 1, search: search, sort: sortBy, order: sortOrder, statut: statut, typeSol: typeSol}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Next">
                             <span class="material-symbols-outlined text-lg">chevron_right</span>
                         </a>
-                        <a href="{{ path('parcelle_index', {page: pagination.totalPages, search: search, sort: sortBy, order: sortOrder}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Last">
+                        <a href="{{ path('parcelle_index', {page: pagination.totalPages, search: search, sort: sortBy, order: sortOrder, statut: statut, typeSol: typeSol}) }}" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors" title="Last">
                             <span class="material-symbols-outlined text-lg">last_page</span>
                         </a>
                     {% endif %}

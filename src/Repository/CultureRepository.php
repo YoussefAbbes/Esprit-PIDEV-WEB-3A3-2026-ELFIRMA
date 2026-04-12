@@ -124,4 +124,17 @@ class CultureRepository extends ServiceEntityRepository
             "totalPages" => (int) ceil($total / $limit),
         ];
     }
+
+    /**
+     * Count cultures by their status — used for global stats (not paginated).
+     */
+    public function countByStatus(string $status): int
+    {
+        return (int) $this->createQueryBuilder("c")
+            ->select("COUNT(c.id)")
+            ->where("c.statut = :status")
+            ->setParameter("status", $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

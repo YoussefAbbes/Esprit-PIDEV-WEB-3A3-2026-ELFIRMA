@@ -43,10 +43,22 @@
                 <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
             </a>
             <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('parcelle_index') }}">
-                <span class="material-symbols-outlined text-xl">agriculture</span> Parcelles
+                <span class="material-symbols-outlined text-xl">terrain</span> Parcels
             </a>
             <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('culture_index') }}">
-                <span class="material-symbols-outlined text-xl">grass</span> Cultures
+                <span class="material-symbols-outlined text-xl">grass</span> Crops
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'animaux-elevages'}) }}">
+                <span class="material-symbols-outlined text-xl">pets</span> Livestock
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'produits-commandes'}) }}">
+                <span class="material-symbols-outlined text-xl">shopping_basket</span> Products
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'equipements-maintenance'}) }}">
+                <span class="material-symbols-outlined text-xl">handyman</span> Equipment
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'fournisseurs-contrats'}) }}">
+                <span class="material-symbols-outlined text-xl">contract</span> Suppliers
             </a>
         </nav>
     </aside>
@@ -127,7 +139,7 @@
                     </h3>
                     <div class="space-y-2">
                         {% set today = 'now'|date('Y-m-d') %}
-                        {% set in30 = '+30 days'|date('Y-m-d') %}
+                        {% set in30 = 'now +30 days'|date('Y-m-d') %}
                         {% for c in cultures %}
                             {% if c.dateRecoltePrevue and c.dateRecoltePrevue|date('Y-m-d') >= today and c.dateRecoltePrevue|date('Y-m-d') <= in30 %}
                                 <div class="flex items-start gap-2 p-2 rounded-lg bg-orange-50">

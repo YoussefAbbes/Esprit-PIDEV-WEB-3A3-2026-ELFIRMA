@@ -44,10 +44,22 @@
                 <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
             </a>
             <a class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('parcelle_index') }}">
-                <span class="material-symbols-outlined text-xl">agriculture</span> Parcelles
+                <span class="material-symbols-outlined text-xl">terrain</span> Parcels
             </a>
             <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('culture_index') }}">
-                <span class="material-symbols-outlined text-xl">grass</span> Cultures
+                <span class="material-symbols-outlined text-xl">grass</span> Crops
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'animaux-elevages'}) }}">
+                <span class="material-symbols-outlined text-xl">pets</span> Livestock
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'produits-commandes'}) }}">
+                <span class="material-symbols-outlined text-xl">shopping_basket</span> Products
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'equipements-maintenance'}) }}">
+                <span class="material-symbols-outlined text-xl">handyman</span> Equipment
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" href="{{ path('elfirma_page', {module: 'fournisseurs-contrats'}) }}">
+                <span class="material-symbols-outlined text-xl">contract</span> Suppliers
             </a>
         </nav>
     </aside>
@@ -92,8 +104,8 @@
                 <p class="text-2xl font-bold text-orange-700 mt-1">{{ occCount }}</p>
             </div>
             <div class="stat-card">
-                <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">On Map</p>
-                <p class="text-2xl font-bold text-blue-700 mt-1">{{ mappedCount }}</p>
+                <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Resting</p>
+                <p class="text-2xl font-bold text-blue-700 mt-1">{{ restCount }}</p>
             </div>
         </div>
 

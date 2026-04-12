@@ -120,4 +120,28 @@ class ParcelleRepository extends ServiceEntityRepository
             "totalPages" => (int) ceil($total / $limit),
         ];
     }
+
+    /**
+     * Count parcels by their status — used for global stats (not paginated).
+     */
+    public function countByStatus(string $status): int
+    {
+        return (int) $this->createQueryBuilder("p")
+            ->select("COUNT(p.id)")
+            ->where("p.statut = :status")
+            ->setParameter("status", $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Sum of all parcel areas across the entire database.
+     */
+    public function getTotalArea(): float
+    {
+        return (float) ($this->createQueryBuilder("p")
+            ->select("SUM(p.superficie)")
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0.0);
+    }
 }

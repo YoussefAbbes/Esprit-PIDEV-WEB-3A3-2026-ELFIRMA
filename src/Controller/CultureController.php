@@ -48,6 +48,12 @@ final class CultureController extends AbstractController
             $parcelleId,
         );
 
+        $globalStats = [
+            "inProgress" => $cultureRepository->countByStatus("In Progress"),
+            "planned" => $cultureRepository->countByStatus("Planned"),
+            "harvested" => $cultureRepository->countByStatus("Harvested"),
+        ];
+
         return $this->render("elfirma/cultures/index.html.twig", [
             "cultures" => $result["data"],
             "pagination" => [
@@ -62,6 +68,7 @@ final class CultureController extends AbstractController
             "statut" => $statut,
             "parcelleId" => $parcelleId,
             "parcelles" => $parcelleRepository->findAll(),
+            "globalStats" => $globalStats,
         ]);
     }
 
@@ -69,6 +76,7 @@ final class CultureController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
+        ParcelleRepository $parcelleRepository,
     ): Response {
         $culture = new Culture();
         $form = $this->createForm(CultureType::class, $culture);
@@ -93,6 +101,7 @@ final class CultureController extends AbstractController
                 return $this->render("elfirma/cultures/new.html.twig", [
                     "culture" => $culture,
                     "form" => $form->createView(),
+                    "parcelles" => $parcelleRepository->findAll(),
                 ]);
             }
 
@@ -126,6 +135,7 @@ final class CultureController extends AbstractController
         return $this->render("elfirma/cultures/new.html.twig", [
             "culture" => $culture,
             "form" => $form->createView(),
+            "parcelles" => $parcelleRepository->findAll(),
         ]);
     }
 

@@ -16,14 +16,14 @@
         .dropdown-menu { display: none; }
         .dropdown:hover .dropdown-menu { display: block; }
         #parcel-map { height: 350px; width: 100%; border-radius: 12px; z-index: 1; }
-        
+
         /* Image lightbox */
         .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; }
         .lightbox.active { display: flex; }
         .lightbox img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; transition: transform 0.2s; }
         .lightbox-close:hover { transform: scale(1.1); }
-        
+
         /* Image hover effect */
         .parcel-image-container { position: relative; overflow: hidden; border-radius: 16px; cursor: pointer; }
         .parcel-image-container img { transition: transform 0.4s ease; }
@@ -92,11 +92,22 @@
                 <h2 class="text-4xl font-black text-primary tracking-tighter leading-none mb-2">{{ parcelle.nom }}</h2>
                 <p class="text-on-surface-variant text-lg">Parcel details and associated crops</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
+                <a href="{{ path('parcelle_map') }}" class="flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-blue-100 transition-all">
+                    <span class="material-symbols-outlined text-base">map</span>
+                    View on Map
+                </a>
                 <a href="{{ path('parcelle_edit', {id: parcelle.id}) }}" class="flex items-center gap-2 bg-yellow-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:opacity-90 transition-all">
                     <span class="material-symbols-outlined">edit</span>
                     Edit
                 </a>
+                <button type="button" class="open-delete-modal flex items-center gap-2 bg-red-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-red-600 transition-all"
+                        data-delete-url="{{ path('parcelle_delete', {id: parcelle.id}) }}"
+                        data-delete-token="{{ csrf_token('delete' ~ parcelle.id) }}"
+                        data-delete-name="{{ parcelle.nom|e('html_attr') }}">
+                    <span class="material-symbols-outlined">delete</span>
+                    Delete
+                </button>
                 <a href="{{ path('parcelle_index') }}" class="flex items-center gap-2 bg-surface-container-high text-on-surface px-6 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-all">
                     <span class="material-symbols-outlined">arrow_back</span>
                     Back
@@ -150,6 +161,8 @@
                             <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">{{ parcelle.statut }}</span>
                         {% elseif parcelle.statut == 'Occupied' %}
                             <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold">{{ parcelle.statut }}</span>
+                        {% elseif parcelle.statut == 'Resting' %}
+                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">{{ parcelle.statut }}</span>
                         {% else %}
                             <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-bold">{{ parcelle.statut ?? 'N/A' }}</span>
                         {% endif %}
@@ -183,7 +196,7 @@
                 </div>
                 {% endif %}
             </div>
-            
+
             <!-- Map Location -->
             <div class="bg-white rounded-xl p-6 shadow-sm">
                 <h3 class="text-xl font-black text-primary tracking-tighter mb-4 flex items-center gap-2">
@@ -211,7 +224,7 @@
                 {% endif %}
             </div>
         </section>
-        
+
         <!-- Additional Details -->
         <section class="bg-white rounded-xl p-8 shadow-sm">
             <h3 class="text-2xl font-black text-primary tracking-tighter mb-6">Additional Information</h3>
@@ -271,7 +284,15 @@
                             <td class="px-6 py-4 text-on-surface-variant">{{ culture.variete ?? '-' }}</td>
                             <td class="px-6 py-4">{{ culture.datePlantation ? culture.datePlantation|date('d M Y') : '-' }}</td>
                             <td class="px-6 py-4">
-                                <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">{{ culture.statut ?? 'N/A' }}</span>
+                                {% if culture.statut == 'In Progress' %}
+                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">In Progress</span>
+                                {% elseif culture.statut == 'Planned' %}
+                                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Planned</span>
+                                {% elseif culture.statut == 'Harvested' %}
+                                    <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">Harvested</span>
+                                {% else %}
+                                    <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold">{{ culture.statut ?? 'N/A' }}</span>
+                                {% endif %}
                             </td>
                             <td class="px-6 py-4">
                                 <a href="{{ path('culture_show', {id: culture.id}) }}" class="text-blue-600 hover:underline font-semibold">View</a>
@@ -285,7 +306,7 @@
             <div class="p-12 text-center text-on-surface-variant">
                 <span class="material-symbols-outlined text-6xl opacity-30">eco</span>
                 <p class="mt-4 text-lg font-semibold">No crops associated with this parcel</p>
-                <a href="{{ path('culture_new') }}" class="text-primary font-bold hover:underline">Add a crop</a>
+                <a href="{{ path('culture_new', {parcelleId: parcelle.id}) }}" class="text-primary font-bold hover:underline">Add a crop →</a>
             </div>
             {% endif %}
         </section>
@@ -313,18 +334,18 @@
                 menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
             });
         });
-        
+
         // Lightbox functions
         function openLightbox() {
             document.getElementById('imageLightbox').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
-        
+
         function closeLightbox() {
             document.getElementById('imageLightbox').classList.remove('active');
             document.body.style.overflow = '';
         }
-        
+
         // Close lightbox with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeLightbox();
@@ -334,9 +355,9 @@
         // Initialize map
         const parcelLat = {{ parcelle.latitude }};
         const parcelLng = {{ parcelle.longitude }};
-        
+
         const map = L.map('parcel-map').setView([parcelLat, parcelLng], 15);
-        
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap contributors'
@@ -361,7 +382,56 @@
         `).openPopup();
         {% endif %}
     </script>
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div id="deleteModalBackdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center">
+                    <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-red-500 text-3xl">delete_forever</span>
+                    </div>
+                </div>
+            </div>
+            <h3 class="text-2xl font-black text-gray-800 text-center mb-2">Delete Parcel?</h3>
+            <p class="text-gray-500 text-center mb-1">You are about to permanently delete</p>
+            <p id="deleteModalName" class="text-[#0a2200] font-bold text-center text-lg mb-6">"…"</p>
+            <p class="text-gray-400 text-sm text-center mb-8">This action cannot be undone. All associated crops will lose their parcel reference.</p>
+            <div class="flex gap-3">
+                <button id="deleteModalCancel" type="button" class="flex-1 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors">Cancel</button>
+                <form id="deleteModalForm" method="POST" class="flex-1">
+                    <input type="hidden" name="_token" id="deleteModalToken" value="">
+                    <button type="submit" class="w-full py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-lg">delete_forever</span> Yes, Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const modal = document.getElementById('deleteConfirmModal');
+            const form = document.getElementById('deleteModalForm');
+            const nameEl = document.getElementById('deleteModalName');
+            const tokenEl = document.getElementById('deleteModalToken');
+            const cancelBtn = document.getElementById('deleteModalCancel');
+            const backdrop = document.getElementById('deleteModalBackdrop');
+            function open(url, token, name) {
+                form.action = url; tokenEl.value = token;
+                nameEl.textContent = '"' + name + '"';
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+            function close() {
+                modal.classList.add('hidden'); modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+            document.addEventListener('click', e => { const b = e.target.closest('.open-delete-modal'); if (b) open(b.dataset.deleteUrl, b.dataset.deleteToken, b.dataset.deleteName); });
+            cancelBtn?.addEventListener('click', close);
+            backdrop?.addEventListener('click', close);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+        })();
+    </script>
 {{ include('elfirma/_nav_routes.html.twig') }}
 </body>
 </html>
-
