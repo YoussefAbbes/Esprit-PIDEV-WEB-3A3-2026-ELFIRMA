@@ -118,7 +118,7 @@ final class LivestockController extends AbstractController
     }
 
     /**
-     * @return array{type_elevage:string,etat_elevage:string,capacite:string,production:string}
+     * @return array{type_elevage:string,etat_elevage:string,capacite:string,production:string,latitude:string,longitude:string}
      */
     private function collectLivestockInput(Request $request): array
     {
@@ -127,11 +127,13 @@ final class LivestockController extends AbstractController
             'etat_elevage' => trim((string) $request->request->get('etat_elevage', '')),
             'capacite' => trim((string) $request->request->get('capacite', '')),
             'production' => trim((string) $request->request->get('production', '')),
+            'latitude' => trim((string) $request->request->get('latitude', '')),
+            'longitude' => trim((string) $request->request->get('longitude', '')),
         ];
     }
 
     /**
-     * @param array{type_elevage:string,etat_elevage:string,capacite:string,production:string} $input
+     * @param array{type_elevage:string,etat_elevage:string,capacite:string,production:string,latitude:string,longitude:string} $input
      *
      * @return array<string,string>
      */
@@ -166,13 +168,18 @@ final class LivestockController extends AbstractController
             $errors['production'] = 'Production can contain letters and spaces only.';
         }
 
+        $coordinatesError = $this->validateCoordinatesPair($input['latitude'], $input['longitude']);
+        if ($coordinatesError !== null) {
+            $errors['location'] = $coordinatesError;
+        }
+
         return $errors;
     }
 
     /**
-     * @param array{type_elevage:string,etat_elevage:string,capacite:string,production:string} $input
+     * @param array{type_elevage:string,etat_elevage:string,capacite:string,production:string,latitude:string,longitude:string} $input
      *
-     * @return array{type_elevage:string,etat_elevage:string,capacite:int,production:string}
+     * @return array{type_elevage:string,etat_elevage:string,capacite:int,production:string,latitude:?float,longitude:?float}
      */
     private function toLivestockPayload(array $input): array
     {
@@ -181,7 +188,50 @@ final class LivestockController extends AbstractController
             'etat_elevage' => $input['etat_elevage'],
             'capacite' => (int) $input['capacite'],
             'production' => $input['production'],
+            'latitude' => $this->normalizeCoordinate($input['latitude']),
+            'longitude' => $this->normalizeCoordinate($input['longitude']),
         ];
+    }
+
+    private function normalizeCoordinate(string $value): ?float
+    {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return (float) $trimmed;
+    }
+
+    private function validateCoordinatesPair(string $latitude, string $longitude): ?string
+    {
+        $lat = trim($latitude);
+        $lon = trim($longitude);
+
+        if ($lat === '' && $lon === '') {
+            return null;
+        }
+
+        if ($lat === '' || $lon === '') {
+            return 'Latitude and longitude must be provided together.';
+        }
+
+        if (!is_numeric($lat) || !is_numeric($lon)) {
+            return 'Latitude and longitude must be valid numbers.';
+        }
+
+        $latValue = (float) $lat;
+        $lonValue = (float) $lon;
+
+        if ($latValue < -90 || $latValue > 90) {
+            return 'Latitude must be between -90 and 90.';
+        }
+
+        if ($lonValue < -180 || $lonValue > 180) {
+            return 'Longitude must be between -180 and 180.';
+        }
+
+        return null;
     }
 
     private function redirectToLivestockList(): Response

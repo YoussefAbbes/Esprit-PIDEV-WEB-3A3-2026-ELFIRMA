@@ -32,25 +32,27 @@ final class LivestockRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array{type_elevage:string,etat_elevage:string,capacite:int,production:string} $payload
+     * @param array{type_elevage:string,etat_elevage:string,capacite:int,production:string,latitude:?float,longitude:?float} $payload
      */
     public function createLivestock(array $payload): void
     {
         $this->connection()->executeStatement(
-            'INSERT INTO elevage (type_elevage, etat_elevage, capacite, nombre_animaux, production)
-             VALUES (:type_elevage, :etat_elevage, :capacite, :nombre_animaux, :production)',
+            'INSERT INTO elevage (type_elevage, etat_elevage, capacite, nombre_animaux, production, latitude, longitude)
+             VALUES (:type_elevage, :etat_elevage, :capacite, :nombre_animaux, :production, :latitude, :longitude)',
             [
                 'type_elevage' => $payload['type_elevage'],
                 'etat_elevage' => $payload['etat_elevage'],
                 'capacite' => $payload['capacite'],
                 'nombre_animaux' => 0,
                 'production' => $payload['production'],
+                'latitude' => $payload['latitude'],
+                'longitude' => $payload['longitude'],
             ]
         );
     }
 
     /**
-     * @param array{type_elevage:string,etat_elevage:string,capacite:int,production:string} $payload
+     * @param array{type_elevage:string,etat_elevage:string,capacite:int,production:string,latitude:?float,longitude:?float} $payload
      */
     public function updateLivestock(int $idElevage, array $payload, int $nombreAnimaux): void
     {
@@ -60,7 +62,9 @@ final class LivestockRepository extends ServiceEntityRepository
                  etat_elevage = :etat_elevage,
                  capacite = :capacite,
                  nombre_animaux = :nombre_animaux,
-                 production = :production
+                 production = :production,
+                 latitude = :latitude,
+                 longitude = :longitude
              WHERE id_elevage = :id_elevage',
             [
                 'id_elevage' => $idElevage,
@@ -69,6 +73,8 @@ final class LivestockRepository extends ServiceEntityRepository
                 'capacite' => $payload['capacite'],
                 'nombre_animaux' => $nombreAnimaux,
                 'production' => $payload['production'],
+                'latitude' => $payload['latitude'],
+                'longitude' => $payload['longitude'],
             ]
         );
     }
@@ -107,12 +113,12 @@ final class LivestockRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array{id_elevage:int,type_elevage:string,etat_elevage:string,capacite:int,nombre_animaux:int,production:string}|null
+     * @return array{id_elevage:int,type_elevage:string,etat_elevage:string,capacite:int,nombre_animaux:int,production:string,latitude:?float,longitude:?float}|null
      */
     public function findForEdit(int $idElevage): ?array
     {
         $row = $this->connection()->fetchAssociative(
-            'SELECT id_elevage, type_elevage, etat_elevage, capacite, nombre_animaux, production
+            'SELECT id_elevage, type_elevage, etat_elevage, capacite, nombre_animaux, production, latitude, longitude
              FROM elevage
              WHERE id_elevage = :id_elevage',
             ['id_elevage' => $idElevage]
@@ -122,12 +128,24 @@ final class LivestockRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return list<array{id_elevage:int,type_elevage:string,etat_elevage:string,capacite:int,nombre_animaux:int,production:string}>
+     * @return list<array{id_elevage:int,type_elevage:string,etat_elevage:string,capacite:int,nombre_animaux:int,production:string,latitude:?float,longitude:?float}>
      */
     public function findAllForManagement(): array
     {
         return $this->connection()->fetchAllAssociative(
-            'SELECT id_elevage, type_elevage, etat_elevage, capacite, nombre_animaux, production
+            'SELECT id_elevage, type_elevage, etat_elevage, capacite, nombre_animaux, production, latitude, longitude
+             FROM elevage
+             ORDER BY id_elevage DESC'
+        );
+    }
+
+    /**
+     * @return list<array{id_elevage:int,type_elevage:string,etat_elevage:string,capacite:int,nombre_animaux:int,production:string,latitude:?float,longitude:?float}>
+     */
+    public function findAllForMap(): array
+    {
+        return $this->connection()->fetchAllAssociative(
+            'SELECT id_elevage, type_elevage, etat_elevage, capacite, nombre_animaux, production, latitude, longitude
              FROM elevage
              ORDER BY id_elevage DESC'
         );

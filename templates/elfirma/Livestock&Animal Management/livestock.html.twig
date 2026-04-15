@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livestock Management</title>
     <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
     <style>
         .elf-sidebar-toggle,
         .elf-sidebar-overlay {
@@ -71,6 +73,48 @@
             .management-form-modal {
                 transform: scale(0.88);
             }
+        }
+
+        .location-picker-map {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            border-radius: 0.9rem;
+            border: 2px solid #86efac;
+            overflow: hidden;
+        }
+
+        .map-picker-panel {
+            width: 100%;
+            max-width: 1280px;
+            height: calc(100vh - 0.6rem);
+            max-height: calc(100vh - 0.6rem);
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-height: 820px) {
+            .map-picker-panel {
+                height: calc(100vh - 0.35rem);
+                max-height: calc(100vh - 0.35rem);
+            }
+        }
+
+        .map-picker-btn {
+            border: 2px solid #166534;
+            background: #166534;
+            color: #ffffff;
+            transition: background-color 0.2s ease;
+        }
+
+        .map-picker-btn:hover {
+            background: #14532d;
+        }
+
+        .map-picker-btn:disabled {
+            background: #94a3b8;
+            border-color: #94a3b8;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -268,6 +312,8 @@
                 {% set current_etat_elevage = form_input.etat_elevage is defined ? form_input.etat_elevage : (is_edit_mode ? edit_livestock.etat_elevage : 'Clean') %}
                 {% set current_capacite = form_input.capacite is defined ? form_input.capacite : (is_edit_mode ? edit_livestock.capacite : '') %}
                 {% set current_production = form_input.production is defined ? form_input.production : (is_edit_mode ? edit_livestock.production : '') %}
+                {% set current_latitude = form_input.latitude is defined ? form_input.latitude : (is_edit_mode ? edit_livestock.latitude : '') %}
+                {% set current_longitude = form_input.longitude is defined ? form_input.longitude : (is_edit_mode ? edit_livestock.longitude : '') %}
 
                 {% set default_states = ['Cleaning', 'Dirty', 'Under Cleaning'] %}
                 {% set state_options = default_states %}
@@ -343,6 +389,24 @@
                                     {% endif %}
                                 </div>
 
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-start gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold pt-2">Location:</label>
+                                    <div class="md:col-span-4 space-y-2">
+                                        <button type="button" class="map-picker-btn w-full rounded-xl px-4 py-2.5 text-sm md:text-base font-semibold" data-open-map-picker>
+                                            Select on map
+                                        </button>
+                                        <div class="flex items-center gap-6 text-sm md:text-base text-emerald-900 font-semibold">
+                                            <span>Lat: <strong id="livestock-lat-value">{{ current_latitude is not empty ? current_latitude : '---' }}</strong></span>
+                                            <span>Lon: <strong id="livestock-lon-value">{{ current_longitude is not empty ? current_longitude : '---' }}</strong></span>
+                                        </div>
+                                        <input type="hidden" name="latitude" id="livestock-lat-input" value="{{ current_latitude }}">
+                                        <input type="hidden" name="longitude" id="livestock-lon-input" value="{{ current_longitude }}">
+                                        {% if form_errors.location is defined %}
+                                            <p class="text-sm text-red-600">{{ form_errors.location }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
                                 <div class="pt-4 md:pt-6 mt-auto flex items-center justify-center gap-4">
                                     <button type="submit" class="h-11 w-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_8px_18px_-8px_rgba(16,127,61,0.65)] flex items-center justify-center" title="Save">
                                         {% if is_edit_mode %}
@@ -353,6 +417,32 @@
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="livestock-map-picker-modal" class="fixed inset-0 z-[125] hidden items-start justify-center bg-black/40 p-1.5 md:p-2 overflow-hidden" data-maptiler-key="{{ maptiler_api_key|default('')|e('html_attr') }}">
+                    <div class="map-picker-panel rounded-2xl border-2 border-emerald-500 bg-[#d6e7d9] p-3 md:p-4 shadow-2xl">
+                        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-2">
+                            <div>
+                                <h4 class="text-xl md:text-2xl font-black text-emerald-800">Choose location on map</h4>
+                                <p class="text-sm text-emerald-900">Click on the map to place the marker.</p>
+                            </div>
+                            <button type="button" class="h-10 w-10 rounded-xl bg-slate-400 hover:bg-slate-500 text-white flex items-center justify-center" data-close-map-picker aria-label="Close map picker">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" class="w-5 h-5" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <div class="mb-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-semibold text-emerald-900">
+                            <span>Latitude: <strong id="map-picker-lat">---</strong></span>
+                            <span>Longitude: <strong id="map-picker-lon">---</strong></span>
+                        </div>
+                        <p id="map-picker-warning" class="hidden mb-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">OpenStreetMap fallback actif.</p>
+                        <div class="flex-1 min-h-0">
+                            <div id="livestock-location-map" class="location-picker-map"></div>
+                        </div>
+                        <div class="mt-2.5 flex items-center justify-end gap-3">
+                            <button type="button" class="h-10 rounded-xl px-4 bg-slate-500 hover:bg-slate-600 text-white font-semibold" data-close-map-picker>Cancel</button>
+                            <button type="button" id="confirm-map-location" class="map-picker-btn h-10 rounded-xl px-4 font-semibold" disabled>Confirm location</button>
                         </div>
                     </div>
                 </div>
@@ -413,6 +503,238 @@
     const quickTitle = document.getElementById('livestock-quick-title');
     const detailList = document.getElementById('livestock-detail-list');
     const mainCanvas = document.getElementById('livestock-main-chart');
+    const mapPickerModal = document.getElementById('livestock-map-picker-modal');
+
+    if (mapPickerModal && typeof ol !== 'undefined') {
+        const openButtons = Array.from(document.querySelectorAll('[data-open-map-picker]'));
+        const closeButtons = Array.from(mapPickerModal.querySelectorAll('[data-close-map-picker]'));
+        const confirmLocationBtn = document.getElementById('confirm-map-location');
+        const latInput = document.getElementById('livestock-lat-input');
+        const lonInput = document.getElementById('livestock-lon-input');
+        const latValue = document.getElementById('livestock-lat-value');
+        const lonValue = document.getElementById('livestock-lon-value');
+        const pickerLat = document.getElementById('map-picker-lat');
+        const pickerLon = document.getElementById('map-picker-lon');
+        const pickerWarning = document.getElementById('map-picker-warning');
+        const mapTarget = document.getElementById('livestock-location-map');
+        const mapKey = mapPickerModal.getAttribute('data-maptiler-key') || '';
+
+        const parseCoordinate = function (value) {
+            const raw = String(value === null || value === undefined ? '' : value).trim();
+            if (raw === '') {
+                return null;
+            }
+
+            const parsed = Number(raw);
+            return isFinite(parsed) ? parsed : null;
+        };
+
+        const showPickerWarning = function (message) {
+            if (!pickerWarning) {
+                return;
+            }
+
+            pickerWarning.textContent = message;
+            pickerWarning.classList.remove('hidden');
+        };
+
+        const hidePickerWarning = function () {
+            if (!pickerWarning) {
+                return;
+            }
+
+            pickerWarning.classList.add('hidden');
+        };
+
+        let selectedLat = parseCoordinate(latInput ? latInput.value : '');
+        let selectedLon = parseCoordinate(lonInput ? lonInput.value : '');
+
+        // Legacy empty/default values can arrive as 0/0; treat that as no selected location.
+        if (selectedLat !== null && selectedLon !== null && selectedLat === 0 && selectedLon === 0) {
+            selectedLat = null;
+            selectedLon = null;
+        }
+
+        let pickerMap = null;
+        let markerSource = null;
+        let markerLayer = null;
+        let baseLayer = null;
+
+        const buildBaseLayer = function () {
+            const normalizedKey = String(mapKey || '').trim();
+
+            if (normalizedKey !== '' && normalizedKey !== 'YOUR_MAPTILER_API_KEY_HERE') {
+                hidePickerWarning();
+
+                const maptilerSource = new ol.source.XYZ({
+                    url: 'https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=' + encodeURIComponent(normalizedKey),
+                    tileSize: 512,
+                    maxZoom: 20,
+                    attributions: '&copy; MapTiler &copy; OSM',
+                    crossOrigin: 'anonymous'
+                });
+
+                const layer = new ol.layer.Tile({ source: maptilerSource });
+
+                let fallbackApplied = false;
+                const fallbackToOsm = function () {
+                    if (fallbackApplied) {
+                        return;
+                    }
+
+                    fallbackApplied = true;
+                    layer.setSource(new ol.source.OSM());
+                    showPickerWarning('MapTiler indisponible. OpenStreetMap fallback actif.');
+                };
+
+                maptilerSource.on('tileloaderror', fallbackToOsm);
+                return layer;
+            }
+
+            showPickerWarning('Cle API MapTiler manquante. OpenStreetMap fallback actif.');
+            return new ol.layer.Tile({ source: new ol.source.OSM() });
+        };
+
+        const drawMarker = function (lat, lon) {
+            if (!markerSource) {
+                return;
+            }
+
+            markerSource.clear();
+            if (lat === null || lon === null) {
+                return;
+            }
+
+            const coord = ol.proj.fromLonLat([lon, lat]);
+            markerSource.addFeature(new ol.Feature({
+                geometry: new ol.geom.Point(coord)
+            }));
+        };
+
+        const syncPickerLabels = function () {
+            if (pickerLat) {
+                pickerLat.textContent = selectedLat === null ? '---' : selectedLat.toFixed(6);
+            }
+            if (pickerLon) {
+                pickerLon.textContent = selectedLon === null ? '---' : selectedLon.toFixed(6);
+            }
+            if (confirmLocationBtn) {
+                confirmLocationBtn.disabled = selectedLat === null || selectedLon === null;
+            }
+        };
+
+        const syncFormLabels = function () {
+            if (latValue) {
+                latValue.textContent = selectedLat === null ? '---' : selectedLat.toFixed(6);
+            }
+            if (lonValue) {
+                lonValue.textContent = selectedLon === null ? '---' : selectedLon.toFixed(6);
+            }
+            if (latInput) {
+                latInput.value = selectedLat === null ? '' : selectedLat.toFixed(7);
+            }
+            if (lonInput) {
+                lonInput.value = selectedLon === null ? '' : selectedLon.toFixed(7);
+            }
+        };
+
+        const ensurePickerMap = function () {
+            if (pickerMap || !mapTarget) {
+                return;
+            }
+
+            markerSource = new ol.source.Vector();
+            markerLayer = new ol.layer.Vector({
+                source: markerSource,
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 10,
+                        fill: new ol.style.Fill({ color: '#ef4444' }),
+                        stroke: new ol.style.Stroke({ color: 'white', width: 3 })
+                    })
+                })
+            });
+
+            baseLayer = buildBaseLayer();
+
+            pickerMap = new ol.Map({
+                target: mapTarget,
+                layers: [
+                    baseLayer,
+                    markerLayer
+                ],
+                view: new ol.View({
+                    center: ol.proj.fromLonLat([9.5375, 33.8869]),
+                    zoom: 6
+                })
+            });
+
+            pickerMap.on('click', function (event) {
+                var lonLat = ol.proj.toLonLat(event.coordinate);
+                selectedLon = lonLat[0];
+                selectedLat = lonLat[1];
+                drawMarker(selectedLat, selectedLon);
+                syncPickerLabels();
+            });
+        };
+
+        const openPicker = function () {
+            document.body.style.overflow = 'hidden';
+            mapPickerModal.classList.remove('hidden');
+            mapPickerModal.classList.add('flex');
+            syncPickerLabels();
+
+            window.requestAnimationFrame(function () {
+                ensurePickerMap();
+                if (!pickerMap) {
+                    return;
+                }
+
+                drawMarker(selectedLat, selectedLon);
+                pickerMap.updateSize();
+                pickerMap.renderSync();
+
+                if (baseLayer && baseLayer.getSource() && typeof baseLayer.getSource().refresh === 'function') {
+                    baseLayer.getSource().refresh();
+                }
+
+                if (selectedLat !== null && selectedLon !== null) {
+                    pickerMap.getView().setCenter(ol.proj.fromLonLat([selectedLon, selectedLat]));
+                    pickerMap.getView().setZoom(12);
+                }
+            });
+        };
+
+        const closePicker = function () {
+            document.body.style.overflow = '';
+            mapPickerModal.classList.add('hidden');
+            mapPickerModal.classList.remove('flex');
+        };
+
+        openButtons.forEach(function (button) {
+            button.addEventListener('click', openPicker);
+        });
+
+        closeButtons.forEach(function (button) {
+            button.addEventListener('click', closePicker);
+        });
+
+        mapPickerModal.addEventListener('click', function (event) {
+            if (event.target === mapPickerModal) {
+                closePicker();
+            }
+        });
+
+        if (confirmLocationBtn) {
+            confirmLocationBtn.addEventListener('click', function () {
+                syncFormLabels();
+                closePicker();
+            });
+        }
+
+        syncPickerLabels();
+        syncFormLabels();
+    }
 
     if (searchInput && searchError) {
         const urlParams = new URLSearchParams(window.location.search);

@@ -145,6 +145,16 @@ final class ElfirmaController extends AbstractController
         return $this->renderLivestockAnimalManagementView('vaccination', $request, $livestockRepository, $animalRepository);
     }
 
+    #[Route('/elfirma/map', name: 'elfirma_livestock_map', methods: ['GET'])]
+    public function mapPage(
+        Request $request,
+        LivestockRepository $livestockRepository,
+        AnimalRepository $animalRepository
+    ): Response
+    {
+        return $this->renderLivestockAnimalManagementView('map', $request, $livestockRepository, $animalRepository);
+    }
+
     #[Route(
         '/elfirma/{module}',
         name: 'elfirma_page',
@@ -170,13 +180,14 @@ final class ElfirmaController extends AbstractController
 
         if ($module === 'animaux-elevages') {
             $view = $request->query->getString('view', 'livestock');
-            if (!\in_array($view, ['livestock', 'animal', 'vaccination'], true)) {
+            if (!\in_array($view, ['livestock', 'animal', 'vaccination', 'map'], true)) {
                 $view = 'livestock';
             }
 
             $routeName = match ($view) {
                 'animal' => 'elfirma_animals',
                 'vaccination' => 'elfirma_vaccinations',
+                'map' => 'elfirma_livestock_map',
                 default => 'elfirma_livestock',
             };
             $queryParams = $request->query->all();
@@ -207,7 +218,7 @@ final class ElfirmaController extends AbstractController
         AnimalRepository $animalRepository
     ): Response
     {
-        if (!\in_array($view, ['livestock', 'animal', 'vaccination'], true)) {
+        if (!\in_array($view, ['livestock', 'animal', 'vaccination', 'map'], true)) {
             $view = 'livestock';
         }
 
@@ -247,6 +258,7 @@ final class ElfirmaController extends AbstractController
                 'search_error' => $searchError,
                 'show_add_form' => $showAddForm,
                 'edit_livestock' => $editLivestock,
+                'maptiler_api_key' => (string) $this->getParameter('app.maptiler_api_key'),
             ]);
         }
 
@@ -289,6 +301,13 @@ final class ElfirmaController extends AbstractController
                 'search_error' => $searchError,
                 'show_add_animal_form' => $showAddAnimalForm,
                 'edit_animal' => $editAnimal,
+            ]);
+        }
+
+        if ($view === 'map') {
+            return $this->render('elfirma/Livestock&Animal Management/map.html.twig', [
+                'elevages' => $livestockRepository->findAllForMap(),
+                'maptiler_api_key' => (string) $this->getParameter('app.maptiler_api_key'),
             ]);
         }
 
