@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use App\Repository\AnimalRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -71,6 +69,9 @@ class Animal
     }
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\NotNull(message: 'Age is required.')]
+    #[Assert\Type(type: 'integer', message: 'Age must contain digits only.')]
+    #[Assert\GreaterThanOrEqual(value: 0, message: 'Age must be greater than or equal to 0.')]
     private ?int $age = null;
 
     public function getAge(): ?int
@@ -112,30 +113,4 @@ class Animal
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Vaccination::class, mappedBy: 'animal')]
-    private Collection $vaccinations;
-
-    public function __construct()
-    {
-        $this->vaccinations = new ArrayCollection();
-    }
-
-    public function getVaccinations(): Collection
-    {
-        return $this->vaccinations;
-    }
-
-    public function addVaccination(Vaccination $vaccination): self
-    {
-        if (!$this->vaccinations->contains($vaccination)) {
-            $this->vaccinations[] = $vaccination;
-        }
-        return $this;
-    }
-
-    public function removeVaccination(Vaccination $vaccination): self
-    {
-        $this->vaccinations->removeElement($vaccination);
-        return $this;
-    }
 }

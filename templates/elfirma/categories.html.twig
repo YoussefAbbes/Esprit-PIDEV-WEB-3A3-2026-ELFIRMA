@@ -51,11 +51,11 @@
                     <span class="material-symbols-outlined text-sm">expand_less</span>
                 </div>
                 <div class="mt-1 ml-8">
-                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto mb-1" href="{{ path('elfirma_page', { module: 'categories' }) }}">
+                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto mb-1" href="{{ path('elfirma_categories') }}">
                         <span class="material-symbols-outlined text-sm">category</span>
                         <span>Categories</span>
                     </a>
-                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto" href="{{ path('elfirma_page', { module: 'produits' }) }}">
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto" href="{{ path('elfirma_products') }}">
                         <span class="material-symbols-outlined text-sm">inventory_2</span>
                         <span>Products</span>
                     </a>
@@ -112,7 +112,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <p class="text-green-100 text-sm font-semibold uppercase tracking-wide">Total Categories</p>
-                            <p class="text-4xl font-black mt-2">{{ categories|length }}</p>
+                            <p class="text-4xl font-black mt-2">{{ category_stats.total_categories }}</p>
                         </div>
                         <div class="bg-white/20 p-4 rounded-xl">
                             <span class="material-symbols-outlined text-4xl">category</span>
@@ -129,13 +129,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wide">Total Products</p>
-                            <p class="text-4xl font-black mt-2">
-                                {% set totalProduits = 0 %}
-                                {% for categorie in categories %}
-                                    {% set totalProduits = totalProduits + categorie.produits|length %}
-                                {% endfor %}
-                                {{ totalProduits }}
-                            </p>
+                            <p class="text-4xl font-black mt-2">{{ category_stats.total_products }}</p>
                         </div>
                         <div class="bg-white/20 p-4 rounded-xl">
                             <span class="material-symbols-outlined text-4xl">inventory_2</span>
@@ -152,13 +146,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <p class="text-teal-100 text-sm font-semibold uppercase tracking-wide">Average / Category</p>
-                            <p class="text-4xl font-black mt-2">
-                                {% if categories|length > 0 %}
-                                    {{ (totalProduits / categories|length)|round(1) }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </p>
+                            <p class="text-4xl font-black mt-2">{{ category_stats.average_per_category }}</p>
                         </div>
                         <div class="bg-white/20 p-4 rounded-xl">
                             <span class="material-symbols-outlined text-4xl">analytics</span>
@@ -177,24 +165,31 @@
                     <h2 class="text-4xl font-black text-[#0a2200] tracking-tight leading-none mb-2">Product Categories</h2>
                     <p class="text-[#43493d] max-w-xl">Manage categories to organize your agricultural products.</p>
                 </div>
-                <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
-                    <span class="material-symbols-outlined">add_circle</span>
-                    <span>New Category</span>
-                </button>
+                <div class="flex items-center gap-3">
+                    <a href="{{ path('elfirma_categories_export_pdf', { q: filters.q, sort: filters.sort }) }}" class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105">
+                        <span class="material-symbols-outlined">picture_as_pdf</span>
+                        <span>Export PDF</span>
+                    </a>
+                    <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        <span>New Category</span>
+                    </button>
+                </div>
             </section>
 
             <!-- Search and Sort Section -->
             <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100">
-                <div class="flex flex-col md:flex-row gap-4">
+                <form id="categoryFiltersForm" method="GET" action="{{ path('elfirma_categories') }}" class="flex flex-col md:flex-row gap-4">
                     <!-- Search Bar -->
                     <div class="flex-1 relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">search</span>
                         <input 
                             type="text" 
                             id="searchInput"
+                            name="q"
+                            value="{{ filters.q|default('') }}"
                             placeholder="Search a category by name..." 
                             class="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
-                            onkeyup="filterTable()"
                         />
                     </div>
                     
@@ -202,21 +197,25 @@
                     <div class="flex gap-3">
                         <select 
                             id="sortSelect" 
-                            onchange="sortTable()"
+                            name="sort"
                             class="px-6 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer transition-all">
-                            <option value="name-asc">Name A→Z</option>
-                            <option value="name-desc">Name Z→A</option>
-                            <option value="products-desc">Most products</option>
-                            <option value="products-asc">Fewest products</option>
-                            <option value="id-asc">Oldest</option>
-                            <option value="id-desc">Newest</option>
+                            <option value="name-asc" {% if filters.sort == 'name-asc' %}selected{% endif %}>Name A→Z</option>
+                            <option value="name-desc" {% if filters.sort == 'name-desc' %}selected{% endif %}>Name Z→A</option>
+                            <option value="products-desc" {% if filters.sort == 'products-desc' %}selected{% endif %}>Most products</option>
+                            <option value="products-asc" {% if filters.sort == 'products-asc' %}selected{% endif %}>Fewest products</option>
+                            <option value="id-asc" {% if filters.sort == 'id-asc' %}selected{% endif %}>Oldest</option>
+                            <option value="id-desc" {% if filters.sort == 'id-desc' or filters.sort is empty %}selected{% endif %}>Newest</option>
                         </select>
-                        
-                        <button onclick="resetFilters()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all">
-                            <span class="material-symbols-outlined">refresh</span>
+
+                        <button type="submit" class="px-6 py-3 bg-[#1e3a0f] hover:bg-[#16300b] text-white font-semibold rounded-xl transition-all">
+                            Apply
                         </button>
+                        
+                        <a href="{{ path('elfirma_categories') }}" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all inline-flex items-center justify-center">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </a>
                     </div>
-                </div>
+                </form>
                 
                 <!-- Results Counter -->
                 <div class="mt-4 text-sm text-gray-600">
@@ -234,21 +233,30 @@
                     <table class="w-full" id="categoriesTable">
                         <thead>
                             <tr class="text-left text-[#43493d] text-xs uppercase tracking-widest font-black border-b-2 border-green-200">
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('id')">
-                                    <div class="flex items-center gap-2">ID <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_categories', { q: filters.q, sort: filters.sort == 'id-asc' ? 'id-desc' : 'id-asc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        ID
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('name')">
-                                    <div class="flex items-center gap-2">Name <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_categories', { q: filters.q, sort: filters.sort == 'name-asc' ? 'name-desc' : 'name-asc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Name
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
                                 </th>
-                                <th class="pb-4 px-4 cursor-pointer hover:bg-green-50 transition-colors" onclick="sortTable('products')">
-                                    <div class="flex items-center gap-2">Number of Products <span class="material-symbols-outlined text-sm">unfold_more</span></div>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_categories', { q: filters.q, sort: filters.sort == 'products-desc' ? 'products-asc' : 'products-desc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Number of Products
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
                                 </th>
                                 <th class="pb-4 px-4">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm" id="tableBody">
                             {% for categorie in categories %}
-                            <tr class="border-b border-green-50 hover:bg-green-50 transition-colors" data-name="{{ categorie.nom|lower }}" data-products="{{ categorie.produits|length }}" data-id="{{ categorie.id }}">
+                            <tr class="border-b border-green-50 hover:bg-green-50 transition-colors">
                                 <td class="py-5 px-4 font-mono font-bold text-green-700">#{{ categorie.id }}</td>
                                 <td class="py-5 px-4 font-bold text-[#1b1d0e]">{{ categorie.nom }}</td>
                                 <td class="py-5 px-4">
@@ -375,100 +383,31 @@
             openModal('editModal');
         }
         
-        // Search and Filter Functions
-        function filterTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#tableBody tr:not(#emptyRow)');
-            let visibleCount = 0;
-            
-            rows.forEach(row => {
-                const name = row.dataset.name || '';
-                if (name.includes(searchTerm)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            document.getElementById('resultCount').textContent = visibleCount;
-        }
-        
-        // Sorting state
-        let sortState = {
-            column: null,
-            direction: 'asc' // 'asc' or 'desc'
-        };
-        
-        function sortTable(column) {
-            const tbody = document.getElementById('tableBody');
-            const rows = Array.from(tbody.querySelectorAll('tr:not(#emptyRow)'));
-            
-            // Toggle direction if same column clicked
-            if (sortState.column === column) {
-                sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
-            } else {
-                sortState.column = column;
-                sortState.direction = 'asc';
-            }
-            
-            rows.sort((a, b) => {
-                let aVal, bVal;
-                
-                switch(column) {
-                    case 'id':
-                        aVal = parseInt(a.dataset.id) || 0;
-                        bVal = parseInt(b.dataset.id) || 0;
-                        return sortState.direction === 'asc' ? aVal - bVal : bVal - aVal;
-                    case 'name':
-                        aVal = a.dataset.name || '';
-                        bVal = b.dataset.name || '';
-                        return sortState.direction === 'asc' 
-                            ? aVal.localeCompare(bVal)
-                            : bVal.localeCompare(aVal);
-                    case 'products':
-                        aVal = parseInt(a.dataset.products) || 0;
-                        bVal = parseInt(b.dataset.products) || 0;
-                        return sortState.direction === 'asc' ? aVal - bVal : bVal - aVal;
-                    default:
-                        return 0;
-                }
-            });
-            
-            rows.forEach(row => tbody.appendChild(row));
-            updateSortIndicators();
-        }
-        
-        function updateSortIndicators() {
-            document.querySelectorAll('th .material-symbols-outlined').forEach(icon => {
-                icon.textContent = 'unfold_more';
-            });
-            
-            if (sortState.column) {
-                const headers = document.querySelectorAll('th');
-                headers.forEach(h => {
-                    if (h.getAttribute('onclick') && h.getAttribute('onclick').includes(sortState.column)) {
-                        const icon = h.querySelector('.material-symbols-outlined');
-                        if (icon) {
-                            icon.textContent = sortState.direction === 'asc' ? 'arrow_upward' : 'arrow_downward';
-                        }
-                    }
-                });
-            }
-        }
-        
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('sortSelect').selectedIndex = 0;
-            filterTable();
-            sortTable();
-        }
-        
         // Close modal when clicking outside
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
             }
+        }
+
+        const categoryFiltersForm = document.getElementById('categoryFiltersForm');
+        const categorySearchInput = document.getElementById('searchInput');
+        const categorySortSelect = document.getElementById('sortSelect');
+        let categoryFilterTimer = null;
+
+        if (categorySearchInput && categoryFiltersForm) {
+            categorySearchInput.addEventListener('input', function () {
+                clearTimeout(categoryFilterTimer);
+                categoryFilterTimer = setTimeout(function () {
+                    categoryFiltersForm.submit();
+                }, 280);
+            });
+        }
+
+        if (categorySortSelect && categoryFiltersForm) {
+            categorySortSelect.addEventListener('change', function () {
+                categoryFiltersForm.submit();
+            });
         }
 
         {% if categorieCreateErrors is not empty %}

@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Animal;
 use App\Repository\AnimalRepository;
 use App\Repository\LivestockRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class AnimalController extends AbstractController
 {
@@ -20,8 +17,7 @@ final class AnimalController extends AbstractController
     public function create(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository,
-        ValidatorInterface $validator
+        LivestockRepository $livestockRepository
     ): Response
     {
         $formRedirect = [
@@ -44,23 +40,6 @@ final class AnimalController extends AbstractController
 
         $payload = $this->toAnimalPayload($input);
 
-        $violations = $validator->validate(
-            (new Animal())
-                ->setTypeAnimal($payload['type_animal'])
-                ->setSexe($payload['sexe'])
-                ->setAge($payload['age'])
-                ->setEtatSante($payload['etat_sante'])
-                ->setStatut($payload['statut'])
-        );
-
-        if (count($violations) > 0) {
-            return $this->redirectToAnimalFormWithFieldErrors(
-                $formRedirect,
-                $this->collectViolationFieldErrors($violations),
-                $input
-            );
-        }
-
         $animalRepository->createAnimal($payload);
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
 
@@ -71,8 +50,7 @@ final class AnimalController extends AbstractController
     public function update(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository,
-        ValidatorInterface $validator
+        LivestockRepository $livestockRepository
     ): Response
     {
         $idAnimal = (int) $request->request->get('id_animal', 0);
@@ -111,23 +89,6 @@ final class AnimalController extends AbstractController
         }
 
         $payload = $this->toAnimalPayload($input);
-
-        $violations = $validator->validate(
-            (new Animal())
-                ->setTypeAnimal($payload['type_animal'])
-                ->setSexe($payload['sexe'])
-                ->setAge($payload['age'])
-                ->setEtatSante($payload['etat_sante'])
-                ->setStatut($payload['statut'])
-        );
-
-        if (count($violations) > 0) {
-            return $this->redirectToAnimalFormWithFieldErrors(
-                $formRedirect,
-                $this->collectViolationFieldErrors($violations),
-                $input
-            );
-        }
 
         $animalRepository->updateAnimal($idAnimal, $payload);
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
@@ -252,38 +213,6 @@ final class AnimalController extends AbstractController
             'module' => 'animaux-elevages',
             'view' => 'animal',
         ]);
-    }
-
-    /**
-     * @return array<string,string>
-     */
-    private function collectViolationFieldErrors(ConstraintViolationListInterface $violations): array
-    {
-        $errors = [];
-        foreach ($violations as $violation) {
-            $field = $this->normalizeFieldName((string) $violation->getPropertyPath());
-            if ($field === '') {
-                $field = '_form';
-            }
-
-            if (!isset($errors[$field])) {
-                $errors[$field] = $violation->getMessage();
-            }
-        }
-
-        return $errors;
-    }
-
-    private function normalizeFieldName(string $field): string
-    {
-        $field = trim($field);
-        if ($field === '') {
-            return '';
-        }
-
-        $field = preg_replace('/([a-z])([A-Z])/', '$1_$2', $field);
-
-        return strtolower((string) $field);
     }
 
     /**

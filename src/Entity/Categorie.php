@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\CategorieRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategorieRepository::class)]
 #[ORM\Table(name: 'categorie')]
@@ -22,6 +23,13 @@ class Categorie
     }
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Category name is required.')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Category name must be at least {{ limit }} characters.',
+        maxMessage: 'Category name cannot exceed {{ limit }} characters.'
+    )]
     private ?string $nom = null;
 
     public function getNom(): ?string

@@ -4,7 +4,7 @@
         {
             label: "User Management",
             icon: "group",
-            href: "{{ path('elfirma_page', { module: 'utilisateurs' }) }}"
+            href: "{{ path('user_page') }}"
         },
         {
             label: "Field Management",
@@ -40,23 +40,32 @@
             children: [
                 {
                     label: "Products",
-                    href: "{{ path('elfirma_page', { module: 'produits' }) }}"
+                    href: "{{ path('elfirma_products') }}"
                 },
                 {
-                    label: "Catalog",
-                    href: "{{ path('elfirma_page', { module: 'categories' }) }}"
+                    label: "Categories",
+                    href: "{{ path('elfirma_categories') }}"
                 }
             ]
         },
         {
             label: "Equipment Management",
             icon: "handyman",
-            href: "{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}"
+            href: "{{ path('app_equipement_index') }}"
         },
         {
             label: "Contract Management",
             icon: "contract",
-            href: "{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}"
+            children: [
+                {
+                    label: "Suppliers",
+                    href: "{{ path('fournisseur_page') }}"
+                },
+                {
+                    label: "Contracts",
+                    href: "{{ path('contrat_page') }}"
+                }
+            ]
         }
     ];
 
@@ -65,8 +74,8 @@
         ["Tableau de Bord", "Dashboard"],
         ["Utilisateurs", "Users"],
         ["Parcelles & Cultures", "Fields & Crops"],
-        ["Animaux & Élevages", "Livestock"],
-        ["Animaux & Elevages", "Livestock"],
+        ["Animaux & Élevages", "Livestock & Animals"],
+        ["Animaux & Elevages", "Livestock & Animals"],
         ["Produits & Commandes", "Products & Orders"],
         ["Équipements & Maintenance", "Equipment & Maintenance"],
         ["Equipements & Maintenance", "Equipment & Maintenance"],
@@ -405,20 +414,9 @@
             }
         });
 
-        const possibleContainers = Array.from(root.querySelectorAll("nav, div")).filter((element) => {
-            return element.querySelectorAll(":scope > a").length >= 3;
-        });
-
-        if (!possibleContainers.length) {
-            return;
-        }
-
-        const bestContainer = possibleContainers.sort((a, b) => {
-            return b.querySelectorAll(":scope > a").length - a.querySelectorAll(":scope > a").length;
-        })[0];
-
-        buildSideNavigation(bestContainer);
-    });
+        const container = root.querySelector("nav") || root;
+        buildSideNavigation(container);
+            });
 
     mountSidebarToggle();
 })();
