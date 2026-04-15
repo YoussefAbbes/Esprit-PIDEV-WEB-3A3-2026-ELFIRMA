@@ -41,10 +41,51 @@ final class AuthController extends AbstractController
             $session->set('user_role', $user->getRoleU());
             $session->set('user_name', $user->getPrenomU() . ' ' . $user->getNomU());
 
-            return $this->redirectToRoute('app_pages_home');
+            return $this->redirectToRoute('app_verify_captcha');
         }
         return $this->render('auth/login.html.twig');
     }
+
+
+    #[Route('/verify-captcha', name: 'app_verify_captcha', methods: ['GET', 'POST'])]
+public function verifyCaptcha(Request $request): Response
+{
+    if ($request->isMethod('POST')) {
+
+        $recaptchaResponse = $request->request->get('g-recaptcha-response');
+
+        if (!$recaptchaResponse) {
+            return $this->render('auth/recaptcha.html.twig', [
+                'error' => 'Please confirm you are not a robot',
+                'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY']
+            ]);
+        }
+
+        $secret = $_ENV['RECAPTCHA_SECRET_KEY'];
+
+        $verify = file_get_contents(
+            "https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$recaptchaResponse"
+        );
+
+        $captchaSuccess = json_decode($verify);
+
+        if (!$captchaSuccess->success) {
+            return $this->render('auth/recaptcha.html.twig', [
+                'error' => 'reCAPTCHA failed',
+                'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY']
+            ]);
+        }
+
+        // CAPTCHA OK → accès final
+        return $this->redirectToRoute('app_pages_home');
+    }
+
+    return $this->render('auth/recaptcha.html.twig', [
+    'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'],
+    'error' => null
+]);
+}
+
 
     #[Route('/signup', name: 'app_signup', methods: ['GET', 'POST'])]
     public function signup(Request $request, EntityManagerInterface $em): Response
