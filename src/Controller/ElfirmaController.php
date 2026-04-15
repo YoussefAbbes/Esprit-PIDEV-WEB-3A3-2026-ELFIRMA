@@ -8,6 +8,8 @@ use App\Entity\Utilisateur;
 use App\Entity\Reclamation;
 use App\Repository\AnimalRepository;
 use App\Repository\LivestockRepository;
+use App\Repository\VaccinationRepository;
+use App\Service\VaccinationSmsAlertService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +18,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ElfirmaController extends AbstractController
 {
+    public function __construct(
+        private readonly VaccinationRepository $vaccinationRepository,
+        private readonly VaccinationSmsAlertService $vaccinationSmsAlertService
+    ) {
+    }
+
     private const MODULES = [
         'tableau-de-bord' => [
             'folder' => 'tableau_de_bord',
@@ -122,6 +130,21 @@ final class ElfirmaController extends AbstractController
         return $this->renderLivestockAnimalManagementView('animal', $request, $livestockRepository, $animalRepository);
     }
 
+    #[Route('/elfirma/vaccinations', name: 'elfirma_vaccinations', methods: ['GET'])]
+    public function vaccinationsPage(
+        Request $request,
+        LivestockRepository $livestockRepository,
+        AnimalRepository $animalRepository
+    ): Response
+    {
+        $sentSmsCount = $this->vaccinationSmsAlertService->checkAndSendAlerts(2);
+        if ($sentSmsCount > 0) {
+            $this->addFlash('success', sprintf('%d SMS alert(s) sent successfully.', $sentSmsCount));
+        }
+
+        return $this->renderLivestockAnimalManagementView('vaccination', $request, $livestockRepository, $animalRepository);
+    }
+
     #[Route(
         '/elfirma/{module}',
         name: 'elfirma_page',
@@ -147,11 +170,15 @@ final class ElfirmaController extends AbstractController
 
         if ($module === 'animaux-elevages') {
             $view = $request->query->getString('view', 'livestock');
-            if (!\in_array($view, ['livestock', 'animal'], true)) {
+            if (!\in_array($view, ['livestock', 'animal', 'vaccination'], true)) {
                 $view = 'livestock';
             }
 
-            $routeName = $view === 'animal' ? 'elfirma_animals' : 'elfirma_livestock';
+            $routeName = match ($view) {
+                'animal' => 'elfirma_animals',
+                'vaccination' => 'elfirma_vaccinations',
+                default => 'elfirma_livestock',
+            };
             $queryParams = $request->query->all();
             unset($queryParams['view']);
 
@@ -180,7 +207,7 @@ final class ElfirmaController extends AbstractController
         AnimalRepository $animalRepository
     ): Response
     {
-        if (!\in_array($view, ['livestock', 'animal'], true)) {
+        if (!\in_array($view, ['livestock', 'animal', 'vaccination'], true)) {
             $view = 'livestock';
         }
 
@@ -223,44 +250,79 @@ final class ElfirmaController extends AbstractController
             ]);
         }
 
-        $animalEditId = $request->query->getInt('edit', 0);
-        $editAnimal = null;
-        if ($animalEditId > 0) {
-            $editAnimal = $animalRepository->findForEdit($animalEditId);
+        if ($view === 'animal') {
+            $animalEditId = $request->query->getInt('edit', 0);
+            $editAnimal = null;
+            if ($animalEditId > 0) {
+                $editAnimal = $animalRepository->findForEdit($animalEditId);
+            }
+
+            $livestockOptions = $livestockRepository->findOptionsForAnimalForm();
+
+            $showAddAnimalForm = \in_array(strtolower($request->query->getString('add', '0')), ['1', 'true', 'yes'], true);
+
+            $animalStatuses = $animalRepository->findDistinctStatuses();
+            $animalHealthOptions = $animalRepository->findDistinctHealthOptions();
+            $animals = $animalRepository->findAllForManagement();
+            if ($searchTerm !== '' && $searchError === null) {
+                $animals = array_values(array_filter(
+                    $animals,
+                    function (array $item) use ($searchTerm): bool {
+                        return $this->matchesSearch($searchTerm, [
+                            $item['type_animal'] ?? '',
+                            $item['sexe'] ?? '',
+                            $item['etat_sante'] ?? '',
+                            $item['statut'] ?? '',
+                        ]);
+                    }
+                ));
+            }
+            $animalStats = $animalRepository->fetchStats();
+
+            return $this->render('elfirma/Livestock&Animal Management/animal.html.twig', [
+                'animals' => $animals,
+                'livestock_options' => $livestockOptions,
+                'animal_stats' => $animalStats,
+                'animal_statuses' => $animalStatuses,
+                'animal_health_options' => $animalHealthOptions,
+                'search_term' => $searchTerm,
+                'search_error' => $searchError,
+                'show_add_animal_form' => $showAddAnimalForm,
+                'edit_animal' => $editAnimal,
+            ]);
         }
 
-        $livestockOptions = $livestockRepository->findOptionsForAnimalForm();
+        $vaccinationEditId = $request->query->getInt('edit', 0);
+        $editVaccination = null;
+        if ($vaccinationEditId > 0) {
+            $editVaccination = $this->vaccinationRepository->findForEdit($vaccinationEditId);
+        }
 
-        $showAddAnimalForm = \in_array(strtolower($request->query->getString('add', '0')), ['1', 'true', 'yes'], true);
+        $showAddVaccinationForm = \in_array(strtolower($request->query->getString('add', '0')), ['1', 'true', 'yes'], true);
 
-        $animalStatuses = $animalRepository->findDistinctStatuses();
-        $animalHealthOptions = $animalRepository->findDistinctHealthOptions();
-        $animals = $animalRepository->findAllForManagement();
+        $vaccinations = $this->vaccinationRepository->findAllForManagement();
         if ($searchTerm !== '' && $searchError === null) {
-            $animals = array_values(array_filter(
-                $animals,
+            $vaccinations = array_values(array_filter(
+                $vaccinations,
                 function (array $item) use ($searchTerm): bool {
                     return $this->matchesSearch($searchTerm, [
-                        $item['type_animal'] ?? '',
-                        $item['sexe'] ?? '',
-                        $item['etat_sante'] ?? '',
-                        $item['statut'] ?? '',
+                        $item['animal_type'] ?? '',
+                        $item['vaccine_name'] ?? '',
+                        $item['notes'] ?? '',
+                        $item['status'] ?? '',
                     ]);
                 }
             ));
         }
-        $animalStats = $animalRepository->fetchStats();
 
-        return $this->render('elfirma/Livestock&Animal Management/animal.html.twig', [
-            'animals' => $animals,
-            'livestock_options' => $livestockOptions,
-            'animal_stats' => $animalStats,
-            'animal_statuses' => $animalStatuses,
-            'animal_health_options' => $animalHealthOptions,
+        return $this->render('elfirma/Livestock&Animal Management/vaccination.html.twig', [
+            'vaccinations' => $vaccinations,
+            'vaccination_stats' => $this->vaccinationRepository->fetchStats(),
+            'animal_options' => $this->vaccinationRepository->findAnimalOptions(),
             'search_term' => $searchTerm,
             'search_error' => $searchError,
-            'show_add_animal_form' => $showAddAnimalForm,
-            'edit_animal' => $editAnimal,
+            'show_add_vaccination_form' => $showAddVaccinationForm,
+            'edit_vaccination' => $editVaccination,
         ]);
     }
 
