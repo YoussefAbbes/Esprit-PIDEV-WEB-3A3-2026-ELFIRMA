@@ -1,0 +1,424 @@
+{% extends 'baseback.html.twig' %}
+
+{% block body %}
+
+<main class="min-h-screen p-12">
+
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-8">
+
+    <a href="{{ path('app_equipement_index') }}"
+       class="flex items-center gap-3 px-5 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+
+        <span class="material-symbols-outlined text-gray-500">arrow_back</span>
+        <span class="font-medium text-gray-700"></span>
+    </a>
+
+</div>
+
+<div class="mb-8">
+    <h2 class="text-3xl font-bold text-[#0a2200]">
+        Liste des Maintenances
+    </h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+
+    <div class="bg-blue-100 rounded-xl p-5 shadow">
+        <p>Total maintenances</p>
+        <h2 id="stat-m-total" class="text-xl font-bold text-blue-700">0</h2>
+    </div>
+
+    <div class="bg-green-100 rounded-xl p-5 shadow">
+        <p>Coût total</p>
+        <h2 id="stat-m-cout" class="text-xl font-bold text-green-700">0</h2>
+    </div>
+
+</div>
+
+<!-- 🔍 SEARCH + FILTER -->
+<div class="flex flex-wrap items-center gap-3 mb-6">
+
+    <!-- SEARCH -->
+    <div class="relative flex-1 min-w-[200px]">
+        <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">
+            search
+        </span>
+
+        <input type="text" id="searchMaintenance"
+               placeholder="Rechercher..."
+               class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+                      focus:ring-2 focus:ring-green-500 outline-none transition">
+    </div>
+
+    <!-- PRIORITE -->
+    <select id="filterPriorite"
+            class="min-w-[140px] px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+               focus:ring-2 focus:ring-green-500 transition">
+
+        <option value="">Priorité</option>
+        <option value="basse">🟢basse</option>
+        <option value="moyenne">🟡moyenne</option>
+        <option value="haute">🔴haute</option>
+        <option value="urgente">🔥urgente</option>
+
+    </select>
+
+    <!-- SORT -->
+    <select id="sortMaintenance"
+            class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+                   focus:ring-2 focus:ring-green-500 transition">
+
+        <option value="date-desc">📅 Date récente</option>
+        <option value="date-asc">📅 Date ancienne</option>
+        <option value="cout-desc">💰 Coût élevé</option>
+        <option value="cout-asc">💰 Coût faible</option>
+
+    </select>
+
+    <!-- RESET -->
+    <button onclick="resetMaintenanceFilters()"
+            class="p-2 rounded-lg hover:bg-gray-200 transition">
+
+        <span class="material-symbols-outlined text-gray-600 text-[20px]">
+            refresh
+        </span>
+
+    </button>
+
+</div>
+
+<!-- TABLE -->
+<div class="bg-white rounded-xl p-6 shadow">
+
+<table class="w-full text-left">
+
+<thead>
+<tr class="border-b">
+    <th>Type</th>
+    <th>Date</th>
+    <th>Description</th>
+    <th>Coût</th>
+    <th>Statut</th>
+    <th>Priorité</th>
+    <th>Technicien</th>
+    <th>Équipement</th>
+    <th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="maintenanceTableBody">
+
+{% for m in maintenances %}
+<tr class="maintenance-row"
+    data-type="{{ m.typeM|lower }}"
+    data-desc="{{ m.description|lower }}"
+    data-tech="{{ m.technicien|lower }}"
+    data-priorite="{{ m.priorite.value|lower }}"
+    data-date="{{ m.dateM|date('Y-m-d') }}"
+    data-cout="{{ m.cout }}">
+
+    <td>
+        <span id="text-type-{{ m.idM }}">{{ m.typeM }}</span>
+        <input id="input-type-{{ m.idM }}" value="{{ m.typeM }}" class="hidden border p-1 w-full">
+    </td>
+
+    <td>
+        <span id="text-date-{{ m.idM }}">{{ m.dateM|date('Y-m-d') }}</span>
+        <input type="date" id="input-date-{{ m.idM }}" value="{{ m.dateM|date('Y-m-d') }}" class="hidden border p-1 w-full">
+    </td>
+
+    <td>
+        <span id="text-desc-{{ m.idM }}">{{ m.description }}</span>
+        <input id="input-desc-{{ m.idM }}" value="{{ m.description }}" class="hidden border p-1 w-full">
+    </td>
+
+    <td>
+        <span id="text-cout-{{ m.idM }}">{{ m.cout }}</span>
+        <input type="number" id="input-cout-{{ m.idM }}" value="{{ m.cout }}" class="hidden border p-1 w-full">
+    </td>
+
+    <td>
+        <span id="text-statut-{{ m.idM }}">{{ m.statut.value }}</span>
+        <select id="input-statut-{{ m.idM }}" class="hidden border p-1 w-full">
+            <option value="planifie">Planifiée</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminée</option>
+        </select>
+    </td>
+
+    <td>
+        <span id="text-prio-{{ m.idM }}">{{ m.priorite.value }}</span>
+        <select id="input-prio-{{ m.idM }}" class="hidden border p-1 w-full">
+            <option value="basse">Basse</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="haute">Haute</option>
+            <option value="urgente">Urgente</option>
+        </select>
+    </td>
+
+    <td>
+        <span id="text-tech-{{ m.idM }}">{{ m.technicien }}</span>
+        <input id="input-tech-{{ m.idM }}" value="{{ m.technicien }}" class="hidden border p-1 w-full">
+    </td>
+
+    <td>{{ m.equipement.nomEq }}</td>
+
+    <td class="flex gap-2">
+        <button onclick="editMaintenance({{ m.idM }})">✏️</button>
+        <button onclick="saveMaintenance({{ m.idM }})" id="save-{{ m.idM }}" class="hidden text-green-600">✔️</button>
+        <button onclick="cancelMaintenance({{ m.idM }})" id="cancel-{{ m.idM }}" class="hidden text-red-600">❌</button>
+        <button onclick="openDeleteMaintenanceModal({{ m.idM }})"
+                class="p-2 rounded-lg hover:bg-red-50 text-red-500 transition">
+
+            <span class="material-symbols-outlined text-sm">delete</span>
+
+        </button>
+    </td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+</main>
+
+<!-- ================= MODAL SUPPRIMER ================= -->
+<div id="deleteMaintenanceModal"
+     class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-2xl p-6 w-[400px] shadow-lg">
+
+        <h2 class="text-lg font-semibold mb-4 text-gray-800">
+            Confirmer la suppression
+        </h2>
+
+        <p class="text-gray-600 mb-6">
+            Voulez-vous vraiment supprimer cette maintenance ?
+        </p>
+
+        <div class="flex justify-end gap-3">
+
+            <button onclick="closeDeleteMaintenanceModal()"
+                    class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                Annuler
+            </button>
+
+            <button onclick="confirmDeleteMaintenance()"
+                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                Supprimer
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+let deleteMaintenanceId = null;
+
+// OUVRIR MODAL
+function openDeleteMaintenanceModal(id) {
+    deleteMaintenanceId = id;
+
+    const modal = document.getElementById('deleteMaintenanceModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    document.body.style.overflow = 'hidden';
+}
+
+// FERMER MODAL
+function closeDeleteMaintenanceModal() {
+    deleteMaintenanceId = null;
+
+    const modal = document.getElementById('deleteMaintenanceModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+
+    document.body.style.overflow = 'auto';
+}
+
+// CONFIRM DELETE
+function confirmDeleteMaintenance() {
+
+    if (!deleteMaintenanceId) return;
+
+    fetch(`/maintenance/${deleteMaintenanceId}/delete`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Erreur serveur");
+        return res.text();
+    })
+    .then(() => {
+        closeDeleteMaintenanceModal();
+
+        // 🔥 UX PRO (suppression sans reload)
+        document.querySelector(`[data-id="${deleteMaintenanceId}"]`)?.remove();
+        setTimeout(() => location.reload(), 600);
+
+        // recalcul stats
+        calculateMaintenanceStats();
+
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Erreur lors de la suppression");
+    });
+}
+
+// FERMER EN CLIQUANT OUTSIDE
+document.getElementById('deleteMaintenanceModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteMaintenanceModal();
+    }
+});
+
+function editMaintenance(id) {
+
+    ['type','date','desc','cout','statut','prio','tech'].forEach(f => {
+        document.getElementById('text-' + f + '-' + id)?.classList.add('hidden');
+        document.getElementById('input-' + f + '-' + id)?.classList.remove('hidden');
+    });
+
+    document.getElementById('save-' + id).classList.remove('hidden');
+    document.getElementById('cancel-' + id).classList.remove('hidden');
+}
+
+function cancelMaintenance(id) {
+    location.reload();
+}
+
+function saveMaintenance(id) {
+        console.log("CLICK SAVE", id);
+
+    const data = {
+        typeM: document.getElementById('input-type-' + id).value,
+        dateM: document.getElementById('input-date-' + id).value,
+        description: document.getElementById('input-desc-' + id).value,
+        cout: document.getElementById('input-cout-' + id).value,
+        statut: document.getElementById('input-statut-' + id).value,
+        priorite: document.getElementById('input-prio-' + id).value,
+        technicien: document.getElementById('input-tech-' + id).value
+    };
+
+    fetch('/maintenance/' + id + '/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+
+        if (!res.success) {
+            alert(res.errors.join('\n'));
+    
+            return;
+        }
+        location.reload();
+    });
+}
+
+function deleteMaintenance(id) {
+
+    if (!confirm("Supprimer cette maintenance ?")) return;
+
+    fetch('/maintenance/' + id + '/delete', {
+        method: 'POST'
+    })
+    .then(res => res.text())
+    .then(() => location.reload());
+}
+
+function applyMaintenanceFilters() {
+    const search = document.getElementById('searchMaintenance').value.toLowerCase();
+    const priorite = document.getElementById('filterPriorite').value;
+    const sort = document.getElementById('sortMaintenance').value;
+
+    const rows = Array.from(document.querySelectorAll('.maintenance-row'));
+    let visible = [];
+
+    rows.forEach(row => {
+        const matchSearch = !search || row.dataset.type.includes(search) || row.dataset.desc.includes(search);
+        const matchPriorite = !priorite || row.dataset.priorite === priorite;
+
+        if (matchSearch && matchPriorite) {
+            row.style.display = '';
+            visible.push(row);
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    if (sort) {
+        visible.sort((a, b) => {
+    const [field, dir] = sort.split('-');
+
+    let aVal = a.dataset[field];
+    let bVal = b.dataset[field];
+
+    let result = 0;
+
+    if (field === 'id' || field === 'cout') {
+        result = parseFloat(aVal) - parseFloat(bVal);
+    }
+
+    else if (field === 'date') {
+        result = new Date(aVal) - new Date(bVal);
+    }
+
+    else if (field === 'nom') {
+        result = aVal.localeCompare(bVal);
+    }
+
+    return dir === 'asc' ? result : -result;
+});
+    }
+
+    const tbody = document.getElementById('maintenanceTableBody');
+    visible.forEach(row => tbody.appendChild(row));
+}
+
+function resetMaintenanceFilters() {
+    document.getElementById('searchMaintenance').value = '';
+    document.getElementById('filterPriorite').value = '';
+    document.getElementById('sortMaintenance').value = 'id-asc';
+
+    document.querySelectorAll('.maintenance-row').forEach(row => {
+        row.style.display = '';
+    });
+}
+
+document.getElementById('searchMaintenance').addEventListener('input', applyMaintenanceFilters);
+document.getElementById('filterPriorite').addEventListener('change', applyMaintenanceFilters);
+document.getElementById('sortMaintenance').addEventListener('change', applyMaintenanceFilters);
+
+function calculateMaintenanceStats() {
+
+    const maintenances = document.querySelectorAll('.maintenance-row');
+
+    let total = maintenances.length;
+    let coutTotal = 0;
+
+    maintenances.forEach(m => {
+        const cout = parseFloat(m.dataset.cout || 0);
+
+        coutTotal += cout;
+    });
+
+    document.getElementById('stat-m-total').textContent = total;
+    document.getElementById('stat-m-cout').textContent = coutTotal + ' €';
+}
+document.addEventListener('DOMContentLoaded', function() {
+    calculateMaintenanceStats();
+});
+</script>
+
+{% endblock %}

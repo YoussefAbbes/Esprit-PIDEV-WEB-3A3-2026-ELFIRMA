@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html class="light" lang="fr">
+<head>
+    <meta charset="UTF-8">
+
+    <title>{% block title %}Elfirma{% endblock %}</title>
+
+    <!-- ✅ TON CSS -->
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+
+    <!-- ✅ TAILWIND -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- ✅ FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+
+    <!-- ✅ ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+    <!-- CONFIG TAILWIND -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0a2200",
+                        secondary: "#934b19",
+                        background: "#fbfbe2"
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+
+<body class="elf-has-sidebar min-h-screen">
+
+<!-- FIX COLLAPSE -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.remove("elf-sidebar-collapsed");
+});
+</script>
+
+<!-- ✅ SIDEBAR ROOT -->
+<aside class="fixed left-0 top-0 h-screen w-72 py-8">
+    <div class="px-8 mb-6">
+        <h1 class="text-3xl font-black text-[#0a2200] tracking-tight">ELFIRMA</h1>
+        <p class="text-sm text-[#5f6658]">Agricultural Management</p>
+    </div>
+    <nav></nav>
+</aside>
+
+<!-- ✅ NAVBAR SCRIPT -->
+{{ include('elfirma/_nav_routes.html.twig') }}
+
+<!-- ✅ CONTENT -->
+{% block body %}{% endblock %}
+
+</body>
+
+</html>

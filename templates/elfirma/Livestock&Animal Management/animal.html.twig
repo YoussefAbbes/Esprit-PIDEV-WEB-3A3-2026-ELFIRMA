@@ -1,0 +1,959 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Management</title>
+    <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .elf-sidebar-toggle,
+        .elf-sidebar-overlay {
+            display: none !important;
+        }
+
+        .delete-modal-card {
+            border: 2px solid #ef4444;
+            background: #fce7e7;
+        }
+
+        .delete-icon-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ef4444;
+            border-radius: 0.75rem;
+            background: #fff;
+            color: #ef4444;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .delete-icon-btn:hover {
+            background: #fef2f2;
+            box-shadow: 0 8px 18px -12px rgba(220, 38, 38, 0.65);
+        }
+
+        .table-sort-btn {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
+            font-weight: 800;
+            color: #f7fff9;
+            text-align: left;
+        }
+
+        .table-sort-btn .sort-indicator {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            line-height: 1;
+        }
+
+        .table-sort-btn.is-active .sort-indicator {
+            opacity: 1;
+        }
+
+        .management-form-modal {
+            transform-origin: center top;
+        }
+
+        @media (max-height: 880px) {
+            .management-form-modal {
+                transform: scale(0.94);
+            }
+        }
+
+        @media (max-height: 780px) {
+            .management-form-modal {
+                transform: scale(0.88);
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-600 min-h-screen overflow-x-hidden">
+<aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 bg-white border-r border-slate-200 py-8 pr-4 z-40">
+    <div class="px-8 mb-8">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Elfirma</h1>
+        <p class="text-slate-500 text-sm">Gestion Agricole</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Tableau de Bord</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Utilisateurs</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Parcelles & Cultures</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full bg-slate-900 text-white" href="#">Animaux & Elevages</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Produits & Commandes</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Equipements & Maintenance</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Fournisseurs & Contrats</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Reclamations</a>
+    </nav>
+</aside>
+
+<main class="md:ml-72 min-h-screen p-3 md:p-4">
+    <div class="max-w-7xl mx-auto">
+        <section class="rounded-2xl border border-emerald-200 bg-[#edf3ee] p-3 md:p-4 shadow-sm">
+            <div class="mb-3 px-1 flex items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black tracking-tight text-emerald-800">Animal Management</h2>
+                    <p class="text-slate-600 text-sm md:text-base">Welcome to Animal Management</p>
+                </div>
+                <span class="text-sm text-slate-600">{{ animals|length }} animal(s)</span>
+            </div>
+
+            <section class="mb-4 rounded-2xl bg-gradient-to-r from-emerald-900 via-emerald-700 to-emerald-600 text-white p-4 md:p-5 shadow-lg">
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-black tracking-tight">Animal Statistics</h3>
+                        <p class="text-emerald-100/90 text-sm md:text-base mt-1">Dashboard - Statuses - Animal Health</p>
+                    </div>
+                    <p id="animal-stats-updated" class="text-emerald-100/90 text-sm italic">Updated: --:--</p>
+                </div>
+
+                <div class="mt-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm">
+                        <p class="text-emerald-100 text-sm font-semibold">Total Animals</p>
+                        <p id="animal-total-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none">{{ animal_stats.total_animals|default(0) }}</p>
+                        <p class="mt-2 text-xs text-emerald-100/90">registered animals</p>
+                    </article>
+                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm">
+                        <p class="text-emerald-100 text-sm font-semibold">Healthy</p>
+                        <p id="animal-healthy-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none text-amber-300">{{ animal_stats.healthy_animals|default(0) }}</p>
+                        <p class="mt-2 text-xs text-emerald-100/90">animals in good health</p>
+                    </article>
+                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm">
+                        <p class="text-emerald-100 text-sm font-semibold">Sick / Treatment</p>
+                        <p id="animal-sick-treatment-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none">0</p>
+                        <p class="mt-2 text-xs text-emerald-100/90">need attention</p>
+                    </article>
+                    <article class="rounded-2xl border border-red-300/45 bg-amber-900/35 p-4 backdrop-blur-sm">
+                        <p class="text-amber-100 text-sm font-semibold">For Sale</p>
+                        <p id="animal-for-sale-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none text-rose-200">0</p>
+                        <p class="mt-2 text-xs text-amber-100/90">animals for sale</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="mb-4">
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" class="js-animal-stats-tab rounded-xl border border-emerald-500 bg-white px-4 py-2.5 text-base font-bold text-emerald-700 shadow-sm" data-tab="status">Status Distribution</button>
+                    <button type="button" class="js-animal-stats-tab rounded-xl border border-transparent bg-slate-100 px-4 py-2.5 text-base font-bold text-slate-600" data-tab="health">Health</button>
+                    <button type="button" class="js-animal-stats-tab rounded-xl border border-transparent bg-slate-100 px-4 py-2.5 text-base font-bold text-slate-600" data-tab="decision">Decision Statuses</button>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-4">
+                    <article class="xl:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <h4 id="animal-chart-title" class="text-emerald-800 text-2xl font-black text-center">Distribution by decision status</h4>
+                        <div class="mt-3 h-[300px] md:h-[320px]">
+                            <canvas id="animal-stats-chart"></canvas>
+                        </div>
+                    </article>
+                    <aside class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <h4 id="animal-quick-title" class="text-emerald-800 text-2xl font-black">Detail by status</h4>
+                        <div class="mt-3 border-t border-emerald-100"></div>
+                        <div id="animal-quick-list" class="mt-4 space-y-3 max-h-[320px] overflow-auto pr-1"></div>
+                    </aside>
+                </div>
+            </section>
+
+            <div class="mb-3 flex items-center justify-end gap-2">
+                <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=animal&add=1" class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white" title="Add Animal" aria-label="Add Animal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-6 h-6" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    <span class="sr-only">Add Animal</span>
+                </a>
+            </div>
+
+            <div class="mb-3 flex flex-col md:flex-row md:items-center gap-3">
+                <form id="animal-search-form" method="get" action="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}" class="w-full md:max-w-md">
+                    <input type="hidden" name="view" value="animal">
+                    <input id="animal-search-input" name="search" value="{{ search_term|default('') }}" type="text" autocomplete="off" placeholder="Search animal..." class="w-full rounded-full border-2 border-emerald-500 bg-white px-5 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                </form>
+                <select id="animal-type-filter" class="w-full md:w-44 rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                    <option value="">All Type</option>
+                </select>
+                <select id="animal-status-filter" class="w-full md:w-44 rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                    <option value="">All Status</option>
+                </select>
+            </div>
+            <p id="animal-search-error" class="mb-3 text-sm text-red-600 font-semibold {{ search_error is defined and search_error ? '' : 'hidden' }}">{{ search_error|default('Search can contain letters and spaces only') }}</p>
+
+            <section class="rounded-xl border border-slate-300 bg-white shadow-sm overflow-hidden">
+                <div class="overflow-auto">
+                    <table id="animal-table" class="w-full text-sm min-w-[760px] border-separate border-spacing-0">
+                        <thead>
+                        <tr class="bg-emerald-500">
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="type" data-sort-type="text">Type <span class="sort-indicator" data-sort-indicator="type">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="gender" data-sort-type="text">Gender <span class="sort-indicator" data-sort-indicator="gender">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="age" data-sort-type="number">Age <span class="sort-indicator" data-sort-indicator="age">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="health" data-sort-type="text">Health Status <span class="sort-indicator" data-sort-indicator="health">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="status" data-sort-type="text">Status <span class="sort-indicator" data-sort-indicator="status">&uarr;&darr;</span></button></th>
+                            <th class="py-3 px-3 font-extrabold text-center border-r border-emerald-400/80 last:border-r-0" style="color:#f7fff9;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="animal-table-body">
+                        {% for item in animals %}
+                            {% set sexe = item.sexe|default('')|lower %}
+                            {% set health = item.etat_sante|default('')|lower %}
+                            <tr class="hover:bg-emerald-50/35 transition-colors" data-row="animal" data-type="{{ item.type_animal|default('')|e('html_attr') }}" data-gender="{{ item.sexe|default('')|e('html_attr') }}" data-age="{{ item.age|default(0) }}" data-health="{{ item.etat_sante|default('')|e('html_attr') }}" data-status="{{ item.statut|default('')|e('html_attr') }}">
+                                <td class="py-3 px-3 font-semibold text-slate-800 border-b border-r border-emerald-100">{{ item.type_animal }}</td>
+                                <td class="py-3 px-3 font-semibold border-b border-r border-emerald-100 {{ sexe == 'male' ? 'text-blue-600' : (sexe == 'female' ? 'text-pink-600' : 'text-slate-700') }}">
+                                    <span class="inline-flex items-center gap-1.5">
+                                        {% if sexe == 'male' %}
+                                            <span class="text-lg leading-none" aria-hidden="true">&#9794;</span>
+                                        {% elseif sexe == 'female' %}
+                                            <span class="text-lg leading-none" aria-hidden="true">&#9792;</span>
+                                        {% endif %}
+                                        <span>{{ item.sexe }}</span>
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 font-semibold text-slate-700 border-b border-r border-emerald-100">{{ item.age }} years</td>
+                                <td class="py-3 px-3 font-semibold border-b border-r border-emerald-100 {{ health in ['health', 'healthy', 'sain', 'bonne sante'] ? 'text-emerald-600' : (health in ['under treatment', 'en traitement'] ? 'text-amber-600' : (health in ['sick', 'malade'] ? 'text-red-500' : 'text-slate-700')) }}">{{ item.etat_sante }}</td>
+                                <td class="py-3 px-3 font-semibold text-slate-900 border-b border-r border-emerald-100">{{ item.statut }}</td>
+                                <td class="py-3 px-3 border-b border-emerald-100">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=animal&edit={{ item.id_animal }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50" title="Edit">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                                        </a>
+
+                                        <form method="post" action="{{ path('animal_delete') }}" class="js-delete-form" data-delete-kind="animal" data-delete-label="{{ item.type_animal|default('Animal')|e('html_attr') }}">
+                                            <input type="hidden" name="id_animal" value="{{ item.id_animal }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('animal_delete') }}">
+                                            <button type="submit" class="delete-icon-btn" title="Delete">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="py-6 px-3 text-slate-500 text-center border-b border-emerald-100">No animal found.</td></tr>
+                        {% endfor %}
+                            <tr id="animal-no-results" class="hidden"><td colspan="6" class="py-6 px-3 text-slate-500 text-center border-b border-emerald-100">No matching animals found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {% if show_add_animal_form or edit_animal %}
+                {% set is_edit_animal_mode = edit_animal is not null %}
+                {% set flash_form_errors = app.flashes('form_errors') %}
+                {% set form_errors = flash_form_errors is not empty ? flash_form_errors|last : {} %}
+                {% set flash_form_input = app.flashes('form_input') %}
+                {% set form_input = flash_form_input is not empty ? flash_form_input|last : {} %}
+
+                {% set current_farm = form_input.id_elevage is defined ? form_input.id_elevage : (is_edit_animal_mode ? edit_animal.id_elevage : null) %}
+                {% set current_type_animal = form_input.type_animal is defined ? form_input.type_animal : (is_edit_animal_mode ? edit_animal.type_animal : '') %}
+                {% set current_sexe = form_input.sexe is defined ? form_input.sexe : (is_edit_animal_mode ? edit_animal.sexe : 'Male') %}
+                {% set current_age = form_input.age is defined ? form_input.age : (is_edit_animal_mode ? edit_animal.age : '') %}
+                {% set current_etat_sante = form_input.etat_sante is defined ? form_input.etat_sante : (is_edit_animal_mode ? edit_animal.etat_sante : 'Healthy') %}
+                {% set current_statut = form_input.statut is defined ? form_input.statut : (is_edit_animal_mode ? edit_animal.statut : 'Retained') %}
+
+                {% set gender_options = ['Male', 'Female', 'Undetermined'] %}
+                {% if is_edit_animal_mode and edit_animal.sexe not in gender_options %}
+                    {% set gender_options = gender_options|merge([edit_animal.sexe]) %}
+                {% endif %}
+
+                {% set health_options = ['Healthy', 'Sick', 'Under Treatment'] %}
+                {% for health_option in animal_health_options %}
+                    {% if health_option not in health_options %}
+                        {% set health_options = health_options|merge([health_option]) %}
+                    {% endif %}
+                {% endfor %}
+
+                {% set status_options = ['Retained', 'For Sale', 'Pending Decision'] %}
+                {% for status_option in animal_statuses %}
+                    {% if status_option not in status_options %}
+                        {% set status_options = status_options|merge([status_option]) %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="fixed inset-0 z-[120] bg-slate-900/35 backdrop-blur-[1px] flex items-start justify-center pt-4 md:pt-8 pb-3 px-2 md:px-3 overflow-y-auto">
+                    <div class="management-form-modal w-full max-w-2xl min-h-[70vh] md:min-h-[74vh] max-h-[96vh] overflow-y-auto rounded-2xl border-2 border-emerald-600 bg-[#cfe3cf] shadow-2xl">
+                        <div class="p-4 md:p-5">
+                            <div class="flex items-center justify-end">
+                                <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=animal" class="text-slate-800 hover:text-slate-900 text-3xl leading-none" aria-label="Close">&times;</a>
+                            </div>
+
+                            <h3 class="text-center text-xl md:text-2xl font-black tracking-wide text-emerald-800 flex items-center justify-center gap-3">
+                                <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-200 text-emerald-800 border border-emerald-400">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true">
+                                        <circle cx="5" cy="8" r="1.5"/>
+                                        <circle cx="10" cy="5.5" r="1.5"/>
+                                        <circle cx="14" cy="5.5" r="1.5"/>
+                                        <circle cx="19" cy="8" r="1.5"/>
+                                        <path d="M8 16.5c0-2.4 1.8-4.2 4-4.2s4 1.8 4 4.2c0 1.9-1.4 3.2-4 3.2s-4-1.3-4-3.2z"/>
+                                    </svg>
+                                </span>
+                                <span>{{ is_edit_animal_mode ? 'EDIT ANIMAL' : 'CREATE NEW ANIMAL' }}</span>
+                            </h3>
+                            <div class="h-px bg-emerald-300 mt-3 mb-4"></div>
+
+                            {% if form_errors._form is defined %}
+                                <p class="mb-3 text-sm text-red-600 font-semibold">{{ form_errors._form }}</p>
+                            {% endif %}
+
+                            <form method="post" action="{{ path(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}" class="space-y-3">
+                                <input type="hidden" name="_token" value="{{ csrf_token(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}">
+                                {% if is_edit_animal_mode %}
+                                    <input type="hidden" name="id_animal" value="{{ edit_animal.id_animal }}">
+                                {% endif %}
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Farm:</label>
+                                    <div class="md:col-span-4">
+                                        <select name="id_elevage" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            {% if livestock_options is empty %}
+                                                <option value="">No livestock available</option>
+                                            {% else %}
+                                                {% for farm in livestock_options %}
+                                                    <option value="{{ farm.id_elevage }}" {{ (current_farm is not null and current_farm == farm.id_elevage) or (current_farm is null and not is_edit_animal_mode and loop.first) ? 'selected' : '' }}>{{ farm.type_elevage }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                    {% if form_errors.id_elevage is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.id_elevage }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Animal Type:</label>
+                                    <input name="type_animal" value="{{ current_type_animal }}" placeholder="Ex: Cow, Sheep, Goat..." class="md:col-span-4 rounded-xl border-2 border-emerald-600 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    {% if form_errors.type_animal is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.type_animal }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Gender:</label>
+                                    <div class="md:col-span-4">
+                                        <select name="sexe" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            {% for gender_option in gender_options %}
+                                                <option value="{{ gender_option }}" {{ current_sexe == gender_option ? 'selected' : '' }}>{{ gender_option }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if form_errors.sexe is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.sexe }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Age:</label>
+                                    <input type="text" inputmode="numeric" name="age" value="{{ current_age }}" placeholder="Ex: 3" class="md:col-span-4 rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    {% if form_errors.age is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.age }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Health Status:</label>
+                                    <div class="md:col-span-4">
+                                        <select name="etat_sante" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            {% for health_option in health_options %}
+                                                <option value="{{ health_option }}" {{ current_etat_sante == health_option ? 'selected' : '' }}>{{ health_option }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if form_errors.etat_sante is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.etat_sante }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Status:</label>
+                                    <div class="md:col-span-4">
+                                        <select name="statut" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            {% for status_option in status_options %}
+                                                <option value="{{ status_option }}" {{ current_statut == status_option ? 'selected' : '' }}>{{ status_option }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if form_errors.statut is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.statut }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="pt-1 flex items-center justify-center gap-4">
+                                    <button type="submit" class="h-11 w-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_8px_18px_-8px_rgba(16,127,61,0.65)] flex items-center justify-center" title="Save">
+                                        {% if is_edit_animal_mode %}
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                                        {% else %}
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+
+<div id="delete-confirm-modal" class="fixed inset-0 z-[130] hidden items-center justify-center p-3 bg-black/35">
+    <div class="delete-modal-card w-full max-w-md rounded-2xl shadow-2xl flex items-center">
+        <div class="p-4 md:p-5 text-center">
+            <h3 class="text-2xl md:text-3xl font-black text-red-700">Confirm Deletion</h3>
+            <div class="mt-3 h-px bg-red-300"></div>
+
+            <div class="mt-5 flex justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-11 h-11 text-red-600" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+
+            <p id="delete-modal-title" class="mt-4 text-2xl md:text-3xl font-black text-red-700">Delete: Item</p>
+            <p id="delete-modal-text" class="mt-4 text-lg md:text-xl text-red-600">Are you sure you want to delete this animal? This action cannot be undone.</p>
+
+            <div class="mt-6 flex items-center justify-center gap-4">
+                <button id="delete-modal-confirm" type="button" class="delete-icon-btn" title="Delete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+                <button id="delete-modal-cancel" type="button" class="h-11 w-11 rounded-xl bg-gray-400 hover:bg-gray-500 text-white shadow-[0_8px_18px_-8px_rgba(107,114,128,0.75)] flex items-center justify-center" title="Cancel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="w-5 h-5" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const normalize = function (value) {
+        return String(value || '').trim().toLowerCase();
+    };
+
+    const table = document.getElementById('animal-table');
+    const tableBody = document.getElementById('animal-table-body');
+    const searchInput = document.getElementById('animal-search-input');
+    const searchError = document.getElementById('animal-search-error');
+    const typeFilter = document.getElementById('animal-type-filter');
+    const statusFilter = document.getElementById('animal-status-filter');
+    const noResultsRow = document.getElementById('animal-no-results');
+    const statsUpdated = document.getElementById('animal-stats-updated');
+    const totalStat = document.getElementById('animal-total-stat');
+    const healthyStat = document.getElementById('animal-healthy-stat');
+    const sickTreatmentStat = document.getElementById('animal-sick-treatment-stat');
+    const forSaleStat = document.getElementById('animal-for-sale-stat');
+    const statsTabButtons = Array.from(document.querySelectorAll('.js-animal-stats-tab'));
+    const chartTitle = document.getElementById('animal-chart-title');
+    const quickTitle = document.getElementById('animal-quick-title');
+    const quickList = document.getElementById('animal-quick-list');
+    const statsCanvas = document.getElementById('animal-stats-chart');
+
+    if (searchInput && searchError) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialSearchTerm = (urlParams.get('search') || '').trim();
+
+        searchInput.addEventListener('input', function () {
+            searchError.classList.add('hidden');
+
+            if (searchInput.value.trim() !== '' || initialSearchTerm === '') {
+                return;
+            }
+
+            // If search was active and user clears it, restore initial table.
+            urlParams.delete('search');
+            if (!urlParams.has('view')) {
+                urlParams.set('view', 'animal');
+            }
+
+            const queryString = urlParams.toString();
+            const targetUrl = queryString !== ''
+                ? (window.location.pathname + '?' + queryString)
+                : (window.location.pathname + '?view=animal');
+
+            if (window.location.href !== targetUrl) {
+                window.location.href = targetUrl;
+            }
+        });
+    }
+
+    if (table && tableBody && searchInput && typeFilter && statusFilter) {
+        const rows = Array.from(tableBody.querySelectorAll('tr[data-row="animal"]'));
+        const sortButtons = Array.from(table.querySelectorAll('.js-animal-sort'));
+        const chartPalette = ['#16a34a', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#14b8a6'];
+        let activeTab = 'status';
+        let statsChart = null;
+        let sortState = { key: null, direction: 'asc', type: 'text' };
+
+        const normalizeHealthLabel = function (value) {
+            const normalized = normalize(value);
+
+            if (['healthy', 'health', 'sain', 'bonne sante'].includes(normalized)) {
+                return 'Healthy';
+            }
+            if (['under treatment', 'en traitement', 'treatment'].includes(normalized)) {
+                return 'Under Treatment';
+            }
+            if (['sick', 'malade'].includes(normalized)) {
+                return 'Sick';
+            }
+
+            return value ? String(value).trim() : 'Unknown';
+        };
+
+        const normalizeStatusLabel = function (value) {
+            const normalized = normalize(value);
+
+            if (normalized === 'retained') {
+                return 'Retained';
+            }
+            if (normalized === 'for sale') {
+                return 'For Sale';
+            }
+            if (normalized === 'pending decision') {
+                return 'Pending Decision';
+            }
+
+            return value ? String(value).trim() : 'Unknown';
+        };
+
+        const fillFilterOptions = function (selectElement, key) {
+            const uniqueValues = Array.from(new Set(rows
+                .map(function (row) { return row.dataset[key] || ''; })
+                .filter(function (value) { return normalize(value) !== ''; })))
+                .sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base' }); });
+
+            uniqueValues.forEach(function (value) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                selectElement.appendChild(option);
+            });
+        };
+
+        const compareRows = function (rowA, rowB, key, type, direction) {
+            const factor = direction === 'asc' ? 1 : -1;
+            const valueA = rowA.dataset[key] || '';
+            const valueB = rowB.dataset[key] || '';
+
+            if (type === 'number') {
+                return (Number(valueA) - Number(valueB)) * factor;
+            }
+
+            return valueA.localeCompare(valueB, undefined, { sensitivity: 'base' }) * factor;
+        };
+
+        const renderSortIndicators = function () {
+            sortButtons.forEach(function (button) {
+                const key = button.dataset.sortKey || '';
+                const indicator = table.querySelector('[data-sort-indicator="' + key + '"]');
+                button.classList.remove('is-active');
+
+                if (indicator) {
+                    indicator.innerHTML = '&uarr;&darr;';
+                }
+
+                if (sortState.key === key) {
+                    button.classList.add('is-active');
+                    if (indicator) {
+                        indicator.innerHTML = sortState.direction === 'asc' ? '&uarr;' : '&darr;';
+                    }
+                }
+            });
+        };
+
+        const applyFilters = function () {
+            const selectedType = normalize(typeFilter.value);
+            const selectedStatus = normalize(statusFilter.value);
+            let visibleCount = 0;
+
+            rows.forEach(function (row) {
+                const matchesType = selectedType === '' || normalize(row.dataset.type) === selectedType;
+                const matchesStatus = selectedStatus === '' || normalize(row.dataset.status) === selectedStatus;
+                const isVisible = matchesType && matchesStatus;
+
+                row.classList.toggle('hidden', !isVisible);
+                if (isVisible) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (noResultsRow) {
+                noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
+            }
+        };
+
+        const sortRows = function () {
+            if (!sortState.key) {
+                return;
+            }
+
+            const sortedRows = rows.slice().sort(function (rowA, rowB) {
+                return compareRows(rowA, rowB, sortState.key, sortState.type, sortState.direction);
+            });
+
+            sortedRows.forEach(function (row) {
+                tableBody.appendChild(row);
+            });
+
+            if (noResultsRow) {
+                tableBody.appendChild(noResultsRow);
+            }
+        };
+
+        const buildStatsModel = function (visibleRows) {
+            const model = {
+                total: visibleRows.length,
+                health: { Healthy: 0, 'Under Treatment': 0, Sick: 0 },
+                status: { Retained: 0, 'For Sale': 0, 'Pending Decision': 0 },
+                typeHealth: {},
+            };
+
+            visibleRows.forEach(function (row) {
+                const type = (row.dataset.type || 'Unknown').trim() || 'Unknown';
+                const health = normalizeHealthLabel(row.dataset.health || '');
+                const status = normalizeStatusLabel(row.dataset.status || '');
+
+                if (model.health[health] === undefined) {
+                    model.health[health] = 0;
+                }
+                model.health[health] += 1;
+
+                if (model.status[status] === undefined) {
+                    model.status[status] = 0;
+                }
+                model.status[status] += 1;
+
+                if (!model.typeHealth[type]) {
+                    model.typeHealth[type] = { Healthy: 0, 'Under Treatment': 0, Sick: 0 };
+                }
+                if (model.typeHealth[type][health] === undefined) {
+                    model.typeHealth[type][health] = 0;
+                }
+                model.typeHealth[type][health] += 1;
+            });
+
+            return model;
+        };
+
+        const renderQuickList = function (items, total) {
+            if (!quickList) {
+                return;
+            }
+
+            quickList.innerHTML = '';
+
+            if (items.length === 0) {
+                const emptyState = document.createElement('p');
+                emptyState.className = 'text-sm text-slate-500';
+                emptyState.textContent = 'No statistics available for current filters.';
+                quickList.appendChild(emptyState);
+                return;
+            }
+
+            items.forEach(function (item, index) {
+                const percentage = total > 0 ? (item.value / total) * 100 : 0;
+
+                const block = document.createElement('div');
+                block.className = 'rounded-xl border border-slate-100 bg-slate-50 px-3 py-2';
+
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-2';
+
+                const left = document.createElement('span');
+                left.className = 'text-sm font-bold text-slate-800';
+                left.textContent = item.label;
+
+                const right = document.createElement('span');
+                right.className = 'text-sm font-black';
+                right.style.color = item.color;
+                right.textContent = item.value + ' (' + percentage.toFixed(0) + '%)';
+
+                row.appendChild(left);
+                row.appendChild(right);
+
+                const track = document.createElement('div');
+                track.className = 'mt-2 h-1.5 rounded-full bg-slate-200';
+
+                const fill = document.createElement('div');
+                fill.className = 'h-1.5 rounded-full';
+                fill.style.width = Math.max(0, Math.min(percentage, 100)).toFixed(1) + '%';
+                fill.style.backgroundColor = item.color || chartPalette[index % chartPalette.length];
+
+                track.appendChild(fill);
+                block.appendChild(row);
+                block.appendChild(track);
+                quickList.appendChild(block);
+            });
+        };
+
+        const renderTabVisualState = function () {
+            statsTabButtons.forEach(function (button) {
+                const isActive = button.dataset.tab === activeTab;
+
+                button.classList.toggle('bg-white', isActive);
+                button.classList.toggle('text-emerald-700', isActive);
+                button.classList.toggle('border-emerald-500', isActive);
+                button.classList.toggle('shadow-sm', isActive);
+
+                button.classList.toggle('bg-slate-100', !isActive);
+                button.classList.toggle('text-slate-600', !isActive);
+                button.classList.toggle('border-transparent', !isActive);
+            });
+        };
+
+        const renderChart = function (model) {
+            if (!statsCanvas || typeof Chart === 'undefined') {
+                return;
+            }
+
+            if (statsChart) {
+                statsChart.destroy();
+            }
+
+            const total = model.total;
+
+            if (activeTab === 'health') {
+                if (chartTitle) {
+                    chartTitle.textContent = 'Health status by category';
+                }
+                if (quickTitle) {
+                    quickTitle.textContent = 'Health quick view';
+                }
+
+                const typeLabels = Object.keys(model.typeHealth);
+                const healthyData = typeLabels.map(function (label) { return model.typeHealth[label].Healthy || 0; });
+                const treatmentData = typeLabels.map(function (label) { return model.typeHealth[label]['Under Treatment'] || 0; });
+                const sickData = typeLabels.map(function (label) { return model.typeHealth[label].Sick || 0; });
+
+                statsChart = new Chart(statsCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: typeLabels,
+                        datasets: [
+                            { label: 'Healthy', data: healthyData, backgroundColor: '#16a34a', borderRadius: 6 },
+                            { label: 'Under Treatment', data: treatmentData, backgroundColor: '#f59e0b', borderRadius: 6 },
+                            { label: 'Sick', data: sickData, backgroundColor: '#ef4444', borderRadius: 6 },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                        },
+                    },
+                });
+
+                renderQuickList([
+                    { label: 'Healthy', value: model.health.Healthy || 0, color: '#16a34a' },
+                    { label: 'Under Treatment', value: model.health['Under Treatment'] || 0, color: '#f59e0b' },
+                    { label: 'Sick', value: model.health.Sick || 0, color: '#ef4444' },
+                ], total);
+
+                return;
+            }
+
+            if (activeTab === 'decision') {
+                if (chartTitle) {
+                    chartTitle.textContent = 'Animals by decision status';
+                }
+                if (quickTitle) {
+                    quickTitle.textContent = 'Status quick view';
+                }
+
+                const labels = ['Retained', 'For Sale', 'Pending Decision'];
+                const values = labels.map(function (label) { return model.status[label] || 0; });
+                const colors = ['#16a34a', '#f59e0b', '#ef4444'];
+
+                statsChart = new Chart(statsCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Animals',
+                            data: values,
+                            backgroundColor: colors,
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                        },
+                    },
+                });
+
+                renderQuickList([
+                    { label: 'Retained', value: model.status.Retained || 0, color: '#16a34a' },
+                    { label: 'For Sale', value: model.status['For Sale'] || 0, color: '#f59e0b' },
+                    { label: 'Pending Decision', value: model.status['Pending Decision'] || 0, color: '#ef4444' },
+                ], total);
+
+                return;
+            }
+
+            if (chartTitle) {
+                chartTitle.textContent = 'Distribution by decision status';
+            }
+            if (quickTitle) {
+                quickTitle.textContent = 'Detail by status';
+            }
+
+            const statusLabels = ['Retained', 'For Sale', 'Pending Decision'];
+            const statusValues = statusLabels.map(function (label) { return model.status[label] || 0; });
+            const statusColors = ['#16a34a', '#f59e0b', '#ef4444'];
+
+            statsChart = new Chart(statsCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: statusColors,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                    },
+                },
+            });
+
+            renderQuickList([
+                { label: 'Retained', value: model.status.Retained || 0, color: '#16a34a' },
+                { label: 'For Sale', value: model.status['For Sale'] || 0, color: '#f59e0b' },
+                { label: 'Pending Decision', value: model.status['Pending Decision'] || 0, color: '#ef4444' },
+            ], total);
+        };
+
+        const refreshStatistics = function () {
+            // Keep statistics independent from table filters.
+            const model = buildStatsModel(rows);
+
+            if (totalStat) {
+                totalStat.textContent = String(model.total);
+            }
+            if (healthyStat) {
+                healthyStat.textContent = String(model.health.Healthy || 0);
+            }
+            if (sickTreatmentStat) {
+                const combinedAttention = (model.health.Sick || 0) + (model.health['Under Treatment'] || 0);
+                sickTreatmentStat.textContent = String(combinedAttention);
+            }
+            if (forSaleStat) {
+                forSaleStat.textContent = String(model.status['For Sale'] || 0);
+            }
+            if (statsUpdated) {
+                const now = new Date();
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                statsUpdated.textContent = 'Updated: ' + hh + ':' + mm;
+            }
+
+            renderChart(model);
+        };
+
+        fillFilterOptions(typeFilter, 'type');
+        fillFilterOptions(statusFilter, 'status');
+
+        typeFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+
+        sortButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                const key = button.dataset.sortKey || '';
+                const type = button.dataset.sortType || 'text';
+
+                if (sortState.key === key) {
+                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortState.key = key;
+                    sortState.direction = 'asc';
+                }
+
+                sortState.type = type;
+                sortRows();
+                renderSortIndicators();
+                applyFilters();
+            });
+        });
+
+        statsTabButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                activeTab = button.dataset.tab || 'status';
+                renderTabVisualState();
+                refreshStatistics();
+            });
+        });
+
+        applyFilters();
+        renderTabVisualState();
+        refreshStatistics();
+    }
+
+    const modal = document.getElementById('delete-confirm-modal');
+    const title = document.getElementById('delete-modal-title');
+    const text = document.getElementById('delete-modal-text');
+    const confirmBtn = document.getElementById('delete-modal-confirm');
+    const cancelBtn = document.getElementById('delete-modal-cancel');
+    const deleteForms = document.querySelectorAll('.js-delete-form');
+
+    if (!modal || !title || !text || !confirmBtn || !cancelBtn || !deleteForms.length) {
+        return;
+    }
+
+    let pendingForm = null;
+
+    const closeModal = function () {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        pendingForm = null;
+    };
+
+    deleteForms.forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            pendingForm = form;
+
+            const label = form.dataset.deleteLabel || 'Animal';
+            title.textContent = 'Delete: ' + label;
+            text.textContent = 'Are you sure you want to delete this animal? This action cannot be undone.';
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+    });
+
+    confirmBtn.addEventListener('click', function () {
+        if (pendingForm) {
+            pendingForm.submit();
+        }
+    });
+
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+})();
+</script>
+
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>

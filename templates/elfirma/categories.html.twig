@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <title>Elfirma - Categories</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Open Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .submenu-item { transition: all 0.2s ease; }
+        .submenu-item:hover { transform: translateX(4px); }
+    </style>
+</head>
+<body class="bg-[#fbfbe2] text-[#1b1d0e] min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 py-8 pr-4 bg-[#f5f5dc]">
+        <div class="px-8 mb-8">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="text-[#43493d] text-sm">Agricultural Management</p>
+        </div>
+        <nav class="flex-1 flex flex-col space-y-1">
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
+                <span class="material-symbols-outlined">group</span>
+                <span>User Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('parcelle_index') }}">
+                <span class="material-symbols-outlined">agriculture</span>
+                <span>Field Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
+                <span class="material-symbols-outlined">pets</span>
+                <span>Livestock Management</span>
+            </a>
+            
+            <!-- Product Management with submenu -->
+            <div class="py-1">
+                <div class="flex items-center gap-4 py-3 px-8 bg-[#2d5016] text-white rounded-l-full ml-auto">
+                    <span class="material-symbols-outlined">shopping_basket</span>
+                    <span class="flex-1">Product Management</span>
+                    <span class="material-symbols-outlined text-sm">expand_less</span>
+                </div>
+                <div class="mt-1 ml-8">
+                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto mb-1" href="{{ path('elfirma_categories') }}">
+                        <span class="material-symbols-outlined text-sm">category</span>
+                        <span>Categories</span>
+                    </a>
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto" href="{{ path('elfirma_products') }}">
+                        <span class="material-symbols-outlined text-sm">inventory_2</span>
+                        <span>Products</span>
+                    </a>
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mt-1" href="{{ path('app_admin_commandes') }}">
+                        <span class="material-symbols-outlined text-sm">receipt_long</span>
+                        <span>Orders</span>
+                    </a>
+                </div>
+            </div>
+            
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
+                <span class="material-symbols-outlined">handyman</span>
+                <span>Equipment Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
+                <span class="material-symbols-outlined">description</span>
+                <span>Contract Management</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-72 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-[#fbfbe2]/70 backdrop-blur-xl px-8 py-4 flex justify-between items-center border-b border-[#c3c9b9]/20">
+            <h2 class="text-2xl font-black text-[#0a2200]">Category Management</h2>
+            <div class="flex items-center gap-3 bg-[#f5f5dc] px-4 py-1.5 rounded-full">
+                <div class="text-right">
+                    <p class="text-sm font-bold text-[#0a2200]">Admin Elfirma</p>
+                    <p class="text-xs text-[#43493d]">Director</p>
+                </div>
+            </div>
+        </header>
+
+        {% set categorieCreateErrors = app.flashes('form_errors_categorie_create')|first|default({}) %}
+        {% set categorieCreateOld = app.flashes('form_old_categorie_create')|first|default({}) %}
+        {% set categorieEditErrors = app.flashes('form_errors_categorie_edit')|first|default({}) %}
+        {% set categorieEditOld = app.flashes('form_old_categorie_edit')|first|default({}) %}
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="mx-8 mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-8 mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endfor %}
+
+        <!-- Content -->
+        <div class="p-8 lg:p-12 space-y-8">
+            <!-- Statistics Cards -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Categories -->
+                <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-green-100 text-sm font-semibold uppercase tracking-wide">Total Categories</p>
+                            <p class="text-4xl font-black mt-2">{{ category_stats.total_categories }}</p>
+                        </div>
+                        <div class="bg-white/20 p-4 rounded-xl">
+                            <span class="material-symbols-outlined text-4xl">category</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-green-100 text-sm">
+                        <span class="material-symbols-outlined text-base">trending_up</span>
+                        <span>Category management</span>
+                    </div>
+                </div>
+
+                <!-- Total Products -->
+                <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wide">Total Products</p>
+                            <p class="text-4xl font-black mt-2">{{ category_stats.total_products }}</p>
+                        </div>
+                        <div class="bg-white/20 p-4 rounded-xl">
+                            <span class="material-symbols-outlined text-4xl">inventory_2</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-emerald-100 text-sm">
+                        <span class="material-symbols-outlined text-base">shopping_cart</span>
+                        <span>Across all categories</span>
+                    </div>
+                </div>
+
+                <!-- Average Products per Category -->
+                <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-teal-100 text-sm font-semibold uppercase tracking-wide">Average / Category</p>
+                            <p class="text-4xl font-black mt-2">{{ category_stats.average_per_category }}</p>
+                        </div>
+                        <div class="bg-white/20 p-4 rounded-xl">
+                            <span class="material-symbols-outlined text-4xl">analytics</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-teal-100 text-sm">
+                        <span class="material-symbols-outlined text-base">show_chart</span>
+                        <span>Products per category</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Header Section -->
+            <section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h2 class="text-4xl font-black text-[#0a2200] tracking-tight leading-none mb-2">Product Categories</h2>
+                    <p class="text-[#43493d] max-w-xl">Manage categories to organize your agricultural products.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{{ path('elfirma_categories_export_pdf', { q: filters.q, sort: filters.sort }) }}" class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105">
+                        <span class="material-symbols-outlined">picture_as_pdf</span>
+                        <span>Export PDF</span>
+                    </a>
+                    <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        <span>New Category</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Search and Sort Section -->
+            <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100">
+                <form id="categoryFiltersForm" method="GET" action="{{ path('elfirma_categories') }}" class="flex flex-col md:flex-row gap-4">
+                    <!-- Search Bar -->
+                    <div class="flex-1 relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">search</span>
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            name="q"
+                            value="{{ filters.q|default('') }}"
+                            placeholder="Search a category by name..." 
+                            class="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                        />
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <div class="flex gap-3">
+                        <select 
+                            id="sortSelect" 
+                            name="sort"
+                            class="px-6 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer transition-all">
+                            <option value="name-asc" {% if filters.sort == 'name-asc' %}selected{% endif %}>Name A→Z</option>
+                            <option value="name-desc" {% if filters.sort == 'name-desc' %}selected{% endif %}>Name Z→A</option>
+                            <option value="products-desc" {% if filters.sort == 'products-desc' %}selected{% endif %}>Most products</option>
+                            <option value="products-asc" {% if filters.sort == 'products-asc' %}selected{% endif %}>Fewest products</option>
+                            <option value="id-asc" {% if filters.sort == 'id-asc' %}selected{% endif %}>Oldest</option>
+                            <option value="id-desc" {% if filters.sort == 'id-desc' or filters.sort is empty %}selected{% endif %}>Newest</option>
+                        </select>
+
+                        <button type="submit" class="px-6 py-3 bg-[#1e3a0f] hover:bg-[#16300b] text-white font-semibold rounded-xl transition-all">
+                            Apply
+                        </button>
+                        
+                        <a href="{{ path('elfirma_categories') }}" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all inline-flex items-center justify-center">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </a>
+                    </div>
+                </form>
+                
+                <!-- Results Counter -->
+                <div class="mt-4 text-sm text-gray-600">
+                    <span id="resultCount">{{ categories|length }}</span> category(ies) found
+                </div>
+            </section>
+
+            <!-- Categories Table -->
+            <section class="bg-white rounded-xl p-8 shadow-sm border-2 border-green-100">
+                <h3 class="text-2xl font-bold text-[#0a2200] mb-6 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-green-600">list</span>
+                    Category List
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="categoriesTable">
+                        <thead>
+                            <tr class="text-left text-[#43493d] text-xs uppercase tracking-widest font-black border-b-2 border-green-200">
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_categories', { q: filters.q, sort: filters.sort == 'id-asc' ? 'id-desc' : 'id-asc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        ID
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_categories', { q: filters.q, sort: filters.sort == 'name-asc' ? 'name-desc' : 'name-asc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Name
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_categories', { q: filters.q, sort: filters.sort == 'products-desc' ? 'products-asc' : 'products-desc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Number of Products
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
+                                </th>
+                                <th class="pb-4 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm" id="tableBody">
+                            {% for categorie in categories %}
+                            <tr class="border-b border-green-50 hover:bg-green-50 transition-colors">
+                                <td class="py-5 px-4 font-mono font-bold text-green-700">#{{ categorie.id }}</td>
+                                <td class="py-5 px-4 font-bold text-[#1b1d0e]">{{ categorie.nom }}</td>
+                                <td class="py-5 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-xs font-bold border border-green-200">
+                                        <span class="material-symbols-outlined text-sm">inventory_2</span>
+                                        {{ categorie.produits|length }} product(s)
+                                    </span>
+                                </td>
+                                <td class="py-5 px-4">
+                                    <div class="flex gap-2">
+                                        <button onclick="openEditModal({{ categorie.id }}, '{{ categorie.nom }}')" 
+                                                class="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm">
+                                            <span class="material-symbols-outlined text-sm">edit</span>
+                                        </button>
+                                        <form method="POST" action="{{ path('categorie_delete', { id: categorie.id }) }}" 
+                                              onsubmit="return confirm('Are you sure you want to delete this category?');" style="display: inline;">
+                                            <button type="submit" class="p-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr id="emptyRow">
+                                <td colspan="4" class="py-12 px-4 text-center">
+                                    <div class="flex flex-col items-center gap-4">
+                                        <span class="material-symbols-outlined text-6xl text-gray-300">category_off</span>
+                                        <p class="text-gray-500 text-lg">No category found. Create your first category!</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Create Modal -->
+    <div id="createModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-[#0a2200]">New Category</h3>
+                <button onclick="closeModal('createModal')" class="text-[#43493d] hover:text-[#0a2200]">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form method="POST" action="{{ path('categorie_create') }}">
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Category name</label>
+                    <input type="text" name="nom" 
+                           class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20"
+                           value="{{ categorieCreateOld.nom|default('') }}"
+                           placeholder="e.g. Oils, Dates, Citrus...">
+                    {% if categorieCreateErrors.nom is defined %}
+                        <p class="mt-2 text-sm text-red-600">{{ categorieCreateErrors.nom|first }}</p>
+                    {% endif %}
+                    {% if categorieCreateErrors._global is defined %}
+                        <p class="mt-2 text-sm text-red-600">{{ categorieCreateErrors._global|first }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('createModal')" 
+                            class="flex-1 py-3 px-6 rounded-lg border-2 border-[#c3c9b9] text-[#1b1d0e] font-bold hover:bg-[#f5f5dc]">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 px-6 rounded-lg bg-[#0a2200] text-white font-bold hover:bg-[#173901]">
+                        Create
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-[#0a2200]">Edit Category</h3>
+                <button onclick="closeModal('editModal')" class="text-[#43493d] hover:text-[#0a2200]">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="editForm" method="POST" action="">
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Category name</label>
+                    <input type="text" id="editNom" name="nom" 
+                           value="{{ categorieEditOld.nom|default('') }}"
+                           class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                    {% if categorieEditErrors.nom is defined %}
+                        <p class="mt-2 text-sm text-red-600">{{ categorieEditErrors.nom|first }}</p>
+                    {% endif %}
+                    {% if categorieEditErrors._global is defined %}
+                        <p class="mt-2 text-sm text-red-600">{{ categorieEditErrors._global|first }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('editModal')" 
+                            class="flex-1 py-3 px-6 rounded-lg border-2 border-[#c3c9b9] text-[#1b1d0e] font-bold hover:bg-[#f5f5dc]">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 px-6 rounded-lg bg-[#0a2200] text-white font-bold hover:bg-[#173901]">
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        function openEditModal(id, nom) {
+            document.getElementById('editNom').value = nom;
+            document.getElementById('editForm').action = '{{ path('categorie_edit', { id: '__ID__' }) }}'.replace('__ID__', id);
+            openModal('editModal');
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        const categoryFiltersForm = document.getElementById('categoryFiltersForm');
+        const categorySearchInput = document.getElementById('searchInput');
+        const categorySortSelect = document.getElementById('sortSelect');
+        let categoryFilterTimer = null;
+
+        if (categorySearchInput && categoryFiltersForm) {
+            categorySearchInput.addEventListener('input', function () {
+                clearTimeout(categoryFilterTimer);
+                categoryFilterTimer = setTimeout(function () {
+                    categoryFiltersForm.submit();
+                }, 280);
+            });
+        }
+
+        if (categorySortSelect && categoryFiltersForm) {
+            categorySortSelect.addEventListener('change', function () {
+                categoryFiltersForm.submit();
+            });
+        }
+
+        {% if categorieCreateErrors is not empty %}
+            openModal('createModal');
+        {% endif %}
+
+        {% if categorieEditErrors is not empty and categorieEditOld.id is defined %}
+            openEditModal({{ categorieEditOld.id }}, {{ categorieEditOld.nom|default('')|json_encode|raw }});
+        {% endif %}
+    </script>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>
