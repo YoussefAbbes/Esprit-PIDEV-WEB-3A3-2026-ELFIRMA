@@ -3,404 +3,889 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>{{ culture.nomCulture }} - Crop Details - Elfirma</title>
+    <title>{{ culture.nomCulture }} — Elfirma</title>
     <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:ital,wght@1,600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
-        body { font-family: 'Open_Sans', sans-serif; background-color: #fbfbe2; color: #1b1d0e; }
-        h1, h2, h3, h4, .font-headline { font-family: 'Inter', sans-serif; }
-        .dropdown-menu { display: none; }
-        .dropdown:hover .dropdown-menu { display: block; }
+        /* ── base ── */
+        .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}
+        body{font-family:'Inter',sans-serif;background:#f4f6ee;color:#1b1d0e;min-height:100vh}
+        .dropdown-menu{display:none}
+        .dropdown:hover .dropdown-menu{display:block}
+
+        /* ── crop avatar circle ── */
+        .crop-avatar{width:150px;height:150px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#eaedd8;border:4px solid #0a2200;box-shadow:0 0 0 4px #fff,0 8px 32px rgba(10,34,0,.18)}
+        .crop-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+        .crop-avatar-placeholder{width:150px;height:150px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#0a2200,#2d6e0a);display:flex;align-items:center;justify-content:center;border:4px solid #0a2200;box-shadow:0 0 0 4px #fff,0 8px 32px rgba(10,34,0,.18)}
+
+        /* ── status chips ── */
+        .chip{display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:9999px;font-size:12px;font-weight:700;letter-spacing:.04em}
+        .chip-progress{background:rgba(134,239,172,.25);color:#14532d;border:1px solid rgba(134,239,172,.5)}
+        .chip-planned{background:rgba(147,197,253,.25);color:#1e3a8a;border:1px solid rgba(147,197,253,.5)}
+        .chip-harvested{background:rgba(253,186,116,.25);color:#7c2d12;border:1px solid rgba(253,186,116,.5)}
+
+        /* ── cards ── */
+        .card{background:#fff;border-radius:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04)}
+        .card-hd{font-size:.65rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b7a5e;margin-bottom:.5rem}
+
+        /* ── stat ring ── */
+        .ring-track{fill:none;stroke:#e8ead8;stroke-width:10}
+        .ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
+
+        /* ── timeline ── */
+        .tl-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 2px currentColor}
+        .tl-line{width:2px;flex-grow:1;margin:0 auto;min-height:28px}
+
+        /* ── guide bars ── */
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .g-spin{animation:spin .75s linear infinite}
+        .g-bar-track{height:8px;border-radius:9999px;background:#edeee3;overflow:hidden}
+        .g-bar-fill{height:100%;border-radius:9999px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+
+        /* ── wiki card ── */
+        .wiki-extract{display:-webkit-box;-webkit-line-clamp:12;-webkit-box-orient:vertical;overflow:hidden;line-height:1.8}
+
+        /* ── metric tile ── */
+        .mtile{border-radius:1rem;padding:1rem;display:flex;flex-direction:column;gap:.3rem}
+
+        /* ── action btn ── */
+        .abtn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:9999px;font-weight:700;font-size:13px;cursor:pointer;border:2px solid transparent;transition:all .18s cubic-bezier(.34,1.56,.64,1)}
+        .abtn:hover{transform:translateY(-2px)}
+        .abtn:active{transform:scale(.97)}
+        .abtn-edit{background:#f59e0b;color:#fff;box-shadow:0 2px 10px rgba(245,158,11,.3)}
+        .abtn-edit:hover{background:#d97706;box-shadow:0 8px 22px rgba(245,158,11,.4)}
+        .abtn-ghost{background:#fff;color:#1b1d0e;border-color:#dde0d0}
+        .abtn-ghost:hover{background:#f4f6ee;border-color:#c3c9b9}
+        .abtn-danger{background:#fff0f0;color:#b91c1c;border-color:#fecaca}
+        .abtn-danger:hover{background:#dc2626;color:#fff;border-color:#dc2626;box-shadow:0 6px 18px rgba(220,38,38,.3)}
+
+        /* ── source badge ── */
+        .src-badge{display:inline-flex;align-items:center;gap:5px;border-radius:9999px;padding:3px 10px;font-size:11px;font-weight:700}
+
+        /* ── light pulse skeleton ── */
+        @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+        .skeleton{background:linear-gradient(90deg,#edeee3 25%,#f5f6ed 50%,#edeee3 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:.5rem}
     </style>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "surface-container-low": "#f5f5dc", "outline-variant": "#c3c9b9", "surface-container-highest": "#e4e4cc",
-                        "on-surface": "#1b1d0e", "surface-container-high": "#eaead1", "on-surface-variant": "#43493d",
-                        "background": "#fbfbe2", "surface": "#fbfbe2", "primary": "#0a2200", "on-primary": "#ffffff",
-                        "secondary": "#934b19", "on-secondary": "#ffffff", "secondary-container": "#fc9f66", "primary-container": "#173901",
-                    }
-                }
-            }
-        }
+        tailwind.config={theme:{extend:{colors:{
+            "sf-low":"#edeee3","sf-high":"#e1e3d0","outline":"#c3c9b9",
+            "on-sf":"#1b1d0e","on-sf-v":"#4a5240","primary":"#0a2200",
+            "secondary":"#934b19","bg":"#f4f6ee"
+        }}}}
     </script>
 </head>
-<body class="bg-surface">
-    <!-- Sidebar -->
-    <aside class="hidden md:flex h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] flex-col py-8 pr-4 z-40">
-        <div class="px-8 mb-8">
-            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
-            <p class="font-semibold text-[#43493d] text-sm">Farm Management</p>
-        </div>
-        <nav class="flex-1 space-y-1">
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-semibold">Dashboard</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
-                <span class="material-symbols-outlined">group</span>
-                <span class="font-semibold">Users</span>
-            </a>
+<body>
 
-            <!-- Field Management Dropdown -->
-            <div class="dropdown relative">
-                <button class="flex items-center justify-between gap-4 py-3 px-8 w-full text-[#43493d] bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg transition-all">
-                    <div class="flex items-center gap-4">
-                        <span class="material-symbols-outlined">agriculture</span>
-                        <span class="font-semibold">Field Management</span>
-                    </div>
-                    <span class="material-symbols-outlined text-sm">expand_more</span>
-                </button>
-                <div class="dropdown-menu pl-12 mt-1 space-y-1">
-                    <a class="flex items-center gap-3 py-2 px-4 text-[#43493d] hover:bg-[#e4e4cc] rounded-r-full text-sm font-semibold transition-all" href="{{ path('parcelle_index') }}">
-                        <span class="material-symbols-outlined text-lg">terrain</span>
-                        Parcels Management
-                    </a>
-                    <a class="flex items-center gap-3 py-2 px-4 text-[#fbfbe2] bg-[#0a2200] rounded-r-full text-sm font-semibold" href="{{ path('culture_index') }}">
-                        <span class="material-symbols-outlined text-lg">eco</span>
-                        Crops Management
-                    </a>
-                </div>
-            </div>
+{{ include('elfirma/_sidebar.html.twig') }}
 
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
-                <span class="material-symbols-outlined">pets</span>
-                <span class="font-semibold">Livestock</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'produits-commandes' }) }}">
-                <span class="material-symbols-outlined">shopping_basket</span>
-                <span class="font-semibold">Products & Orders</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
-                <span class="material-symbols-outlined">handyman</span>
-                <span class="font-semibold">Equipment & Maintenance</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
-                <span class="material-symbols-outlined">contract</span>
-                <span class="font-semibold">Suppliers & Contracts</span>
-            </a>
-        </nav>
-        <div class="px-8 mt-auto pt-8 border-t border-outline-variant/15 flex flex-col gap-4">
-            <div class="space-y-2">
-                <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
-                    <span class="material-symbols-outlined">help</span> Help
-                </a>
-                <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
-                    <span class="material-symbols-outlined">logout</span> Logout
-                </a>
-            </div>
-        </div>
-    </aside>
+<!-- ══════════════════ MAIN ════════════════════════════════════════════════ -->
+<main class="md:ml-64 min-h-screen">
 
-    <!-- Main Content -->
-    <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="flex items-center gap-4">
-                <a href="{{ path('culture_index') }}" class="p-2 rounded-lg hover:bg-surface-container-low transition-colors">
-                    <span class="material-symbols-outlined text-on-surface-variant">arrow_back</span>
-                </a>
-                <div>
-                    <h2 class="text-4xl font-black text-primary tracking-tighter leading-none mb-2">{{ culture.nomCulture }}</h2>
-                    <p class="text-on-surface-variant text-lg">
-                        {% if culture.statut == 'In Progress' %}
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">🌱 In Progress</span>
-                        {% elseif culture.statut == 'Planned' %}
-                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">📅 Planned</span>
-                        {% elseif culture.statut == 'Harvested' %}
-                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">🌾 Harvested</span>
-                        {% else %}
-                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{{ culture.statut ?? 'N/A' }}</span>
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="{{ path('culture_edit', {id: culture.id}) }}" class="flex items-center gap-2 bg-primary text-on-primary px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 duration-150 transition-all hover:opacity-90">
-                    <span class="material-symbols-outlined">edit</span>
-                    Edit Crop
-                </a>
-            </div>
-        </header>
+    <!-- ── COMPACT HEADER ────────────────────────────────────────────────── -->
+    <div class="px-4 md:px-8 pt-6 pb-0">
 
-        <!-- Crop Details -->
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Back link -->
+        <a href="{{ path('culture_index') }}"
+           class="inline-flex items-center gap-2 text-on-sf-v hover:text-primary text-sm font-semibold mb-5 transition-colors group">
+            <span class="material-symbols-outlined text-lg group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+            Back to Crops
+        </a>
+
+        <!-- Header card -->
+        <div class="card p-6 md:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-7">
+
+            <!-- ① Circular crop image -->
             {% if culture.image %}
-            <!-- Crop Image Banner -->
-            <div class="lg:col-span-3 bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="relative h-56 cursor-pointer group" onclick="document.getElementById('cropImageLightbox').classList.add('active')">
-                    <img src="{{ path('culture_image', {id: culture.id}) }}" alt="{{ culture.nomCulture }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end p-6">
-                        <div class="text-white">
-                            <p class="font-black text-2xl">{{ culture.nomCulture }}</p>
-                            {% if culture.variete %}<p class="text-white/80 text-sm">{{ culture.variete }}</p>{% endif %}
-                        </div>
-                        <div class="ml-auto flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                            <span class="material-symbols-outlined text-white text-base">zoom_in</span>
-                            <span class="text-white text-sm font-semibold">Enlarge</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="crop-avatar cursor-zoom-in flex-shrink-0" onclick="openLightbox()" title="Click to enlarge">
+                <img src="{{ path('culture_image', {id: culture.id}) }}" alt="{{ culture.nomCulture }}">
+            </div>
+            {% else %}
+            <div class="crop-avatar-placeholder flex-shrink-0">
+                <span class="material-symbols-outlined text-white/50" style="font-size:56px">eco</span>
             </div>
             {% endif %}
-            <!-- Main Info Card -->
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-8 space-y-6">
-                <h3 class="text-xl font-black text-primary tracking-tight">Crop Information</h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                            <span class="material-symbols-outlined text-green-600">eco</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold uppercase text-on-surface-variant">Crop Name</p>
-                            <p class="text-lg font-bold text-primary">{{ culture.nomCulture }}</p>
-                        </div>
-                    </div>
+            <!-- ② Crop info -->
+            <div class="flex-1 min-w-0 text-center sm:text-left">
+                <!-- Status chip -->
+                <div class="mb-2">
+                    {% if culture.statut == 'In Progress' %}
+                        <span class="chip chip-progress inline-flex"><span>🌱</span> In Progress</span>
+                    {% elseif culture.statut == 'Planned' %}
+                        <span class="chip chip-planned inline-flex"><span>📅</span> Planned</span>
+                    {% elseif culture.statut == 'Harvested' %}
+                        <span class="chip chip-harvested inline-flex"><span>🌾</span> Harvested</span>
+                    {% else %}
+                        <span class="chip bg-gray-100 text-gray-600 border border-gray-200 inline-flex">{{ culture.statut ?? 'Unknown' }}</span>
+                    {% endif %}
+                </div>
 
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                            <span class="material-symbols-outlined text-purple-600">category</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold uppercase text-on-surface-variant">Variety</p>
-                            <p class="text-lg font-bold text-primary">{{ culture.variete ?? 'Not specified' }}</p>
-                        </div>
-                    </div>
+                <!-- Name -->
+                <h1 class="text-3xl md:text-4xl font-black text-primary tracking-tight leading-none mb-1">
+                    {{ culture.nomCulture }}
+                </h1>
 
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                            <span class="material-symbols-outlined text-orange-600">terrain</span>
+                <!-- Variety -->
+                {% if culture.variete %}
+                <p class="text-on-sf-v text-base font-medium italic mt-1" style="font-family:'Lora',serif">
+                    {{ culture.variete }}
+                </p>
+                {% endif %}
+
+                <!-- Parcel -->
+                {% if culture.parcelle %}
+                <a href="{{ path('parcelle_show', {id: culture.parcelle.id}) }}"
+                   class="inline-flex items-center gap-1.5 mt-3 text-secondary hover:text-primary text-sm font-semibold transition-colors">
+                    <span class="material-symbols-outlined text-base">terrain</span>
+                    {{ culture.parcelle.nom }}
+                </a>
+                {% endif %}
+
+                <!-- Mobile action buttons -->
+                <div class="flex items-center gap-3 mt-4 sm:hidden justify-center flex-wrap">
+                    <a href="{{ path('culture_edit', {id: culture.id}) }}" class="abtn abtn-edit">
+                        <span class="material-symbols-outlined" style="font-size:16px">edit</span>Edit
+                    </a>
+                    <button type="button" class="abtn abtn-danger open-delete-modal"
+                            data-delete-url="{{ path('culture_delete', {id: culture.id}) }}"
+                            data-delete-token="{{ csrf_token('delete' ~ culture.id) }}"
+                            data-delete-name="{{ culture.nomCulture|e('html_attr') }}">
+                        <span class="material-symbols-outlined" style="font-size:16px">delete_forever</span>Delete
+                    </button>
+                </div>
+            </div>
+
+            <!-- ③ Desktop action buttons -->
+            <div class="hidden sm:flex flex-col gap-3 flex-shrink-0 items-end justify-start pt-1">
+                <a href="{{ path('culture_edit', {id: culture.id}) }}" class="abtn abtn-edit">
+                    <span class="material-symbols-outlined" style="font-size:17px">edit</span>
+                    Edit Crop
+                </a>
+                <button type="button"
+                        class="abtn abtn-danger open-delete-modal"
+                        data-delete-url="{{ path('culture_delete', {id: culture.id}) }}"
+                        data-delete-token="{{ csrf_token('delete' ~ culture.id) }}"
+                        data-delete-name="{{ culture.nomCulture|e('html_attr') }}">
+                    <span class="material-symbols-outlined" style="font-size:17px">delete_forever</span>
+                    Delete
+                </button>
+                {% if culture.image %}
+                <button onclick="openLightbox()"
+                        class="abtn abtn-ghost text-xs">
+                    <span class="material-symbols-outlined" style="font-size:15px">zoom_in</span>
+                    Enlarge photo
+                </button>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── CONTENT GRID ───────────────────────────────────────────────────── -->
+    <div class="p-4 md:p-8 space-y-8">
+
+        <!-- ROW 1: Info + Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+            <!-- ┌─ Crop Info (3/5) ──────────────────────────────────────────┐ -->
+            <div class="lg:col-span-3 space-y-5">
+
+                <!-- Identity card -->
+                <div class="card p-6">
+                    <p class="card-hd">Crop Details</p>
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                        <div class="bg-sf-low rounded-xl p-4">
+                            <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-1">Crop Name</p>
+                            <p class="font-bold text-primary text-lg leading-tight">{{ culture.nomCulture }}</p>
                         </div>
-                        <div>
-                            <p class="text-xs font-bold uppercase text-on-surface-variant">Assigned Parcel</p>
+                        <div class="bg-sf-low rounded-xl p-4">
+                            <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-1">Variety</p>
+                            <p class="font-bold text-primary text-lg leading-tight">{{ culture.variete ?? '—' }}</p>
+                        </div>
+                        <div class="bg-sf-low rounded-xl p-4">
+                            <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-1">Parcel</p>
                             {% if culture.parcelle %}
-                                <a href="{{ path('parcelle_show', {id: culture.parcelle.id}) }}" class="text-lg font-bold text-primary hover:underline">
+                                <a href="{{ path('parcelle_show', {id: culture.parcelle.id}) }}"
+                                   class="font-bold text-primary hover:text-secondary transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-base text-secondary">terrain</span>
                                     {{ culture.parcelle.nom }}
                                 </a>
                             {% else %}
-                                <p class="text-lg font-bold text-on-surface-variant">Not assigned</p>
+                                <p class="font-semibold text-on-sf-v">Not assigned</p>
                             {% endif %}
                         </div>
-                    </div>
-
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                            <span class="material-symbols-outlined text-blue-600">flag</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold uppercase text-on-surface-variant">Status</p>
-                            <p class="text-lg font-bold text-primary">{{ culture.statut ?? 'Not set' }}</p>
+                        <div class="bg-sf-low rounded-xl p-4">
+                            <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-1">Status</p>
+                            {% if culture.statut == 'In Progress' %}
+                                <span class="inline-flex items-center gap-1 font-bold text-green-700">🌱 In Progress</span>
+                            {% elseif culture.statut == 'Planned' %}
+                                <span class="inline-flex items-center gap-1 font-bold text-blue-700">📅 Planned</span>
+                            {% elseif culture.statut == 'Harvested' %}
+                                <span class="inline-flex items-center gap-1 font-bold text-orange-700">🌾 Harvested</span>
+                            {% else %}
+                                <span class="font-bold text-on-sf-v">{{ culture.statut ?? '—' }}</span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Dates Section -->
-                <div class="pt-6 border-t border-outline-variant/15">
-                    <h4 class="text-lg font-bold text-primary mb-4">Key Dates</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-surface-container-low p-4 rounded-xl">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-outlined text-green-600">event</span>
-                                <p class="text-xs font-bold uppercase text-on-surface-variant">Planting Date</p>
+                <!-- Date timeline -->
+                <div class="card p-6">
+                    <p class="card-hd">Growth Timeline</p>
+                    <div class="flex items-stretch gap-0 mt-4">
+                        <!-- Planting -->
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="tl-dot bg-green-500 text-green-500 mb-2"></div>
+                            <div class="tl-line bg-gradient-to-b from-green-300 to-amber-300"></div>
+                            <div class="text-center mt-2">
+                                <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide">Planted</p>
+                                <p class="font-black text-primary text-sm mt-0.5">
+                                    {{ culture.datePlantation ? culture.datePlantation|date('d M Y') : '—' }}
+                                </p>
                             </div>
-                            <p class="text-xl font-black text-primary">{{ culture.datePlantation ? culture.datePlantation|date('d M Y') : 'Not set' }}</p>
                         </div>
-                        <div class="bg-surface-container-low p-4 rounded-xl">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-outlined text-orange-600">schedule</span>
-                                <p class="text-xs font-bold uppercase text-on-surface-variant">Expected Harvest</p>
-                            </div>
-                            <p class="text-xl font-black text-primary">{{ culture.dateRecoltePrevue ? culture.dateRecoltePrevue|date('d M Y') : 'Not set' }}</p>
+                        <!-- Spacer line -->
+                        <div class="flex items-start pt-1.5 px-2">
+                            <div class="h-0.5 w-8 bg-gradient-to-r from-green-300 to-amber-300 mt-5"></div>
                         </div>
-                        <div class="bg-surface-container-low p-4 rounded-xl">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-outlined text-purple-600">check_circle</span>
-                                <p class="text-xs font-bold uppercase text-on-surface-variant">Actual Harvest</p>
+                        <!-- Expected harvest -->
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="tl-dot mb-2" style="background:#f59e0b;color:#f59e0b"></div>
+                            <div class="tl-line bg-gradient-to-b from-amber-300 to-purple-300"></div>
+                            <div class="text-center mt-2">
+                                <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide">Expected</p>
+                                <p class="font-black text-primary text-sm mt-0.5">
+                                    {{ culture.dateRecoltePrevue ? culture.dateRecoltePrevue|date('d M Y') : '—' }}
+                                </p>
                             </div>
-                            <p class="text-xl font-black text-primary">{{ culture.dateRecolteReelle ? culture.dateRecolteReelle|date('d M Y') : 'Pending' }}</p>
+                        </div>
+                        <!-- Spacer line -->
+                        <div class="flex items-start pt-1.5 px-2">
+                            <div class="h-0.5 w-8 bg-gradient-to-r from-amber-300 to-purple-400 mt-5"></div>
+                        </div>
+                        <!-- Actual harvest -->
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="tl-dot mb-2"
+                                 style="background:{% if culture.dateRecolteReelle %}#9333ea{% else %}#d1d5db{% endif %};color:{% if culture.dateRecolteReelle %}#9333ea{% else %}#d1d5db{% endif %}">
+                            </div>
+                            <div class="tl-line {% if culture.dateRecolteReelle %}bg-purple-400{% else %}bg-gray-200{% endif %}"></div>
+                            <div class="text-center mt-2">
+                                <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide">Harvested</p>
+                                <p class="font-black {% if culture.dateRecolteReelle %}text-purple-700{% else %}text-gray-400{% endif %} text-sm mt-0.5">
+                                    {{ culture.dateRecolteReelle ? culture.dateRecolteReelle|date('d M Y') : 'Pending' }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Observations -->
                 {% if culture.observations %}
-                <div class="pt-6 border-t border-outline-variant/15">
-                    <h4 class="text-lg font-bold text-primary mb-4">Observations</h4>
-                    <div class="bg-surface-container-low p-4 rounded-xl">
-                        <p class="text-on-surface-variant leading-relaxed">{{ culture.observations }}</p>
+                <div class="card p-6">
+                    <p class="card-hd">Field Observations</p>
+                    <div class="mt-3 bg-amber-50 border border-amber-100 rounded-xl p-4">
+                        <div class="flex gap-3">
+                            <span class="material-symbols-outlined text-amber-500 flex-shrink-0 mt-0.5">note_alt</span>
+                            <p class="text-sm text-on-sf leading-relaxed">{{ culture.observations }}</p>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Stats Sidebar -->
-            <div class="space-y-6">
-                <!-- Quantities Card -->
-                <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
-                    <h3 class="text-lg font-black text-primary tracking-tight">Production Data</h3>
+            <!-- ┌─ Stats sidebar (2/5) ─────────────────────────────────────┐ -->
+            <div class="lg:col-span-2 space-y-5">
 
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between py-3 border-b border-outline-variant/15">
-                            <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-green-600">grass</span>
-                                <span class="font-semibold text-on-surface-variant">Qty Planted</span>
+                <!-- Production metrics -->
+                <div class="card p-6">
+                    <p class="card-hd">Production Data</p>
+                    <div class="space-y-3 mt-3">
+                        <div class="flex items-center justify-between py-3 border-b border-sf-low">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-green-600" style="font-size:18px">grass</span>
+                                </div>
+                                <span class="text-sm font-semibold text-on-sf-v">Qty Planted</span>
                             </div>
-                            <span class="text-xl font-black text-primary">{{ culture.quantitePlantee|number_format(0) }}</span>
+                            <span class="font-black text-primary text-xl">{{ culture.quantitePlantee|number_format(0) }}</span>
                         </div>
-
-                        <div class="flex items-center justify-between py-3 border-b border-outline-variant/15">
-                            <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-orange-600">inventory_2</span>
-                                <span class="font-semibold text-on-surface-variant">Qty Harvested</span>
+                        <div class="flex items-center justify-between py-3 border-b border-sf-low">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-orange-500" style="font-size:18px">inventory_2</span>
+                                </div>
+                                <span class="text-sm font-semibold text-on-sf-v">Qty Harvested</span>
                             </div>
-                            <span class="text-xl font-black text-primary">{{ culture.quantiteRecoltee|number_format(0) }}</span>
+                            <span class="font-black text-primary text-xl">{{ culture.quantiteRecoltee|number_format(0) }}</span>
                         </div>
-
-                        <div class="flex items-center justify-between py-3 border-b border-outline-variant/15">
-                            <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-blue-600">speed</span>
-                                <span class="font-semibold text-on-surface-variant">Yield (kg/ha)</span>
+                        <div class="flex items-center justify-between py-3 border-b border-sf-low">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-blue-500" style="font-size:18px">speed</span>
+                                </div>
+                                <span class="text-sm font-semibold text-on-sf-v">Yield (kg/ha)</span>
                             </div>
-                            <span class="text-xl font-black text-primary">{{ culture.rendement ? culture.rendement|number_format(2) : '-' }}</span>
+                            <span class="font-black text-primary text-xl">{{ culture.rendement ? culture.rendement|number_format(2) : '—' }}</span>
                         </div>
-
                         <div class="flex items-center justify-between py-3">
-                            <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-red-600">payments</span>
-                                <span class="font-semibold text-on-surface-variant">Production Cost</span>
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-red-500" style="font-size:18px">payments</span>
+                                </div>
+                                <span class="text-sm font-semibold text-on-sf-v">Production Cost</span>
                             </div>
-                            <span class="text-xl font-black text-secondary">{{ culture.coutProduction|number_format(2) }} €</span>
+                            <span class="font-black text-secondary text-xl">{{ culture.coutProduction|number_format(2) }} €</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Efficiency Card -->
+                <!-- Efficiency ring -->
                 {% if culture.quantitePlantee > 0 %}
-                <div class="bg-gradient-to-br from-primary to-primary-container rounded-xl shadow-lg p-6 text-white">
-                    <h3 class="text-lg font-black tracking-tight mb-4">Efficiency</h3>
-                    <div class="text-center">
-                        <p class="text-5xl font-black">{{ ((culture.quantiteRecoltee / culture.quantitePlantee) * 100)|number_format(1) }}%</p>
-                        <p class="text-sm opacity-80 mt-2">Harvest Rate</p>
+                {% set pct = ((culture.quantiteRecoltee / culture.quantitePlantee) * 100)|round(1) %}
+                {% set r = 52 %}
+                {% set circ = (2 * 3.14159265 * r)|round(2) %}
+                {% set offset = (circ - (circ * pct / 100))|round(2) %}
+                <div class="card p-6 flex flex-col items-center">
+                    <p class="card-hd w-full text-center mb-4">Harvest Efficiency</p>
+                    <div class="relative" style="width:140px;height:140px">
+                        <svg width="140" height="140" viewBox="0 0 140 140">
+                            <circle class="ring-track" cx="70" cy="70" r="{{ r }}"/>
+                            <circle class="ring-fill"
+                                    cx="70" cy="70" r="{{ r }}"
+                                    stroke="{% if pct >= 75 %}#16a34a{% elseif pct >= 40 %}#f59e0b{% else %}#dc2626{% endif %}"
+                                    stroke-dasharray="{{ circ }}"
+                                    stroke-dashoffset="{{ offset }}"
+                                    transform="rotate(-90 70 70)"
+                                    id="ringFill"/>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-3xl font-black text-primary leading-none">{{ pct }}%</span>
+                            <span class="text-xs text-on-sf-v font-semibold mt-0.5">Harvest Rate</span>
+                        </div>
                     </div>
                     {% if culture.coutProduction > 0 and culture.quantiteRecoltee > 0 %}
-                    <div class="mt-6 pt-4 border-t border-white/20 text-center">
-                        <p class="text-2xl font-bold">{{ (culture.coutProduction / culture.quantiteRecoltee)|number_format(2) }} €</p>
-                        <p class="text-sm opacity-80">Cost per Unit</p>
+                    <div class="mt-4 pt-4 border-t border-sf-low w-full text-center">
+                        <p class="text-2xl font-black text-secondary">{{ (culture.coutProduction / culture.quantiteRecoltee)|number_format(2) }} €</p>
+                        <p class="text-xs text-on-sf-v font-semibold mt-0.5">Cost per Unit</p>
                     </div>
                     {% endif %}
                 </div>
                 {% endif %}
 
-                <!-- Quick Actions -->
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <h3 class="text-lg font-black text-primary tracking-tight mb-4">Quick Actions</h3>
-                    <div class="space-y-3">
-                        <a href="{{ path('culture_edit', {id: culture.id}) }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low transition-colors">
-                            <span class="material-symbols-outlined text-yellow-600">edit</span>
-                            <span class="font-semibold text-on-surface">Edit Crop</span>
+                <!-- Quick actions -->
+                <div class="card p-6">
+                    <p class="card-hd">Quick Actions</p>
+                    <div class="space-y-2 mt-3">
+                        <a href="{{ path('culture_edit', {id: culture.id}) }}"
+                           class="flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-100 hover:bg-amber-500 hover:border-amber-500 hover:text-white group transition-all">
+                            <div class="w-9 h-9 rounded-lg bg-amber-100 group-hover:bg-white/20 flex items-center justify-center flex-shrink-0 transition-colors">
+                                <span class="material-symbols-outlined text-amber-600 group-hover:text-white" style="font-size:18px">edit</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-sm text-amber-900 group-hover:text-white">Edit Crop</p>
+                                <p class="text-xs text-amber-700/60 group-hover:text-white/70">Update details</p>
+                            </div>
+                            <span class="material-symbols-outlined text-amber-400 group-hover:text-white/60 text-base">arrow_forward</span>
                         </a>
+
                         {% if culture.parcelle %}
-                        <a href="{{ path('parcelle_show', {id: culture.parcelle.id}) }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low transition-colors">
-                            <span class="material-symbols-outlined text-green-600">terrain</span>
-                            <span class="font-semibold text-on-surface">View Parcel</span>
+                        <a href="{{ path('parcelle_show', {id: culture.parcelle.id}) }}"
+                           class="flex items-center gap-3 p-3 rounded-xl bg-green-50 border border-green-100 hover:bg-green-600 hover:border-green-600 hover:text-white group transition-all">
+                            <div class="w-9 h-9 rounded-lg bg-green-100 group-hover:bg-white/20 flex items-center justify-center flex-shrink-0 transition-colors">
+                                <span class="material-symbols-outlined text-green-600 group-hover:text-white" style="font-size:18px">terrain</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-sm text-green-900 group-hover:text-white">View Parcel</p>
+                                <p class="text-xs text-green-700/60 group-hover:text-white/70 truncate">{{ culture.parcelle.nom }}</p>
+                            </div>
+                            <span class="material-symbols-outlined text-green-400 group-hover:text-white/60 text-base">arrow_forward</span>
                         </a>
                         {% endif %}
-                        <button type="button" class="open-delete-modal flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition-colors w-full text-left"
+
+                        <button type="button"
+                                class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-100 hover:bg-red-600 hover:border-red-600 group transition-all open-delete-modal"
                                 data-delete-url="{{ path('culture_delete', {id: culture.id}) }}"
                                 data-delete-token="{{ csrf_token('delete' ~ culture.id) }}"
                                 data-delete-name="{{ culture.nomCulture|e('html_attr') }}">
-                            <span class="material-symbols-outlined text-red-600">delete</span>
-                            <span class="font-semibold text-red-600">Delete Crop</span>
+                            <div class="w-9 h-9 rounded-lg bg-red-100 group-hover:bg-white/20 flex items-center justify-center flex-shrink-0 transition-colors">
+                                <span class="material-symbols-outlined text-red-500 group-hover:text-white" style="font-size:18px">delete_forever</span>
+                            </div>
+                            <div class="flex-1 min-w-0 text-left">
+                                <p class="font-bold text-sm text-red-900 group-hover:text-white">Delete Crop</p>
+                                <p class="text-xs text-red-700/60 group-hover:text-white/70">Permanent action</p>
+                            </div>
+                            <span class="material-symbols-outlined text-red-400 group-hover:text-white/60 text-base">warning</span>
                         </button>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="md:ml-64 flex justify-between items-center px-12 py-8 bg-[#fbfbe2] border-t border-[#c3c9b9]/15">
-        <p class="text-sm tracking-wide text-on-surface-variant">Elfirma © 2026</p>
-        <div class="flex gap-8">
-            <a class="text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Technical Support</a>
-            <a class="text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Legal Notice</a>
-            <a class="text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Privacy</a>
         </div>
-    </footer>
 
-    <script>
-        document.querySelectorAll('.dropdown > button').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const menu = this.nextElementSibling;
-                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            });
-        });
-    </script>
-    {% if culture.image %}
-    <div class="lightbox hidden fixed inset-0 bg-black/90 z-50 items-center justify-center" id="cropImageLightbox" onclick="this.classList.remove('active'); this.classList.add('hidden')">
-        <button class="absolute top-5 right-8 text-white text-5xl font-light leading-none" onclick="event.stopPropagation(); document.getElementById('cropImageLightbox').classList.add('hidden'); document.getElementById('cropImageLightbox').classList.remove('active');">&times;</button>
-        <img src="{{ path('culture_image', {id: culture.id}) }}" alt="{{ culture.nomCulture }}" class="max-w-[90%] max-h-[90vh] object-contain rounded-xl shadow-2xl">
-    </div>
-    <style>
-        #cropImageLightbox.active { display: flex; }
-        #cropImageLightbox:not(.active) { display: none; }
-    </style>
-    {% endif %}
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
-        <div id="deleteModalBackdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
-            <div class="flex justify-center mb-6">
-                <div class="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center">
-                    <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-red-500 text-3xl">delete_forever</span>
-                    </div>
+        <!-- ══════════════════════════════════════════════════════════════════
+             CROP GUIDE  —  Wikipedia  +  Trefle Plant API
+             ═══════════════════════════════════════════════════════════════ -->
+        <div id="cropGuideSection">
+
+            <!-- Section title -->
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-[#0a2200] flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-[#9dde6c]" style="font-size:20px">auto_awesome</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-primary tracking-tight">Crop Growing Guide</h2>
+                    <p class="text-xs text-on-sf-v font-semibold">
+                        Powered by <span class="text-green-700">Trefle Plant API</span>
+                        &amp; <span class="text-blue-700">Wikipedia</span>
+                    </p>
                 </div>
             </div>
-            <h3 class="text-2xl font-black text-gray-800 text-center mb-2">Delete Crop?</h3>
-            <p class="text-gray-500 text-center mb-1">You are about to permanently delete</p>
-            <p id="deleteModalName" class="text-[#0a2200] font-bold text-center text-lg mb-6">"…"</p>
-            <p class="text-gray-400 text-sm text-center mb-8">This action cannot be undone.</p>
-            <div class="flex gap-3">
-                <button id="deleteModalCancel" type="button" class="flex-1 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors">Cancel</button>
-                <form id="deleteModalForm" method="POST" class="flex-1">
-                    <input type="hidden" name="_token" id="deleteModalToken" value="">
-                    <button type="submit" class="w-full py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold transition-colors flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined text-lg">delete_forever</span> Yes, Delete
-                    </button>
-                </form>
+
+            <!-- LOADING -->
+            <div id="guideLoading" class="card p-12 text-center">
+                <div class="flex justify-center mb-5">
+                    <div class="w-14 h-14 border-4 border-sf-low border-t-[#0a2200] rounded-full g-spin"></div>
+                </div>
+                <p class="font-bold text-primary">Fetching botanical &amp; encyclopedic data…</p>
+                <p class="text-xs text-on-sf-v mt-1">Querying Trefle &amp; Wikipedia APIs</p>
             </div>
+
+            <!-- ERROR -->
+            <div id="guideError" class="hidden card p-10 text-center border border-red-100">
+                <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-red-400" style="font-size:32px">wifi_off</span>
+                </div>
+                <p id="guideErrorMsg" class="font-bold text-red-700 mb-4">Unable to load guide data.</p>
+                <button onclick="loadCropGuide(true)"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors">
+                    <span class="material-symbols-outlined text-base">refresh</span>Retry
+                </button>
+            </div>
+
+            <!-- RESULTS: side-by-side grid -->
+            <div id="guideResults" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+                <!-- ── Wikipedia card ───────────────────────────────────── -->
+                <div class="card overflow-hidden flex flex-col" id="wikiCard">
+                    <!-- Header strip -->
+                    <div class="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-600 to-blue-500">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-white" style="font-size:16px">menu_book</span>
+                            </div>
+                            <div>
+                                <p class="font-black text-white text-xs">Wikipedia</p>
+                                <p class="text-[10px] text-white/70 leading-tight">Encyclopedic overview</p>
+                            </div>
+                        </div>
+                        <a id="wikiLink" href="#" target="_blank" rel="noopener"
+                           class="flex items-center gap-1 text-white/90 hover:text-white text-[11px] font-bold bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-full transition-all">
+                            Full article
+                            <span class="material-symbols-outlined" style="font-size:11px">open_in_new</span>
+                        </a>
+                    </div>
+                    <!-- Body -->
+                    <div id="wikiBody" class="p-5 flex-1">
+                        <!-- Title row with small thumbnail -->
+                        <div class="flex gap-3 mb-3">
+                            <img id="wikiThumb" src="" alt=""
+                                 style="display:none;width:64px;height:64px;min-width:64px;border-radius:12px;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.12);border:1px solid #edeee3;flex-shrink:0">
+                            <div class="flex-1 min-w-0">
+                                <h3 id="wikiTitle" class="text-base font-black text-primary leading-tight"></h3>
+                                <p id="wikiDesc" class="text-xs text-on-sf-v italic mt-0.5" style="font-family:'Lora',serif"></p>
+                            </div>
+                        </div>
+                        <div class="h-px bg-sf-low mb-3"></div>
+                        <p id="wikiExtract" class="text-sm text-on-sf leading-relaxed wiki-extract"></p>
+                    </div>
+                    <!-- Not found state -->
+                    <div id="wikiNone" class="hidden p-8 text-center flex-1 flex flex-col items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl text-gray-300 block mb-2">article</span>
+                        <p class="text-sm font-semibold text-on-sf-v">No Wikipedia article found for this crop.</p>
+                    </div>
+                </div>
+
+                <!-- ── Trefle card ──────────────────────────────────────── -->
+                <div class="card overflow-hidden flex flex-col" id="trefleCard">
+                    <!-- Header strip -->
+                    <div class="flex items-center justify-between px-7 py-4 bg-gradient-to-r from-[#0a2200] to-[#1a4a00]">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[#9dde6c]" style="font-size:18px">local_florist</span>
+                            </div>
+                            <div>
+                                <p class="font-black text-white text-sm">Trefle Plant Database</p>
+                                <p class="text-xs text-white/60">Botanical &amp; agronomic data</p>
+                            </div>
+                        </div>
+                        <a id="trefleLink" href="#" target="_blank" rel="noopener"
+                           class="flex items-center gap-1.5 text-white/80 hover:text-white text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-all">
+                            View on Trefle
+                            <span class="material-symbols-outlined" style="font-size:13px">open_in_new</span>
+                        </a>
+                    </div>
+
+                    <!-- Trefle data body -->
+                    <div id="trefleData" class="p-7 space-y-7">
+
+                        <!-- ① Botanical identity -->
+                        <div>
+                            <p class="card-hd mb-3">Botanical Identity</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="bg-gradient-to-br from-[#f4f6ee] to-[#eaedd8] rounded-2xl p-4 sm:col-span-3">
+                                    <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-0.5">Scientific Name</p>
+                                    <p id="trefleScientific" class="text-xl font-black text-primary italic"></p>
+                                </div>
+                                <div class="bg-sf-low rounded-xl p-4">
+                                    <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-0.5">Family</p>
+                                    <p id="trefleFamily" class="font-bold text-primary"></p>
+                                </div>
+                                <div class="bg-sf-low rounded-xl p-4">
+                                    <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-0.5">Genus</p>
+                                    <p id="trefleGenus" class="font-bold text-primary"></p>
+                                </div>
+                                <div class="bg-sf-low rounded-xl p-4">
+                                    <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-0.5">Common Name</p>
+                                    <p id="trefleCommon" class="font-bold text-primary"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ② Key growing parameters -->
+                        <div>
+                            <p class="card-hd mb-3">Key Growing Parameters</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="trefleKeyGrid">
+                                <!-- injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- ③ Growing conditions bars -->
+                        <div id="trefleBarsSection">
+                            <p class="card-hd mb-4">Growing Conditions <span class="text-[10px] normal-case font-normal text-on-sf-v">(scale 0 – 10)</span></p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5" id="trefleGrowthBars">
+                                <!-- injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- ④ Spacing -->
+                        <div id="trefleSpacingSection" class="hidden">
+                            <p class="card-hd mb-3">Planting Spacing</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-sf-low rounded-xl p-4">
+                                    <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-0.5">Row Spacing</p>
+                                    <p id="trefleRowSpacing" class="font-bold text-primary text-lg"></p>
+                                </div>
+                                <div class="bg-sf-low rounded-xl p-4">
+                                    <p class="text-xs font-bold text-on-sf-v uppercase tracking-wide mb-0.5">Plant Spread</p>
+                                    <p id="trefleSpread" class="font-bold text-primary text-lg"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ⑤ Notes -->
+                        <div id="trefleNotesSection" class="hidden space-y-3">
+                            <div id="trefleSowingWrap" class="hidden bg-green-50 border border-green-100 rounded-xl p-5">
+                                <p class="text-xs font-bold text-green-800 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-green-600" style="font-size:15px">grass</span>Sowing Guide
+                                </p>
+                                <p id="trefleSowing" class="text-sm text-on-sf leading-relaxed"></p>
+                            </div>
+                            <div id="trefleDescWrap" class="hidden bg-blue-50 border border-blue-100 rounded-xl p-5">
+                                <p class="text-xs font-bold text-blue-800 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-blue-600" style="font-size:15px">description</span>Growing Notes
+                                </p>
+                                <p id="trefleDesc" class="text-sm text-on-sf leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Trefle not found -->
+                    <div id="trefleNone" class="hidden p-10 text-center">
+                        <span class="material-symbols-outlined text-3xl text-gray-300 block mb-2">search_off</span>
+                        <p class="text-sm font-semibold text-on-sf-v">No Trefle data found for this crop.</p>
+                        <p class="text-xs text-on-sf-v/60 mt-1">Make sure <code class="bg-gray-100 px-1 rounded">TREFLE_API_KEY</code> is set in <code class="bg-gray-100 px-1 rounded">.env</code></p>
+                    </div>
+                </div>
+
+                <!-- Attribution row — spans both columns -->
+                <div class="lg:col-span-2 flex flex-wrap gap-3 justify-end text-xs text-on-sf-v/60">
+                    <span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:12px">public</span>Wikipedia REST API</span>
+                    <span>·</span>
+                    <span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:12px">local_florist</span>Trefle.io Plant Database</span>
+                </div>
+
+            </div><!-- /#guideResults -->
         </div>
     </div>
-    <script>
-        (function() {
-            const modal = document.getElementById('deleteConfirmModal');
-            const form = document.getElementById('deleteModalForm');
-            const nameEl = document.getElementById('deleteModalName');
-            const tokenEl = document.getElementById('deleteModalToken');
-            const cancelBtn = document.getElementById('deleteModalCancel');
-            const backdrop = document.getElementById('deleteModalBackdrop');
-            function open(url, token, name) {
-                form.action = url; tokenEl.value = token;
-                nameEl.textContent = '"' + name + '"';
-                modal.classList.remove('hidden'); modal.classList.add('flex');
-                document.body.style.overflow = 'hidden';
+
+    <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+    <footer class="flex justify-between items-center px-8 md:px-12 py-6 border-t border-outline/20 mt-8">
+        <p class="text-xs text-on-sf-v">Elfirma © 2026 — Farm Management Platform</p>
+        <div class="flex gap-6">
+            <a class="text-xs text-on-sf-v hover:text-secondary transition-colors" href="#">Support</a>
+            <a class="text-xs text-on-sf-v hover:text-secondary transition-colors" href="#">Legal</a>
+            <a class="text-xs text-on-sf-v hover:text-secondary transition-colors" href="#">Privacy</a>
+        </div>
+    </footer>
+</main>
+
+<!-- ══════════════════ LIGHTBOX ═══════════════════════════════════════════ -->
+{% if culture.image %}
+<div id="lightbox" class="hidden fixed inset-0 bg-black/92 z-50 items-center justify-center p-4"
+     onclick="closeLightbox()">
+    <button class="absolute top-5 right-7 text-white/80 hover:text-white text-4xl font-light leading-none z-10"
+            onclick="event.stopPropagation();closeLightbox()">&times;</button>
+    <img src="{{ path('culture_image', {id: culture.id}) }}"
+         alt="{{ culture.nomCulture }}"
+         class="max-w-full max-h-[92vh] object-contain rounded-2xl shadow-2xl"
+         onclick="event.stopPropagation()">
+</div>
+{% endif %}
+
+<!-- ══════════════════ DELETE MODAL ═══════════════════════════════════════ -->
+<div id="deleteModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div id="deleteBackdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center">
+        <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
+            <div class="w-11 h-11 rounded-full bg-red-100 flex items-center justify-center">
+                <span class="material-symbols-outlined text-red-500 text-2xl">delete_forever</span>
+            </div>
+        </div>
+        <h3 class="text-xl font-black text-gray-800 mb-1">Delete Crop?</h3>
+        <p class="text-sm text-gray-500 mb-1">You are about to permanently delete</p>
+        <p id="deleteModalName" class="font-bold text-primary text-base mb-1">"…"</p>
+        <p class="text-xs text-gray-400 mb-7">This action cannot be undone.</p>
+        <div class="flex gap-3">
+            <button id="deleteCancel" type="button"
+                    class="flex-1 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm transition-colors">Cancel</button>
+            <form id="deleteForm" method="POST" class="flex-1">
+                <input type="hidden" name="_token" id="deleteToken">
+                <button type="submit"
+                        class="w-full py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm transition-colors flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-base">delete_forever</span>Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ SCRIPTS ════════════════════════════════════════════ -->
+<script>
+/* ── sidebar dropdown ── */
+document.querySelectorAll('.dropdown > button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+        var m = this.nextElementSibling;
+        m.style.display = m.style.display === 'block' ? 'none' : 'block';
+    });
+});
+
+/* ── lightbox ── */
+function openLightbox(){ var l=document.getElementById('lightbox'); if(l){l.classList.remove('hidden');l.classList.add('flex');document.body.style.overflow='hidden';} }
+function closeLightbox(){ var l=document.getElementById('lightbox'); if(l){l.classList.add('hidden');l.classList.remove('flex');document.body.style.overflow='';} }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeLightbox(); });
+
+/* ── delete modal ── */
+(function(){
+    var modal=document.getElementById('deleteModal'),
+        form=document.getElementById('deleteForm'),
+        nameEl=document.getElementById('deleteModalName'),
+        tokenEl=document.getElementById('deleteToken'),
+        cancelBtn=document.getElementById('deleteCancel'),
+        backdrop=document.getElementById('deleteBackdrop');
+    function openDel(url,token,name){ form.action=url; tokenEl.value=token; nameEl.textContent='"'+name+'"'; modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow='hidden'; }
+    function closeDel(){ modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow=''; }
+    document.addEventListener('click', function(e){ var b=e.target.closest('.open-delete-modal'); if(b) openDel(b.dataset.deleteUrl, b.dataset.deleteToken, b.dataset.deleteName); });
+    cancelBtn && cancelBtn.addEventListener('click', closeDel);
+    backdrop  && backdrop.addEventListener('click', closeDel);
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDel(); });
+})();
+
+/* ── Crop Guide auto-load ── */
+(function(){
+    var GUIDE_URL = "{{ path('culture_guide', {id: culture.id}) }}";
+    var loaded = false;
+
+    function show(id){
+        ['guideLoading','guideError','guideResults'].forEach(function(s){
+            var el=document.getElementById(s);
+            if(el){ el.classList.add('hidden'); el.classList.remove('flex'); }
+        });
+        var t=document.getElementById(id);
+        if(!t) return;
+        t.classList.remove('hidden');
+    }
+
+    /* ── helpers ── */
+    function txt(id, val, fb){
+        var el=document.getElementById(id);
+        if(el) el.textContent = (val!=null && val!=='') ? val : (fb||'—');
+    }
+
+    function makeKeyTile(icon, label, value, bg, iconColor){
+        if(!value && value !== 0) return '';
+        return '<div class="mtile '+bg+'">'
+            + '<span class="material-symbols-outlined '+iconColor+'" style="font-size:22px">'+icon+'</span>'
+            + '<p class="text-xs font-bold text-on-sf-v uppercase tracking-wide leading-tight">'+label+'</p>'
+            + '<p class="font-black text-primary text-base leading-tight">'+value+'</p>'
+            + '</div>';
+    }
+
+    function makeBar(icon, label, value, fillClass, bgClass){
+        var pct = Math.round((value / 10) * 100);
+        var desc = pct >= 80 ? 'Very High' : pct >= 60 ? 'High' : pct >= 40 ? 'Moderate' : pct >= 20 ? 'Low' : 'Very Low';
+        return '<div>'
+            + '<div class="flex items-center justify-between mb-2">'
+            +   '<div class="flex items-center gap-2 text-sm font-semibold text-on-sf-v">'
+            +     '<div class="w-7 h-7 rounded-lg '+bgClass+' flex items-center justify-center">'
+            +       '<span class="material-symbols-outlined" style="font-size:15px">'+icon+'</span>'
+            +     '</div>'+label
+            +   '</div>'
+            +   '<div class="text-right">'
+            +     '<span class="font-black text-primary text-sm">'+value+'</span>'
+            +     '<span class="text-xs text-on-sf-v">/10</span>'
+            +     '<span class="text-xs text-on-sf-v ml-2">('+desc+')</span>'
+            +   '</div>'
+            + '</div>'
+            + '<div class="g-bar-track">'
+            +   '<div class="g-bar-fill '+fillClass+'" style="width:0%" data-target="'+pct+'%"></div>'
+            + '</div>'
+            + '</div>';
+    }
+
+    function animateBars(){
+        document.querySelectorAll('.g-bar-fill[data-target]').forEach(function(el){
+            var t = el.getAttribute('data-target');
+            setTimeout(function(){ el.style.width = t; }, 80);
+        });
+    }
+
+    /* ── fill guide data ── */
+    function fill(data){
+
+        /* Wikipedia */
+        var w = data.wikipedia;
+        if(w && (w.extract || w.description)){
+            txt('wikiTitle',   w.title   || data.cropName);
+            txt('wikiDesc',    w.description || '');
+            txt('wikiExtract', w.extract  || '');
+            var wl = document.getElementById('wikiLink');
+            if(wl) wl.href = w.wiki_url || '#';
+            if(w.thumbnail){
+                var it = document.getElementById('wikiThumb');
+                if(it){ it.src=w.thumbnail; it.alt=w.title||''; it.style.display='block'; }
             }
-            function close() {
-                modal.classList.add('hidden'); modal.classList.remove('flex');
-                document.body.style.overflow = '';
+        } else {
+            var wb = document.getElementById('wikiBody'); if(wb) wb.classList.add('hidden');
+            var wn = document.getElementById('wikiNone'); if(wn) wn.classList.remove('hidden');
+            var wl2 = document.getElementById('wikiLink'); if(wl2) wl2.style.display='none';
+        }
+
+        /* Trefle */
+        var t = data.trefle;
+        if(t){
+            var g = t.growth || {};
+
+            txt('trefleScientific', t.scientific_name);
+            txt('trefleFamily',     t.family);
+            txt('trefleGenus',      t.genus);
+            txt('trefleCommon',     t.common_name);
+
+            var tl = document.getElementById('trefleLink');
+            if(tl) tl.href = t.trefle_url || '#';
+
+            /* Key tiles */
+            var tiles = '';
+            if(g.temp_min_c != null && g.temp_max_c != null)
+                tiles += makeKeyTile('thermostat','Temperature', g.temp_min_c+'°C – '+g.temp_max_c+'°C', 'bg-orange-50', 'text-orange-500');
+            if(g.ph_minimum != null && g.ph_maximum != null)
+                tiles += makeKeyTile('science','Soil pH', g.ph_minimum+' – '+g.ph_maximum, 'bg-purple-50', 'text-purple-500');
+            if(g.days_to_harvest != null)
+                tiles += makeKeyTile('calendar_month','Days to Harvest', g.days_to_harvest+' days', 'bg-amber-50', 'text-amber-500');
+            if(g.row_spacing_cm != null)
+                tiles += makeKeyTile('straighten','Row Spacing', g.row_spacing_cm+' cm', 'bg-teal-50', 'text-teal-500');
+
+            var kg = document.getElementById('trefleKeyGrid');
+            if(kg){ if(tiles){ kg.innerHTML = tiles; } else { kg.closest('div').style.display='none'; } }
+
+            /* Condition bars */
+            var barDefs = [
+                { key:'light',                label:'Sunlight',       icon:'wb_sunny',   fill:'bg-yellow-400', bg:'bg-yellow-50' },
+                { key:'atmospheric_humidity', label:'Air Humidity',   icon:'water_drop', fill:'bg-blue-400',   bg:'bg-blue-50'   },
+                { key:'soil_humidity',        label:'Soil Moisture',  icon:'opacity',    fill:'bg-cyan-400',   bg:'bg-cyan-50'   },
+                { key:'soil_nutriments',      label:'Soil Nutrients', icon:'compost',    fill:'bg-green-500',  bg:'bg-green-50'  }
+            ];
+            var barsHtml = '';
+            barDefs.forEach(function(b){
+                if(g[b.key] != null) barsHtml += makeBar(b.icon, b.label, g[b.key], b.fill, b.bg);
+            });
+            var barsEl = document.getElementById('trefleGrowthBars');
+            if(barsEl){
+                if(barsHtml){ barsEl.innerHTML = barsHtml; }
+                else { document.getElementById('trefleBarsSection').style.display='none'; }
             }
-            document.addEventListener('click', e => { const b = e.target.closest('.open-delete-modal'); if (b) open(b.dataset.deleteUrl, b.dataset.deleteToken, b.dataset.deleteName); });
-            cancelBtn?.addEventListener('click', close);
-            backdrop?.addEventListener('click', close);
-            document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-        })();
-    </script>
+
+            /* Spacing */
+            if(g.row_spacing_cm != null || g.spread_cm != null){
+                txt('trefleRowSpacing', g.row_spacing_cm != null ? g.row_spacing_cm+' cm' : null);
+                txt('trefleSpread',     g.spread_cm      != null ? g.spread_cm+' cm'      : null);
+                var ss = document.getElementById('trefleSpacingSection');
+                if(ss) ss.classList.remove('hidden');
+            }
+
+            /* Notes */
+            var notesAny = false;
+            if(g.sowing){
+                txt('trefleSowing', g.sowing);
+                var sw = document.getElementById('trefleSowingWrap'); if(sw) sw.classList.remove('hidden');
+                notesAny = true;
+            }
+            if(g.description){
+                txt('trefleDesc', g.description);
+                var dw = document.getElementById('trefleDescWrap'); if(dw) dw.classList.remove('hidden');
+                notesAny = true;
+            }
+            if(notesAny){
+                var ns = document.getElementById('trefleNotesSection'); if(ns) ns.classList.remove('hidden');
+            }
+
+            document.getElementById('trefleData').classList.remove('hidden');
+        } else {
+            var td = document.getElementById('trefleData'); if(td) td.classList.add('hidden');
+            var tn = document.getElementById('trefleNone'); if(tn) tn.classList.remove('hidden');
+            var tl2 = document.getElementById('trefleLink'); if(tl2) tl2.style.display='none';
+        }
+    }
+
+    /* ── fetch guide ── */
+    window.loadCropGuide = function(force){
+        if(loaded && !force) return;
+        loaded = false;
+        show('guideLoading');
+        fetch(GUIDE_URL, { headers:{ 'Accept':'application/json' } })
+            .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+            .then(function(data){
+                fill(data);
+                show('guideResults');
+                loaded = true;
+                animateBars();
+            })
+            .catch(function(err){
+                var em = document.getElementById('guideErrorMsg');
+                if(em) em.textContent = 'Could not load guide: '+err.message;
+                show('guideError');
+            });
+    };
+
+    /* auto-load on page ready */
+    if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', function(){ loadCropGuide(); });
+    } else {
+        loadCropGuide();
+    }
+})();
+</script>
+
 {{ include('elfirma/_nav_routes.html.twig') }}
 </body>
 </html>

@@ -15,6 +15,50 @@
         .field-errors li { margin-top: 0.25rem; }
 .dropdown-menu { display: none; }
         .dropdown:hover .dropdown-menu { display: block; }
+        /* ── Form button system ─────────────────────────────────────── */
+        .btn-form {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-weight: 700; font-size: 14px; font-family: 'Inter', sans-serif;
+            padding: 13px 28px; border-radius: 9999px; cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+                        box-shadow 0.18s ease, background-color 0.15s ease,
+                        border-color 0.15s ease, color 0.15s ease;
+        }
+        .btn-form:hover  { transform: translateY(-2px) scale(1.02); }
+        .btn-form:active { transform: translateY(0) scale(0.97); }
+        .btn-form-primary {
+            background: #0a2200; color: #fff;
+            box-shadow: 0 3px 12px rgba(10,34,0,0.3), 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-form-primary:hover { background: #173901; box-shadow: 0 8px 24px rgba(10,34,0,0.35), 0 2px 6px rgba(0,0,0,0.1); }
+        .btn-form-cancel {
+            background: #fff; color: #4b5563;
+            border-color: #d1d5db;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .btn-form-cancel:hover { border-color: #0a2200; color: #0a2200; box-shadow: 0 5px 14px rgba(10,34,0,0.1); }
+        .btn-form-danger {
+            background: #fff5f5; color: #dc2626;
+            border-color: #fca5a5;
+        }
+        .btn-form-danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; box-shadow: 0 6px 20px rgba(220,38,38,0.3); }
+        /* Small page header buttons */
+        .btn-hd {
+            display: inline-flex; align-items: center; gap: 7px;
+            font-weight: 600; font-size: 13px; font-family: 'Inter', sans-serif;
+            padding: 9px 18px; cursor: pointer;
+            border: 1.5px solid;
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+                        box-shadow 0.18s ease, background-color 0.15s ease,
+                        border-color 0.15s ease, color 0.15s ease;
+        }
+        .btn-hd:hover  { transform: translateY(-2px) scale(1.02); }
+        .btn-hd:active { transform: translateY(0) scale(0.97); }
+        .btn-hd-ghost  { background: #fff; color: #374151; border-color: #e5e7eb; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .btn-hd-ghost:hover { border-color: #9ca3af; color: #111827; box-shadow: 0 5px 14px rgba(0,0,0,0.1); }
+        .btn-hd-primary { background: #0a2200; color: #fff; border-color: #0a2200; border-radius: 12px; box-shadow: 0 2px 8px rgba(10,34,0,0.25); }
+        .btn-hd-primary:hover { background: #173901; border-color: #173901; box-shadow: 0 6px 18px rgba(10,34,0,0.3); }
     </style>
     <script>
         tailwind.config = {
@@ -32,71 +76,7 @@
     </script>
 </head>
 <body class="bg-surface">
-    <!-- Sidebar -->
-    <aside class="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-[#f5f5dc] flex-col py-8 pr-4 z-40">
-        <div class="px-8 mb-8">
-            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
-            <p class="font-semibold text-[#43493d] text-sm">Farm Management</p>
-        </div>
-        <nav class="flex-1 space-y-1">
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-semibold">Dashboard</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
-                <span class="material-symbols-outlined">group</span>
-                <span class="font-semibold">Users</span>
-            </a>
-
-            <!-- Field Management Dropdown -->
-            <div class="dropdown relative">
-                <button class="flex items-center justify-between gap-4 py-3 px-8 w-full text-[#43493d] bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg transition-all">
-                    <div class="flex items-center gap-4">
-                        <span class="material-symbols-outlined">agriculture</span>
-                        <span class="font-semibold">Field Management</span>
-                    </div>
-                    <span class="material-symbols-outlined text-sm">expand_more</span>
-                </button>
-                <div class="dropdown-menu pl-12 mt-1 space-y-1">
-                    <a class="flex items-center gap-3 py-2 px-4 text-[#43493d] hover:bg-[#e4e4cc] rounded-r-full text-sm font-semibold transition-all" href="{{ path('parcelle_index') }}">
-                        <span class="material-symbols-outlined text-lg">terrain</span>
-                        Parcels Management
-                    </a>
-                    <a class="flex items-center gap-3 py-2 px-4 text-[#fbfbe2] bg-[#0a2200] rounded-r-full text-sm font-semibold" href="{{ path('culture_index') }}">
-                        <span class="material-symbols-outlined text-lg">eco</span>
-                        Crops Management
-                    </a>
-                </div>
-            </div>
-
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
-                <span class="material-symbols-outlined">pets</span>
-                <span class="font-semibold">Livestock</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'produits-commandes' }) }}">
-                <span class="material-symbols-outlined">shopping_basket</span>
-                <span class="font-semibold">Products & Orders</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
-                <span class="material-symbols-outlined">handyman</span>
-                <span class="font-semibold">Equipment & Maintenance</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc] hover:translate-x-1 transition-all rounded-r-full group" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
-                <span class="material-symbols-outlined">contract</span>
-                <span class="font-semibold">Suppliers & Contracts</span>
-            </a>
-        </nav>
-        <div class="px-8 mt-auto pt-8 border-t border-outline-variant/15 flex flex-col gap-4">
-            <div class="space-y-2">
-                <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
-                    <span class="material-symbols-outlined">help</span> Help
-                </a>
-                <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-secondary transition-colors" href="#">
-                    <span class="material-symbols-outlined">logout</span> Logout
-                </a>
-            </div>
-        </div>
-    </aside>
+    {{ include('elfirma/_sidebar.html.twig') }}
 
     <!-- Main Content -->
     <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
@@ -222,12 +202,13 @@
             {{ form_widget(form._token) }}
 
             <!-- Submit Buttons -->
-            <div class="flex items-center gap-4 pt-6 border-t border-outline-variant/15">
-                <button type="submit" class="flex items-center gap-2 bg-primary text-on-primary px-8 py-3 rounded-full font-bold shadow-lg active:scale-95 duration-150 transition-all hover:opacity-90">
-                    <span class="material-symbols-outlined">save</span>
+            <div class="flex items-center gap-3 pt-6 border-t border-outline-variant/15">
+                <button type="submit" class="btn-form btn-form-primary">
+                    <span class="material-symbols-outlined" style="font-size:20px;">save</span>
                     Save Changes
                 </button>
-                <a href="{{ path('culture_show', {id: culture.id}) }}" class="flex items-center gap-2 bg-surface-container-high text-on-surface-variant px-8 py-3 rounded-full font-bold transition-all hover:bg-surface-container-highest">
+                <a href="{{ path('culture_show', {id: culture.id}) }}" class="btn-form btn-form-cancel">
+                    <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
                     Cancel
                 </a>
             </div>
@@ -235,7 +216,7 @@
             {{ form_end(form, {'render_rest': false}) }}
 
             <div class="flex justify-end pt-4 border-t border-outline-variant/15">
-                <button type="button" class="open-delete-modal flex items-center gap-2 bg-red-100 text-red-600 px-8 py-3 rounded-full font-bold transition-all hover:bg-red-200"
+                <button type="button" class="btn-form btn-form-danger open-delete-modal"
                         data-delete-url="{{ path('culture_delete', {id: culture.id}) }}"
                         data-delete-token="{{ csrf_token('delete' ~ culture.id) }}"
                         data-delete-name="{{ culture.nomCulture|e('html_attr') }}">

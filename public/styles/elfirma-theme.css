@@ -22,8 +22,16 @@ body {
     color: var(--elf-on-surface);
     font-family: "Open Sans", "Segoe UI", sans-serif;
     background:
-    radial-gradient(circle at 12% 6%, rgba(17, 101, 48, 0.14), transparent 40%),
-    radial-gradient(circle at 88% 90%, rgba(17, 101, 48, 0.1), transparent 45%),
+        radial-gradient(
+            circle at 12% 6%,
+            rgba(17, 101, 48, 0.14),
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 88% 90%,
+            rgba(17, 101, 48, 0.1),
+            transparent 45%
+        ),
         linear-gradient(140deg, var(--elf-surface), var(--elf-surface-low));
 }
 
@@ -77,7 +85,10 @@ body > nav {
     border-radius: 0 9999px 9999px 0;
     font-weight: 700;
     letter-spacing: 0.01em;
-    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 .elf-side-link:hover {
@@ -87,18 +98,30 @@ body > nav {
 }
 
 .elf-side-link.is-active {
-    background: linear-gradient(135deg, var(--elf-primary), var(--elf-primary-strong));
+    background: linear-gradient(
+        135deg,
+        var(--elf-primary),
+        var(--elf-primary-strong)
+    );
     color: #f8faef;
     box-shadow: 0 16px 24px -18px rgba(24, 49, 15, 0.8);
 }
 
 .elf-side-link .material-symbols-outlined {
     font-size: 1.25rem;
-    font-variation-settings: "FILL" 0, "wght" 550, "GRAD" 0, "opsz" 24;
+    font-variation-settings:
+        "FILL" 0,
+        "wght" 550,
+        "GRAD" 0,
+        "opsz" 24;
 }
 
 .elf-side-link.is-active .material-symbols-outlined {
-    font-variation-settings: "FILL" 1, "wght" 650, "GRAD" 0, "opsz" 24;
+    font-variation-settings:
+        "FILL" 1,
+        "wght" 650,
+        "GRAD" 0,
+        "opsz" 24;
 }
 
 .glass-card,
@@ -126,7 +149,10 @@ textarea::placeholder {
 
 button {
     border: 0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
 }
 
 button:hover {
@@ -311,7 +337,9 @@ button[class*="bg-secondary"] {
     border-radius: 1.5rem;
     overflow: hidden;
     box-shadow: 0 28px 34px -28px rgba(31, 36, 23, 0.58);
-    transition: transform 0.24s ease, box-shadow 0.24s ease;
+    transition:
+        transform 0.24s ease,
+        box-shadow 0.24s ease;
     color: inherit;
 }
 

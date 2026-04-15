@@ -2,6 +2,11 @@
 (function () {
     const navItems = [
         {
+            label: "Dashboard",
+            icon: "dashboard",
+            href: "{{ path('elfirma_page', {module: 'tableau-de-bord'}) }}"
+        },
+        {
             label: "User Management",
             icon: "group",
             href: "{{ path('user_page') }}"
@@ -421,4 +426,3 @@
     mountSidebarToggle();
 })();
 </script>
-

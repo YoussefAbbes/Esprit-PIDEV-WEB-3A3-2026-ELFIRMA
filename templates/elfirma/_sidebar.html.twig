@@ -1,0 +1,722 @@
+{# ═══════════════════════════════════════════════════════════════════════════
+   templates/elfirma/_sidebar.html.twig
+   Collapsible sidebar — logo + icon-only collapsed mode
+   Include on any page:  {{ include('elfirma/_sidebar.html.twig') }}
+   ═══════════════════════════════════════════════════════════════════════════ #}
+
+{# ── Sync script: runs immediately to set width/padding before first paint ── #}
+<script>
+(function () {
+    var W  = 272;   /* expanded width  (px) */
+    var W2 = 68;    /* collapsed width (px) */
+    var KEY = 'elfSbCollapsed';
+    var collapsed = localStorage.getItem(KEY) === '1';
+    var desktop   = window.innerWidth >= 768;
+
+    /* Body padding replaces md:ml-64 */
+    document.body.style.paddingLeft = desktop ? (collapsed ? W2 : W) + 'px' : '0';
+    document.body.style.transition  = 'padding-left 0.26s cubic-bezier(0.4,0,0.2,1)';
+
+    /* Neutralise md:ml-64 / margin-left on all main elements */
+    if (desktop) {
+        var mains = document.querySelectorAll('main, [class*="ml-64"]');
+        for (var i = 0; i < mains.length; i++) {
+            mains[i].style.marginLeft = '0';
+        }
+    }
+
+    /* Stamp class for CSS-only visual toggles (text opacity etc.) */
+    if (collapsed && desktop) {
+        document.body.classList.add('sb-collapsed');
+    }
+})();
+</script>
+
+<style id="elf-sidebar-style">
+
+/* ── Variables (colors / speed only — dimensions set by JS) ─────────────── */
+:root {
+    --sb-bg:      #f5f6ed;
+    --sb-border:  #d8dcc8;
+    --sb-primary: #0a2200;
+    --sb-accent:  #5a9e2f;
+    --sb-accent-lt: #9dde6c;
+    --sb-text:    #1e2a1a;
+    --sb-muted:   #6b7a5e;
+    --sb-hover:   #e2e8d0;
+    --sb-speed:   0.26s;
+    --sb-ease:    cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Neutralise md:ml-64 via CSS too (belt-and-braces) */
+@media (min-width: 768px) {
+    body.elf-has-sidebar main,
+    body.elf-has-sidebar .md\:ml-64 {
+        margin-left: 0 !important;
+    }
+}
+@media (max-width: 767px) {
+    body.elf-has-sidebar,
+    body.elf-has-sidebar main,
+    body.elf-has-sidebar .md\:ml-64 {
+        padding-left: 0 !important;
+        margin-left:  0 !important;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SIDEBAR SHELL  — width is set via JS inline style, not CSS
+══════════════════════════════════════════════════════════════════════════ */
+.elf-sidebar {
+    background:     var(--sb-bg);
+    border-right:   1.5px solid var(--sb-border);
+    box-shadow:     3px 0 20px rgba(10,34,0,.08);
+    display:        flex;
+    flex-direction: column;
+    overflow:       hidden;
+    /* width intentionally NOT set here — JS sets it as inline style */
+    transition:     width      var(--sb-speed) var(--sb-ease),
+                    transform  var(--sb-speed) var(--sb-ease),
+                    box-shadow var(--sb-speed) var(--sb-ease);
+}
+
+/* mobile: slide off-screen */
+@media (max-width: 767px) {
+    .elf-sidebar {
+        transform: translateX(-110%);
+        box-shadow: none;
+        width: 272px !important;   /* always full-width when it slides in */
+    }
+    body.elf-sidebar-open .elf-sidebar {
+        transform: translateX(0);
+        box-shadow: 8px 0 40px rgba(10,34,0,.22);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE OVERLAY
+══════════════════════════════════════════════════════════════════════════ */
+.elf-sidebar-overlay {
+    display:         none;
+    position:        fixed;
+    inset:           0;
+    background:      rgba(5,20,0,.50);
+    backdrop-filter: blur(3px);
+    z-index:         49;
+}
+body.elf-sidebar-open .elf-sidebar-overlay { display: block; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HEADER ROW  (logo + toggle button side-by-side)
+══════════════════════════════════════════════════════════════════════════ */
+.elf-sb-header {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    padding:     16px 12px 14px 14px;
+    flex-shrink: 0;
+    min-height:  96px;
+    overflow:    hidden;
+}
+
+/* ── Logo image ── */
+.elf-sb-logo-img {
+    width:        80px;
+    height:       80px;
+    border-radius: 50%;
+    object-fit:   cover;
+    flex-shrink:  0;
+    background:   #fff;
+    box-shadow:   0 0 0 3px #fff,
+                  0 0 0 5px rgba(90,158,47,.35),
+                  0 4px 16px rgba(10,34,0,.14);
+    transition:   box-shadow var(--sb-speed) var(--sb-ease),
+                  transform  var(--sb-speed) var(--sb-ease),
+                  width      var(--sb-speed) var(--sb-ease),
+                  height     var(--sb-speed) var(--sb-ease);
+}
+.elf-sb-logo-img:hover {
+    box-shadow: 0 0 0 3px #fff,
+                0 0 0 5px rgba(90,158,47,.6),
+                0 6px 22px rgba(10,34,0,.20);
+    transform: scale(1.04);
+}
+
+/* ── Brand text ── */
+.elf-sb-brand-text {
+    flex:       1;
+    min-width:  0;
+    overflow:   hidden;
+    opacity:    1;
+    max-width:  160px;
+    transition: opacity      var(--sb-speed) var(--sb-ease),
+                max-width    var(--sb-speed) var(--sb-ease);
+}
+.elf-sb-name {
+    display:     block;
+    font-size:   17px;
+    font-weight: 900;
+    color:       var(--sb-primary);
+    letter-spacing: -.025em;
+    line-height: 1.15;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+}
+.elf-sb-tagline {
+    display:     block;
+    font-size:   8.5px;
+    font-weight: 700;
+    color:       var(--sb-accent);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-top:  4px;
+    white-space: nowrap;
+    overflow:    hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Desktop toggle button (chevron inside header) ── */
+.elf-sb-toggle {
+    width:        32px;
+    height:       32px;
+    border-radius: 9px;
+    border:       1.5px solid var(--sb-border);
+    background:   #fff;
+    color:        var(--sb-muted);
+    cursor:       pointer;
+    display:      none;           /* shown only on desktop via media query */
+    align-items:  center;
+    justify-content: center;
+    flex-shrink:  0;
+    transition:   background var(--sb-speed),
+                  color      var(--sb-speed),
+                  border-color var(--sb-speed),
+                  transform   .16s ease;
+}
+.elf-sb-toggle .material-symbols-outlined {
+    font-size:  18px;
+    transition: transform var(--sb-speed) var(--sb-ease);
+}
+.elf-sb-toggle:hover {
+    background:   var(--sb-hover);
+    color:        var(--sb-primary);
+    border-color: var(--sb-primary);
+}
+@media (min-width: 768px) {
+    .elf-sb-toggle { display: flex; }
+}
+
+/* collapsed header: center logo, hide text */
+@media (min-width: 768px) {
+    body.sb-collapsed .elf-sb-header {
+        flex-direction: column;
+        align-items:    center;
+        padding:        14px 6px 10px;
+        gap:            10px;
+        min-height:     auto;
+    }
+    body.sb-collapsed .elf-sb-logo-img {
+        width:  46px;
+        height: 46px;
+    }
+    body.sb-collapsed .elf-sb-brand-text {
+        max-width: 0;
+        opacity:   0;
+    }
+    body.sb-collapsed .elf-sb-toggle .material-symbols-outlined {
+        transform: rotate(180deg);
+    }
+    body.sb-collapsed .elf-sb-toggle {
+        width:  36px;
+        height: 36px;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DIVIDER
+══════════════════════════════════════════════════════════════════════════ */
+.elf-sb-divider {
+    height: 1.5px;
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        var(--sb-border) 20%,
+        var(--sb-border) 80%,
+        transparent 100%
+    );
+    margin:     0 10px;
+    flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NAV  (built by _nav_routes.html.twig)
+══════════════════════════════════════════════════════════════════════════ */
+nav.elf-side-links {
+    display:        flex !important;
+    flex-direction: column;
+    gap:            2px;
+    padding:        10px 8px 10px 0;
+    overflow-x:     hidden;
+}
+nav.elf-side-links::-webkit-scrollbar        { width: 4px; }
+nav.elf-side-links::-webkit-scrollbar-track  { background: transparent; }
+nav.elf-side-links::-webkit-scrollbar-thumb  { background: var(--sb-border); border-radius: 9999px; }
+
+/* ── Base link ── */
+.elf-side-link {
+    display:    flex !important;
+    align-items: center;
+    gap:        12px;
+    padding:    10px 14px 10px 18px;
+    border-radius: 0 9999px 9999px 0;
+    color:      var(--sb-text);
+    text-decoration: none;
+    font-size:  14px;
+    font-weight: 650;
+    font-family: 'Inter', sans-serif;
+    cursor:     pointer;
+    border:     none;
+    outline:    none;
+    background: transparent;
+    width:      100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow:   hidden;
+    line-height: 1.35;
+    transition: background var(--sb-speed), color var(--sb-speed),
+                transform  .13s ease,       box-shadow var(--sb-speed);
+}
+.elf-side-link .material-symbols-outlined {
+    font-size:  21px;
+    flex-shrink: 0;
+    color:      var(--sb-muted);
+    transition: color var(--sb-speed);
+}
+.elf-side-link .elf-side-label {
+    transition: max-width var(--sb-speed) var(--sb-ease),
+                opacity   var(--sb-speed) var(--sb-ease);
+    max-width:  200px;
+    overflow:   hidden;
+    white-space: nowrap;
+}
+.elf-side-link:hover {
+    background: var(--sb-hover);
+    color:      var(--sb-primary);
+    transform:  translateX(3px);
+}
+.elf-side-link:hover .material-symbols-outlined { color: var(--sb-primary); }
+.elf-side-link.is-active {
+    background:  var(--sb-active-bg, #0a2200);
+    color:       #fff;
+    font-weight: 700;
+    box-shadow:  0 3px 14px rgba(10,34,0,.22);
+}
+.elf-side-link.is-active .material-symbols-outlined { color: var(--sb-accent-lt) !important; }
+
+/* ── Group parent ── */
+.elf-side-link-group {
+    display:     grid !important;
+    grid-template-columns: minmax(0,1fr) 18px;
+    align-items: center;
+    gap:         4px;
+    padding-right: 12px;
+    white-space: nowrap;
+    overflow:    hidden;
+}
+.elf-side-link-group .elf-side-link-main {
+    display: grid;
+    grid-template-columns: 21px minmax(0,1fr);
+    align-items: center;
+    gap:        12px;
+    overflow:   hidden;
+}
+.elf-side-link-group > .material-symbols-outlined:last-child {
+    font-size:  17px;
+    color:      var(--sb-muted);
+    flex-shrink: 0;
+    transition: transform var(--sb-speed) var(--sb-ease),
+                color     var(--sb-speed);
+}
+.elf-side-link-group:hover:not(.is-active) {
+    background: var(--sb-hover);
+    color:      var(--sb-primary);
+    transform:  translateX(3px);
+}
+.elf-side-link-group:hover:not(.is-active) .material-symbols-outlined { color: var(--sb-primary); }
+.elf-side-link-group.is-active {
+    background:  #0a2200;
+    color:       #fff;
+    font-weight: 700;
+    box-shadow:  0 3px 14px rgba(10,34,0,.22);
+}
+.elf-side-link-group.is-active .material-symbols-outlined { color: var(--sb-accent-lt) !important; }
+.elf-side-link-group.is-active > .material-symbols-outlined:last-child { color: rgba(255,255,255,.6) !important; }
+
+/* chevron rotation */
+.elf-side-group:has(.elf-side-submenu.is-open) .elf-side-link-group > .material-symbols-outlined:last-child {
+    transform: rotate(180deg);
+}
+
+/* ── Sub-menu ── */
+.elf-side-submenu {
+    display:        none !important;
+    flex-direction: column;
+    gap:            2px;
+    margin:         4px 8px 6px 36px;
+    padding-left:   14px;
+    border-left:    2px solid var(--sb-border);
+}
+.elf-side-submenu.is-open { display: flex !important; }
+
+/* ── Sub-link ── */
+.elf-side-sublink {
+    display:    flex !important;
+    align-items: center;
+    gap:        9px;
+    padding:    8px 12px 8px 10px !important;
+    border-radius: 0 9999px 9999px 0 !important;
+    color:      var(--sb-text) !important;
+    text-decoration: none;
+    font-size:  13px !important;
+    font-weight: 650 !important;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    overflow:   hidden;
+    transition: background var(--sb-speed), color var(--sb-speed),
+                transform  .13s ease !important;
+}
+.elf-side-sublink::before {
+    content:     '';
+    width:       6px;
+    height:      6px;
+    border-radius: 50%;
+    background:  currentColor;
+    flex-shrink: 0;
+    opacity:     .28;
+    transition:  opacity .16s ease, transform .16s ease, background .16s ease;
+}
+.elf-side-sublink:hover {
+    background: var(--sb-hover) !important;
+    color:      var(--sb-primary) !important;
+    transform:  translateX(3px);
+}
+.elf-side-sublink:hover::before  { opacity: .65; }
+.elf-side-sublink.is-active {
+    background:  linear-gradient(135deg, #0a2200, #173901) !important;
+    color:       #f0f8e8 !important;
+    font-weight: 700 !important;
+    box-shadow:  0 2px 10px rgba(10,34,0,.2);
+}
+.elf-side-sublink.is-active::before { background: var(--sb-accent-lt); opacity: 1; transform: scale(1.4); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   COLLAPSED STATE — icon-only on desktop
+══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+
+    /* nav padding */
+    body.sb-collapsed nav.elf-side-links {
+        padding-left:  0;
+        padding-right: 0;
+        align-items:   center;
+    }
+
+    /* hide labels on simple links */
+    body.sb-collapsed .elf-side-link .elf-side-label {
+        max-width: 0;
+        opacity:   0;
+    }
+
+    /* center simple link icon */
+    body.sb-collapsed .elf-side-link {
+        justify-content: center;
+        padding:         10px 0;
+        border-radius:   12px;
+        margin:          0 6px;
+        width:           auto;
+        gap:             0;
+    }
+
+    /* hide group label + chevron */
+    body.sb-collapsed .elf-side-link-group .elf-side-label,
+    body.sb-collapsed .elf-side-link-group > .material-symbols-outlined:last-child {
+        display: none !important;
+    }
+
+    /* show only icon from link-main */
+    body.sb-collapsed .elf-side-link-group .elf-side-link-main {
+        grid-template-columns: 21px 0;
+        overflow: hidden;
+    }
+    body.sb-collapsed .elf-side-link-group {
+        justify-content: center;
+        padding:         10px 0;
+        border-radius:   12px;
+        margin:          0 6px;
+        width:           auto;
+        gap:             0;
+        grid-template-columns: auto;
+    }
+
+    /* hide sub-menus entirely */
+    body.sb-collapsed .elf-side-submenu {
+        display: none !important;
+    }
+
+    /* tooltip on hover */
+    body.sb-collapsed .elf-side-link,
+    body.sb-collapsed .elf-side-link-group {
+        position: relative;
+    }
+    body.sb-collapsed .elf-side-link[data-label]::after,
+    body.sb-collapsed .elf-side-link-group[data-label]::after {
+        content:       attr(data-label);
+        position:      absolute;
+        left:          calc(var(--sb-w-collapsed) - 2px);
+        top:           50%;
+        transform:     translateY(-50%);
+        background:    #0a2200;
+        color:         #fff;
+        font-size:     12.5px;
+        font-weight:   600;
+        white-space:   nowrap;
+        padding:       6px 14px;
+        border-radius: 9px;
+        pointer-events: none;
+        opacity:       0;
+        z-index:       200;
+        box-shadow:    0 4px 18px rgba(0,0,0,.2);
+        transition:    opacity .15s ease;
+        font-family:   'Inter', sans-serif;
+    }
+    body.sb-collapsed .elf-side-link:hover[data-label]::after,
+    body.sb-collapsed .elf-side-link-group:hover[data-label]::after {
+        opacity: 1;
+    }
+
+    /* footer icon-only */
+    body.sb-collapsed .elf-sb-footer {
+        padding-left:  0;
+        padding-right: 0;
+    }
+    body.sb-collapsed .elf-sb-footer-link {
+        justify-content: center;
+        padding:         10px 0;
+        border-radius:   12px;
+        margin:          0 6px;
+        gap:             0;
+    }
+    body.sb-collapsed .elf-sb-footer-link span:last-child {
+        max-width: 0;
+        overflow:  hidden;
+        opacity:   0;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════════════════════════════ */
+.elf-sb-footer {
+    padding:        10px 8px 20px 0;
+    flex-shrink:    0;
+    display:        flex;
+    flex-direction: column;
+    gap:            2px;
+}
+.elf-sb-footer-link {
+    display:     flex;
+    align-items: center;
+    gap:         13px;
+    padding:     9px 14px 9px 18px;
+    border-radius: 0 9999px 9999px 0;
+    color:       var(--sb-muted);
+    text-decoration: none;
+    font-size:   13.5px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    overflow:    hidden;
+    transition:  background var(--sb-speed), color var(--sb-speed);
+}
+.elf-sb-footer-link .material-symbols-outlined {
+    font-size:   20px;
+    flex-shrink: 0;
+    color:       var(--sb-muted);
+    transition:  color var(--sb-speed);
+}
+.elf-sb-footer-link span:last-child {
+    transition: max-width var(--sb-speed) var(--sb-ease),
+                opacity   var(--sb-speed) var(--sb-ease);
+    max-width: 200px;
+    overflow:  hidden;
+}
+.elf-sb-footer-link:hover {
+    background: var(--sb-hover);
+    color:      var(--sb-primary);
+}
+.elf-sb-footer-link:hover .material-symbols-outlined { color: var(--sb-primary); }
+
+/* ── Mobile floating hamburger (injected by _nav_routes.html.twig) ─── */
+.elf-sidebar-toggle {
+    position:      fixed;
+    bottom:        22px;
+    right:         22px;
+    z-index:       60;
+    width:         52px;
+    height:        52px;
+    border-radius: 50%;
+    background:    #0a2200;
+    color:         #fff;
+    border:        none;
+    cursor:        pointer;
+    display:       none;
+    align-items:   center;
+    justify-content: center;
+    box-shadow:    0 4px 22px rgba(10,34,0,.32);
+    transition:    background .2s, transform .18s, box-shadow .2s;
+}
+.elf-sidebar-toggle:hover   { background: #173901; transform: scale(1.07); }
+.elf-sidebar-toggle:active  { transform: scale(0.94); }
+.elf-sidebar-toggle .material-symbols-outlined { font-size: 23px; }
+@media (max-width: 767px) { .elf-sidebar-toggle { display: flex; } }
+
+</style>
+
+{# ════════════════════════════════════════════════════════════════════════════
+   SIDEBAR HTML
+   NOTE: "fixed left-0 top-0 h-screen z-50" are Tailwind utility classes;
+         _nav_routes.html.twig scans for "fixed" or "left-0" in className
+         to detect the sidebar and inject the navigation items.
+════════════════════════════════════════════════════════════════════════════ #}
+<aside class="elf-sidebar fixed left-0 top-0 h-screen z-50"
+       aria-label="Main sidebar navigation">
+
+    {# ── Header: logo + brand text + collapse toggle ─────────────────── #}
+    <div class="elf-sb-header">
+
+        {# Logo image — links to dashboard #}
+        <a href="{{ path('elfirma_page', {module: 'tableau-de-bord'}) }}"
+           style="display:contents;line-height:0">
+            <img src="{{ asset('images/firmalogo.png') }}"
+                 alt="El Firma"
+                 class="elf-sb-logo-img">
+        </a>
+
+        {# Brand text (hidden when collapsed) #}
+        <div class="elf-sb-brand-text">
+            <span class="elf-sb-name">El Firma</span>
+            <span class="elf-sb-tagline">Where Agriculture Meets Intelligence</span>
+        </div>
+
+        {# Desktop collapse/expand button #}
+        <button class="elf-sb-toggle"
+                id="elfSbToggle"
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+
+    </div>
+
+    <div class="elf-sb-divider"></div>
+
+    {# ── Navigation (populated by _nav_routes.html.twig) ───────────────── #}
+    <nav class="flex-1 overflow-y-auto" aria-label="Main navigation"></nav>
+
+    <div class="elf-sb-divider"></div>
+
+    {# ── Footer links ───────────────────────────────────────────────────── #}
+    <div class="elf-sb-footer">
+        <a href="#" class="elf-sb-footer-link">
+            <span class="material-symbols-outlined">help_outline</span>
+            <span>Help &amp; Support</span>
+        </a>
+        <a href="{{ path('app_logout') }}" class="elf-sb-footer-link">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Logout</span>
+        </a>
+    </div>
+
+</aside>
+
+{# ── Desktop collapse logic (JS drives inline styles for reliable sizing) ─── #}
+<script>
+(function () {
+    var W   = 272;   /* expanded  px */
+    var W2  = 68;    /* collapsed px */
+    var KEY = 'elfSbCollapsed';
+
+    var sidebar = document.querySelector('.elf-sidebar');
+    var btn     = document.getElementById('elfSbToggle');
+    var icon    = btn ? btn.querySelector('.material-symbols-outlined') : null;
+
+    function isDesktop() { return window.innerWidth >= 768; }
+
+    /* Apply collapsed / expanded state via inline styles (highest specificity) */
+    function applyState(collapsed) {
+        var desktop = isDesktop();
+
+        /* ── sidebar width ── */
+        if (sidebar) {
+            sidebar.style.width = desktop ? (collapsed ? W2 + 'px' : W + 'px') : '';
+        }
+
+        /* ── body padding-left (replaces md:ml-64) ── */
+        document.body.style.paddingLeft = desktop ? (collapsed ? W2 + 'px' : W + 'px') : '0';
+
+        /* ── zero-out any remaining margin-left on <main> elements ── */
+        if (desktop) {
+            document.querySelectorAll('main, [class*="ml-64"]').forEach(function (el) {
+                el.style.marginLeft = '0';
+            });
+        }
+
+        /* ── visual CSS class (controls text opacity, header direction …) ── */
+        if (collapsed && desktop) {
+            document.body.classList.add('sb-collapsed');
+        } else {
+            document.body.classList.remove('sb-collapsed');
+        }
+
+        /* ── toggle button icon + label ── */
+        if (icon) icon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
+        if (btn)  btn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+        if (btn)  btn.setAttribute('aria-label', btn.title);
+    }
+
+    /* Restore saved preference (sync script already stamped the class & padding,
+       but we still call applyState to set the inline width on the aside) */
+    applyState(localStorage.getItem(KEY) === '1');
+
+    /* Click handler */
+    if (btn) {
+        btn.addEventListener('click', function () {
+            var nowCollapsed = !document.body.classList.contains('sb-collapsed');
+            applyState(nowCollapsed);
+            localStorage.setItem(KEY, nowCollapsed ? '1' : '0');
+            setTimeout(addTooltips, 50);
+        });
+    }
+
+    /* Re-apply on resize */
+    window.addEventListener('resize', function () {
+        applyState(localStorage.getItem(KEY) === '1');
+    });
+
+    /* Tooltip data-label attributes for icon-only mode */
+    function addTooltips() {
+        document.querySelectorAll('.elf-side-link, .elf-side-link-group').forEach(function (el) {
+            if (el.hasAttribute('data-label')) return;
+            var lbl = el.querySelector('.elf-side-label');
+            if (lbl) el.setAttribute('data-label', lbl.textContent.trim());
+        });
+    }
+
+    /* Wait for _nav_routes.html.twig to finish building the nav */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { setTimeout(addTooltips, 250); });
+    } else {
+        setTimeout(addTooltips, 250);
+    }
+})();
+</script>

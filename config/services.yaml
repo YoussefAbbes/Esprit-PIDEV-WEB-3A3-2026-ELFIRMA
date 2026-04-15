@@ -12,6 +12,7 @@ services:
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
     bind:
       string $pixabayApiKey: "%env(default::PIXABAY_API_KEY)%"
+      string $trefleApiKey: "%env(default::TREFLE_API_KEY)%"
 
   # makes classes in src/ available to be used as services
   # this creates a service per class whose id is the fully-qualified class name

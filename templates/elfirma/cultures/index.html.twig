@@ -13,16 +13,6 @@
         body { font-family: 'Inter', sans-serif; background: #f8f9ee; color: #1b1d0e; min-height: 100vh; }
         h1, h2, h3, h4, .font-headline { font-family: 'Inter', sans-serif; }
 
-        /* Sidebar */
-        .sidebar { background: #f5f5dc; border-right: 1px solid #e4e4cc; box-shadow: none; }
-        .sidebar-link { transition: background-color 0.2s ease, color 0.2s ease; color: #43493d; }
-        .sidebar-link:hover { background: #ececd8; transform: none; }
-        .sidebar-link.active { background: #0a2200; color: #fbfbe2; box-shadow: none; }
-        .sidebar-dropdown-menu { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
-        .sidebar-dropdown.open .sidebar-dropdown-menu { max-height: 200px; }
-        .sidebar-dropdown.open .dropdown-arrow { transform: rotate(180deg); }
-        .dropdown-arrow { transition: transform 0.2s ease; }
-
         /* Motion */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
@@ -57,20 +47,90 @@
         .badge-planned { background: #edf3ff; color: #2b4f91; }
         .badge-harvested { background: #fff1e8; color: #8d4c1d; }
 
-        /* Buttons & controls */
-        .btn-primary { background: #0a2200; color: #fff; transition: background-color 0.2s ease; box-shadow: none; }
-        .btn-primary:hover { transform: none; background: #173901; box-shadow: none; }
         .form-input { transition: border-color 0.2s ease, box-shadow 0.2s ease; border: 1px solid #d9ddcc; }
         .form-input:focus { border-color: #0a2200; box-shadow: 0 0 0 3px rgba(10, 34, 0, 0.08); }
 
-        /* Image & action buttons */
         .image-thumb { transition: transform 0.2s ease; cursor: pointer; }
         .image-thumb:hover { transform: scale(1.06); box-shadow: none; }
-        .action-btn { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: filter 0.2s ease; }
-        .action-btn:hover { transform: none; filter: brightness(0.96); }
-        .action-btn-view { background: #e8effc; color: #1d4ed8; }
-        .action-btn-edit { background: #fdf2db; color: #b56b00; }
-        .action-btn-delete { background: #fceaea; color: #c73636; }
+
+        /* ── Unified button system ──────────────────────────────────── */
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #0a2200; color: #fff;
+            padding: 11px 24px; border-radius: 9999px;
+            font-weight: 700; font-size: 14px; font-family: 'Inter', sans-serif;
+            box-shadow: 0 2px 10px rgba(10,34,0,0.25), 0 1px 3px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease, background-color 0.15s ease;
+            cursor: pointer;
+        }
+        .btn-primary:hover  { background: #173901; transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 24px rgba(10,34,0,0.32), 0 2px 6px rgba(0,0,0,0.1); }
+        .btn-primary:active { transform: translateY(0) scale(0.97); box-shadow: 0 1px 4px rgba(10,34,0,0.2); }
+
+        .btn-util {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #fff; color: #4b5563;
+            padding: 9px 16px; border-radius: 12px;
+            font-weight: 600; font-size: 13px; font-family: 'Inter', sans-serif;
+            border: 1.5px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            cursor: pointer;
+        }
+        .btn-util:hover  { background: #f9fafb; border-color: #9ca3af; color: #111827; transform: translateY(-2px) scale(1.02); box-shadow: 0 5px 14px rgba(0,0,0,0.1); }
+        .btn-util:active { transform: translateY(0) scale(0.97); }
+
+        .btn-import {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #fff7ed; color: #c2410c;
+            padding: 9px 16px; border-radius: 12px;
+            font-weight: 600; font-size: 13px; font-family: 'Inter', sans-serif;
+            border: 1.5px solid #fed7aa;
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            cursor: pointer;
+        }
+        .btn-import:hover  { background: #ea580c; color: #fff; border-color: #ea580c; transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(234,88,12,0.3); }
+        .btn-import:active { transform: translateY(0) scale(0.97); }
+
+        .btn-view-map {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #eff6ff; color: #1d4ed8;
+            padding: 9px 18px; border-radius: 9999px;
+            font-weight: 600; font-size: 13px; font-family: 'Inter', sans-serif;
+            border: 1.5px solid #bfdbfe;
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            cursor: pointer;
+        }
+        .btn-view-map:hover  { background: #2563eb; color: #fff; border-color: #2563eb; transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(37,99,235,0.3); }
+        .btn-view-map:active { transform: translateY(0) scale(0.97); }
+
+        .btn-calendar {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #f5f3ff; color: #6d28d9;
+            padding: 9px 18px; border-radius: 9999px;
+            font-weight: 600; font-size: 13px; font-family: 'Inter', sans-serif;
+            border: 1.5px solid #ddd6fe;
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            cursor: pointer;
+        }
+        .btn-calendar:hover  { background: #7c3aed; color: #fff; border-color: #7c3aed; transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(109,40,217,0.3); }
+        .btn-calendar:active { transform: translateY(0) scale(0.97); }
+
+        /* ── Table action icon buttons ─────────────────────────────── */
+        .action-btn {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            border: none; cursor: pointer;
+            transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+        }
+        .action-btn:hover  { transform: scale(1.2) translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,0.15); }
+        .action-btn:active { transform: scale(0.9) translateY(0); box-shadow: none; }
+        .action-btn-view   { background: #dbeafe; color: #1d4ed8; }
+        .action-btn-view:hover   { background: #1d4ed8; color: white; }
+        .action-btn-edit   { background: #fef3c7; color: #92400e; }
+        .action-btn-edit:hover   { background: #d97706; color: white; }
+        .action-btn-delete { background: #fee2e2; color: #991b1b; }
+        .action-btn-delete:hover { background: #dc2626; color: white; }
 
         /* Custom sort dropdown */
         .sort-dropdown-menu { position: absolute; top: calc(100% + 6px); left: 0; background: #fff; border: 1px solid #d9ddcc; border-radius: 12px; box-shadow: 0 8px 24px rgba(27,29,14,0.14); z-index: 200; min-width: 190px; overflow: hidden; }
@@ -100,73 +160,7 @@
     </script>
 </head>
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar hidden md:flex h-screen w-64 fixed left-0 top-0 flex-col py-6 z-40">
-        <!-- Logo -->
-        <div class="px-6 mb-6">
-            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
-            <p class="font-semibold text-[#43493d] text-sm">Gestion Agricole</p>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 space-y-1 overflow-y-auto">
-            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-semibold">Tableau de Bord</span>
-            </a>
-            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
-                <span class="material-symbols-outlined">group</span>
-                <span class="font-semibold">Utilisateurs</span>
-            </a>
-
-            <!-- Field Management Dropdown -->
-            <div class="sidebar-dropdown open">
-                <button class="sidebar-link w-full flex items-center justify-between py-3 px-6 rounded-r-full" onclick="toggleDropdown(this.parentElement)">
-                    <div class="flex items-center gap-4">
-                        <span class="material-symbols-outlined">agriculture</span>
-                        <span class="font-semibold">Field Management</span>
-                    </div>
-                    <span class="material-symbols-outlined dropdown-arrow text-lg">expand_more</span>
-                </button>
-                <div class="sidebar-dropdown-menu pl-4 mt-2 space-y-1 pr-2">
-                    <a class="sidebar-link flex items-center gap-3 py-2.5 px-4 rounded-r-full text-sm font-semibold" href="{{ path('parcelle_index') }}">
-                        <span class="material-symbols-outlined">terrain</span>
-                        Parcels Management
-                    </a>
-                    <a class="sidebar-link active flex items-center gap-3 py-2.5 px-4 rounded-r-full text-sm font-semibold" href="{{ path('culture_index') }}">
-                        <span class="material-symbols-outlined">grass</span>
-                        Crops Management
-                    </a>
-                </div>
-            </div>
-
-            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
-                <span class="material-symbols-outlined">pets</span>
-                <span class="font-semibold">Animaux & Élevages</span>
-            </a>
-            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'produits-commandes' }) }}">
-                <span class="material-symbols-outlined">shopping_basket</span>
-                <span class="font-semibold">Produits & Commandes</span>
-            </a>
-            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
-                <span class="material-symbols-outlined">handyman</span>
-                <span class="font-semibold">Équipements & Maintenance</span>
-            </a>
-            <a class="sidebar-link flex items-center gap-4 py-3 px-6 rounded-r-full" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
-                <span class="material-symbols-outlined">contract</span>
-                <span class="font-semibold">Fournisseurs & Contrats</span>
-            </a>
-        </nav>
-
-        <div class="px-6 mt-auto pt-6 border-t border-[#c3c9b9]/40 space-y-3">
-            <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-[#934b19] transition-colors" href="#">
-                <span class="material-symbols-outlined">help</span> Aide
-            </a>
-            <a class="flex items-center gap-4 text-[#43493d] text-sm hover:text-[#934b19] transition-colors" href="#">
-                <span class="material-symbols-outlined">logout</span> Déconnexion
-            </a>
-        </div>
-    </aside>
+    {{ include('elfirma/_sidebar.html.twig') }}
 
     <!-- Main Content -->
     <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
@@ -191,21 +185,21 @@
                     <input type="file" name="importFile" id="importFileCulture" accept=".csv,.xlsx,.xls" class="hidden">
                 </form>
                 <div class="flex items-center gap-2">
-                    <a href="{{ path('culture_export_csv') }}" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all" title="Export CSV">
+                    <a href="{{ path('culture_export_csv') }}" class="btn-util" title="Export CSV">
                         <span class="material-symbols-outlined text-base">download</span> CSV
                     </a>
-                    <a href="{{ path('culture_export_excel') }}" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all" title="Export Excel">
+                    <a href="{{ path('culture_export_excel') }}" class="btn-util" title="Export Excel">
                         <span class="material-symbols-outlined text-base">table_chart</span> Excel
                     </a>
-                    <button type="button" onclick="document.getElementById('importFileCulture').click()" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all" title="Import CSV/Excel">
+                    <button type="button" onclick="document.getElementById('importFileCulture').click()" class="btn-import" title="Import CSV/Excel">
                         <span class="material-symbols-outlined text-base">upload</span> Import
                     </button>
 
                 </div>
-                <a href="{{ path('culture_calendar') }}" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all">
-                    <span class="material-symbols-outlined text-base">calendar_month</span> Calendar
+                <a href="{{ path('culture_calendar') }}" class="btn-calendar">
+                    <span class="material-symbols-outlined" style="font-size:18px;">calendar_month</span> Calendar
                 </a>
-                <a href="{{ path('culture_new') }}" class="btn-primary flex items-center gap-2 text-white px-6 py-3 rounded-full font-bold">
+                <a href="{{ path('culture_new') }}" class="btn-primary">
                     <span class="material-symbols-outlined">add_circle</span>
                     New Crop
                 </a>
@@ -377,7 +371,7 @@
 
                         <!-- ── Filter panel toggle ── -->
                         <button type="button" id="filterPanelToggle"
-                                class="btn-primary flex items-center gap-2 text-white px-6 py-3.5 rounded-xl font-bold">
+                                class="btn-primary">
                             <span class="material-symbols-outlined">filter_list</span>
                             Filter{% if statut or parcelleId %}&nbsp;<span class="bg-white/40 rounded-full w-2 h-2 inline-block align-middle"></span>{% endif %}
                         </button>

@@ -13,12 +13,14 @@ use Symfony\Component\Form\FormError;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Parcelle;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Service\CropGuideService;
 use App\Service\PixabayService;
 
 #[Route("/elfirma/cultures")]
@@ -82,6 +84,40 @@ final class CultureController extends AbstractController
         $form = $this->createForm(CultureType::class, $culture);
         $form->handleRequest($request);
 
+        $prefilledParcelleId = $request->query->getInt("parcelleId", 0);
+        $prefilledCropName = trim($request->query->getString("prefillCrop", ""));
+        $prefilledVariety = trim(
+            $request->query->getString("prefillVariety", ""),
+        );
+
+        if (!$form->isSubmitted()) {
+            if ($prefilledParcelleId > 0) {
+                $prefilledParcelle = $parcelleRepository->find(
+                    $prefilledParcelleId,
+                );
+                if ($prefilledParcelle !== null) {
+                    $culture->setParcelle($prefilledParcelle);
+                }
+            }
+
+            if ($prefilledCropName !== "") {
+                $culture->setNomCulture($prefilledCropName);
+            }
+
+            if ($prefilledVariety !== "") {
+                $culture->setVariete($prefilledVariety);
+            }
+        }
+
+        $recommendationContext = [
+            "prefilledParcelleId" => $prefilledParcelleId > 0
+                ? $prefilledParcelleId
+                : null,
+            "prefilledCropName" => $prefilledCropName !== ""
+                ? $prefilledCropName
+                : null,
+        ];
+
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var UploadedFile|null $imageFile */
             $imageFile = $form->get("imageFile")->getData();
@@ -102,6 +138,7 @@ final class CultureController extends AbstractController
                     "culture" => $culture,
                     "form" => $form->createView(),
                     "parcelles" => $parcelleRepository->findAll(),
+                    "recommendationContext" => $recommendationContext,
                 ]);
             }
 
@@ -136,6 +173,7 @@ final class CultureController extends AbstractController
             "culture" => $culture,
             "form" => $form->createView(),
             "parcelles" => $parcelleRepository->findAll(),
+            "recommendationContext" => $recommendationContext,
         ]);
     }
 
@@ -241,6 +279,19 @@ final class CultureController extends AbstractController
         return $this->render("elfirma/cultures/show.html.twig", [
             "culture" => $culture,
         ]);
+    }
+
+    #[Route("/{id}/guide", name: "culture_guide", methods: ["GET"])]
+    public function guide(
+        Culture $culture,
+        CropGuideService $cropGuide,
+    ): JsonResponse {
+        $data = $cropGuide->buildCropGuide(
+            $culture->getNomCulture(),
+            $culture->getVariete() ?? "",
+        );
+
+        return $this->json($data);
     }
 
     #[Route("/{id}/edit", name: "culture_edit", methods: ["GET", "POST"])]

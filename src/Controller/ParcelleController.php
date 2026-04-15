@@ -11,12 +11,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Service\CropRecommendationService;
 use App\Service\PixabayService;
 
 #[Route("/elfirma/parcelles")]
@@ -160,11 +162,72 @@ final class ParcelleController extends AbstractController
     }
 
     #[Route("/{id}", name: "parcelle_show", methods: ["GET"])]
-    public function show(Parcelle $parcelle): Response
+    public function show(
+        Parcelle $parcelle,
+        CropRecommendationService $cropRecommendationService,
+    ): Response
     {
         return $this->render("elfirma/parcelles/show.html.twig", [
             "parcelle" => $parcelle,
+            "recommendationModel" => $cropRecommendationService->getModelSummary(),
         ]);
+    }
+
+    #[Route(
+        "/{id}/recommendation",
+        name: "parcelle_recommendation",
+        methods: ["POST"],
+    )]
+    public function recommendCrop(
+        Request $request,
+        Parcelle $parcelle,
+        CropRecommendationService $cropRecommendationService,
+    ): JsonResponse {
+        try {
+            /** @var mixed $payload */
+            $payload = json_decode(
+                $request->getContent(),
+                true,
+                512,
+                JSON_THROW_ON_ERROR,
+            );
+
+            if (!is_array($payload)) {
+                throw new \InvalidArgumentException(
+                    "Invalid payload: expected a JSON object.",
+                );
+            }
+
+            $features = isset($payload["features"]) && is_array($payload["features"])
+                ? $payload["features"]
+                : $payload;
+
+            $recommendation = $cropRecommendationService->recommend($features);
+            $recommendation["parcel"] = [
+                "id" => $parcelle->getId(),
+                "name" => $parcelle->getNom(),
+                "soil_type" => $parcelle->getTypeSol(),
+                "status" => $parcelle->getStatut(),
+            ];
+
+            return $this->json($recommendation);
+        } catch (\InvalidArgumentException $exception) {
+            return $this->json(
+                [
+                    "error" => $exception->getMessage(),
+                ],
+                Response::HTTP_BAD_REQUEST,
+            );
+        } catch (\Throwable $exception) {
+            return $this->json(
+                [
+                    "error" =>
+                        "Unable to compute crop recommendation right now.",
+                    "details" => $exception->getMessage(),
+                ],
+                Response::HTTP_SERVICE_UNAVAILABLE,
+            );
+        }
     }
 
     #[Route("/{id}/edit", name: "parcelle_edit", methods: ["GET", "POST"])]

@@ -1,0 +1,1710 @@
+{
+  "created_at": "2026-04-15T22:38:56.483287+00:00",
+  "dataset": "Crop_recommendation.csv",
+  "random_seed": 42,
+  "feature_names": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall"
+  ],
+  "target_name": "label",
+  "class_labels": [
+    "apple",
+    "banana",
+    "blackgram",
+    "chickpea",
+    "coconut",
+    "coffee",
+    "cotton",
+    "grapes",
+    "jute",
+    "kidneybeans",
+    "lentil",
+    "maize",
+    "mango",
+    "mothbeans",
+    "mungbean",
+    "muskmelon",
+    "orange",
+    "papaya",
+    "pigeonpeas",
+    "pomegranate",
+    "rice",
+    "watermelon"
+  ],
+  "split": {
+    "train_size": 1320,
+    "validation_size": 440,
+    "test_size": 440
+  },
+  "model_comparison": [
+    {
+      "name": "RandomForest",
+      "model_class": "RandomForestClassifier",
+      "validation": {
+        "accuracy": 0.990909,
+        "macro_f1": 0.990903
+      }
+    },
+    {
+      "name": "GradientBoosting",
+      "model_class": "GradientBoostingClassifier",
+      "validation": {
+        "accuracy": 0.995455,
+        "macro_f1": 0.995452
+      }
+    },
+    {
+      "name": "ExtraTrees",
+      "model_class": "ExtraTreesClassifier",
+      "validation": {
+        "accuracy": 0.988636,
+        "macro_f1": 0.988575
+      }
+    }
+  ],
+  "selected_model": {
+    "name": "GradientBoosting",
+    "model_class": "GradientBoostingClassifier",
+    "selection_rule": "Highest validation macro_f1, tie-break on validation accuracy"
+  },
+  "test_metrics": {
+    "accuracy": 0.988636,
+    "macro_f1": 0.988674,
+    "confusion_matrix": {
+      "labels": [
+        "apple",
+        "banana",
+        "blackgram",
+        "chickpea",
+        "coconut",
+        "coffee",
+        "cotton",
+        "grapes",
+        "jute",
+        "kidneybeans",
+        "lentil",
+        "maize",
+        "mango",
+        "mothbeans",
+        "mungbean",
+        "muskmelon",
+        "orange",
+        "papaya",
+        "pigeonpeas",
+        "pomegranate",
+        "rice",
+        "watermelon"
+      ],
+      "matrix": [
+        [
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          19,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          19,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          19,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          18,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20
+        ]
+      ]
+    },
+    "classification_report": {
+      "apple": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "banana": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "blackgram": {
+        "precision": 1.0,
+        "recall": 0.95,
+        "f1-score": 0.9743589743589743,
+        "support": 20.0
+      },
+      "chickpea": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "coconut": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "coffee": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "cotton": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "grapes": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "jute": {
+        "precision": 0.9090909090909091,
+        "recall": 1.0,
+        "f1-score": 0.9523809523809523,
+        "support": 20.0
+      },
+      "kidneybeans": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "lentil": {
+        "precision": 1.0,
+        "recall": 0.95,
+        "f1-score": 0.9743589743589743,
+        "support": 20.0
+      },
+      "maize": {
+        "precision": 0.9523809523809523,
+        "recall": 1.0,
+        "f1-score": 0.975609756097561,
+        "support": 20.0
+      },
+      "mango": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "mothbeans": {
+        "precision": 0.9090909090909091,
+        "recall": 1.0,
+        "f1-score": 0.9523809523809523,
+        "support": 20.0
+      },
+      "mungbean": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "muskmelon": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "orange": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "papaya": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "pigeonpeas": {
+        "precision": 1.0,
+        "recall": 0.95,
+        "f1-score": 0.9743589743589743,
+        "support": 20.0
+      },
+      "pomegranate": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "rice": {
+        "precision": 1.0,
+        "recall": 0.9,
+        "f1-score": 0.9473684210526315,
+        "support": 20.0
+      },
+      "watermelon": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20.0
+      },
+      "accuracy": 0.9886363636363636,
+      "macro avg": {
+        "precision": 0.9895710350255804,
+        "recall": 0.9886363636363634,
+        "f1-score": 0.9886735002267737,
+        "support": 440.0
+      },
+      "weighted avg": {
+        "precision": 0.9895710350255805,
+        "recall": 0.9886363636363636,
+        "f1-score": 0.9886735002267738,
+        "support": 440.0
+      }
+    }
+  },
+  "feature_importance": [
+    {
+      "feature": "humidity",
+      "importance": 0.245833
+    },
+    {
+      "feature": "rainfall",
+      "importance": 0.234183
+    },
+    {
+      "feature": "K",
+      "importance": 0.18509
+    },
+    {
+      "feature": "P",
+      "importance": 0.127373
+    },
+    {
+      "feature": "N",
+      "importance": 0.116597
+    },
+    {
+      "feature": "temperature",
+      "importance": 0.052591
+    },
+    {
+      "feature": "ph",
+      "importance": 0.038332
+    }
+  ],
+  "class_profiles": {
+    "apple": {
+      "means": {
+        "N": 20.8,
+        "P": 134.22,
+        "K": 199.89,
+        "temperature": 22.630942,
+        "humidity": 92.333383,
+        "ph": 5.929663,
+        "rainfall": 112.654779
+      },
+      "stds": {
+        "N": 11.804237,
+        "P": 8.098864,
+        "K": 3.304225,
+        "temperature": 0.823256,
+        "humidity": 1.45124,
+        "ph": 0.267584,
+        "rainfall": 7.067381
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 120.0,
+        "K": 195.0,
+        "temperature": 21.036528,
+        "humidity": 90.025751,
+        "ph": 5.514253,
+        "rainfall": 100.117344
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 145.0,
+        "K": 205.0,
+        "temperature": 23.996862,
+        "humidity": 94.920481,
+        "ph": 6.499227,
+        "rainfall": 124.983162
+      },
+      "sample_count": 100
+    },
+    "banana": {
+      "means": {
+        "N": 100.23,
+        "P": 82.01,
+        "K": 50.05,
+        "temperature": 27.376798,
+        "humidity": 80.358123,
+        "ph": 5.983893,
+        "rainfall": 104.62698
+      },
+      "stds": {
+        "N": 11.051565,
+        "P": 7.651791,
+        "K": 3.365635,
+        "temperature": 1.421199,
+        "humidity": 2.791418,
+        "ph": 0.269293,
+        "rainfall": 9.351041
+      },
+      "mins": {
+        "N": 80.0,
+        "P": 70.0,
+        "K": 45.0,
+        "temperature": 25.010185,
+        "humidity": 75.031933,
+        "ph": 5.505394,
+        "rainfall": 90.109781
+      },
+      "maxs": {
+        "N": 120.0,
+        "P": 95.0,
+        "K": 55.0,
+        "temperature": 29.908885,
+        "humidity": 84.978492,
+        "ph": 6.490074,
+        "rainfall": 119.84797
+      },
+      "sample_count": 100
+    },
+    "blackgram": {
+      "means": {
+        "N": 40.02,
+        "P": 67.47,
+        "K": 19.24,
+        "temperature": 29.97334,
+        "humidity": 65.118426,
+        "ph": 7.133952,
+        "rainfall": 67.884151
+      },
+      "stds": {
+        "N": 12.600778,
+        "P": 7.115413,
+        "K": 3.172129,
+        "temperature": 2.672892,
+        "humidity": 2.7843,
+        "ph": 0.370666,
+        "rainfall": 4.163212
+      },
+      "mins": {
+        "N": 20.0,
+        "P": 55.0,
+        "K": 15.0,
+        "temperature": 25.097374,
+        "humidity": 60.065349,
+        "ph": 6.500145,
+        "rainfall": 60.417903
+      },
+      "maxs": {
+        "N": 60.0,
+        "P": 80.0,
+        "K": 25.0,
+        "temperature": 34.946616,
+        "humidity": 69.961,
+        "ph": 7.775306,
+        "rainfall": 74.915595
+      },
+      "sample_count": 100
+    },
+    "chickpea": {
+      "means": {
+        "N": 40.09,
+        "P": 67.79,
+        "K": 79.92,
+        "temperature": 18.872847,
+        "humidity": 16.860439,
+        "ph": 7.336957,
+        "rainfall": 80.058977
+      },
+      "stds": {
+        "N": 12.089744,
+        "P": 7.460958,
+        "K": 3.245551,
+        "temperature": 1.163974,
+        "humidity": 1.703397,
+        "ph": 0.797111,
+        "rainfall": 7.904528
+      },
+      "mins": {
+        "N": 20.0,
+        "P": 55.0,
+        "K": 75.0,
+        "temperature": 17.024985,
+        "humidity": 14.25804,
+        "ph": 5.988993,
+        "rainfall": 65.113656
+      },
+      "maxs": {
+        "N": 60.0,
+        "P": 80.0,
+        "K": 85.0,
+        "temperature": 20.995022,
+        "humidity": 19.969789,
+        "ph": 8.868741,
+        "rainfall": 94.781896
+      },
+      "sample_count": 100
+    },
+    "coconut": {
+      "means": {
+        "N": 21.98,
+        "P": 16.93,
+        "K": 30.59,
+        "temperature": 27.409892,
+        "humidity": 94.844272,
+        "ph": 5.976562,
+        "rainfall": 175.686646
+      },
+      "stds": {
+        "N": 11.702974,
+        "P": 8.315353,
+        "K": 2.983605,
+        "temperature": 1.378788,
+        "humidity": 2.672864,
+        "ph": 0.286191,
+        "rainfall": 29.324601
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 5.0,
+        "K": 25.0,
+        "temperature": 25.008724,
+        "humidity": 90.017345,
+        "ph": 5.50158,
+        "rainfall": 131.090008
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 30.0,
+        "K": 35.0,
+        "temperature": 29.869083,
+        "humidity": 99.981876,
+        "ph": 6.470466,
+        "rainfall": 225.632366
+      },
+      "sample_count": 100
+    },
+    "coffee": {
+      "means": {
+        "N": 101.2,
+        "P": 28.74,
+        "K": 29.94,
+        "temperature": 25.540477,
+        "humidity": 58.869846,
+        "ph": 6.790308,
+        "rainfall": 158.066295
+      },
+      "stds": {
+        "N": 12.283322,
+        "P": 7.239641,
+        "K": 3.230542,
+        "temperature": 1.495103,
+        "humidity": 5.8093,
+        "ph": 0.415042,
+        "rainfall": 25.566287
+      },
+      "mins": {
+        "N": 80.0,
+        "P": 15.0,
+        "K": 25.0,
+        "temperature": 23.059519,
+        "humidity": 50.04557,
+        "ph": 6.020947,
+        "rainfall": 115.156401
+      },
+      "maxs": {
+        "N": 120.0,
+        "P": 40.0,
+        "K": 35.0,
+        "temperature": 27.923744,
+        "humidity": 69.948073,
+        "ph": 7.493192,
+        "rainfall": 199.473564
+      },
+      "sample_count": 100
+    },
+    "cotton": {
+      "means": {
+        "N": 117.77,
+        "P": 46.24,
+        "K": 19.56,
+        "temperature": 23.988958,
+        "humidity": 79.843474,
+        "ph": 6.912675,
+        "rainfall": 80.398043
+      },
+      "stds": {
+        "N": 11.570527,
+        "P": 7.311799,
+        "K": 3.153791,
+        "temperature": 1.129989,
+        "humidity": 3.035662,
+        "ph": 0.624026,
+        "rainfall": 11.175511
+      },
+      "mins": {
+        "N": 100.0,
+        "P": 35.0,
+        "K": 15.0,
+        "temperature": 22.000851,
+        "humidity": 75.005393,
+        "ph": 5.801048,
+        "rainfall": 60.653817
+      },
+      "maxs": {
+        "N": 140.0,
+        "P": 60.0,
+        "K": 25.0,
+        "temperature": 25.992374,
+        "humidity": 84.87669,
+        "ph": 7.99468,
+        "rainfall": 99.931008
+      },
+      "sample_count": 100
+    },
+    "grapes": {
+      "means": {
+        "N": 23.18,
+        "P": 132.53,
+        "K": 200.11,
+        "temperature": 23.849575,
+        "humidity": 81.875228,
+        "ph": 6.025937,
+        "rainfall": 69.611829
+      },
+      "stds": {
+        "N": 12.404338,
+        "P": 7.580838,
+        "K": 3.249292,
+        "temperature": 9.689833,
+        "humidity": 1.171211,
+        "ph": 0.29677,
+        "rainfall": 2.936963
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 120.0,
+        "K": 195.0,
+        "temperature": 8.825675,
+        "humidity": 80.016394,
+        "ph": 5.510925,
+        "rainfall": 65.010953
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 145.0,
+        "K": 205.0,
+        "temperature": 41.948657,
+        "humidity": 83.983517,
+        "ph": 6.499605,
+        "rainfall": 74.915062
+      },
+      "sample_count": 100
+    },
+    "jute": {
+      "means": {
+        "N": 78.4,
+        "P": 46.86,
+        "K": 39.99,
+        "temperature": 24.958376,
+        "humidity": 79.639864,
+        "ph": 6.732778,
+        "rainfall": 174.792798
+      },
+      "stds": {
+        "N": 10.913295,
+        "P": 7.159637,
+        "K": 3.296953,
+        "temperature": 1.179198,
+        "humidity": 5.480189,
+        "ph": 0.444112,
+        "rainfall": 15.002786
+      },
+      "mins": {
+        "N": 60.0,
+        "P": 35.0,
+        "K": 35.0,
+        "temperature": 23.094338,
+        "humidity": 70.882596,
+        "ph": 6.002525,
+        "rainfall": 150.235524
+      },
+      "maxs": {
+        "N": 100.0,
+        "P": 60.0,
+        "K": 45.0,
+        "temperature": 26.985822,
+        "humidity": 89.891065,
+        "ph": 7.488014,
+        "rainfall": 199.836291
+      },
+      "sample_count": 100
+    },
+    "kidneybeans": {
+      "means": {
+        "N": 20.75,
+        "P": 67.54,
+        "K": 20.05,
+        "temperature": 20.115085,
+        "humidity": 21.605357,
+        "ph": 5.749411,
+        "rainfall": 105.919778
+      },
+      "stds": {
+        "N": 10.779958,
+        "P": 7.533153,
+        "K": 3.086665,
+        "temperature": 2.586542,
+        "humidity": 2.15646,
+        "ph": 0.144492,
+        "rainfall": 25.980499
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 55.0,
+        "K": 15.0,
+        "temperature": 15.330426,
+        "humidity": 18.09224,
+        "ph": 5.502999,
+        "rainfall": 60.275525
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 80.0,
+        "K": 25.0,
+        "temperature": 24.923601,
+        "humidity": 24.969699,
+        "ph": 5.998125,
+        "rainfall": 149.744103
+      },
+      "sample_count": 100
+    },
+    "lentil": {
+      "means": {
+        "N": 18.77,
+        "P": 68.36,
+        "K": 19.41,
+        "temperature": 24.509052,
+        "humidity": 64.804785,
+        "ph": 6.927932,
+        "rainfall": 45.680454
+      },
+      "stds": {
+        "N": 12.135778,
+        "P": 7.298657,
+        "K": 2.953286,
+        "temperature": 3.304338,
+        "humidity": 2.920747,
+        "ph": 0.546512,
+        "rainfall": 5.604737
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 55.0,
+        "K": 15.0,
+        "temperature": 18.064861,
+        "humidity": 60.091166,
+        "ph": 5.916454,
+        "rainfall": 35.034848
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 80.0,
+        "K": 25.0,
+        "temperature": 29.944139,
+        "humidity": 69.923759,
+        "ph": 7.841496,
+        "rainfall": 54.939377
+      },
+      "sample_count": 100
+    },
+    "maize": {
+      "means": {
+        "N": 77.76,
+        "P": 48.44,
+        "K": 19.79,
+        "temperature": 22.389204,
+        "humidity": 65.092249,
+        "ph": 6.24519,
+        "rainfall": 84.766988
+      },
+      "stds": {
+        "N": 11.889592,
+        "P": 7.970345,
+        "K": 2.926756,
+        "temperature": 2.665929,
+        "humidity": 5.421387,
+        "ph": 0.410613,
+        "rainfall": 15.469407
+      },
+      "mins": {
+        "N": 60.0,
+        "P": 35.0,
+        "K": 15.0,
+        "temperature": 18.041855,
+        "humidity": 55.282204,
+        "ph": 5.513698,
+        "rainfall": 60.651715
+      },
+      "maxs": {
+        "N": 100.0,
+        "P": 60.0,
+        "K": 25.0,
+        "temperature": 26.549864,
+        "humidity": 74.829137,
+        "ph": 6.995844,
+        "rainfall": 109.751538
+      },
+      "sample_count": 100
+    },
+    "mango": {
+      "means": {
+        "N": 20.07,
+        "P": 27.18,
+        "K": 29.92,
+        "temperature": 31.20877,
+        "humidity": 50.156573,
+        "ph": 5.766373,
+        "rainfall": 94.704515
+      },
+      "stds": {
+        "N": 12.267237,
+        "P": 7.625457,
+        "K": 3.081169,
+        "temperature": 2.640555,
+        "humidity": 2.742469,
+        "ph": 0.700127,
+        "rainfall": 3.321843
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 15.0,
+        "K": 25.0,
+        "temperature": 27.003155,
+        "humidity": 45.022364,
+        "ph": 4.507524,
+        "rainfall": 89.291476
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 40.0,
+        "K": 35.0,
+        "temperature": 35.990097,
+        "humidity": 54.964053,
+        "ph": 6.967418,
+        "rainfall": 100.812466
+      },
+      "sample_count": 100
+    },
+    "mothbeans": {
+      "means": {
+        "N": 21.44,
+        "P": 48.01,
+        "K": 20.23,
+        "temperature": 28.19492,
+        "humidity": 53.160418,
+        "ph": 6.831174,
+        "rainfall": 51.198487
+      },
+      "stds": {
+        "N": 11.286558,
+        "P": 7.509321,
+        "K": 3.032672,
+        "temperature": 2.198589,
+        "humidity": 6.95954,
+        "ph": 1.852829,
+        "rainfall": 13.681766
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 35.0,
+        "K": 15.0,
+        "temperature": 24.018254,
+        "humidity": 40.009334,
+        "ph": 3.504752,
+        "rainfall": 30.92014
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 60.0,
+        "K": 25.0,
+        "temperature": 31.999286,
+        "humidity": 64.955854,
+        "ph": 9.935091,
+        "rainfall": 74.443307
+      },
+      "sample_count": 100
+    },
+    "mungbean": {
+      "means": {
+        "N": 20.99,
+        "P": 47.28,
+        "K": 19.87,
+        "temperature": 28.525775,
+        "humidity": 85.499975,
+        "ph": 6.723957,
+        "rainfall": 48.403601
+      },
+      "stds": {
+        "N": 11.452943,
+        "P": 7.830811,
+        "K": 3.132587,
+        "temperature": 0.837327,
+        "humidity": 2.837064,
+        "ph": 0.285138,
+        "rainfall": 7.081539
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 35.0,
+        "K": 15.0,
+        "temperature": 27.014704,
+        "humidity": 80.034996,
+        "ph": 6.218924,
+        "rainfall": 36.120429
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 60.0,
+        "K": 25.0,
+        "temperature": 29.914544,
+        "humidity": 89.996156,
+        "ph": 7.199495,
+        "rainfall": 59.872321
+      },
+      "sample_count": 100
+    },
+    "muskmelon": {
+      "means": {
+        "N": 100.32,
+        "P": 17.72,
+        "K": 50.08,
+        "temperature": 28.663066,
+        "humidity": 92.342802,
+        "ph": 6.358805,
+        "rainfall": 24.689952
+      },
+      "stds": {
+        "N": 12.115181,
+        "P": 7.151336,
+        "K": 3.202124,
+        "temperature": 0.856978,
+        "humidity": 1.497572,
+        "ph": 0.230362,
+        "rainfall": 2.760094
+      },
+      "mins": {
+        "N": 80.0,
+        "P": 5.0,
+        "K": 45.0,
+        "temperature": 27.024151,
+        "humidity": 90.015064,
+        "ph": 6.002927,
+        "rainfall": 20.211267
+      },
+      "maxs": {
+        "N": 120.0,
+        "P": 30.0,
+        "K": 55.0,
+        "temperature": 29.943492,
+        "humidity": 94.962187,
+        "ph": 6.78105,
+        "rainfall": 29.866814
+      },
+      "sample_count": 100
+    },
+    "orange": {
+      "means": {
+        "N": 19.58,
+        "P": 16.55,
+        "K": 10.01,
+        "temperature": 22.765725,
+        "humidity": 92.170209,
+        "ph": 7.016957,
+        "rainfall": 110.474969
+      },
+      "stds": {
+        "N": 11.882071,
+        "P": 7.652941,
+        "K": 3.041365,
+        "temperature": 7.30573,
+        "humidity": 1.423173,
+        "ph": 0.573432,
+        "rainfall": 5.688468
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 5.0,
+        "K": 5.0,
+        "temperature": 10.010813,
+        "humidity": 90.006217,
+        "ph": 6.010392,
+        "rainfall": 100.173796
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 30.0,
+        "K": 15.0,
+        "temperature": 34.906653,
+        "humidity": 94.964199,
+        "ph": 7.995849,
+        "rainfall": 119.694658
+      },
+      "sample_count": 100
+    },
+    "papaya": {
+      "means": {
+        "N": 49.88,
+        "P": 59.05,
+        "K": 50.04,
+        "temperature": 33.723859,
+        "humidity": 92.403388,
+        "ph": 6.741442,
+        "rainfall": 142.627839
+      },
+      "stds": {
+        "N": 12.158355,
+        "P": 7.02193,
+        "K": 3.081947,
+        "temperature": 6.231628,
+        "humidity": 1.413326,
+        "ph": 0.146612,
+        "rainfall": 64.073785
+      },
+      "mins": {
+        "N": 31.0,
+        "P": 46.0,
+        "K": 45.0,
+        "temperature": 23.012402,
+        "humidity": 90.038631,
+        "ph": 6.501521,
+        "rainfall": 40.351531
+      },
+      "maxs": {
+        "N": 70.0,
+        "P": 70.0,
+        "K": 55.0,
+        "temperature": 43.675493,
+        "humidity": 94.944821,
+        "ph": 6.993473,
+        "rainfall": 248.859299
+      },
+      "sample_count": 100
+    },
+    "pigeonpeas": {
+      "means": {
+        "N": 20.73,
+        "P": 67.73,
+        "K": 20.29,
+        "temperature": 27.741762,
+        "humidity": 48.061633,
+        "ph": 5.794175,
+        "rainfall": 149.457564
+      },
+      "stds": {
+        "N": 11.790551,
+        "P": 7.257899,
+        "K": 2.801053,
+        "temperature": 5.687032,
+        "humidity": 10.908703,
+        "ph": 0.826112,
+        "rainfall": 32.820975
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 55.0,
+        "K": 15.0,
+        "temperature": 18.319104,
+        "humidity": 30.400468,
+        "ph": 4.548202,
+        "rainfall": 90.054227
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 80.0,
+        "K": 25.0,
+        "temperature": 36.977944,
+        "humidity": 69.691413,
+        "ph": 7.445445,
+        "rainfall": 198.829881
+      },
+      "sample_count": 100
+    },
+    "pomegranate": {
+      "means": {
+        "N": 18.87,
+        "P": 18.75,
+        "K": 40.21,
+        "temperature": 21.837842,
+        "humidity": 90.125504,
+        "ph": 6.429172,
+        "rainfall": 107.528442
+      },
+      "stds": {
+        "N": 12.554406,
+        "P": 7.35034,
+        "K": 3.017598,
+        "temperature": 2.195296,
+        "humidity": 2.811542,
+        "ph": 0.489045,
+        "rainfall": 2.880826
+      },
+      "mins": {
+        "N": 0.0,
+        "P": 5.0,
+        "K": 35.0,
+        "temperature": 18.07133,
+        "humidity": 85.129122,
+        "ph": 5.561852,
+        "rainfall": 102.518476
+      },
+      "maxs": {
+        "N": 40.0,
+        "P": 30.0,
+        "K": 45.0,
+        "temperature": 24.962732,
+        "humidity": 94.998975,
+        "ph": 7.199504,
+        "rainfall": 112.475094
+      },
+      "sample_count": 100
+    },
+    "rice": {
+      "means": {
+        "N": 79.89,
+        "P": 47.58,
+        "K": 39.87,
+        "temperature": 23.689332,
+        "humidity": 82.272822,
+        "ph": 6.425471,
+        "rainfall": 236.181114
+      },
+      "stds": {
+        "N": 11.858242,
+        "P": 7.865342,
+        "K": 2.931399,
+        "temperature": 2.02109,
+        "humidity": 1.411271,
+        "ph": 0.764839,
+        "rainfall": 34.119935
+      },
+      "mins": {
+        "N": 60.0,
+        "P": 35.0,
+        "K": 35.0,
+        "temperature": 20.045414,
+        "humidity": 80.122675,
+        "ph": 5.005307,
+        "rainfall": 182.561632
+      },
+      "maxs": {
+        "N": 99.0,
+        "P": 60.0,
+        "K": 45.0,
+        "temperature": 26.929951,
+        "humidity": 84.969072,
+        "ph": 7.868475,
+        "rainfall": 298.560118
+      },
+      "sample_count": 100
+    },
+    "watermelon": {
+      "means": {
+        "N": 99.42,
+        "P": 17.0,
+        "K": 50.22,
+        "temperature": 25.591767,
+        "humidity": 85.160375,
+        "ph": 6.495778,
+        "rainfall": 50.786219
+      },
+      "stds": {
+        "N": 12.502144,
+        "P": 7.498,
+        "K": 3.248323,
+        "temperature": 0.845863,
+        "humidity": 2.941783,
+        "ph": 0.280009,
+        "rainfall": 5.837598
+      },
+      "mins": {
+        "N": 80.0,
+        "P": 5.0,
+        "K": 45.0,
+        "temperature": 24.043558,
+        "humidity": 80.026213,
+        "ph": 6.000976,
+        "rainfall": 40.126504
+      },
+      "maxs": {
+        "N": 120.0,
+        "P": 30.0,
+        "K": 55.0,
+        "temperature": 26.986037,
+        "humidity": 89.984052,
+        "ph": 6.956509,
+        "rainfall": 59.7598
+      },
+      "sample_count": 100
+    }
+  },
+  "global_feature_stats": {
+    "means": {
+      "N": 50.551818,
+      "P": 53.362727,
+      "K": 48.149091,
+      "temperature": 25.616244,
+      "humidity": 71.481779,
+      "ph": 6.46948,
+      "rainfall": 103.463655
+    },
+    "stds": {
+      "N": 36.908943,
+      "P": 32.978385,
+      "K": 50.636418,
+      "temperature": 5.062598,
+      "humidity": 22.258751,
+      "ph": 0.773762,
+      "rainfall": 54.945897
+    },
+    "mins": {
+      "N": 0.0,
+      "P": 5.0,
+      "K": 5.0,
+      "temperature": 8.825675,
+      "humidity": 14.25804,
+      "ph": 3.504752,
+      "rainfall": 20.211267
+    },
+    "maxs": {
+      "N": 140.0,
+      "P": 145.0,
+      "K": 205.0,
+      "temperature": 43.675493,
+      "humidity": 99.981876,
+      "ph": 9.935091,
+      "rainfall": 298.560118
+    }
+  }
+}
