@@ -18,3 +18,10 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# Python transient artifacts (RAG tooling)
+__pycache__/
+*.py[cod]
+
+# Runtime reports are generated artifacts (keep folder via .gitkeep)
+rag/outputs/reports/*.json

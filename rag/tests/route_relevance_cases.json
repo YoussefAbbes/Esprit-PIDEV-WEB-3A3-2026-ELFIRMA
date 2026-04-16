@@ -1,0 +1,166 @@
+{
+  "version": "1.0.0",
+  "generated_on": "2026-04-16",
+  "notes": {
+    "purpose": "Route-aware backend retrieval regression pack for realistic farm-domain questions.",
+    "route_names": [
+      "field_definition",
+      "observed_value_lookup",
+      "structural_relationship",
+      "policy_unknown",
+      "example_request"
+    ]
+  },
+  "cases": [
+    {
+      "id": "RR001",
+      "query_class": "inferred",
+      "expected_route": "field_definition",
+      "query": "What does etat_sante mean in the animals table?",
+      "expected_domains": ["animals", "cross_entity"],
+      "expected_document_types": ["data_dictionary", "domain_guide", "faq"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "English field definition query"
+    },
+    {
+      "id": "RR002",
+      "query_class": "inferred",
+      "expected_route": "field_definition",
+      "query": "Que veut dire statut dans animals ?",
+      "expected_domains": ["animals", "cross_entity"],
+      "expected_document_types": ["data_dictionary", "domain_guide", "faq"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "French field definition query"
+    },
+    {
+      "id": "RR003",
+      "query_class": "inferred",
+      "expected_route": "field_definition",
+      "query": "Define capacite in elevage records.",
+      "expected_domains": ["livestock", "cross_entity"],
+      "expected_document_types": ["data_dictionary", "domain_guide"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "Livestock field meaning"
+    },
+    {
+      "id": "RR101",
+      "query_class": "confirmed",
+      "expected_route": "observed_value_lookup",
+      "query": "Which vaccination status values are currently observed?",
+      "expected_domains": ["vaccination", "cross_entity"],
+      "expected_document_types": ["schema_reference", "faq", "domain_guide"],
+      "expected_confidence_preference": ["confirmed", "inferred"],
+      "notes": "Observed values lookup"
+    },
+    {
+      "id": "RR102",
+      "query_class": "confirmed",
+      "expected_route": "observed_value_lookup",
+      "query": "Quelles valeurs observees existent pour etat_elevage ?",
+      "expected_domains": ["livestock", "cross_entity"],
+      "expected_document_types": ["schema_reference", "domain_guide", "faq"],
+      "expected_confidence_preference": ["confirmed", "inferred"],
+      "notes": "French observed values lookup"
+    },
+    {
+      "id": "RR103",
+      "query_class": "confirmed",
+      "expected_route": "observed_value_lookup",
+      "query": "Show observed sample values for animals.sexe",
+      "expected_domains": ["animals", "cross_entity"],
+      "expected_document_types": ["schema_reference", "data_dictionary", "faq"],
+      "expected_confidence_preference": ["confirmed", "inferred"],
+      "notes": "Observed sample query"
+    },
+    {
+      "id": "RR201",
+      "query_class": "inferred",
+      "expected_route": "structural_relationship",
+      "query": "How are animals linked to elevage and vaccinations?",
+      "expected_domains": ["cross_entity", "animals", "vaccination", "livestock"],
+      "expected_document_types": ["schema_reference", "domain_guide", "assumptions_and_gaps"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "Cross-table relationship mapping"
+    },
+    {
+      "id": "RR202",
+      "query_class": "inferred",
+      "expected_route": "structural_relationship",
+      "query": "Comment relier utilisateur, contrat et elevage ?",
+      "expected_domains": ["cross_entity", "livestock"],
+      "expected_document_types": ["schema_reference", "domain_guide", "assumptions_and_gaps"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "French structural relationship query"
+    },
+    {
+      "id": "RR203",
+      "query_class": "inferred",
+      "expected_route": "structural_relationship",
+      "query": "What relationship connects elevage location fields to animal records?",
+      "expected_domains": ["cross_entity", "animals", "livestock"],
+      "expected_document_types": ["schema_reference", "domain_guide", "data_dictionary"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "Location relationship query"
+    },
+    {
+      "id": "RR301",
+      "query_class": "unknown_policy",
+      "expected_route": "policy_unknown",
+      "query": "What is the official rule for overdue vaccination alerts?",
+      "expected_domains": ["cross_entity", "vaccination"],
+      "expected_document_types": ["assumptions_and_gaps", "business_rules", "faq"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "Policy unknown case for vaccination"
+    },
+    {
+      "id": "RR302",
+      "query_class": "unknown_policy",
+      "expected_route": "policy_unknown",
+      "query": "Quelle est la politique officielle pour un elevage critique ?",
+      "expected_domains": ["cross_entity", "livestock"],
+      "expected_document_types": ["assumptions_and_gaps", "business_rules"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "French policy unknown case"
+    },
+    {
+      "id": "RR303",
+      "query_class": "unknown_policy",
+      "expected_route": "policy_unknown",
+      "query": "Is there a mandated quarantine duration after a missed vaccine?",
+      "expected_domains": ["cross_entity", "vaccination"],
+      "expected_document_types": ["assumptions_and_gaps", "business_rules", "faq"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "Unknown policy threshold question"
+    },
+    {
+      "id": "RR401",
+      "query_class": "assumed",
+      "expected_route": "example_request",
+      "query": "Give me an example response for explaining etat_sante to a farmer.",
+      "expected_domains": ["cross_entity", "animals"],
+      "expected_document_types": ["chat_examples", "faq", "data_dictionary"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "Example answer request in English"
+    },
+    {
+      "id": "RR402",
+      "query_class": "assumed",
+      "expected_route": "example_request",
+      "query": "Donne un exemple de reponse prudente pour une regle vaccine inconnue.",
+      "expected_domains": ["cross_entity", "vaccination"],
+      "expected_document_types": ["chat_examples", "faq", "assumptions_and_gaps"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "Example request in French"
+    },
+    {
+      "id": "RR403",
+      "query_class": "assumed",
+      "expected_route": "example_request",
+      "query": "Provide a sample chatbot answer comparing statut and etat_sante.",
+      "expected_domains": ["cross_entity", "animals"],
+      "expected_document_types": ["chat_examples", "data_dictionary", "faq"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "Sample comparative response request"
+    }
+  ]
+}

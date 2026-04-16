@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "generated_on": "2026-04-16",
+  "notes": {
+    "unknown_policy_usage": "unknown_policy is a response outcome class, not a metadata confidence label.",
+    "confidence_taxonomy": [
+      "confirmed",
+      "inferred",
+      "assumed"
+    ]
+  },
+  "cases": [
+    {
+      "id": "A001",
+      "query_class": "confirmed",
+      "query": "What vaccination status value is confirmed from screenshots?",
+      "expected_response_outcome": "standard",
+      "expected_confidence_preference": [
+        "confirmed"
+      ],
+      "language": "en"
+    },
+    {
+      "id": "A002",
+      "query_class": "inferred",
+      "query": "How are animals, vaccinations, and elevage likely connected?",
+      "expected_response_outcome": "standard",
+      "expected_confidence_preference": [
+        "inferred",
+        "confirmed"
+      ],
+      "language": "en"
+    },
+    {
+      "id": "A003",
+      "query_class": "unknown_policy",
+      "query": "Quelle est la regle officielle pour definir un vaccin en retard ?",
+      "expected_response_outcome": "unknown_policy",
+      "expected_confidence_preference": [
+        "assumed",
+        "inferred"
+      ],
+      "language": "fr"
+    },
+    {
+      "id": "A004",
+      "query_class": "inferred",
+      "query": "Quelles valeurs ont ete observees pour etat_elevage?",
+      "expected_response_outcome": "standard",
+      "expected_confidence_preference": [
+        "confirmed",
+        "inferred"
+      ],
+      "language": "fr"
+    }
+  ]
+}

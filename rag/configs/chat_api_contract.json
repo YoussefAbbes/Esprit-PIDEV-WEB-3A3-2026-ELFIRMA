@@ -1,0 +1,143 @@
+{
+  "contract_version": "1.0.0",
+  "request": {
+    "type": "object",
+    "required": ["query"],
+    "properties": {
+      "query": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      },
+      "top_k": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 5
+      },
+      "min_score": {
+        "type": "number",
+        "minimum": -1,
+        "maximum": 1,
+        "default": -1
+      },
+      "route_override": {
+        "type": ["string", "null"],
+        "enum": [
+          null,
+          "field_definition",
+          "observed_value_lookup",
+          "structural_relationship",
+          "policy_unknown",
+          "example_request"
+        ]
+      },
+      "disable_routing": {
+        "type": "boolean",
+        "default": false
+      },
+      "rerank_pool_size": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 200,
+        "default": 0
+      },
+      "filters": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "document_type": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "confidence": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "language": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "evidence_scope": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        },
+        "additionalProperties": false
+      },
+      "debug": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "additionalProperties": false
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "contract_version",
+      "query",
+      "answer_text",
+      "route",
+      "sources",
+      "confidence_summary",
+      "evidence_summary",
+      "context_metadata",
+      "retrieval_debug"
+    ],
+    "properties": {
+      "contract_version": {"type": "string"},
+      "query": {"type": "string"},
+      "answer_text": {"type": "string"},
+      "route": {"type": "string"},
+      "sources": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["source_file", "section", "document_type", "confidence", "score"],
+          "properties": {
+            "source_file": {"type": "string"},
+            "section": {"type": "string"},
+            "document_type": {"type": "string"},
+            "confidence": {"type": "string"},
+            "score": {"type": "number"}
+          },
+          "additionalProperties": true
+        }
+      },
+      "confidence_summary": {"type": "object"},
+      "evidence_summary": {"type": "object"},
+      "context_metadata": {"type": "object"},
+      "retrieval_debug": {"type": "object"},
+      "llm": {"type": "object"},
+      "context_items": {"type": "array"},
+      "context_block": {"type": "string"},
+      "prompt_payload": {"type": "object"}
+    },
+    "additionalProperties": true
+  },
+  "error": {
+    "type": "object",
+    "required": ["error_code", "message"],
+    "properties": {
+      "error_code": {
+        "type": "string",
+        "enum": [
+          "validation_error",
+          "python_execution_error",
+          "python_timeout",
+          "python_output_parse_error",
+          "upstream_contract_error",
+          "internal_error"
+        ]
+      },
+      "message": {"type": "string"},
+      "details": {"type": "object"},
+      "request_id": {"type": "string"}
+    },
+    "additionalProperties": true
+  }
+}
