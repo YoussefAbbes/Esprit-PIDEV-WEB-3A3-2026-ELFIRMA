@@ -1625,6 +1625,12 @@
    =========================================================== #}
 <div class="cc-toast-wrap" id="ccToasts"></div>
 
+{# ── AI Chatbot ── #}
+{% include 'components/_chatbot.html.twig' with {
+  'page': 'cultures',
+  'page_label': 'Crops & Cultures'
+} %}
+
 {% endblock %}
 
 {% block javascripts %}

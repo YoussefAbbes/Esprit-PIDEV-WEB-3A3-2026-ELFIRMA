@@ -6,7 +6,7 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" crossorigin="anonymous">
 <style>
 /* ================================================================
    DESIGN TOKENS
@@ -844,8 +844,11 @@
 /* Map */
 #pf-map {
   height: 320px;
+  width: 100%;
   border-radius: 13px;
-  z-index: 1;
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
 }
 
 .pf-map-placeholder {
@@ -1771,13 +1774,17 @@
 {# Toast container #}
 <div class="pf-toast-container" id="pfToastContainer"></div>
 
+{# ── AI Chatbot ── #}
+{% include 'components/_chatbot.html.twig' with {
+  'page': 'parcelles',
+  'page_label': 'Agricultural Parcels'
+} %}
+
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs="
-        crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" crossorigin="anonymous"></script>
 <script>
 /* ================================================================
    EL FIRMA — Client Parcelles Module
@@ -2112,7 +2119,10 @@ var PF = (function () {
 
     if (name === 'map') {
       destroyMap();
-      setTimeout(function () { initMap(pendLat, pendLng); }, 350);
+      /* Wait for the tab panel to become visible (CSS display:block + repaint)
+         before Leaflet reads container dimensions. 400 ms covers the modal
+         open animation (320 ms) plus a full repaint cycle. */
+      setTimeout(function () { initMap(pendLat, pendLng); }, 400);
     } else {
       destroyMap();
     }
@@ -2136,18 +2146,42 @@ var PF = (function () {
 
   /* ── LEAFLET MAP ── */
   function initMap(lat, lng) {
-    var mapEl   = document.getElementById('pf-map');
-    var phEl    = document.getElementById('pfMapPlaceholder');
+    var mapEl = document.getElementById('pf-map');
+    var phEl  = document.getElementById('pfMapPlaceholder');
     if (!mapEl || !phEl) return;
 
-    if (!isNaN(lat) && !isNaN(lng)) {
-      mapEl.style.display = 'block';
-      phEl.style.display  = 'none';
+    /* Guard: Leaflet must be loaded */
+    if (typeof L === 'undefined') {
+      console.error('Leaflet is not loaded. Map cannot be initialized.');
+      mapEl.style.display = 'none';
+      phEl.style.display  = 'flex';
+      return;
+    }
 
-      leaflet = L.map('pf-map').setView([lat, lng], 14);
+    /* Guard: must have valid coordinates */
+    if (isNaN(lat) || isNaN(lng)) {
+      mapEl.style.display = 'none';
+      phEl.style.display  = 'flex';
+      return;
+    }
+
+    mapEl.style.display = 'block';
+    phEl.style.display  = 'none';
+
+    /* Force a layout pass so Leaflet can read real dimensions */
+    mapEl.offsetWidth;
+
+    try {
+      leaflet = L.map('pf-map', {
+        zoomControl: true,
+        attributionControl: true,
+        preferCanvas: false
+      }).setView([lat, lng], 14);
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+        crossOrigin: true
       }).addTo(leaflet);
 
       var icon = L.divIcon({
@@ -2160,12 +2194,12 @@ var PF = (function () {
           'transform:rotate(-45deg);' +
           'box-shadow:0 4px 14px rgba(22,101,52,.55)' +
           '"></div>',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
+        iconSize:    [30, 30],
+        iconAnchor:  [15, 30],
         popupAnchor: [0, -34]
       });
 
-      var label = document.getElementById('pfModalName');
+      var label     = document.getElementById('pfModalName');
       var popupName = label ? label.textContent : 'Parcelle';
 
       L.marker([lat, lng], { icon: icon })
@@ -2176,11 +2210,16 @@ var PF = (function () {
         )
         .openPopup();
 
-      leaflet.invalidateSize();
-      setTimeout(function () { leaflet.invalidateSize(); }, 250);
-      setTimeout(function () { leaflet.invalidateSize(); }, 600);
-      setTimeout(function () { leaflet.invalidateSize(); }, 1100);
-    } else {
+      /* Recalculate size after paint — critical inside modals */
+      requestAnimationFrame(function () {
+        leaflet.invalidateSize({ animate: false });
+        setTimeout(function () { leaflet.invalidateSize({ animate: false }); }, 200);
+        setTimeout(function () { leaflet.invalidateSize({ animate: false }); }, 500);
+        setTimeout(function () { leaflet.invalidateSize({ animate: false }); }, 900);
+      });
+
+    } catch (err) {
+      console.error('Leaflet map init error:', err);
       mapEl.style.display = 'none';
       phEl.style.display  = 'flex';
     }
