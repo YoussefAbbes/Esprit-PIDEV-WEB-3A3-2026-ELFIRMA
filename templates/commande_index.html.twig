@@ -29,6 +29,7 @@
                             <tr style="border-bottom: 2px solid #f3f4f6;">
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Commande</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Produit</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Adresse livraison</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Quantité</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Total</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Statut</th>
@@ -65,6 +66,9 @@
                                     {% else %}
                                         <span style="color: #ef4444;">Produit supprimé</span>
                                     {% endif %}
+                                </td>
+                                <td style="border: none; padding: 20px 15px; vertical-align: middle;">
+                                    <span style="font-size: 14px; color: #4b5563;">{{ commande.adresseLivraison ?: '-' }}</span>
                                 </td>
                                 <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                     <span style="font-size: 16px; font-weight: 600;">{{ commande.quantite }}</span>
