@@ -871,7 +871,7 @@ final class CommandeController extends AbstractController
     private function appendValidationErrors(array &$errors, iterable $violations): void
     {
         foreach ($violations as $violation) {
-            $field = (string) $violation->getPropertyPath();
+            $field = $this->mapValidationFieldToFormField((string) $violation->getPropertyPath());
             if ($field === '') {
                 $field = '_global';
             }
@@ -881,6 +881,14 @@ final class CommandeController extends AbstractController
                 $errors[$field][] = $message;
             }
         }
+    }
+
+    private function mapValidationFieldToFormField(string $field): string
+    {
+        return match ($field) {
+            'produit' => 'produit_id',
+            default => $field,
+        };
     }
 
     /**
