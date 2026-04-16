@@ -61,6 +61,16 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="adresse_livraison" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Adresse de livraison *</label>
+                                <textarea id="adresse_livraison" name="adresse_livraison" rows="2"
+                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;">{{ oldInput.adresse_livraison|default('') }}</textarea>
+                                {% if formErrors.adresse_livraison is defined %}
+                                    {% for err in formErrors.adresse_livraison %}
+                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Mode de paiement *</label>
                                 <select id="mode_paiement" name="mode_paiement" 
                                         style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
@@ -373,8 +383,10 @@
 
             async function createPaymentIntent() {
                 const promoCode = document.getElementById('promo_code');
+                const adresseInput = document.getElementById('adresse_livraison');
                 const body = new URLSearchParams();
                 body.set('promo_code', promoCode ? promoCode.value : '');
+                body.set('adresse_livraison', adresseInput ? adresseInput.value : '');
                 const response = await fetch('{{ path('app_commande_stripe_create_intent') }}', {
                     method: 'POST',
                     headers: {

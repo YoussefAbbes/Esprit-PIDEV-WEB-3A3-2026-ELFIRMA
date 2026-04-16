@@ -165,6 +165,27 @@ class Commande
         return $this;
     }
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'L\'adresse de livraison est obligatoire.')]
+    #[Assert\Length(
+        min: 5,
+        max: 255,
+        minMessage: 'L\'adresse de livraison doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'L\'adresse de livraison ne doit pas depasser {{ limit }} caracteres.'
+    )]
+    private ?string $adresse_livraison = null;
+
+    public function getAdresseLivraison(): ?string
+    {
+        return $this->adresse_livraison;
+    }
+
+    public function setAdresseLivraison(?string $adresse_livraison): self
+    {
+        $this->adresse_livraison = $adresse_livraison;
+        return $this;
+    }
+
     #[ORM\Column(type: 'date')]
     #[Assert\NotNull(message: 'La date de commande est obligatoire.')]
     #[Assert\Type(type: \DateTimeInterface::class, message: 'La date de commande est invalide.')]

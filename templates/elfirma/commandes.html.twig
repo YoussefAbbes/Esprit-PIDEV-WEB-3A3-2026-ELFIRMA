@@ -241,6 +241,10 @@
                     <input name="nom_client" value="{{ createOld.nom_client|default('') }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2" required maxlength="100"/>
                 </div>
                 <div>
+                    <label class="block text-sm font-semibold mb-1">Adresse de livraison</label>
+                    <input name="adresse_livraison" value="{{ createOld.adresse_livraison|default('') }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2" maxlength="255"/>
+                </div>
+                <div>
                     <label class="block text-sm font-semibold mb-1">Product</label>
                     <select name="produit_id" class="w-full border-2 border-green-200 rounded-lg px-3 py-2" required>
                         <option value="">Select product</option>
@@ -316,6 +320,10 @@
                     <div>
                         <label class="block text-sm font-semibold mb-1">Client</label>
                         <input name="nom_client" value="{{ oldForThis.nom_client|default(commande.nomClient) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2" required maxlength="100"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Adresse de livraison</label>
+                        <input name="adresse_livraison" value="{{ oldForThis.adresse_livraison|default(commande.adresseLivraison) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2" maxlength="255"/>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-1">Product</label>

@@ -93,7 +93,7 @@ final class CommandeController extends AbstractController
             $action = (string) $request->request->get('checkout_action', 'confirm_order');
 
             if ($action === 'generate_promo') {
-                return $this->handlePromoGeneration($panierWithData, $total, $session);
+                return $this->handlePromoGeneration($request, $panierWithData, $total, $session);
             }
 
             if ($action === 'apply_promo') {
@@ -105,6 +105,7 @@ final class CommandeController extends AbstractController
 
         return $this->renderCheckout($panierWithData, $total, $session, [], [
             'nom_client' => (string) $session->get('user_name', ''),
+            'adresse_livraison' => '',
             'mode_paiement' => 'Cash',
             'promo_code' => '',
         ]);
@@ -122,12 +123,14 @@ final class CommandeController extends AbstractController
     {
         $formErrors = [];
         $nomClient = trim((string) $request->request->get('nom_client', ''));
+        $adresseLivraison = trim((string) $request->request->get('adresse_livraison', ''));
         $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
         $promoCode = strtoupper(trim((string) $request->request->get('promo_code', '')));
         $stripePaymentIntentId = trim((string) $request->request->get('stripe_payment_intent_id', ''));
 
         $old = [
             'nom_client' => $nomClient,
+            'adresse_livraison' => $adresseLivraison,
             'mode_paiement' => $modePaiement,
             'promo_code' => $promoCode,
             'stripe_payment_intent_id' => $stripePaymentIntentId,
@@ -135,6 +138,10 @@ final class CommandeController extends AbstractController
 
         if ($nomClient === '') {
             $formErrors['nom_client'][] = 'Le nom complet est obligatoire.';
+        }
+
+        if ($adresseLivraison === '') {
+            $formErrors['adresse_livraison'][] = 'L\'adresse de livraison est obligatoire.';
         }
 
         if ($modePaiement === '') {
@@ -193,6 +200,7 @@ final class CommandeController extends AbstractController
                 $commande->setQuantite($quantite);
                 $commande->setPrixTotal(number_format((float) $lineTotals[$index], 2, '.', ''));
                 $commande->setNomClient($nomClient);
+                $commande->setAdresseLivraison($adresseLivraison);
                 $commande->setStatutCommande('En attente');
                 $commande->setStatutPaiement($modePaiement === 'Carte bancaire' ? 'Payé' : 'Non payé');
                 $commande->setModePaiement($modePaiement !== '' ? $modePaiement : 'Cash');
@@ -266,12 +274,14 @@ final class CommandeController extends AbstractController
         }
     }
 
-    private function handlePromoGeneration(array $panierWithData, float $total, SessionInterface $session): Response
+    private function handlePromoGeneration(Request $request, array $panierWithData, float $total, SessionInterface $session): Response
     {
         $old = [
-            'nom_client' => trim((string) $session->get('user_name', '')),
-            'mode_paiement' => 'Cash',
-            'promo_code' => '',
+            'nom_client' => trim((string) $request->request->get('nom_client', (string) $session->get('user_name', ''))),
+            'adresse_livraison' => trim((string) $request->request->get('adresse_livraison', '')),
+            'mode_paiement' => trim((string) $request->request->get('mode_paiement', 'Cash')),
+            'promo_code' => strtoupper(trim((string) $request->request->get('promo_code', ''))),
+            'stripe_payment_intent_id' => trim((string) $request->request->get('stripe_payment_intent_id', '')),
         ];
 
         if ($total < self::PROMO_MIN_TOTAL) {
@@ -300,13 +310,16 @@ final class CommandeController extends AbstractController
     private function handlePromoApplication(Request $request, array $panierWithData, float $total, SessionInterface $session): Response
     {
         $nomClient = trim((string) $request->request->get('nom_client', (string) $session->get('user_name', '')));
+        $adresseLivraison = trim((string) $request->request->get('adresse_livraison', ''));
         $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
         $promoCode = strtoupper(trim((string) $request->request->get('promo_code', '')));
 
         $old = [
             'nom_client' => $nomClient,
+            'adresse_livraison' => $adresseLivraison,
             'mode_paiement' => $modePaiement,
             'promo_code' => $promoCode,
+            'stripe_payment_intent_id' => trim((string) $request->request->get('stripe_payment_intent_id', '')),
         ];
 
         if ($promoCode === '') {
@@ -613,13 +626,14 @@ final class CommandeController extends AbstractController
         }
 
         // Validation des données
-        if (!array_key_exists('produit_id', $data) || !array_key_exists('quantite', $data) || !array_key_exists('nom_client', $data)) {
+        if (!array_key_exists('produit_id', $data) || !array_key_exists('quantite', $data) || !array_key_exists('nom_client', $data) || !array_key_exists('adresse_livraison', $data)) {
             return new JsonResponse(['error' => 'Données manquantes'], 400);
         }
 
         $productId = (int) $data['produit_id'];
         $quantite = (int) ($data['quantite'] ?? 0);
         $nomClient = trim((string) ($data['nom_client'] ?? ''));
+        $adresseLivraison = trim((string) ($data['adresse_livraison'] ?? ''));
 
         $produit = $em->getRepository(Produit::class)->find($productId);
         
@@ -649,6 +663,7 @@ final class CommandeController extends AbstractController
             $commande->setQuantite($quantite);
             $commande->setPrixTotal(number_format($quantite * (float) $produit->getPrixUnitaire(), 2, '.', ''));
             $commande->setNomClient($nomClient);
+            $commande->setAdresseLivraison($adresseLivraison);
             $commande->setStatutCommande('En attente');
             $commande->setStatutPaiement('Non payé');
             $commande->setModePaiement($data['mode_paiement'] ?? 'Cash');
@@ -829,6 +844,7 @@ final class CommandeController extends AbstractController
         }
 
         $nomClient = trim((string) $request->request->get('nom_client', ''));
+        $adresseLivraison = trim((string) $request->request->get('adresse_livraison', ''));
         $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
         $statutCommande = trim((string) $request->request->get('statut_commande', 'En attente'));
         $statutPaiement = trim((string) $request->request->get('statut_paiement', 'Non payé'));
@@ -838,6 +854,7 @@ final class CommandeController extends AbstractController
         $commande->setQuantite((int) $quantite);
         $commande->setPrixTotal($prixTotalRaw);
         $commande->setNomClient($nomClient);
+        $commande->setAdresseLivraison($adresseLivraison);
         $commande->setModePaiement($modePaiement);
         $commande->setStatutCommande($statutCommande);
         $commande->setStatutPaiement($statutPaiement);

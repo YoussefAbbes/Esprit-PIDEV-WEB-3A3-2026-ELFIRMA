@@ -40,6 +40,9 @@
                                     <div style="margin-bottom: 10px;">
                                         <strong style="color: #2d5016;">Date de commande:</strong> {{ commande.dateCommande|date('d/m/Y à H:i') }}
                                     </div>
+                                    <div style="margin-bottom: 10px;">
+                                        <strong style="color: #2d5016;">Adresse de livraison:</strong> {{ commande.adresseLivraison ?: 'Non renseignee' }}
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
