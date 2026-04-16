@@ -1,3 +1,142 @@
+<style>
+/* ── Notification Bell in Header ── */
+#hdrNotifWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+#hdrNotifBtn {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #116530 0%, #0c4a23 100%);
+  border: none; cursor: pointer; flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(17,101,48,0.15);
+  text-decoration: none; color: white; position: relative;
+}
+#hdrNotifBtn:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(17,101,48,0.3); }
+#hdrNotifBtn.ringing { animation: hdr-bell-ring 0.65s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+@keyframes hdr-bell-ring {
+  0%,100% { transform: rotate(0); }
+  15%     { transform: rotate(15deg); }
+  30%     { transform: rotate(-13deg); }
+  45%     { transform: rotate(10deg); }
+  60%     { transform: rotate(-7deg); }
+  75%     { transform: rotate(4deg); }
+}
+#hdrNotifBtn i { font-size: 1.1rem; }
+#hdrNotifBadge {
+  position: absolute; top: -4px; right: -4px;
+  background: #ef4444; color: #fff;
+  font-size: 0.6rem; font-weight: 800;
+  min-width: 18px; height: 18px;
+  border-radius: 9px; padding: 0 4px;
+  display: none; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(239,68,68,0.4);
+  animation: hdr-badge-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes hdr-badge-pop { from { transform:scale(0); } to { transform:scale(1); } }
+
+#hdrNotifPanel {
+  position: absolute;
+  top: 52px; right: -8px;
+  width: 320px;
+  max-height: 420px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 16px 52px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  z-index: 9999;
+  transform: scale(0.88) translateY(-12px);
+  transform-origin: top right;
+  opacity: 0; visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+              opacity 0.25s ease, visibility 0s linear 0.3s;
+  pointer-events: none;
+}
+#hdrNotifPanel.open {
+  transform: scale(1) translateY(0);
+  opacity: 1; visibility: visible;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+              opacity 0.25s ease, visibility 0s linear 0s;
+  pointer-events: all;
+}
+.hdr-np-head {
+  background: linear-gradient(135deg, #052e16 0%, #116530 100%);
+  padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0;
+}
+.hdr-np-head-icon { font-size: 1.15rem; color: #fbbf24; flex-shrink: 0; margin-top: 1px; }
+.hdr-np-head-text { flex: 1; }
+.hdr-np-head-text h6 { color: #fff; margin: 0; font-size: 0.88rem; font-weight: 800; }
+.hdr-np-head-text span { color: rgba(255,255,255,0.6); font-size: 0.68rem; }
+.hdr-np-close {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,0.14); border: none;
+  color: #fff; cursor: pointer; font-size: 0.75rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.2s;
+}
+.hdr-np-close:hover { background: rgba(255,255,255,0.28); }
+.hdr-np-list {
+  overflow-y: auto; flex: 1;
+  scrollbar-width: thin; scrollbar-color: #d1fae5 transparent;
+}
+.hdr-np-item {
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 12px 15px; border-bottom: 1px solid #f3f4f6;
+  transition: background 0.15s;
+}
+.hdr-np-item:last-child { border-bottom: none; }
+.hdr-np-item:hover { background: #f9fafb; }
+.hdr-np-emoji {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #bbf7d0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0; margin-top: 1px;
+}
+.hdr-np-body { flex: 1; min-width: 0; }
+.hdr-np-name {
+  font-size: 0.82rem; font-weight: 700; color: #111827;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.hdr-np-parcel {
+  font-size: 0.68rem; color: #6b7280;
+  display: flex; align-items: center; gap: 3px; margin-bottom: 5px;
+}
+.hdr-np-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.65rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+.hdr-np-days {
+  font-size: 0.65rem; font-weight: 800;
+  white-space: nowrap; flex-shrink: 0;
+  text-align: right; margin-top: 3px;
+}
+.hdr-np-empty {
+  padding: 32px 16px; text-align: center; color: #9ca3af;
+}
+.hdr-np-empty i { font-size: 2rem; display: block; margin-bottom: 8px; }
+.hdr-np-footer {
+  padding: 10px 16px; border-top: 1px solid #f3f4f6;
+  text-align: center; flex-shrink: 0; background: #fafafa;
+}
+.hdr-np-footer a {
+  font-size: 0.75rem; font-weight: 700; color: #116530;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.hdr-np-footer a:hover { color: #052e16; }
+@media (max-width: 480px) {
+  #hdrNotifPanel { width: calc(100vw - 24px); right: -4px; }
+}
+</style>
+
 <header id="header" class="header d-flex align-items-center position-relative">
   <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
 
@@ -40,6 +179,33 @@
         <a href="{{ path('elfirma_profile') }}" class="btn-profile" title="My Profile" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(17, 101, 48, 0.15);">
           <i class="bi bi-person-fill" style="font-size: 1.3rem;"></i>
         </a>
+
+        {# ── Notification Bell ── #}
+        <div id="hdrNotifWrapper">
+          <div id="hdrNotifPanel" role="dialog" aria-label="Upcoming harvests">
+            <div class="hdr-np-head">
+              <i class="bi bi-bell-fill hdr-np-head-icon"></i>
+              <div class="hdr-np-head-text">
+                <h6>Upcoming Harvests</h6>
+                <span id="hdrNpSub">—</span>
+              </div>
+              <button class="hdr-np-close" id="hdrNpClose" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="hdr-np-list" id="hdrNpList">
+              <div class="hdr-np-empty"><i class="bi bi-hourglass"></i><span>Loading…</span></div>
+            </div>
+            <div class="hdr-np-footer">
+              <a href="{{ path('app_client_cultures') }}">
+                <i class="bi bi-arrow-right-circle"></i> View all crops
+              </a>
+            </div>
+          </div>
+          <button id="hdrNotifBtn" title="Upcoming Harvests" aria-expanded="false">
+            <i class="bi bi-bell-fill"></i>
+            <span id="hdrNotifBadge" style="display:none;"></span>
+          </button>
+        </div>
+
         <a href="{{ path('app_logout') }}" class="btn-logout" title="Logout" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);">
           <i class="bi bi-box-arrow-right" style="font-size: 1.3rem;"></i>
         </a>
@@ -52,3 +218,145 @@
 
   </div>
 </header>
+
+<script>
+/* ── Global Notification Bell ── */
+(function () {
+  var btn     = document.getElementById('hdrNotifBtn');
+  var panel   = document.getElementById('hdrNotifPanel');
+  var closeEl = document.getElementById('hdrNpClose');
+  var listEl  = document.getElementById('hdrNpList');
+  var badgeEl = document.getElementById('hdrNotifBadge');
+  var subEl   = document.getElementById('hdrNpSub');
+  if (!btn || !panel) return;
+
+  /* ── helpers ── */
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  function daysUntil(dateStr) {
+    return Math.round((new Date(dateStr + 'T00:00:00') - today) / 86400000);
+  }
+  function urgencyStyle(days) {
+    if (days < 0)   return 'background:#fee2e2;color:#991b1b;';
+    if (days <= 7)  return 'background:#fef3c7;color:#92400e;';
+    if (days <= 30) return 'background:#dcfce7;color:#166534;';
+    return 'background:#eff6ff;color:#1d4ed8;';
+  }
+  function daysLabel(days) {
+    if (days < 0)   return '🔴 Overdue ' + Math.abs(days) + 'd';
+    if (days === 0) return '🔴 Today!';
+    if (days === 1) return '🔴 Tomorrow';
+    if (days <= 7)  return '🟠 In ' + days + 'd';
+    if (days <= 30) return '🟡 In ' + days + 'd';
+    return '🟢 In ' + days + 'd';
+  }
+  var EMOJIS = {
+    wheat:'🌾',barley:'🌾',corn:'🌽',maize:'🌽',rice:'🌾',
+    tomato:'🍅',tomate:'🍅',potato:'🥔',pepper:'🫑',poivron:'🫑',
+    watermelon:'🍉',pastèque:'🍉',olive:'🫒',onion:'🧅',oignon:'🧅',
+    carrot:'🥕',carotte:'🥕',sunflower:'🌻',melon:'🍈',
+    cucumber:'🥒',eggplant:'🍆',garlic:'🧄',lettuce:'🥬'
+  };
+  function cropEmoji(name) {
+    var n = (name||'').toLowerCase();
+    for (var k in EMOJIS) { if (n.indexOf(k) !== -1) return EMOJIS[k]; }
+    return '🌿';
+  }
+
+  /* ── populate ── */
+  function populate(items) {
+    var count = items.length;
+
+    if (count > 0) {
+      badgeEl.textContent   = count > 9 ? '9+' : count;
+      badgeEl.style.display = 'flex';
+      setTimeout(function () {
+        btn.classList.add('ringing');
+        setTimeout(function () { btn.classList.remove('ringing'); }, 700);
+      }, 1600);
+    } else {
+      badgeEl.style.display = 'none';
+    }
+
+    if (subEl) {
+      subEl.textContent = count > 0
+        ? count + ' crop' + (count !== 1 ? 's' : '') + ' need harvesting soon'
+        : 'No upcoming harvests right now';
+    }
+
+    if (items.length === 0) {
+      listEl.innerHTML =
+        '<div class="hdr-np-empty">' +
+          '<i class="bi bi-check-circle" style="color:#16a34a;"></i>' +
+          '<span>All harvests are up to date!</span>' +
+        '</div>';
+      return;
+    }
+
+    listEl.innerHTML = items.map(function (it) {
+      var days  = daysUntil(it.date);
+      var style = urgencyStyle(days);
+      return (
+        '<div class="hdr-np-item">' +
+          '<div class="hdr-np-emoji">' + cropEmoji(it.name) + '</div>' +
+          '<div class="hdr-np-body">' +
+            '<div class="hdr-np-name">' + it.name + '</div>' +
+            '<div class="hdr-np-parcel">' +
+              '<i class="bi bi-map-fill" style="color:#16a34a;font-size:.65rem;"></i>' + it.parcelle +
+            '</div>' +
+            '<span class="hdr-np-chip" style="' + style + '">' +
+              '<i class="bi bi-calendar3"></i>' + it.dateDisplay +
+            '</span>' +
+          '</div>' +
+          '<div class="hdr-np-days">' + daysLabel(days) + '</div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  /* ── read data from cultures page if present, else show link ── */
+  function init() {
+    var dataEl = document.getElementById('ccUpcomingData');
+    if (dataEl) {
+      var items = [];
+      try { items = JSON.parse(dataEl.dataset.items || '[]'); } catch (e) {}
+      /* Keep all items with a date — past ones show as overdue, not silently hidden */
+      items = items.filter(function (it) {
+        return !!it.date;
+      }).sort(function (a, b) {
+        return new Date(a.date) - new Date(b.date);
+      });
+      populate(items);
+    } else {
+      /* not on cultures page — show a prompt */
+      badgeEl.style.display = 'none';
+      if (subEl) subEl.textContent = 'Visit Crops page to see harvests';
+      listEl.innerHTML =
+        '<div class="hdr-np-empty">' +
+          '<i class="bi bi-flower2"></i>' +
+          '<span style="font-size:.8rem;">Open the <strong>Crops</strong> page to load upcoming harvest alerts.</span>' +
+        '</div>';
+    }
+  }
+
+  /* ── toggle ── */
+  var isOpen = false;
+  function openPanel()  { isOpen = true;  panel.classList.add('open');    btn.setAttribute('aria-expanded','true');  }
+  function closePanel() { isOpen = false; panel.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+
+  btn.addEventListener('click', function (e) { e.stopPropagation(); isOpen ? closePanel() : openPanel(); });
+  if (closeEl) closeEl.addEventListener('click', function (e) { e.stopPropagation(); closePanel(); });
+  document.addEventListener('click', function (e) {
+    var w = document.getElementById('hdrNotifWrapper');
+    if (isOpen && w && !w.contains(e.target)) closePanel();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closePanel(); });
+
+  /* run after DOM is ready */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

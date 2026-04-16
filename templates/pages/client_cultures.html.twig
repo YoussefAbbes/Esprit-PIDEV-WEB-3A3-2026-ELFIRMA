@@ -690,6 +690,8 @@
 .up-medium { background: #dcfce7; color: #166534; }
 .up-far    { background: #eff6ff; color: #1d4ed8; }
 
+
+
 /* =====================================================
    CTA SECTION
    ===================================================== */
@@ -1402,7 +1404,7 @@
 </section>
 
 {# ===========================================================
-   UPCOMING HARVESTS SECTION
+   UPCOMING HARVESTS — data embedded for notification bell
    =========================================================== #}
 {% set _upcoming = [] %}
 {% for culture in cultures %}
@@ -1411,43 +1413,18 @@
   {% endif %}
 {% endfor %}
 
-{% if _upcoming is not empty %}
-<section class="py-5" style="background:var(--cf-bg);">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-xl-7 col-lg-9" data-aos="fade-up">
-        <div class="cc-upcoming-wrap">
-          <div class="cc-upcoming-head">
-            <i class="bi bi-calendar2-week text-warning fs-4"></i>
-            <h5>Upcoming Harvests</h5>
-            <span class="ms-auto badge"
-                  style="background:rgba(251,191,36,0.18);color:#fbbf24;font-size:0.75rem;">
-              {{ _upcoming|length }} crop(s)
-            </span>
-          </div>
-          <ul class="cc-upcoming-list">
-            {% for culture in _upcoming %}
-              <li class="cc-upcoming-item">
-                <div>
-                  <div class="cc-up-name">{{ culture.nomCulture }}</div>
-                  <div class="cc-up-parcelle">
-                    <i class="bi bi-map-fill text-success me-1"></i>
-                    {{ culture.parcelle ? culture.parcelle.nom : 'N/A' }}
-                  </div>
-                </div>
-                <span class="cc-up-badge up-medium"
-                      data-harvest="{{ culture.dateRecoltePrevue|date('Y-m-d') }}">
-                  <i class="bi bi-calendar3 me-1"></i>{{ culture.dateRecoltePrevue|date('d M Y') }}
-                </span>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-{% endif %}
+{# Hidden JSON payload — read by the notification bell JS #}
+<div id="ccUpcomingData" style="display:none;"
+     data-count="{{ _upcoming|length }}"
+     data-items="{{ _upcoming|map(c => {
+       'name':        c.nomCulture,
+       'parcelle':    c.parcelle ? c.parcelle.nom : 'N/A',
+       'date':        c.dateRecoltePrevue|date('Y-m-d'),
+       'dateDisplay': c.dateRecoltePrevue|date('d M Y'),
+       'statut':      c.statut|default('')
+     })|json_encode|e('html_attr') }}"></div>
+
+
 
 {# ===========================================================
    CROP SEASONAL CALENDAR
@@ -1700,29 +1677,7 @@ if (heroEl) {
   heroObs.observe(heroEl);
 }
 
-/* ============================================================
-   3 · UPCOMING HARVEST DAYS-UNTIL LABELS
-   ============================================================ */
-document.querySelectorAll('[data-harvest]').forEach(function (el) {
-  const date  = new Date(el.dataset.harvest);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff  = Math.ceil((date - today) / 86400000);
 
-  if (diff <= 0) {
-    el.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Ready to harvest!';
-    el.className = 'cc-up-badge up-soon';
-  } else if (diff <= 14) {
-    el.innerHTML = '<i class="bi bi-alarm me-1"></i>In ' + diff + ' day' + (diff === 1 ? '' : 's');
-    el.className = 'cc-up-badge up-soon';
-  } else if (diff <= 60) {
-    el.innerHTML = '<i class="bi bi-calendar3 me-1"></i>In ' + diff + ' days';
-    el.className = 'cc-up-badge up-medium';
-  } else {
-    el.innerHTML = '<i class="bi bi-calendar3 me-1"></i>In ' + diff + ' days';
-    el.className = 'cc-up-badge up-far';
-  }
-});
 
 /* ============================================================
    4 · FILTERING — shared state

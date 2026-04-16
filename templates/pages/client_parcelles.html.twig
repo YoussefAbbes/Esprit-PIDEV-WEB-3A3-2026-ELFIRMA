@@ -2112,7 +2112,7 @@ var PF = (function () {
 
     if (name === 'map') {
       destroyMap();
-      setTimeout(function () { initMap(pendLat, pendLng); }, 90);
+      setTimeout(function () { initMap(pendLat, pendLng); }, 350);
     } else {
       destroyMap();
     }
@@ -2176,7 +2176,10 @@ var PF = (function () {
         )
         .openPopup();
 
-      setTimeout(function () { leaflet.invalidateSize(); }, 200);
+      leaflet.invalidateSize();
+      setTimeout(function () { leaflet.invalidateSize(); }, 250);
+      setTimeout(function () { leaflet.invalidateSize(); }, 600);
+      setTimeout(function () { leaflet.invalidateSize(); }, 1100);
     } else {
       mapEl.style.display = 'none';
       phEl.style.display  = 'flex';
