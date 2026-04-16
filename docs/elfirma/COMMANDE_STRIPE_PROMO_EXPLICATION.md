@@ -126,29 +126,28 @@ Ce qui a ete implemente dans le front office commande:
 - Methode controller: create(...)
 
 ### API interne Stripe
-- POST /commande/stripe/create-intent
-- name: app_commande_stripe_create_intent
-- Methode controller: createStripePaymentIntent(...)
-- Role: creer un PaymentIntent Stripe (retourne clientSecret + paymentIntentId)
 
-### API interne Chatbot commande
+### Conversion TND -> EUR (nouveau)
+- API externe: https://v6.exchangerate-api.com/v6/{API_KEY}/latest/TND
+- Utilisation: convertir le total commande en TND vers EUR avant creation du PaymentIntent Stripe.
+- Raison: les montants produit/commande sont en dinar tunisien, Stripe est configure en EUR.
+
+- Montant attendu: base sur un quote EUR stocke en session lors de create-intent.
 - POST /api/commande/chatbot
-- name: app_api_commande_chatbot
-- Methode controller: chatbot(...)
-- Role: assistant intelligent pour aider le client pendant le checkout (promo, paiement, adresse, total)
+- Variable conversion devise: EXCHANGE_RATE_API_KEY
 
-### Recu paiement carte (nouveau)
 - GET /commande/{id}/receipt
 - name: app_commande_receipt
 - Methode controller: receipt(...)
+- Ajout conversion devise:
+  - convertTndToEur(...),
+  - utilisation API ExchangeRate,
+  - stockage quote (TND/EUR/taux) en session pour verification paiement fiable.
 - Role: ouvrir le recu de paiement dans une page moderne avec bouton Imprimer.
-
-- GET /commande/{id}/receipt/download
-- name: app_commande_receipt_download
+- EXCHANGE_RATE_API_KEY.
 - Methode controller: downloadReceipt(...)
-- Role: telecharger le recu en fichier HTML.
-
-## 4.1) Ou j'ai mis l'API (emplacement exact)
+- Ajout cle locale ExchangeRate API (dev).
+- Etape 10: integration conversion TND->EUR via ExchangeRate API pour paiement Stripe (MVC + session quote).
 ### API Stripe backend (Symfony)
 - Fichier: src/Controller/CommandeController.php
 - Route: /commande/stripe/create-intent
@@ -372,6 +371,40 @@ R: Date expires_at stockee en session et verifiee a chaque action.
 - Etape 7: ajout recu paiement carte (message anime, telechargement HTML, bouton imprimer, routes dediees).
 - Etape 8: redesign moderne vert agriculture du recu + integration du logo EL FIRMA.
 - Etape 9: ajout bouton "My Orders" dans le header front office a cote de "Panier".
+- Etape 10: integration ExchangeRate API pour convertir le total checkout TND->EUR dans le flux Stripe.
+- Etape 11: affichage front office en double devise (DT + EUR) sur produits, panier, checkout, commandes client et recu paiement.
+
+## 12) Double devise front office (DT + EUR)
+- Objectif:
+  - permettre aux clients etrangers de lire les montants en EUR tout en gardant le DT comme devise principale.
+- Source du taux:
+  - API ExchangeRate: https://v6.exchangerate-api.com/v6/{API_KEY}/latest/TND
+  - variable env: EXCHANGE_RATE_API_KEY
+
+- Controllers concernes:
+  - src/Controller/AuthController.php: passe tnd_to_eur_rate a la page produits (home).
+  - src/Controller/PanierController.php: passe tnd_to_eur_rate au panier.
+  - src/Controller/CommandeController.php:
+    - passe tnd_to_eur_rate aux pages commandes front (liste/detail/recu),
+    - conserve la conversion Stripe,
+    - fallback sur le taux stocke en session stripe_payment_quote si l'API est indisponible.
+
+- Views front mises a jour:
+  - templates/pages/index.html.twig:
+    - prix produit en DT + equivalent EUR,
+    - modal detail produit en DT + EUR,
+    - message quick order avec indication EUR.
+  - templates/panier_index.html.twig:
+    - prix unitaire, sous-totaux et total en DT + EUR,
+    - recalcul JS synchro DT/EUR lors des modifications quantite.
+  - templates/commande_create.html.twig:
+    - recap commande en DT + EUR (lignes, reduction promo, total).
+  - templates/commande_index.html.twig:
+    - total commande en DT + EUR.
+  - templates/commande_show.html.twig:
+    - prix unitaire et total en DT + EUR.
+  - templates/commande_receipt.html.twig:
+    - montant regle en DT + EUR.
 
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

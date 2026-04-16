@@ -58,7 +58,10 @@
                                             </div>
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
-                                            <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ item.produit.prixUnitaire }} DT</span>
+                                            <span style="font-size: 18px; font-weight: 700; color: #16a34a;" data-unit-price-tnd="{{ item.produit.prixUnitaire }}">{{ item.produit.prixUnitaire|number_format(2, '.', ' ') }} DT</span>
+                                            {% if tnd_to_eur_rate is not null %}
+                                                <div style="font-size: 12px; color: #0f766e; font-weight: 600; margin-top: 4px;">~ {{ (item.produit.prixUnitaire * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                            {% endif %}
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                             <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -72,7 +75,10 @@
                                             </div>
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: right; vertical-align: middle;">
-                                            <span id="subtotal-{{ item.produit.idProduit }}" style="font-size: 20px; font-weight: 800; color: #16a34a;">{{ item.subtotal }} DT</span>
+                                            <span id="subtotal-{{ item.produit.idProduit }}" style="font-size: 20px; font-weight: 800; color: #16a34a;" data-subtotal-tnd="{{ item.subtotal }}">{{ item.subtotal|number_format(2, '.', ' ') }} DT</span>
+                                            {% if tnd_to_eur_rate is not null %}
+                                                <div id="subtotal-eur-{{ item.produit.idProduit }}" style="font-size: 12px; color: #0f766e; font-weight: 600; margin-top: 4px;">~ {{ (item.subtotal * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                            {% endif %}
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                             <button onclick="removeFromCart({{ item.produit.idProduit }})" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
@@ -114,7 +120,7 @@
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                             <span style="color: #6b7280;">Sous-total:</span>
-                            <span id="cart-subtotal" style="font-weight: 600;">{{ total }} DT</span>
+                            <span id="cart-subtotal" style="font-weight: 600;">{{ total|number_format(2, '.', ' ') }} DT</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                             <span style="color: #6b7280;">Livraison:</span>
@@ -123,8 +129,11 @@
                         <hr style="border: none; border-top: 2px solid #f3f4f6; margin: 20px 0;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total:</span>
-                            <span id="cart-total" style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total }} DT</span>
+                            <span id="cart-total" style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total|number_format(2, '.', ' ') }} DT</span>
                         </div>
+                        {% if tnd_to_eur_rate is not null %}
+                            <div id="cart-total-eur" style="text-align: right; margin-top: 6px; color: #0f766e; font-size: 13px; font-weight: 700;">~ {{ (total * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                        {% endif %}
                     </div>
 
                     <a href="{{ path('app_commande_create') }}" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 15px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; text-align: center; display: block; margin-bottom: 15px;">
@@ -145,6 +154,8 @@
 </div>
 
 <script>
+const tndToEurRate = {{ tnd_to_eur_rate is not null ? tnd_to_eur_rate|number_format(6, '.', '') : 'null' }};
+
 async function updateQuantity(productId, newQuantity) {
     if (newQuantity < 0) return;
     
@@ -171,11 +182,20 @@ async function updateQuantity(productId, newQuantity) {
                 
                 // Calculer le nouveau sous-total
                 const row = document.querySelector(`tr[data-product-id="${productId}"]`);
-                const priceText = row.querySelector('td:nth-child(2) span').textContent;
-                const price = parseFloat(priceText.replace(' DT', ''));
+                const unitPriceEl = row.querySelector('[data-unit-price-tnd]');
+                const price = parseFloat(unitPriceEl.dataset.unitPriceTnd || '0');
                 const newSubtotal = price * newQuantity;
                 
-                document.getElementById('subtotal-' + productId).textContent = newSubtotal + ' DT';
+                const subtotalEl = document.getElementById('subtotal-' + productId);
+                subtotalEl.dataset.subtotalTnd = newSubtotal.toFixed(2);
+                subtotalEl.textContent = `${newSubtotal.toFixed(2)} DT`;
+
+                if (tndToEurRate !== null) {
+                    const subtotalEurEl = document.getElementById('subtotal-eur-' + productId);
+                    if (subtotalEurEl) {
+                        subtotalEurEl.textContent = `~ ${(newSubtotal * tndToEurRate).toFixed(2)} EUR`;
+                    }
+                }
                 
                 // Recalculer le total
                 calculateTotal();
@@ -249,12 +269,19 @@ function calculateTotal() {
     const subtotalElements = document.querySelectorAll('[id^="subtotal-"]');
     
     subtotalElements.forEach(element => {
-        const subtotal = parseFloat(element.textContent.replace(' DT', ''));
+        const subtotal = parseFloat(element.dataset.subtotalTnd || '0');
         total += subtotal;
     });
     
-    document.getElementById('cart-subtotal').textContent = total + ' DT';
-    document.getElementById('cart-total').textContent = total + ' DT';
+    document.getElementById('cart-subtotal').textContent = `${total.toFixed(2)} DT`;
+    document.getElementById('cart-total').textContent = `${total.toFixed(2)} DT`;
+
+    if (tndToEurRate !== null) {
+        const totalEurEl = document.getElementById('cart-total-eur');
+        if (totalEurEl) {
+            totalEurEl.textContent = `~ ${(total * tndToEurRate).toFixed(2)} EUR`;
+        }
+    }
 }
 </script>
 {% endblock %}

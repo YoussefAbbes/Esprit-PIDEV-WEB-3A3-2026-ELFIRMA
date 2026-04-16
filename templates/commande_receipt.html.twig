@@ -287,7 +287,12 @@
                     <div class="label">Montant regle</div>
                     <div class="value">Quantite: {{ commande.quantite }}</div>
                 </div>
-                <strong>{{ commande.prixTotal }} DT</strong>
+                <div style="text-align: right;">
+                    <strong>{{ commande.prixTotal|number_format(2, '.', ' ') }} DT</strong>
+                    {% if tnd_to_eur_rate is not null %}
+                        <div style="margin-top: 6px; color: #0f766e; font-weight: 700; font-size: 14px;">~ {{ (commande.prixTotal * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                    {% endif %}
+                </div>
             </div>
         </div>
 

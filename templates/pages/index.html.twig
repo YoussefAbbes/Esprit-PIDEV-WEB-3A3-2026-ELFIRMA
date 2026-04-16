@@ -361,6 +361,16 @@
                     <div>
                       <span style="font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); background-clip: text; -webkit-background-clip: text; color: transparent;">{{ produit.prixUnitaire }}</span>
                       <small style="font-size: 14px; font-weight: 700; color: #6b7280; margin-left: 4px;">DT</small>
+                      <div
+                        class="product-price-eur"
+                        data-product-id="{{ produit.idProduit }}"
+                        data-price-tnd="{{ produit.prixUnitaire }}"
+                        style="font-size: 12px; color: #0f766e; font-weight: 700; margin-top: 3px; {% if tnd_to_eur_rate is not defined or tnd_to_eur_rate is null %}display:none;{% endif %}"
+                      >
+                        {% if tnd_to_eur_rate is defined and tnd_to_eur_rate is not null %}
+                          ~ {{ (produit.prixUnitaire * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR
+                        {% endif %}
+                      </div>
                     </div>
                     
                     <div style="display: flex; gap: 8px;">
@@ -461,6 +471,8 @@
     </div>
 
     <script>
+      let tndToEurRate = {{ (tnd_to_eur_rate is defined and tnd_to_eur_rate is not null) ? tnd_to_eur_rate|number_format(6, '.', '') : 'null' }};
+
       // Product data (passed from PHP)
       const productsData = {
         {% for produit in produits %}
@@ -469,6 +481,7 @@
           nom: "{{ produit.nom|e('js') }}",
           type: "{{ typeLabelMap[produit.type]|default(produit.type)|e('js') }}",
           prix: "{{ produit.prixUnitaire }}",
+          prixEur: {{ (tnd_to_eur_rate is defined and tnd_to_eur_rate is not null) ? (produit.prixUnitaire * tnd_to_eur_rate)|number_format(2, '.', '') : 'null' }},
           stock: {{ produit.quantiteStock }},
           qualite: "{{ qualiteLabelMap[produit.qualite]|default(produit.qualite)|e('js') }}",
           statut: "{{ statutLabelMap[produit.statut]|default(produit.statut)|e('js') }}",
@@ -566,6 +579,7 @@
                     <p style="font-size: 52px; font-weight: 900; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); background-clip: text; -webkit-background-clip: text; color: transparent; margin: 0; line-height: 1;">
                       ${product.prix} <span style="font-size: 28px; font-weight: 800; color: #374151;">DT</span>
                     </p>
+                    ${product.prixEur !== null ? `<p style="margin: 8px 0 0 0; font-size: 14px; color: #0f766e; font-weight: 700;">~ ${Number(product.prixEur).toFixed(2)} EUR</p>` : ''}
                   </div>
                   <div style="display: flex; gap: 12px; flex-direction: column; width: 200px;">
                     <button onclick="addToCart(${product.id})" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; padding: 16px 20px; border-radius: 15px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); transform: translateY(0);">
@@ -585,6 +599,52 @@
 
         document.getElementById('productModal').style.display = 'block';
         document.body.style.overflow = 'hidden';
+      }
+
+      function applyExchangeRateOnProducts(rate) {
+        if (rate === null || Number.isNaN(Number(rate))) {
+          return;
+        }
+
+        tndToEurRate = Number(rate);
+
+        Object.keys(productsData).forEach((key) => {
+          const product = productsData[key];
+          const priceTnd = Number(product.prix);
+          product.prixEur = Number.isNaN(priceTnd) ? null : Number((priceTnd * tndToEurRate).toFixed(2));
+        });
+
+        const eurElements = document.querySelectorAll('.product-price-eur');
+        eurElements.forEach((el) => {
+          const priceTnd = Number(el.dataset.priceTnd || '0');
+          if (Number.isNaN(priceTnd)) {
+            return;
+          }
+
+          el.textContent = `~ ${(priceTnd * tndToEurRate).toFixed(2)} EUR`;
+          el.style.display = 'block';
+        });
+      }
+
+      async function loadExchangeRateForShop() {
+        if (tndToEurRate !== null) {
+          applyExchangeRateOnProducts(tndToEurRate);
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/exchange/tnd-eur');
+          if (!response.ok) {
+            return;
+          }
+
+          const result = await response.json();
+          if (result.ok && typeof result.rate === 'number' && result.rate > 0) {
+            applyExchangeRateOnProducts(result.rate);
+          }
+        } catch (error) {
+          console.error('Error loading exchange rate:', error);
+        }
       }
 
       function closeProductDetails() {
@@ -781,7 +841,11 @@
           const result = await response.json();
           
           if (result.success) {
-            showNotification(`Order #${result.order_id} created successfully! Total: ${result.total} DT`, 'success');
+            const totalTnd = Number(result.total);
+            const eurHint = tndToEurRate !== null && !Number.isNaN(totalTnd)
+              ? ` (~ ${(totalTnd * tndToEurRate).toFixed(2)} EUR)`
+              : '';
+            showNotification(`Order #${result.order_id} created successfully! Total: ${result.total} DT${eurHint}`, 'success');
             closeOrderForm();
             // Reload page to refresh stock values
             setTimeout(() => location.reload(), 2000);
@@ -888,6 +952,8 @@
 
       // Load cart item count on page load
       document.addEventListener('DOMContentLoaded', async function() {
+        await loadExchangeRateForShop();
+
         const quickOrderForm = document.getElementById('quickOrderForm');
         if (quickOrderForm) {
           quickOrderForm.addEventListener('submit', submitQuickOrder);

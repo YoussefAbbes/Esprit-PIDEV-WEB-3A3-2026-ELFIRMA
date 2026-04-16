@@ -21,9 +21,29 @@ final class CommandeController extends AbstractController
     private const PROMO_DISCOUNT_PERCENT = 10;
     private const PROMO_VALID_DAYS = 3;
     private const STRIPE_API_BASE = 'https://api.stripe.com/v1';
+    private const EXCHANGE_RATE_API_BASE = 'https://v6.exchangerate-api.com/v6';
+
+    #[Route('/api/exchange/tnd-eur', name: 'app_api_exchange_tnd_eur', methods: ['GET'])]
+    public function exchangeTndToEur(HttpClientInterface $httpClient, SessionInterface $session): JsonResponse
+    {
+        $rate = $this->getTndToEurRate($httpClient, $session);
+        if ($rate === null) {
+            return new JsonResponse([
+                'ok' => false,
+                'message' => 'Taux TND/EUR indisponible pour le moment.',
+            ], 502);
+        }
+
+        return new JsonResponse([
+            'ok' => true,
+            'base' => 'TND',
+            'target' => 'EUR',
+            'rate' => $rate,
+        ]);
+    }
 
     #[Route('/commandes', name: 'app_commandes_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em, SessionInterface $session): Response
+    public function index(EntityManagerInterface $em, SessionInterface $session, HttpClientInterface $httpClient): Response
     {
         $userName = trim((string) $session->get('user_name', ''));
         $criteria = [];
@@ -35,12 +55,13 @@ final class CommandeController extends AbstractController
         $commandes = $em->getRepository(Commande::class)->findBy($criteria, ['date_commande' => 'DESC']);
 
         return $this->render('commande_index.html.twig', [
-            'commandes' => $commandes
+            'commandes' => $commandes,
+            'tnd_to_eur_rate' => $this->getTndToEurRate($httpClient, $session),
         ]);
     }
 
     #[Route('/commande/{id}', name: 'app_commande_show', methods: ['GET'])]
-    public function show(int $id, EntityManagerInterface $em): Response
+    public function show(int $id, EntityManagerInterface $em, HttpClientInterface $httpClient, SessionInterface $session): Response
     {
         $commande = $em->getRepository(Commande::class)->find($id);
 
@@ -49,12 +70,13 @@ final class CommandeController extends AbstractController
         }
 
         return $this->render('commande_show.html.twig', [
-            'commande' => $commande
+            'commande' => $commande,
+            'tnd_to_eur_rate' => $this->getTndToEurRate($httpClient, $session),
         ]);
     }
 
     #[Route('/commande/{id}/receipt', name: 'app_commande_receipt', methods: ['GET'])]
-    public function receipt(int $id, EntityManagerInterface $em): Response
+    public function receipt(int $id, EntityManagerInterface $em, HttpClientInterface $httpClient, SessionInterface $session): Response
     {
         $commande = $em->getRepository(Commande::class)->find($id);
 
@@ -70,11 +92,12 @@ final class CommandeController extends AbstractController
         return $this->render('commande_receipt.html.twig', [
             'commande' => $commande,
             'receipt_logo_data_uri' => $this->buildReceiptLogoDataUri(),
+            'tnd_to_eur_rate' => $this->getTndToEurRate($httpClient, $session),
         ]);
     }
 
     #[Route('/commande/{id}/receipt/download', name: 'app_commande_receipt_download', methods: ['GET'])]
-    public function downloadReceipt(int $id, EntityManagerInterface $em): Response
+    public function downloadReceipt(int $id, EntityManagerInterface $em, HttpClientInterface $httpClient, SessionInterface $session): Response
     {
         $commande = $em->getRepository(Commande::class)->find($id);
 
@@ -91,6 +114,7 @@ final class CommandeController extends AbstractController
             'commande' => $commande,
             'is_download' => true,
             'receipt_logo_data_uri' => $this->buildReceiptLogoDataUri(),
+            'tnd_to_eur_rate' => $this->getTndToEurRate($httpClient, $session),
         ]);
 
         $filename = sprintf('recu-paiement-commande-%d.html', (int) ($commande->getIdCommande() ?? 0));
@@ -167,11 +191,11 @@ final class CommandeController extends AbstractController
             $action = (string) $request->request->get('checkout_action', '');
 
             if ($action === 'generate_promo') {
-                return $this->handlePromoGeneration($request, $panierWithData, $total, $session);
+                return $this->handlePromoGeneration($request, $panierWithData, $total, $session, $httpClient);
             }
 
             if ($action === 'apply_promo') {
-                return $this->handlePromoApplication($request, $panierWithData, $total, $session);
+                return $this->handlePromoApplication($request, $panierWithData, $total, $session, $httpClient);
             }
 
             if ($action !== 'confirm_order') {
@@ -183,7 +207,7 @@ final class CommandeController extends AbstractController
                     'mode_paiement' => trim((string) $request->request->get('mode_paiement', 'Cash')),
                     'promo_code' => strtoupper(trim((string) $request->request->get('promo_code', ''))),
                     'stripe_payment_intent_id' => trim((string) $request->request->get('stripe_payment_intent_id', '')),
-                ]);
+                ], $httpClient);
             }
 
             return $this->processOrder($request, $panierWithData, $total, $session, $em, $validator, $httpClient);
@@ -194,7 +218,7 @@ final class CommandeController extends AbstractController
             'adresse_livraison' => '',
             'mode_paiement' => 'Cash',
             'promo_code' => '',
-        ]);
+        ], $httpClient);
     }
 
     private function processOrder(
@@ -235,26 +259,35 @@ final class CommandeController extends AbstractController
         }
 
         if ($formErrors !== []) {
-            return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+            return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
         }
 
         $promoSummary = $this->resolvePromoSummary($session, $total);
         if ($promoCode !== '' && (!$promoSummary['is_applied'] || $promoSummary['applied_code'] !== $promoCode)) {
             $formErrors['promo_code'][] = 'Code promo invalide, expire ou non applique.';
-            return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+            return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
         }
 
         if ($modePaiement === 'Carte bancaire') {
             if ($stripePaymentIntentId === '') {
                 $formErrors['mode_paiement'][] = 'Paiement carte non confirme. Veuillez verifier votre carte.';
-                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
             }
 
-            $expectedAmount = (int) round(((float) $promoSummary['final_total']) * 100);
+            $quote = $session->get('stripe_payment_quote');
+            $expectedAmount = (is_array($quote) && ($quote['payment_intent_id'] ?? '') === $stripePaymentIntentId)
+                ? (int) ($quote['amount_cents_eur'] ?? 0)
+                : 0;
+
+            if ($expectedAmount <= 0) {
+                $formErrors['mode_paiement'][] = 'Session de paiement expiree. Veuillez reconfirmer votre paiement carte.';
+                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
+            }
+
             $verification = $this->verifyStripePaymentIntent($stripePaymentIntentId, $expectedAmount, $httpClient);
             if (!$verification['ok']) {
                 $formErrors['mode_paiement'][] = $verification['message'];
-                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
             }
         }
 
@@ -308,7 +341,7 @@ final class CommandeController extends AbstractController
 
             if ($formErrors !== []) {
                 $connection->rollBack();
-                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
             }
 
             foreach ($pendingPersist as $entry) {
@@ -335,6 +368,7 @@ final class CommandeController extends AbstractController
 
             $session->remove('panier');
             $this->clearPromoState($session);
+            $session->remove('stripe_payment_quote');
 
             $this->addFlash('success', 'Commande créée avec succès!');
 
@@ -359,12 +393,13 @@ final class CommandeController extends AbstractController
                 $total,
                 $session,
                 ['_global' => ['Erreur lors de la creation de la commande: ' . $e->getMessage()]],
-                $old
+                $old,
+                $httpClient
             );
         }
     }
 
-    private function handlePromoGeneration(Request $request, array $panierWithData, float $total, SessionInterface $session): Response
+    private function handlePromoGeneration(Request $request, array $panierWithData, float $total, SessionInterface $session, HttpClientInterface $httpClient): Response
     {
         $old = [
             'nom_client' => trim((string) $request->request->get('nom_client', (string) $session->get('user_name', ''))),
@@ -377,7 +412,7 @@ final class CommandeController extends AbstractController
         if ($total < self::PROMO_MIN_TOTAL) {
             return $this->renderCheckout($panierWithData, $total, $session, [
                 'promo_code' => [sprintf('Le code promo est disponible a partir de %.0f DT.', self::PROMO_MIN_TOTAL)],
-            ], $old);
+            ], $old, $httpClient);
         }
 
         $code = 'ELFIRMA-' . strtoupper(bin2hex(random_bytes(3)));
@@ -394,10 +429,10 @@ final class CommandeController extends AbstractController
         $this->addFlash('success', sprintf('Code genere: %s (valable %d jours).', $code, self::PROMO_VALID_DAYS));
 
         $old['promo_code'] = $code;
-        return $this->renderCheckout($panierWithData, $total, $session, [], $old);
+        return $this->renderCheckout($panierWithData, $total, $session, [], $old, $httpClient);
     }
 
-    private function handlePromoApplication(Request $request, array $panierWithData, float $total, SessionInterface $session): Response
+    private function handlePromoApplication(Request $request, array $panierWithData, float $total, SessionInterface $session, HttpClientInterface $httpClient): Response
     {
         $nomClient = trim((string) $request->request->get('nom_client', (string) $session->get('user_name', '')));
         $adresseLivraison = trim((string) $request->request->get('adresse_livraison', ''));
@@ -415,33 +450,33 @@ final class CommandeController extends AbstractController
         if ($promoCode === '') {
             return $this->renderCheckout($panierWithData, $total, $session, [
                 'promo_code' => ['Veuillez saisir un code promo.'],
-            ], $old);
+            ], $old, $httpClient);
         }
 
         if ($total < self::PROMO_MIN_TOTAL) {
             return $this->renderCheckout($panierWithData, $total, $session, [
                 'promo_code' => [sprintf('Le montant minimum pour appliquer un code est %.0f DT.', self::PROMO_MIN_TOTAL)],
-            ], $old);
+            ], $old, $httpClient);
         }
 
         $generated = $this->getGeneratedPromo($session);
         if ($generated === null) {
             return $this->renderCheckout($panierWithData, $total, $session, [
                 'promo_code' => ['Aucun code promo genere.'],
-            ], $old);
+            ], $old, $httpClient);
         }
 
         if ($generated['code'] !== $promoCode) {
             return $this->renderCheckout($panierWithData, $total, $session, [
                 'promo_code' => ['Code promo invalide.'],
-            ], $old);
+            ], $old, $httpClient);
         }
 
         if ($this->isPromoExpired($generated['expires_at'])) {
             $this->clearPromoState($session);
             return $this->renderCheckout($panierWithData, $total, $session, [
                 'promo_code' => ['Ce code promo a expire.'],
-            ], $old);
+            ], $old, $httpClient);
         }
 
         $session->set('commande_promo_applied', [
@@ -450,15 +485,19 @@ final class CommandeController extends AbstractController
         ]);
 
         $this->addFlash('success', 'Code promo applique avec succes.');
-        return $this->renderCheckout($panierWithData, $total, $session, [], $old);
+        return $this->renderCheckout($panierWithData, $total, $session, [], $old, $httpClient);
     }
 
-    private function renderCheckout(array $panierWithData, float $total, SessionInterface $session, array $formErrors, array $old): Response
+    private function renderCheckout(array $panierWithData, float $total, SessionInterface $session, array $formErrors, array $old, ?HttpClientInterface $httpClient = null): Response
     {
         $promoSummary = $this->resolvePromoSummary($session, $total);
         $stripePublicKey = $this->getStripePublicKey();
         $stripeSecretKey = $this->getStripeSecretKey();
         $stripeEnabled = $stripePublicKey !== '' && $stripeSecretKey !== '';
+        $rate = $this->getTndToEurRate($httpClient, $session);
+        $eurQuote = $rate !== null
+            ? ['ok' => true, 'amount_eur' => round(((float) $promoSummary['final_total']) * $rate, 2)]
+            : ['ok' => false, 'amount_eur' => 0.0];
 
         return $this->render('commande_create.html.twig', [
             'items' => $panierWithData,
@@ -472,6 +511,8 @@ final class CommandeController extends AbstractController
             'promo_min_total' => self::PROMO_MIN_TOTAL,
             'stripe_enabled' => $stripeEnabled,
             'stripe_public_key' => $stripePublicKey,
+            'eur_estimate' => $eurQuote['ok'] ? $eurQuote['amount_eur'] : null,
+            'tnd_to_eur_rate' => $rate,
             'form_errors' => $formErrors,
             'old' => $old,
         ]);
@@ -505,7 +546,12 @@ final class CommandeController extends AbstractController
         }
 
         $promoSummary = $this->resolvePromoSummary($session, $total);
-        $amountCents = (int) round(((float) $promoSummary['final_total']) * 100);
+        $conversion = $this->convertTndToEur((float) $promoSummary['final_total'], $httpClient, $session);
+        if (!$conversion['ok']) {
+            return new JsonResponse(['error' => 'Conversion TND vers EUR indisponible. Reessayez dans un instant.'], 502);
+        }
+
+        $amountCents = (int) round(((float) $conversion['amount_eur']) * 100);
         if ($amountCents <= 0) {
             return new JsonResponse(['error' => 'Montant invalide.'], 400);
         }
@@ -537,15 +583,83 @@ final class CommandeController extends AbstractController
                 return new JsonResponse(['error' => 'Reponse Stripe invalide.'], 502);
             }
 
+            $session->set('stripe_payment_quote', [
+                'payment_intent_id' => (string) $data['id'],
+                'amount_cents_eur' => $amountCents,
+                'amount_tnd' => round((float) $promoSummary['final_total'], 2),
+                'amount_eur' => round((float) $conversion['amount_eur'], 2),
+                'rate_tnd_to_eur' => (float) $conversion['rate'],
+                'created_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            ]);
+
             return new JsonResponse([
                 'clientSecret' => $data['client_secret'],
                 'paymentIntentId' => $data['id'],
                 'amount' => $amountCents,
                 'currency' => $this->getStripeCurrency(),
+                'amountTnd' => round((float) $promoSummary['final_total'], 2),
+                'amountEur' => round((float) $conversion['amount_eur'], 2),
+                'exchangeRate' => (float) $conversion['rate'],
             ]);
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => 'Impossible de creer le paiement Stripe.'], 502);
         }
+    }
+
+    /**
+     * @return array{ok: bool, amount_eur: float, rate: float}
+     */
+    private function convertTndToEur(float $amountTnd, ?HttpClientInterface $httpClient, ?SessionInterface $session = null): array
+    {
+        if ($amountTnd <= 0) {
+            return ['ok' => false, 'amount_eur' => 0.0, 'rate' => 0.0];
+        }
+
+        $rate = $this->getTndToEurRate($httpClient, $session);
+        if ($rate === null || $rate <= 0) {
+            return ['ok' => false, 'amount_eur' => 0.0, 'rate' => 0.0];
+        }
+
+        return [
+            'ok' => true,
+            'amount_eur' => round($amountTnd * $rate, 2),
+            'rate' => $rate,
+        ];
+    }
+
+    private function getTndToEurRate(?HttpClientInterface $httpClient, ?SessionInterface $session = null): ?float
+    {
+        if ($httpClient !== null) {
+            $apiKey = $this->getExchangeRateApiKey();
+            if ($apiKey !== '') {
+                try {
+                    $url = self::EXCHANGE_RATE_API_BASE . '/' . rawurlencode($apiKey) . '/latest/TND';
+                    $response = $httpClient->request('GET', $url, [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                        ],
+                    ]);
+
+                    $data = $response->toArray(false);
+                    $rate = (float) ($data['conversion_rates']['EUR'] ?? 0);
+                    if ($rate > 0) {
+                        return $rate;
+                    }
+                } catch (\Throwable $e) {
+                    // Fall back to rate stored in session quote when API is temporarily unavailable.
+                }
+            }
+        }
+
+        if ($session !== null) {
+            $quote = $session->get('stripe_payment_quote');
+            $quoteRate = is_array($quote) ? (float) ($quote['rate_tnd_to_eur'] ?? 0) : 0.0;
+            if ($quoteRate > 0) {
+                return $quoteRate;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -597,6 +711,11 @@ final class CommandeController extends AbstractController
     {
         $currency = strtolower(trim((string) ($_SERVER['STRIPE_CURRENCY'] ?? $_ENV['STRIPE_CURRENCY'] ?? 'eur')));
         return $currency !== '' ? $currency : 'eur';
+    }
+
+    private function getExchangeRateApiKey(): string
+    {
+        return trim((string) ($_SERVER['EXCHANGE_RATE_API_KEY'] ?? $_ENV['EXCHANGE_RATE_API_KEY'] ?? ''));
     }
 
     /**

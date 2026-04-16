@@ -74,7 +74,10 @@
                                     <span style="font-size: 16px; font-weight: 600;">{{ commande.quantite }}</span>
                                 </td>
                                 <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
-                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ commande.prixTotal }} DT</span>
+                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ commande.prixTotal|number_format(2, '.', ' ') }} DT</span>
+                                    {% if tnd_to_eur_rate is not null %}
+                                        <div style="font-size: 12px; color: #0f766e; font-weight: 600; margin-top: 4px;">~ {{ (commande.prixTotal * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                    {% endif %}
                                 </td>
                                 <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                     {% set statusColor = commande.statutCommande == 'En attente' ? '#f59e0b' : (commande.statutCommande == 'Confirmée' ? '#3b82f6' : (commande.statutCommande == 'Livrée' ? '#10b981' : '#ef4444')) %}
