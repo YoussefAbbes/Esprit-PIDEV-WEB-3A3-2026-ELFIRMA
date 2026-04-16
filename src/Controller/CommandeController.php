@@ -90,7 +90,7 @@ final class CommandeController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
-            $action = (string) $request->request->get('checkout_action', 'confirm_order');
+            $action = (string) $request->request->get('checkout_action', '');
 
             if ($action === 'generate_promo') {
                 return $this->handlePromoGeneration($request, $panierWithData, $total, $session);
@@ -98,6 +98,18 @@ final class CommandeController extends AbstractController
 
             if ($action === 'apply_promo') {
                 return $this->handlePromoApplication($request, $panierWithData, $total, $session);
+            }
+
+            if ($action !== 'confirm_order') {
+                return $this->renderCheckout($panierWithData, $total, $session, [
+                    '_global' => ['Veuillez confirmer la commande pour finaliser l\'achat.'],
+                ], [
+                    'nom_client' => trim((string) $request->request->get('nom_client', (string) $session->get('user_name', ''))),
+                    'adresse_livraison' => trim((string) $request->request->get('adresse_livraison', '')),
+                    'mode_paiement' => trim((string) $request->request->get('mode_paiement', 'Cash')),
+                    'promo_code' => strtoupper(trim((string) $request->request->get('promo_code', ''))),
+                    'stripe_payment_intent_id' => trim((string) $request->request->get('stripe_payment_intent_id', '')),
+                ]);
             }
 
             return $this->processOrder($request, $panierWithData, $total, $session, $em, $validator, $httpClient);
@@ -614,6 +626,135 @@ final class CommandeController extends AbstractController
         }
 
         return $lineTotals;
+    }
+
+    #[Route('/api/commande/chatbot', name: 'app_api_commande_chatbot', methods: ['POST'])]
+    public function chatbot(Request $request, SessionInterface $session, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        if (!is_array($payload)) {
+            return new JsonResponse(['error' => 'Format invalide.'], 400);
+        }
+
+        $message = trim((string) ($payload['message'] ?? ''));
+        if ($message === '') {
+            return new JsonResponse(['error' => 'Message vide.'], 400);
+        }
+
+        $panier = $session->get('panier', []);
+        $items = 0;
+        $total = 0.0;
+
+        if (is_array($panier)) {
+            foreach ($panier as $productId => $quantite) {
+                $qty = max(0, (int) $quantite);
+                if ($qty === 0) {
+                    continue;
+                }
+
+                $produit = $em->getRepository(Produit::class)->find((int) $productId);
+                if (!$produit || $produit->getStatut() !== 'Disponible') {
+                    continue;
+                }
+
+                $items += $qty;
+                $total += ((float) $produit->getPrixUnitaire()) * $qty;
+            }
+        }
+
+        $promo = $this->resolvePromoSummary($session, $total);
+        $result = $this->buildCheckoutChatbotReply($message, $items, $total, $promo);
+
+        return new JsonResponse([
+            'reply' => $result['reply'],
+            'quick_replies' => $result['quick_replies'],
+            'context' => [
+                'items' => $items,
+                'total' => round($total, 2),
+                'final_total' => round((float) $promo['final_total'], 2),
+                'promo_applied' => (bool) $promo['is_applied'],
+            ],
+        ]);
+    }
+
+    /**
+     * @param array{final_total: float, discount_amount: float, discount_percent: int, generated_code: ?string, expires_at: ?\DateTimeImmutable, is_applied: bool, applied_code: ?string} $promo
+     *
+     * @return array{reply: string, quick_replies: list<string>}
+     */
+    private function buildCheckoutChatbotReply(string $message, int $items, float $total, array $promo): array
+    {
+        $text = mb_strtolower($message);
+        $hasPromo = (bool) $promo['is_applied'];
+        $finalTotal = (float) $promo['final_total'];
+        $discount = (float) $promo['discount_amount'];
+        $promoMin = self::PROMO_MIN_TOTAL;
+
+        if (str_contains($text, 'bonjour') || str_contains($text, 'salut') || str_contains($text, 'hello')) {
+            return [
+                'reply' => 'Bonjour! Je vous aide a finaliser votre commande. Vous avez ' . $items . ' article(s), total actuel: ' . number_format($total, 2, '.', ' ') . ' DT.',
+                'quick_replies' => ['Comment utiliser le code promo ?', 'Quels moyens de paiement ?', 'Que se passe-t-il apres paiement ?'],
+            ];
+        }
+
+        if (str_contains($text, 'promo') || str_contains($text, 'reduction') || str_contains($text, 'code')) {
+            if ($total < $promoMin) {
+                return [
+                    'reply' => 'Le code promo est disponible a partir de ' . number_format($promoMin, 0, '.', ' ') . ' DT. Votre total est ' . number_format($total, 2, '.', ' ') . ' DT.',
+                    'quick_replies' => ['Comment augmenter mon panier ?', 'Quels moyens de paiement ?'],
+                ];
+            }
+
+            if ($hasPromo) {
+                return [
+                    'reply' => 'Votre promo est deja appliquee: -' . number_format($discount, 2, '.', ' ') . ' DT. Total a payer: ' . number_format($finalTotal, 2, '.', ' ') . ' DT.',
+                    'quick_replies' => ['Comment payer par carte ?', 'Je confirme ma commande'],
+                ];
+            }
+
+            return [
+                'reply' => 'Vous pouvez generer puis appliquer un code promo (valable 3 jours) directement dans le bloc promo avant la confirmation.',
+                'quick_replies' => ['Generer code promo', 'Appliquer code promo', 'Total actuel'],
+            ];
+        }
+
+        if (str_contains($text, 'carte') || str_contains($text, 'stripe') || str_contains($text, 'paiement')) {
+            return [
+                'reply' => 'Pour payer par carte: choisissez "Carte bancaire", remplissez les informations Stripe, puis confirmez. La commande est enregistree seulement si le paiement est valide.',
+                'quick_replies' => ['Carte test ?', 'Paiement cash', 'Paiement virement'],
+            ];
+        }
+
+        if (str_contains($text, 'test') || str_contains($text, '4242')) {
+            return [
+                'reply' => 'En mode test Stripe, vous pouvez utiliser 4242 4242 4242 4242, une date future, et un CVC de 3 chiffres.',
+                'quick_replies' => ['Comment confirmer la commande ?', 'Quels sont les statuts ?'],
+            ];
+        }
+
+        if (str_contains($text, 'adresse') || str_contains($text, 'livraison')) {
+            return [
+                'reply' => 'Le champ adresse de livraison est obligatoire. Vous trouverez le message d\'erreur juste sous le champ si la saisie est invalide.',
+                'quick_replies' => ['Delai de livraison ?', 'Je veux modifier mon adresse'],
+            ];
+        }
+
+        if (str_contains($text, 'total') || str_contains($text, 'montant')) {
+            $reply = 'Total panier: ' . number_format($total, 2, '.', ' ') . ' DT.';
+            if ($hasPromo) {
+                $reply .= ' Reduction appliquee: -' . number_format($discount, 2, '.', ' ') . ' DT. Total final: ' . number_format($finalTotal, 2, '.', ' ') . ' DT.';
+            }
+
+            return [
+                'reply' => $reply,
+                'quick_replies' => ['Comment utiliser le code promo ?', 'Je confirme ma commande'],
+            ];
+        }
+
+        return [
+            'reply' => 'Je peux vous aider sur: promo, paiement carte Stripe, adresse de livraison et total de commande. Dites-moi ce que vous souhaitez verifier.',
+            'quick_replies' => ['Code promo', 'Paiement carte Stripe', 'Adresse de livraison', 'Total actuel'],
+        ];
     }
 
     #[Route('/api/commande/quick', name: 'app_api_commande_quick', methods: ['POST'])]

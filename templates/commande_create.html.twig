@@ -15,6 +15,22 @@
         .pay-card-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; text-transform: uppercase; opacity: .92; }
         .stripe-element-wrap { margin-top: 14px; border: 2px solid #bbf7d0; background: #fff; border-radius: 10px; padding: 12px; transition: border-color .2s ease, box-shadow .2s ease; }
         .stripe-element-wrap.focused { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+        .assist-fab { position: fixed; right: 22px; bottom: 22px; z-index: 1100; width: 58px; height: 58px; border-radius: 50%; border: none; background: linear-gradient(135deg, #0f766e 0%, #0ea5a4 100%); color: #fff; box-shadow: 0 12px 22px rgba(15,118,110,.35); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+        .assist-panel { position: fixed; right: 22px; bottom: 92px; width: min(92vw, 380px); max-height: 68vh; z-index: 1100; border-radius: 16px; overflow: hidden; box-shadow: 0 18px 38px rgba(15,23,42,.2); background: #fff; border: 1px solid #ccfbf1; transform: translateY(10px); opacity: 0; pointer-events: none; transition: .22s ease; }
+        .assist-panel.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        .assist-head { padding: 14px 16px; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: #f0fdfa; display: flex; justify-content: space-between; align-items: center; }
+        .assist-body { padding: 12px; background: linear-gradient(180deg, #f8fafc 0%, #ecfeff 100%); height: 320px; overflow-y: auto; }
+        .assist-msg { margin-bottom: 10px; display: flex; }
+        .assist-msg .bubble { max-width: 86%; padding: 9px 11px; border-radius: 11px; font-size: 14px; line-height: 1.35; }
+        .assist-msg.bot { justify-content: flex-start; }
+        .assist-msg.bot .bubble { background: #fff; border: 1px solid #bae6fd; color: #0f172a; }
+        .assist-msg.user { justify-content: flex-end; }
+        .assist-msg.user .bubble { background: #0d9488; color: #fff; }
+        .assist-quick { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .assist-quick button { border: 1px solid #99f6e4; background: #f0fdfa; color: #134e4a; border-radius: 999px; padding: 5px 10px; font-size: 12px; }
+        .assist-input { border-top: 1px solid #ccfbf1; padding: 10px; background: #fff; display: flex; gap: 8px; }
+        .assist-input input { flex: 1; border: 1px solid #99f6e4; border-radius: 8px; padding: 9px 10px; font-size: 14px; }
+        .assist-input button { border: none; background: #0f766e; color: #fff; border-radius: 8px; padding: 9px 12px; font-weight: 700; }
         @keyframes fadeInStripe { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 {% endblock %}
@@ -293,6 +309,22 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 {% endfor %}
+
+<button id="assist-fab" class="assist-fab" type="button" aria-label="Ouvrir assistant commande">
+    <span class="material-symbols-outlined">forum</span>
+</button>
+
+<section id="assist-panel" class="assist-panel" aria-live="polite">
+    <div class="assist-head">
+        <strong>Assistant commande</strong>
+        <button id="assist-close" type="button" style="border:none;background:transparent;color:#fff;">✕</button>
+    </div>
+    <div id="assist-body" class="assist-body"></div>
+    <div class="assist-input">
+        <input id="assist-input" type="text" placeholder="Ex: comment utiliser le code promo ?">
+        <button id="assist-send" type="button">Envoyer</button>
+    </div>
+</section>
 {% endblock %}
 
 {% block javascripts %}
@@ -490,6 +522,100 @@
                     }
                 });
             }
+        })();
+    </script>
+
+    <script>
+        (function () {
+            const panel = document.getElementById('assist-panel');
+            const fab = document.getElementById('assist-fab');
+            const closeBtn = document.getElementById('assist-close');
+            const body = document.getElementById('assist-body');
+            const input = document.getElementById('assist-input');
+            const send = document.getElementById('assist-send');
+
+            if (!panel || !fab || !closeBtn || !body || !input || !send) {
+                return;
+            }
+
+            function appendMessage(text, isUser, quickReplies) {
+                const wrap = document.createElement('div');
+                wrap.className = 'assist-msg ' + (isUser ? 'user' : 'bot');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = text;
+                wrap.appendChild(bubble);
+
+                if (!isUser && Array.isArray(quickReplies) && quickReplies.length > 0) {
+                    const quick = document.createElement('div');
+                    quick.className = 'assist-quick';
+                    quickReplies.slice(0, 4).forEach(function (label) {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.textContent = label;
+                        btn.addEventListener('click', function () {
+                            askBot(label);
+                        });
+                        quick.appendChild(btn);
+                    });
+                    bubble.appendChild(quick);
+                }
+
+                body.appendChild(wrap);
+                body.scrollTop = body.scrollHeight;
+            }
+
+            async function askBot(question) {
+                const text = (question || input.value || '').trim();
+                if (!text) {
+                    return;
+                }
+
+                appendMessage(text, true, []);
+                input.value = '';
+
+                try {
+                    const response = await fetch('{{ path('app_api_commande_chatbot') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: text })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erreur chatbot.');
+                    }
+
+                    appendMessage(data.reply || 'Je suis la pour vous aider.', false, data.quick_replies || []);
+                } catch (err) {
+                    appendMessage(err.message || 'Erreur lors de la reponse assistant.', false, []);
+                }
+            }
+
+            fab.addEventListener('click', function () {
+                panel.classList.add('active');
+                if (body.children.length === 0) {
+                    appendMessage('Bonjour! Je suis votre assistant commande. Je peux vous aider sur promo, paiement Stripe, adresse et total.', false, ['Code promo', 'Paiement carte Stripe', 'Adresse de livraison', 'Total actuel']);
+                }
+            });
+
+            closeBtn.addEventListener('click', function () {
+                panel.classList.remove('active');
+            });
+
+            send.addEventListener('click', function () {
+                askBot('');
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    askBot('');
+                }
+            });
         })();
     </script>
 {% endblock %}

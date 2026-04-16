@@ -50,6 +50,12 @@ Ce qui a ete implemente dans le front office commande:
 - Methode controller: createStripePaymentIntent(...)
 - Role: creer un PaymentIntent Stripe (retourne clientSecret + paymentIntentId)
 
+### API interne Chatbot commande
+- POST /api/commande/chatbot
+- name: app_api_commande_chatbot
+- Methode controller: chatbot(...)
+- Role: assistant intelligent pour aider le client pendant le checkout (promo, paiement, adresse, total)
+
 ## 4.1) Ou j'ai mis l'API (emplacement exact)
 ### API Stripe backend (Symfony)
 - Fichier: src/Controller/CommandeController.php
@@ -69,6 +75,19 @@ Ce qui a ete implemente dans le front office commande:
 - Placeholders commits: .env
 - Cles locales (dev): .env.local
 - Variables: STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_CURRENCY
+
+### API Chatbot backend (Symfony)
+- Fichier: src/Controller/CommandeController.php
+- Route: /api/commande/chatbot
+- Methode PHP: chatbot(Request $request, SessionInterface $session, EntityManagerInterface $em): JsonResponse
+- Methode metier associee: buildCheckoutChatbotReply(...)
+- Donnees utilisees pour repondre: panier session, total, etat promo
+
+### Appel Chatbot cote front
+- Fichier: templates/commande_create.html.twig
+- Script JS: bloc javascripts (2eme script)
+- Endpoint appele par fetch: path('app_api_commande_chatbot')
+- UI: bouton flottant + panneau chat + quick replies
 
 ### Routes existantes conservees
 - /commandes (liste client)
@@ -181,6 +200,26 @@ Note:
   - injecte paymentIntentId dans le formulaire,
   - relance submit serveur.
 
+### Chatbot client (nouveau)
+- Bouton flottant "assistant commande" en bas a droite.
+- Fenetre chat moderne avec:
+  - messages bot/client,
+  - reponses rapides (quick replies),
+  - envoi via Enter ou bouton.
+- Le bot repond sur:
+  - code promo,
+  - paiement carte Stripe,
+  - adresse de livraison,
+  - montant total.
+
+## 7.1) MVC du chatbot
+- Model:
+  - donnees panier + promo recuperees depuis session/produits.
+- View:
+  - interface chat dans templates/commande_create.html.twig.
+- Controller:
+  - endpoint API dans CommandeController (chatbot + buildCheckoutChatbotReply).
+
 ## 8) Regles metier actuelles
 - Promo disponible uniquement a partir de 50 DT.
 - Validite promo: 3 jours.
@@ -223,6 +262,7 @@ R: Date expires_at stockee en session et verifiee a chaque action.
 - Etape 3: ajout systeme promo (generation + application + expiration).
 - Etape 4: ajout Stripe (intent + verification + UI animee).
 - Etape 5: ajout adresse_livraison (entite + formulaire front + controller + admin + affichage detail).
+- Etape 6: ajout chatbot client checkout (API Symfony + UI chat + quick replies + doc).
 
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.
