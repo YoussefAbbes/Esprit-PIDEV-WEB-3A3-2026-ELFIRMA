@@ -93,11 +93,7 @@ final class CommandeController extends AbstractController
             'form_errors' => [],
             'old' => [
                 'nom_client' => (string) $session->get('user_name', ''),
-                'email_client' => '',
-                'telephone_client' => '',
-                'adresse_client' => '',
                 'mode_paiement' => 'Cash',
-                'commentaires' => '',
             ],
         ]);
     }
@@ -113,39 +109,19 @@ final class CommandeController extends AbstractController
     {
         $formErrors = [];
         $nomClient = trim((string) $request->request->get('nom_client', ''));
-        $emailClient = trim((string) $request->request->get('email_client', ''));
-        $telephoneClient = trim((string) $request->request->get('telephone_client', ''));
-        $adresseClient = trim((string) $request->request->get('adresse_client', ''));
         $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
-        $commentaires = trim((string) $request->request->get('commentaires', ''));
 
         $old = [
             'nom_client' => $nomClient,
-            'email_client' => $emailClient,
-            'telephone_client' => $telephoneClient,
-            'adresse_client' => $adresseClient,
             'mode_paiement' => $modePaiement,
-            'commentaires' => $commentaires,
         ];
 
         if ($nomClient === '') {
             $formErrors['nom_client'][] = 'Le nom complet est obligatoire.';
         }
 
-        if ($emailClient === '') {
-            $formErrors['email_client'][] = 'L\'email est obligatoire.';
-        } elseif (!filter_var($emailClient, FILTER_VALIDATE_EMAIL)) {
-            $formErrors['email_client'][] = 'Veuillez saisir une adresse email valide.';
-        }
-
-        if ($telephoneClient === '') {
-            $formErrors['telephone_client'][] = 'Le telephone est obligatoire.';
-        } elseif (!preg_match('/^[0-9\s+\-().]{8,20}$/', $telephoneClient)) {
-            $formErrors['telephone_client'][] = 'Veuillez saisir un numero de telephone valide.';
-        }
-
-        if ($adresseClient === '') {
-            $formErrors['adresse_client'][] = 'L\'adresse de livraison est obligatoire.';
+        if ($modePaiement === '') {
+            $formErrors['mode_paiement'][] = 'Le mode de paiement est obligatoire.';
         }
 
         if ($formErrors !== []) {

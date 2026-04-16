@@ -43,27 +43,7 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="email_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Email *</label>
-                                <input type="email" id="email_client" name="email_client" value="{{ oldInput.email_client|default('') }}"
-                                       style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
-                                {% if formErrors.email_client is defined %}
-                                    {% for err in formErrors.email_client %}
-                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="telephone_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Téléphone *</label>
-                                <input type="tel" id="telephone_client" name="telephone_client" value="{{ oldInput.telephone_client|default('') }}"
-                                       style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
-                                {% if formErrors.telephone_client is defined %}
-                                    {% for err in formErrors.telephone_client %}
-                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Mode de paiement</label>
+                                <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Mode de paiement *</label>
                                 <select id="mode_paiement" name="mode_paiement" 
                                         style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
                                     <option value="Cash" {% if oldInput.mode_paiement|default('Cash') == 'Cash' %}selected{% endif %}>Cash (à la livraison)</option>
@@ -76,21 +56,15 @@
                                     {% endfor %}
                                 {% endif %}
                             </div>
-                            <div class="col-12 mb-3">
-                                <label for="adresse_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Adresse de livraison *</label>
-                                <textarea id="adresse_client" name="adresse_client" rows="3"
-                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;">{{ oldInput.adresse_client|default('') }}</textarea>
-                                {% if formErrors.adresse_client is defined %}
-                                    {% for err in formErrors.adresse_client %}
-                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                            <div class="col-12 mb-3">
-                                <label for="commentaires" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Commentaires (optionnel)</label>
-                                <textarea id="commentaires" name="commentaires" rows="2" 
-                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;" 
-                                          placeholder="Instructions spéciales pour la livraison...">{{ oldInput.commentaires|default('') }}</textarea>
+                            <div class="col-12 mb-3" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px;">
+                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #2d5016;">Champs remplis automatiquement</p>
+                                <ul style="margin: 0; padding-left: 18px; color: #4b5563; font-size: 14px;">
+                                    <li>Date de commande: maintenant</li>
+                                    <li>Statut commande: En attente</li>
+                                    <li>Statut paiement: Non payé</li>
+                                    <li>Prix total: calculé depuis le panier</li>
+                                    <li>Produit et quantité: récupérés depuis le panier</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
