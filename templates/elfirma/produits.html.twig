@@ -23,6 +23,45 @@
         .stats-appear.delay-2 { animation-delay: 0.16s; }
         .stats-appear.delay-3 { animation-delay: 0.24s; }
         .stats-appear.delay-4 { animation-delay: 0.32s; }
+        .alert-fab {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 120;
+            width: 64px;
+            height: 64px;
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 14px 28px rgba(220,38,38,0.38);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            animation: alertPulse 1.8s ease-in-out infinite;
+        }
+        .alert-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: #111827;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+        }
+        @keyframes alertPulse {
+            0%, 100% { transform: translateY(0); box-shadow: 0 14px 28px rgba(220,38,38,0.38); }
+            50% { transform: translateY(-3px) scale(1.03); box-shadow: 0 18px 34px rgba(220,38,38,0.46); }
+        }
         @keyframes statsEntrance {
             from { opacity: 0; transform: translateY(18px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -583,6 +622,88 @@
             </section>
         </div>
     </main>
+
+    {% if stock_alert_stats.alert_total > 0 %}
+    <button class="alert-fab" type="button" onclick="openModal('stockAlertModal')" title="Stock alerts">
+        <span class="material-symbols-outlined" style="font-size: 30px;">warning</span>
+        <span class="alert-badge">{{ stock_alert_stats.alert_total }}</span>
+    </button>
+    {% endif %}
+
+    <div id="stockAlertModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-red-100">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-[#7f1d1d]">Stock Alert Center</h3>
+                    <p class="text-sm text-[#991b1b]">Monitor low stock, out-of-stock, and expired products.</p>
+                </div>
+                <button onclick="closeModal('stockAlertModal')" class="text-[#7f1d1d] hover:text-[#450a0a]">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <article class="rounded-xl border border-red-200 bg-gradient-to-br from-red-50 to-rose-100 p-4">
+                    <p class="text-xs uppercase tracking-wide font-bold text-red-700">Total alerts</p>
+                    <p class="mt-2 text-3xl font-black text-red-800">{{ stock_alert_stats.alert_total }}</p>
+                </article>
+                <article class="rounded-xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-100 p-4">
+                    <p class="text-xs uppercase tracking-wide font-bold text-orange-700">Low stock</p>
+                    <p class="mt-2 text-3xl font-black text-orange-800">{{ stock_alert_stats.low_stock_count }}</p>
+                </article>
+                <article class="rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 to-red-100 p-4">
+                    <p class="text-xs uppercase tracking-wide font-bold text-rose-700">Out of stock</p>
+                    <p class="mt-2 text-3xl font-black text-rose-800">{{ stock_alert_stats.out_of_stock_count }}</p>
+                </article>
+                <article class="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-fuchsia-100 p-4">
+                    <p class="text-xs uppercase tracking-wide font-bold text-purple-700">Expired products</p>
+                    <p class="mt-2 text-3xl font-black text-purple-800">{{ stock_alert_stats.expired_count }}</p>
+                </article>
+            </div>
+
+            <div class="mb-5 rounded-xl border border-[#c7ddbd] bg-[#f5fff0] px-4 py-3 text-sm text-[#1f4d22]">
+                Non-expired products: <strong>{{ stock_alert_stats.non_expired_count }}</strong>
+            </div>
+
+            <div class="space-y-3">
+                {% for alertItem in stock_alert_data %}
+                    <article class="rounded-xl border {% if alertItem.alert_level == 'critical' %}border-red-200 bg-red-50{% else %}border-amber-200 bg-amber-50{% endif %} p-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined {% if alertItem.alert_level == 'critical' %}text-red-600{% else %}text-amber-600{% endif %}">report</span>
+                                    <h4 class="font-extrabold text-[#1b1d0e]">{{ alertItem.name }}</h4>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-1">Category: {{ alertItem.category }} | Status: {{ statutLabelMap[alertItem.status]|default(alertItem.status) }}</p>
+                                <p class="text-sm font-bold mt-2 {% if alertItem.alert_level == 'critical' %}text-red-700{% else %}text-amber-700{% endif %}">
+                                    Stock: {{ alertItem.stock }}
+                                    {% if alertItem.is_expired and alertItem.expires_on %}
+                                        | Expired on {{ alertItem.expires_on }}
+                                    {% elseif alertItem.expires_on %}
+                                        | Expires on {{ alertItem.expires_on }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <form method="POST" action="{{ path('produit_restock', {id: alertItem.id}) }}" class="flex items-center gap-2">
+                                <input type="hidden" name="q" value="{{ filters.q|default('') }}">
+                                <input type="hidden" name="category" value="{{ filters.category|default('') }}">
+                                <input type="hidden" name="status" value="{{ filters.status|default('') }}">
+                                <input type="hidden" name="sort" value="{{ filters.sort|default('id-desc') }}">
+                                <input type="hidden" name="meteo_region" value="{{ weather_selected_region|default('Tunis') }}">
+                                <input type="number" name="quantity_add" min="1" step="1" value="10" class="w-24 rounded-lg border-2 border-[#d7dcd0] px-3 py-2 text-sm font-semibold" />
+                                <button type="submit" class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-green-600 to-emerald-700 px-3 py-2 text-sm font-bold text-white hover:from-green-700 hover:to-emerald-800">
+                                    <span class="material-symbols-outlined text-base">add</span>
+                                    Add Qty
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">No urgent stock alert right now.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
     <!-- Create Modal -->
     <div id="createModal" class="modal">

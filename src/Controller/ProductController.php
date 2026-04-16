@@ -60,19 +60,23 @@ final class ProductController extends AbstractController
             $selectedRegion = 'Tunis';
         }
 
-        $produits = $em->getRepository(Produit::class)->findAll();
-        $produits = $this->filterAndSortProducts($produits, $q, $categoryFilter, $statusFilter, $sort);
+        $allProduits = $em->getRepository(Produit::class)->findAll();
+        $produits = $this->filterAndSortProducts($allProduits, $q, $categoryFilter, $statusFilter, $sort);
         $categories = $em->getRepository(Categorie::class)->findBy([], ['nom' => 'ASC']);
 
         $stats = $this->buildProductStats($produits);
         $chartData = $this->buildProductChartData($produits);
         $weatherOverview = $this->fetchTunisiaWeatherOverview($selectedRegion, $httpClient);
+        $stockAlertData = $this->buildStockAlertData($allProduits);
+        $stockAlertStats = $this->buildStockAlertStats($allProduits, $stockAlertData);
 
         return $this->render('elfirma/produits.html.twig', [
             'produits' => $produits,
             'categories' => $categories,
             'product_stats' => $stats,
             'product_chart_data' => $chartData,
+            'stock_alert_data' => $stockAlertData,
+            'stock_alert_stats' => $stockAlertStats,
             'weather_overview' => $weatherOverview,
             'weather_regions' => array_keys(self::TUNISIA_REGIONS),
             'weather_selected_region' => $selectedRegion,
@@ -181,6 +185,56 @@ final class ProductController extends AbstractController
         }
 
         return $this->redirectToRoute('elfirma_products');
+    }
+
+    #[Route('/elfirma/produit/{id}/restock', name: 'produit_restock', methods: ['POST'])]
+    public function restockProduit(int $id, Request $request, EntityManagerInterface $em): Response
+    {
+        $produit = $em->getRepository(Produit::class)->find($id);
+        if (!$produit) {
+            $this->addFlash('error', 'Product not found for restock.');
+
+            return $this->redirectToRoute('elfirma_products');
+        }
+
+        $qtyRaw = trim((string) $request->request->get('quantity_add', '0'));
+        $quantityToAdd = filter_var($qtyRaw, FILTER_VALIDATE_INT);
+
+        if ($quantityToAdd === false || $quantityToAdd <= 0) {
+            $this->addFlash('error', 'Restock quantity must be a positive integer.');
+
+            return $this->redirectToRoute('elfirma_products', [
+                'q' => trim((string) $request->request->get('q', '')),
+                'category' => trim((string) $request->request->get('category', '')),
+                'status' => trim((string) $request->request->get('status', '')),
+                'sort' => trim((string) $request->request->get('sort', 'id-desc')),
+                'meteo_region' => trim((string) $request->request->get('meteo_region', 'Tunis')),
+            ]);
+        }
+
+        $newStock = (int) ($produit->getQuantiteStock() ?? 0) + (int) $quantityToAdd;
+        $produit->setQuantiteStock($newStock);
+
+        if ($this->isProductExpired($produit)) {
+            $produit->setStatut('Expiré');
+        } else {
+            $produit->setStatut($newStock <= 0 ? 'Rupture' : 'Disponible');
+        }
+
+        try {
+            $em->flush();
+            $this->addFlash('success', sprintf('Stock updated for %s (+%d).', (string) $produit->getNom(), (int) $quantityToAdd));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Unable to update stock right now.');
+        }
+
+        return $this->redirectToRoute('elfirma_products', [
+            'q' => trim((string) $request->request->get('q', '')),
+            'category' => trim((string) $request->request->get('category', '')),
+            'status' => trim((string) $request->request->get('status', '')),
+            'sort' => trim((string) $request->request->get('sort', 'id-desc')),
+            'meteo_region' => trim((string) $request->request->get('meteo_region', 'Tunis')),
+        ]);
     }
 
     #[Route('/elfirma/produit/edit/{id}', name: 'produit_edit', methods: ['POST'])]
@@ -899,5 +953,103 @@ final class ProductController extends AbstractController
     private function getOpenWeatherApiKey(): string
     {
         return trim((string) ($_SERVER['OPENWEATHER_API_KEY'] ?? $_ENV['OPENWEATHER_API_KEY'] ?? ''));
+    }
+
+    /**
+     * @param list<Produit> $products
+     *
+     * @return list<array{id:int,name:string,stock:int,status:string,category:string,expires_on:?string,is_expired:bool,alert_level:string}>
+     */
+    private function buildStockAlertData(array $products): array
+    {
+        $alerts = [];
+        $lowStockThreshold = 20;
+
+        foreach ($products as $product) {
+            $stock = (int) ($product->getQuantiteStock() ?? 0);
+            $status = (string) ($product->getStatut() ?? '');
+            $isExpired = $this->isProductExpired($product) || mb_strtolower($status) === 'expiré' || mb_strtolower($status) === 'expired';
+            $isOutOfStock = $stock <= 0 || mb_strtolower($status) === 'rupture' || mb_strtolower($status) === 'out of stock';
+            $isLow = !$isOutOfStock && $stock <= $lowStockThreshold;
+
+            if (!$isExpired && !$isOutOfStock && !$isLow) {
+                continue;
+            }
+
+            $alerts[] = [
+                'id' => (int) ($product->getIdProduit() ?? 0),
+                'name' => (string) ($product->getNom() ?? '-'),
+                'stock' => $stock,
+                'status' => $status,
+                'category' => (string) ($product->getCategorie()?->getNom() ?? 'Uncategorized'),
+                'expires_on' => $product->getDateExpiration()?->format('d/m/Y'),
+                'is_expired' => $isExpired,
+                'alert_level' => ($isExpired || $isOutOfStock) ? 'critical' : 'warning',
+            ];
+        }
+
+        usort($alerts, static function (array $a, array $b): int {
+            $rankA = $a['alert_level'] === 'critical' ? 0 : 1;
+            $rankB = $b['alert_level'] === 'critical' ? 0 : 1;
+
+            if ($rankA !== $rankB) {
+                return $rankA <=> $rankB;
+            }
+
+            return ((int) $a['stock']) <=> ((int) $b['stock']);
+        });
+
+        return $alerts;
+    }
+
+    /**
+     * @param list<Produit> $products
+     * @param list<array{id:int,name:string,stock:int,status:string,category:string,expires_on:?string,is_expired:bool,alert_level:string}> $alertData
+     *
+     * @return array{expired_count:int,non_expired_count:int,low_stock_count:int,out_of_stock_count:int,alert_total:int}
+     */
+    private function buildStockAlertStats(array $products, array $alertData): array
+    {
+        $expiredCount = 0;
+        $outOfStockCount = 0;
+        $lowStockCount = 0;
+
+        foreach ($products as $product) {
+            $stock = (int) ($product->getQuantiteStock() ?? 0);
+            $status = mb_strtolower((string) ($product->getStatut() ?? ''));
+            $isExpired = $this->isProductExpired($product) || $status === 'expiré' || $status === 'expired';
+            $isOut = $stock <= 0 || $status === 'rupture' || $status === 'out of stock';
+            $isLow = !$isOut && $stock <= 20;
+
+            if ($isExpired) {
+                $expiredCount++;
+            }
+
+            if ($isOut) {
+                $outOfStockCount++;
+            } elseif ($isLow) {
+                $lowStockCount++;
+            }
+        }
+
+        return [
+            'expired_count' => $expiredCount,
+            'non_expired_count' => max(0, count($products) - $expiredCount),
+            'low_stock_count' => $lowStockCount,
+            'out_of_stock_count' => $outOfStockCount,
+            'alert_total' => count($alertData),
+        ];
+    }
+
+    private function isProductExpired(Produit $product): bool
+    {
+        $expirationDate = $product->getDateExpiration();
+        if (!$expirationDate instanceof \DateTimeInterface) {
+            return false;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        return $expirationDate < $today;
     }
 }

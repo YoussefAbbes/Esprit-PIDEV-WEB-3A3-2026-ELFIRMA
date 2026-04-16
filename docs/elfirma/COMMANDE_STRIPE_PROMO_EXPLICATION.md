@@ -373,6 +373,8 @@ R: Date expires_at stockee en session et verifiee a chaque action.
 - Etape 9: ajout bouton "My Orders" dans le header front office a cote de "Panier".
 - Etape 10: integration ExchangeRate API pour convertir le total checkout TND->EUR dans le flux Stripe.
 - Etape 11: affichage front office en double devise (DT + EUR) sur produits, panier, checkout, commandes client et recu paiement.
+- Etape 12: ajout du Weather Assistant admin produits (OpenWeather, regions Tunisie, recommendation, refresh).
+- Etape 13: ajout du Stock Alert Center admin (icone rouge, stats stock/expiration, restock rapide).
 
 ## 12) Double devise front office (DT + EUR)
 - Objectif:
@@ -443,6 +445,36 @@ R: Date expires_at stockee en session et verifiee a chaque action.
   - colorful modern gradient cards,
   - cleaner friendly fallback messages,
   - all weather labels/messages translated to English to match app language.
+
+  ## 14) Admin Products Stock Alert Center
+  - Objective:
+    - alert admin when products are low stock, out of stock, or expired,
+    - provide a quick action to add quantities directly from a dedicated alert modal.
+
+  - MVC implementation:
+    - Controller: src/Controller/ProductController.php
+      - computes stock alert list server-side (low/out-of-stock/expired),
+      - computes global stock stats (expired/non-expired/low/out),
+      - exposes alert payload to Twig,
+      - handles POST restock action in route `produit_restock`.
+    - View: templates/elfirma/produits.html.twig
+      - floating red alert icon with badge counter,
+      - modern modal "Stock Alert Center" with KPI cards,
+      - alert list rows with contextual severity,
+      - per-product mini form to add quantity (+stock) instantly.
+
+  - Business rules implemented:
+    - low stock threshold: <= 20 units,
+    - out of stock: quantity <= 0 or status rupture,
+    - expired: expiration date passed or status expired,
+    - after restock:
+      - keep status expired if product is already expired,
+      - otherwise switch to available when stock > 0.
+
+  - UX:
+    - red pulse floating button is shown only when at least one alert exists,
+    - modal displays actionable priority cards + clear stock state,
+    - restock preserves current filters and selected weather region on redirect.
 
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.
