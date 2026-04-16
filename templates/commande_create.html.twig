@@ -56,6 +56,40 @@
                                     {% endfor %}
                                 {% endif %}
                             </div>
+                            <div class="col-12 mb-3" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 15px;">
+                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #92400e;">Code promo (valable 3 jours)</p>
+                                <p style="margin: 0 0 12px 0; color: #78350f; font-size: 14px;">Génération disponible pour un panier à partir de {{ promo_min_total|number_format(0, '.', ' ') }} DT.</p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                                    <input type="text" id="promo_code" name="promo_code" value="{{ oldInput.promo_code|default('') }}" placeholder="Entrez votre code promo"
+                                           style="flex: 1; min-width: 220px; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 15px;">
+                                    <button type="submit" name="checkout_action" value="generate_promo"
+                                            style="background: #92400e; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        Générer code
+                                    </button>
+                                    <button type="submit" name="checkout_action" value="apply_promo"
+                                            style="background: #b45309; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        Appliquer code
+                                    </button>
+                                </div>
+                                {% if promo_generated_code %}
+                                    <p style="margin: 10px 0 0 0; font-size: 14px; color: #065f46;">
+                                        Code généré: <strong>{{ promo_generated_code }}</strong>
+                                        {% if promo_expires_at %}
+                                            (expire le {{ promo_expires_at|date('d/m/Y H:i') }})
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+                                {% if promo_is_applied %}
+                                    <p style="margin: 8px 0 0 0; font-size: 14px; color: #166534; font-weight: 700;">
+                                        Code promo appliqué: réduction de {{ promo_percent }}%
+                                    </p>
+                                {% endif %}
+                                {% if formErrors.promo_code is defined %}
+                                    {% for err in formErrors.promo_code %}
+                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
                             <div class="col-12 mb-3" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px;">
                                 <p style="margin: 0 0 10px 0; font-weight: 700; color: #2d5016;">Champs remplis automatiquement</p>
                                 <ul style="margin: 0; padding-left: 18px; color: #4b5563; font-size: 14px;">
@@ -101,10 +135,19 @@
                             {% endfor %}
                             
                             <div style="border-top: 2px solid #e5e7eb; margin-top: 20px; padding-top: 20px;">
+                                {% if promo_discount|default(0) > 0 %}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 16px; font-weight: 600; color: #92400e;">Réduction promo ({{ promo_percent }}%) :</span>
+                                        <span style="font-size: 18px; font-weight: 700; color: #b45309;">-{{ promo_discount|number_format(2, '.', ' ') }} DT</span>
+                                    </div>
+                                {% endif %}
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total:</span>
-                                    <span style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total }} DT</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total à payer:</span>
+                                    <span style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ final_total|default(total)|number_format(2, '.', ' ') }} DT</span>
                                 </div>
+                                {% if promo_discount|default(0) > 0 %}
+                                    <div style="text-align: right; margin-top: 4px; color: #6b7280; font-size: 13px;">Sous-total avant réduction: {{ total|number_format(2, '.', ' ') }} DT</div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -114,7 +157,7 @@
                         <a href="{{ path('app_panier_index') }}" style="background: #6b7280; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
                             Retour au panier
                         </a>
-                        <button type="submit" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; max-width: 300px;">
+                        <button type="submit" name="checkout_action" value="confirm_order" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; max-width: 300px;">
                             Confirmer la commande
                         </button>
                     </div>

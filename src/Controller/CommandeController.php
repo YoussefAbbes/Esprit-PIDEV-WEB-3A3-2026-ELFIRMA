@@ -16,6 +16,10 @@ use App\Entity\Utilisateur;
 
 final class CommandeController extends AbstractController
 {
+    private const PROMO_MIN_TOTAL = 50.0;
+    private const PROMO_DISCOUNT_PERCENT = 10;
+    private const PROMO_VALID_DAYS = 3;
+
     #[Route('/commandes', name: 'app_commandes_index', methods: ['GET'])]
     public function index(EntityManagerInterface $em, SessionInterface $session): Response
     {
@@ -84,17 +88,23 @@ final class CommandeController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            $action = (string) $request->request->get('checkout_action', 'confirm_order');
+
+            if ($action === 'generate_promo') {
+                return $this->handlePromoGeneration($panierWithData, $total, $session);
+            }
+
+            if ($action === 'apply_promo') {
+                return $this->handlePromoApplication($request, $panierWithData, $total, $session);
+            }
+
             return $this->processOrder($request, $panierWithData, $total, $session, $em, $validator);
         }
 
-        return $this->render('commande_create.html.twig', [
-            'items' => $panierWithData,
-            'total' => $total,
-            'form_errors' => [],
-            'old' => [
-                'nom_client' => (string) $session->get('user_name', ''),
-                'mode_paiement' => 'Cash',
-            ],
+        return $this->renderCheckout($panierWithData, $total, $session, [], [
+            'nom_client' => (string) $session->get('user_name', ''),
+            'mode_paiement' => 'Cash',
+            'promo_code' => '',
         ]);
     }
 
@@ -110,10 +120,12 @@ final class CommandeController extends AbstractController
         $formErrors = [];
         $nomClient = trim((string) $request->request->get('nom_client', ''));
         $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
+        $promoCode = strtoupper(trim((string) $request->request->get('promo_code', '')));
 
         $old = [
             'nom_client' => $nomClient,
             'mode_paiement' => $modePaiement,
+            'promo_code' => $promoCode,
         ];
 
         if ($nomClient === '') {
@@ -125,12 +137,13 @@ final class CommandeController extends AbstractController
         }
 
         if ($formErrors !== []) {
-            return $this->render('commande_create.html.twig', [
-                'items' => $panierWithData,
-                'total' => $total,
-                'form_errors' => $formErrors,
-                'old' => $old,
-            ]);
+            return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+        }
+
+        $promoSummary = $this->resolvePromoSummary($session, $total);
+        if ($promoCode !== '' && (!$promoSummary['is_applied'] || $promoSummary['applied_code'] !== $promoCode)) {
+            $formErrors['promo_code'][] = 'Code promo invalide, expire ou non applique.';
+            return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
         }
 
         $sessionUserId = $session->get('user_id');
@@ -144,8 +157,10 @@ final class CommandeController extends AbstractController
 
             $createdOrders = [];
             $pendingPersist = [];
+            $promoDiscount = (float) $promoSummary['discount_amount'];
+            $lineTotals = $this->buildDiscountedLineTotals($panierWithData, $promoDiscount);
 
-            foreach ($panierWithData as $item) {
+            foreach ($panierWithData as $index => $item) {
                 $produit = $item['produit'];
                 $quantite = $item['quantite'];
 
@@ -157,7 +172,7 @@ final class CommandeController extends AbstractController
                 $commande = new Commande();
                 $commande->setProduit($produit);
                 $commande->setQuantite($quantite);
-                $commande->setPrixTotal(number_format((float) $item['subtotal'], 2, '.', ''));
+                $commande->setPrixTotal(number_format((float) $lineTotals[$index], 2, '.', ''));
                 $commande->setNomClient($nomClient);
                 $commande->setStatutCommande('En attente');
                 $commande->setStatutPaiement('Non payé');
@@ -180,12 +195,7 @@ final class CommandeController extends AbstractController
 
             if ($formErrors !== []) {
                 $connection->rollBack();
-                return $this->render('commande_create.html.twig', [
-                    'items' => $panierWithData,
-                    'total' => $total,
-                    'form_errors' => $formErrors,
-                    'old' => $old,
-                ]);
+                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
             }
 
             foreach ($pendingPersist as $entry) {
@@ -211,6 +221,7 @@ final class CommandeController extends AbstractController
             $connection->commit();
 
             $session->remove('panier');
+            $this->clearPromoState($session);
 
             $this->addFlash('success', 'Commande créée avec succès!');
 
@@ -226,13 +237,224 @@ final class CommandeController extends AbstractController
             }
             $this->addFlash('error', 'Erreur lors de la création de la commande: ' . $e->getMessage());
 
-            return $this->render('commande_create.html.twig', [
-                'items' => $panierWithData,
-                'total' => $total,
-                'form_errors' => ['_global' => ['Erreur lors de la creation de la commande: ' . $e->getMessage()]],
-                'old' => $old,
-            ]);
+            return $this->renderCheckout(
+                $panierWithData,
+                $total,
+                $session,
+                ['_global' => ['Erreur lors de la creation de la commande: ' . $e->getMessage()]],
+                $old
+            );
         }
+    }
+
+    private function handlePromoGeneration(array $panierWithData, float $total, SessionInterface $session): Response
+    {
+        $old = [
+            'nom_client' => trim((string) $session->get('user_name', '')),
+            'mode_paiement' => 'Cash',
+            'promo_code' => '',
+        ];
+
+        if ($total < self::PROMO_MIN_TOTAL) {
+            return $this->renderCheckout($panierWithData, $total, $session, [
+                'promo_code' => [sprintf('Le code promo est disponible a partir de %.0f DT.', self::PROMO_MIN_TOTAL)],
+            ], $old);
+        }
+
+        $code = 'ELFIRMA-' . strtoupper(bin2hex(random_bytes(3)));
+        $expiresAt = (new \DateTimeImmutable())->modify('+' . self::PROMO_VALID_DAYS . ' days');
+
+        $session->set('commande_promo_generated', [
+            'code' => $code,
+            'discount_percent' => self::PROMO_DISCOUNT_PERCENT,
+            'min_total' => self::PROMO_MIN_TOTAL,
+            'expires_at' => $expiresAt->format(\DateTimeInterface::ATOM),
+        ]);
+        $session->remove('commande_promo_applied');
+
+        $this->addFlash('success', sprintf('Code genere: %s (valable %d jours).', $code, self::PROMO_VALID_DAYS));
+
+        $old['promo_code'] = $code;
+        return $this->renderCheckout($panierWithData, $total, $session, [], $old);
+    }
+
+    private function handlePromoApplication(Request $request, array $panierWithData, float $total, SessionInterface $session): Response
+    {
+        $nomClient = trim((string) $request->request->get('nom_client', (string) $session->get('user_name', '')));
+        $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
+        $promoCode = strtoupper(trim((string) $request->request->get('promo_code', '')));
+
+        $old = [
+            'nom_client' => $nomClient,
+            'mode_paiement' => $modePaiement,
+            'promo_code' => $promoCode,
+        ];
+
+        if ($promoCode === '') {
+            return $this->renderCheckout($panierWithData, $total, $session, [
+                'promo_code' => ['Veuillez saisir un code promo.'],
+            ], $old);
+        }
+
+        if ($total < self::PROMO_MIN_TOTAL) {
+            return $this->renderCheckout($panierWithData, $total, $session, [
+                'promo_code' => [sprintf('Le montant minimum pour appliquer un code est %.0f DT.', self::PROMO_MIN_TOTAL)],
+            ], $old);
+        }
+
+        $generated = $this->getGeneratedPromo($session);
+        if ($generated === null) {
+            return $this->renderCheckout($panierWithData, $total, $session, [
+                'promo_code' => ['Aucun code promo genere.'],
+            ], $old);
+        }
+
+        if ($generated['code'] !== $promoCode) {
+            return $this->renderCheckout($panierWithData, $total, $session, [
+                'promo_code' => ['Code promo invalide.'],
+            ], $old);
+        }
+
+        if ($this->isPromoExpired($generated['expires_at'])) {
+            $this->clearPromoState($session);
+            return $this->renderCheckout($panierWithData, $total, $session, [
+                'promo_code' => ['Ce code promo a expire.'],
+            ], $old);
+        }
+
+        $session->set('commande_promo_applied', [
+            'code' => $promoCode,
+            'applied_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+        ]);
+
+        $this->addFlash('success', 'Code promo applique avec succes.');
+        return $this->renderCheckout($panierWithData, $total, $session, [], $old);
+    }
+
+    private function renderCheckout(array $panierWithData, float $total, SessionInterface $session, array $formErrors, array $old): Response
+    {
+        $promoSummary = $this->resolvePromoSummary($session, $total);
+
+        return $this->render('commande_create.html.twig', [
+            'items' => $panierWithData,
+            'total' => $total,
+            'final_total' => $promoSummary['final_total'],
+            'promo_discount' => $promoSummary['discount_amount'],
+            'promo_percent' => $promoSummary['discount_percent'],
+            'promo_generated_code' => $promoSummary['generated_code'],
+            'promo_expires_at' => $promoSummary['expires_at'],
+            'promo_is_applied' => $promoSummary['is_applied'],
+            'promo_min_total' => self::PROMO_MIN_TOTAL,
+            'form_errors' => $formErrors,
+            'old' => $old,
+        ]);
+    }
+
+    /**
+     * @return array{final_total: float, discount_amount: float, discount_percent: int, generated_code: ?string, expires_at: ?\DateTimeImmutable, is_applied: bool, applied_code: ?string}
+     */
+    private function resolvePromoSummary(SessionInterface $session, float $total): array
+    {
+        $generated = $this->getGeneratedPromo($session);
+        $applied = $session->get('commande_promo_applied');
+
+        if ($generated === null || $this->isPromoExpired($generated['expires_at'])) {
+            $this->clearPromoState($session);
+            return [
+                'final_total' => $total,
+                'discount_amount' => 0.0,
+                'discount_percent' => 0,
+                'generated_code' => null,
+                'expires_at' => null,
+                'is_applied' => false,
+                'applied_code' => null,
+            ];
+        }
+
+        $isApplied = is_array($applied) && ($applied['code'] ?? '') === $generated['code'] && $total >= (float) $generated['min_total'];
+        $discountPercent = (int) ($generated['discount_percent'] ?? 0);
+        $discountAmount = $isApplied ? round($total * $discountPercent / 100, 2) : 0.0;
+
+        return [
+            'final_total' => max(0.0, round($total - $discountAmount, 2)),
+            'discount_amount' => $discountAmount,
+            'discount_percent' => $discountPercent,
+            'generated_code' => (string) $generated['code'],
+            'expires_at' => \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, (string) $generated['expires_at']) ?: null,
+            'is_applied' => $isApplied,
+            'applied_code' => $isApplied ? (string) $generated['code'] : null,
+        ];
+    }
+
+    /**
+     * @return array{code: string, discount_percent: int, min_total: float, expires_at: string}|null
+     */
+    private function getGeneratedPromo(SessionInterface $session): ?array
+    {
+        $generated = $session->get('commande_promo_generated');
+        if (!is_array($generated)) {
+            return null;
+        }
+
+        if (!isset($generated['code'], $generated['discount_percent'], $generated['min_total'], $generated['expires_at'])) {
+            return null;
+        }
+
+        return [
+            'code' => (string) $generated['code'],
+            'discount_percent' => (int) $generated['discount_percent'],
+            'min_total' => (float) $generated['min_total'],
+            'expires_at' => (string) $generated['expires_at'],
+        ];
+    }
+
+    private function isPromoExpired(string $expiresAt): bool
+    {
+        $expires = \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $expiresAt);
+        if (!$expires) {
+            return true;
+        }
+
+        return $expires < new \DateTimeImmutable();
+    }
+
+    private function clearPromoState(SessionInterface $session): void
+    {
+        $session->remove('commande_promo_generated');
+        $session->remove('commande_promo_applied');
+    }
+
+    /**
+     * @return array<int, float>
+     */
+    private function buildDiscountedLineTotals(array $panierWithData, float $promoDiscount): array
+    {
+        $lineTotals = [];
+        $rawTotals = array_map(static fn (array $item): float => (float) ($item['subtotal'] ?? 0), $panierWithData);
+        $sum = array_sum($rawTotals);
+
+        if ($promoDiscount <= 0 || $sum <= 0) {
+            foreach ($rawTotals as $index => $rawTotal) {
+                $lineTotals[$index] = round($rawTotal, 2);
+            }
+            return $lineTotals;
+        }
+
+        $allocated = 0.0;
+        $lastIndex = array_key_last($rawTotals);
+
+        foreach ($rawTotals as $index => $rawTotal) {
+            if ($index === $lastIndex) {
+                $lineTotals[$index] = max(0.0, round($rawTotal - ($promoDiscount - $allocated), 2));
+                continue;
+            }
+
+            $lineDiscount = round(($rawTotal / $sum) * $promoDiscount, 2);
+            $allocated += $lineDiscount;
+            $lineTotals[$index] = max(0.0, round($rawTotal - $lineDiscount, 2));
+        }
+
+        return $lineTotals;
     }
 
     #[Route('/api/commande/quick', name: 'app_api_commande_quick', methods: ['POST'])]
