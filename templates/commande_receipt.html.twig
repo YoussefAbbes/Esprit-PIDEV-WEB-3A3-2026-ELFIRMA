@@ -242,7 +242,7 @@
         <header class="hero">
             <div>
                 <div class="brand-row">
-                    <img class="brand-logo" src="{{ asset('assets/img/logo.png') }}" alt="Logo EL FIRMA">
+                    <img class="brand-logo" src="{{ receipt_logo_data_uri|default(asset('assets/img/logo.png')) }}" alt="Logo EL FIRMA">
                     <div>
                         <div class="brand-name">EL FIRMA</div>
                         <p class="brand-tagline">Agriculture durable et intelligente</p>

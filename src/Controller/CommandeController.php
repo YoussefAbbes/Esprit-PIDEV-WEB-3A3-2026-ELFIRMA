@@ -69,6 +69,7 @@ final class CommandeController extends AbstractController
 
         return $this->render('commande_receipt.html.twig', [
             'commande' => $commande,
+            'receipt_logo_data_uri' => $this->buildReceiptLogoDataUri(),
         ]);
     }
 
@@ -89,6 +90,7 @@ final class CommandeController extends AbstractController
         $content = $this->renderView('commande_receipt.html.twig', [
             'commande' => $commande,
             'is_download' => true,
+            'receipt_logo_data_uri' => $this->buildReceiptLogoDataUri(),
         ]);
 
         $filename = sprintf('recu-paiement-commande-%d.html', (int) ($commande->getIdCommande() ?? 0));
@@ -97,6 +99,32 @@ final class CommandeController extends AbstractController
             'Content-Type' => 'text/html; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    private function buildReceiptLogoDataUri(): ?string
+    {
+        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $logoPath = $projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'logo.png';
+
+        if (!is_file($logoPath) || !is_readable($logoPath)) {
+            return null;
+        }
+
+        $binary = file_get_contents($logoPath);
+        if ($binary === false || $binary === '') {
+            return null;
+        }
+
+        $extension = strtolower((string) pathinfo($logoPath, PATHINFO_EXTENSION));
+        $mime = match ($extension) {
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
+            default => 'application/octet-stream',
+        };
+
+        return 'data:' . $mime . ';base64,' . base64_encode($binary);
     }
 
     #[Route('/commander', name: 'app_commande_create', methods: ['GET', 'POST'])]
