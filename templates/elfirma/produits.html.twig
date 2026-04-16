@@ -155,6 +155,89 @@
                 </div>
             </section>
 
+            <!-- Tunisia Weather Assistant -->
+            <section class="relative overflow-hidden rounded-3xl border border-[#d5e6c8] bg-gradient-to-br from-[#f4fbef] via-[#edf7e8] to-[#e8f3e0] p-6 lg:p-8 shadow-[0_24px_55px_-36px_rgba(18,59,18,0.65)]">
+                <div class="pointer-events-none absolute -top-14 -right-16 h-52 w-52 rounded-full bg-[#7bc96f]/20 blur-3xl"></div>
+                <div class="pointer-events-none absolute -bottom-12 -left-12 h-44 w-44 rounded-full bg-[#2b6b2f]/15 blur-2xl"></div>
+
+                <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="max-w-2xl">
+                        <p class="inline-flex items-center gap-2 rounded-full border border-[#b9d8a5] bg-[#f8fff4] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#1f5c25]">
+                            <span class="material-symbols-outlined text-sm">partly_cloudy_day</span>
+                            Tunisia Weather - Sales Assistant
+                        </p>
+                        <h3 class="mt-3 text-2xl lg:text-3xl font-black text-[#0a2200] tracking-tight">Recommendations based on temperature and humidity</h3>
+                        <p class="mt-2 text-sm text-[#355025]">Select a Tunisian region to view live weather data and get a smart product-selling recommendation.</p>
+                    </div>
+
+                    <form method="GET" action="{{ path('elfirma_products') }}" class="w-full lg:w-auto">
+                        <input type="hidden" name="q" value="{{ filters.q|default('') }}">
+                        <input type="hidden" name="category" value="{{ filters.category|default('') }}">
+                        <input type="hidden" name="status" value="{{ filters.status|default('') }}">
+                        <input type="hidden" name="sort" value="{{ filters.sort|default('id-desc') }}">
+
+                        <div class="rounded-2xl border border-[#cfe2bf] bg-white/90 p-4 shadow-sm">
+                            <label for="meteo_region" class="mb-2 block text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Tunisian region</label>
+                            <div class="flex gap-2">
+                                <select id="meteo_region" name="meteo_region" class="min-w-[220px] rounded-xl border-2 border-[#d3e4c5] bg-white px-3 py-2 text-sm font-semibold text-[#1f2937] focus:border-[#2b6b2f] focus:ring-2 focus:ring-[#cce8b7]">
+                                    {% for region in weather_regions %}
+                                        <option value="{{ region }}" {% if weather_selected_region == region %}selected{% endif %}>{{ region }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2f7d32] to-[#1f5f2c] px-4 py-2 text-sm font-bold text-white shadow hover:from-[#266d2a] hover:to-[#194f24] transition-all">
+                                    <span class="material-symbols-outlined text-base">visibility</span>
+                                    Apply
+                                </button>
+                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#0f766e] to-[#0d9488] px-4 py-2 text-sm font-bold text-white shadow hover:from-[#0f766e] hover:to-[#0f766e] transition-all">
+                                    <span class="material-symbols-outlined text-base">refresh</span>
+                                    Refresh
+                                </button>
+                            </div>
+                            <p class="mt-2 text-xs font-semibold text-[#4b5563]">Last update: {{ weather_overview.updated_at|default('-') }}</p>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="relative z-10 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <article class="lg:col-span-4 rounded-2xl border border-[#f8d7a5] bg-gradient-to-br from-[#fff8ec] via-[#fff3df] to-[#ffe9cb] p-5 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#b45309]">Temperature</p>
+                        <p class="mt-2 text-4xl font-black text-[#9a3412]">{{ weather_overview.temp_c|default(0)|number_format(1, '.', ' ') }} C</p>
+                        <p class="mt-2 text-sm text-[#5e6f4f]">Region: {{ weather_overview.region|default(weather_selected_region) }}</p>
+                    </article>
+
+                    <article class="lg:col-span-4 rounded-2xl border border-[#bfdbfe] bg-gradient-to-br from-[#eff6ff] via-[#eaf4ff] to-[#dbeafe] p-5 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#1d4ed8]">Humidity</p>
+                        <p class="mt-2 text-4xl font-black text-[#1e3a8a]">{{ weather_overview.humidity|default(0) }}%</p>
+                        <p class="mt-2 text-sm text-[#334155]">Conditions: {{ weather_overview.description|default('-')|capitalize }}</p>
+                    </article>
+
+                    <article class="lg:col-span-4 rounded-2xl border border-[#c4b5fd] bg-gradient-to-br from-[#f5f3ff] via-[#f3e8ff] to-[#ede9fe] p-5 shadow-sm flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wide text-[#7e22ce]">Weather status</p>
+                            <p class="mt-2 text-lg font-black text-[#581c87]">{{ weather_overview.description|default('-')|capitalize }}</p>
+                        </div>
+                        {% if weather_overview.icon|default('') != '' %}
+                            <img src="https://openweathermap.org/img/wn/{{ weather_overview.icon }}@2x.png" alt="Weather" class="h-16 w-16" loading="lazy">
+                        {% else %}
+                            <span class="material-symbols-outlined text-4xl text-[#7e22ce]">wb_cloudy</span>
+                        {% endif %}
+                    </article>
+
+                    <article class="lg:col-span-12 rounded-2xl border border-[#cfe2bf] bg-white/95 p-5 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Commercial recommendation</p>
+                        <h4 class="mt-2 text-2xl font-black text-[#123b12]">{{ weather_overview.recommendation_title|default('Weather advice') }}</h4>
+                        <p class="mt-2 text-sm text-[#355025] leading-relaxed">{{ weather_overview.recommendation_message|default('No recommendation available at the moment.') }}</p>
+
+                        {% if weather_overview.ok is defined and not weather_overview.ok and weather_overview.error|default('') != '' %}
+                            <div class="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2 text-sm font-semibold text-[#92400e]">
+                                <span class="material-symbols-outlined text-base">info</span>
+                                {{ weather_overview.error }}
+                            </div>
+                        {% endif %}
+                    </article>
+                </div>
+            </section>
+
             <!-- Advanced Analytics -->
             <section class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-6 lg:p-8 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)]">
                 <div class="pointer-events-none absolute -top-14 -right-14 h-52 w-52 rounded-full bg-[#9ac75f]/25 blur-3xl"></div>

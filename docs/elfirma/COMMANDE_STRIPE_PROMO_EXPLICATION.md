@@ -406,5 +406,43 @@ R: Date expires_at stockee en session et verifiee a chaque action.
   - templates/commande_receipt.html.twig:
     - montant regle en DT + EUR.
 
+## 13) Admin Products Weather Assistant (OpenWeather)
+- Objective:
+  - provide admin with live temperature and humidity for Tunisian regions,
+  - generate a smart product-selling recommendation based on weather conditions.
+
+- MVC implementation:
+  - Controller: src/Controller/ProductController.php
+    - weather API call is handled in the controller (not in Twig),
+    - region selection validation,
+    - recommendation logic by temperature/humidity,
+    - robust fallback handling when API is unavailable.
+  - View: templates/elfirma/produits.html.twig
+    - modern weather panel in admin products page,
+    - region selector,
+    - weather cards (temperature, humidity, status),
+    - recommendation block,
+    - refresh button with icon.
+
+- API details:
+  - Provider: OpenWeather
+  - Endpoint used: https://api.openweathermap.org/data/2.5/weather
+  - Env key: OPENWEATHER_API_KEY
+  - Units: metric
+  - Language: English (`lang=en`)
+
+- Tunisian regions:
+  - multiple governorates are supported (Tunis, Sfax, Sousse, Nabeul, Bizerte, etc.).
+  - admin can choose which Tunisian region to inspect.
+
+- Refresh feature:
+  - a dedicated `Refresh` button (with icon) lets admin reload temperature/humidity later,
+  - weather panel also displays the last update timestamp.
+
+- UX and design:
+  - colorful modern gradient cards,
+  - cleaner friendly fallback messages,
+  - all weather labels/messages translated to English to match app language.
+
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

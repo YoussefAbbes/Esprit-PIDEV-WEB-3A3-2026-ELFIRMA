@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\Produit;
 use App\Entity\Commande;
 use App\Entity\Categorie;
@@ -17,13 +18,47 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ProductController extends AbstractController
 {
+    private const OPENWEATHER_API_BASE = 'https://api.openweathermap.org/data/2.5/weather';
+
+    private const TUNISIA_REGIONS = [
+        'Tunis' => 'Tunis,TN',
+        'Ariana' => 'Ariana,TN',
+        'Ben Arous' => 'Ben Arous,TN',
+        'Manouba' => 'Manouba,TN',
+        'Nabeul' => 'Nabeul,TN',
+        'Sousse' => 'Sousse,TN',
+        'Monastir' => 'Monastir,TN',
+        'Mahdia' => 'Mahdia,TN',
+        'Sfax' => 'Sfax,TN',
+        'Kairouan' => 'Kairouan,TN',
+        'Bizerte' => 'Bizerte,TN',
+        'Beja' => 'Beja,TN',
+        'Jendouba' => 'Jendouba,TN',
+        'Le Kef' => 'Kef,TN',
+        'Siliana' => 'Siliana,TN',
+        'Zaghouan' => 'Zaghouan,TN',
+        'Kasserine' => 'Kasserine,TN',
+        'Sidi Bouzid' => 'Sidi Bouzid,TN',
+        'Gabes' => 'Gabes,TN',
+        'Medenine' => 'Medenine,TN',
+        'Tataouine' => 'Tataouine,TN',
+        'Gafsa' => 'Gafsa,TN',
+        'Tozeur' => 'Tozeur,TN',
+        'Kebili' => 'Kebili,TN',
+    ];
+
     #[Route('/elfirma/produits', name: 'elfirma_products', methods: ['GET'])]
-    public function adminIndex(Request $request, EntityManagerInterface $em): Response
+    public function adminIndex(Request $request, EntityManagerInterface $em, HttpClientInterface $httpClient): Response
     {
         $q = trim((string) $request->query->get('q', ''));
         $categoryFilter = trim((string) $request->query->get('category', ''));
         $statusFilter = trim((string) $request->query->get('status', ''));
         $sort = (string) $request->query->get('sort', 'id-desc');
+        $selectedRegion = trim((string) $request->query->get('meteo_region', 'Tunis'));
+
+        if (!array_key_exists($selectedRegion, self::TUNISIA_REGIONS)) {
+            $selectedRegion = 'Tunis';
+        }
 
         $produits = $em->getRepository(Produit::class)->findAll();
         $produits = $this->filterAndSortProducts($produits, $q, $categoryFilter, $statusFilter, $sort);
@@ -31,12 +66,16 @@ final class ProductController extends AbstractController
 
         $stats = $this->buildProductStats($produits);
         $chartData = $this->buildProductChartData($produits);
+        $weatherOverview = $this->fetchTunisiaWeatherOverview($selectedRegion, $httpClient);
 
         return $this->render('elfirma/produits.html.twig', [
             'produits' => $produits,
             'categories' => $categories,
             'product_stats' => $stats,
             'product_chart_data' => $chartData,
+            'weather_overview' => $weatherOverview,
+            'weather_regions' => array_keys(self::TUNISIA_REGIONS),
+            'weather_selected_region' => $selectedRegion,
             'filters' => [
                 'q' => $q,
                 'category' => $categoryFilter,
@@ -736,5 +775,129 @@ final class ProductController extends AbstractController
         }
 
         return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $normalized);
+    }
+
+    /**
+     * @return array{ok:bool,region:string,temp_c:float,humidity:int,description:string,icon:string,recommendation_title:string,recommendation_message:string,error:?string,updated_at:string}
+     */
+    private function fetchTunisiaWeatherOverview(string $region, HttpClientInterface $httpClient): array
+    {
+        $fallback = [
+            'ok' => false,
+            'region' => $region,
+            'temp_c' => 0.0,
+            'humidity' => 0,
+            'description' => '-',
+            'icon' => '',
+            'recommendation_title' => 'Weather assistant is temporarily unavailable',
+            'recommendation_message' => 'Weather data cannot be loaded right now. Please try again in a moment.',
+            'error' => null,
+            'updated_at' => (new \DateTimeImmutable())->format('d/m/Y H:i:s'),
+        ];
+
+        $apiKey = $this->getOpenWeatherApiKey();
+        if ($apiKey === '') {
+            $fallback['recommendation_title'] = 'Weather configuration required';
+            $fallback['recommendation_message'] = 'Add your OpenWeather key in .env.local to enable weather-based recommendations.';
+            return $fallback;
+        }
+
+        $query = self::TUNISIA_REGIONS[$region] ?? self::TUNISIA_REGIONS['Tunis'];
+
+        try {
+            $response = $httpClient->request('GET', self::OPENWEATHER_API_BASE, [
+                'query' => [
+                    'q' => $query,
+                    'appid' => $apiKey,
+                    'units' => 'metric',
+                    'lang' => 'en',
+                ],
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $data = $response->toArray(false);
+
+            $apiCod = (string) ($data['cod'] ?? '200');
+            $apiMessage = (string) ($data['message'] ?? '');
+
+            if ($statusCode >= 400 || ($apiCod !== '' && $apiCod !== '200')) {
+                $fallback['recommendation_title'] = 'OpenWeather activation in progress';
+                $fallback['recommendation_message'] = 'Your API key may need a few minutes to activate. Please retry shortly.';
+
+                if ($apiMessage !== '') {
+                    $fallback['error'] = ucfirst($apiMessage) . '.';
+                }
+
+                return $fallback;
+            }
+
+            if (!isset($data['main']['temp'], $data['main']['humidity'])) {
+                return $fallback;
+            }
+
+            $temp = (float) ($data['main']['temp'] ?? 0.0);
+            $humidity = (int) ($data['main']['humidity'] ?? 0);
+            $description = (string) ($data['weather'][0]['description'] ?? '-');
+            $icon = (string) ($data['weather'][0]['icon'] ?? '');
+
+            $recommendation = $this->buildWeatherRecommendation($temp, $humidity);
+
+            return [
+                'ok' => true,
+                'region' => $region,
+                'temp_c' => round($temp, 1),
+                'humidity' => $humidity,
+                'description' => $description,
+                'icon' => $icon,
+                'recommendation_title' => $recommendation['title'],
+                'recommendation_message' => $recommendation['message'],
+                'error' => null,
+                'updated_at' => (new \DateTimeImmutable())->format('d/m/Y H:i:s'),
+            ];
+        } catch (\Throwable $e) {
+            $fallback['error'] = 'Weather service connection is currently unavailable.';
+
+            return $fallback;
+        }
+    }
+
+    /**
+     * @return array{title:string,message:string}
+     */
+    private function buildWeatherRecommendation(float $temperature, int $humidity): array
+    {
+        if ($temperature >= 35 && $humidity <= 50) {
+            return [
+                'title' => 'Very hot and dry conditions',
+                'message' => 'Recommended focus: watermelon, melon, tomatoes, cucumbers, and hydration-related products. Highlight irrigation and mulching solutions as well.',
+            ];
+        }
+
+        if ($temperature >= 30 && $humidity > 50) {
+            return [
+                'title' => 'Hot and humid weather',
+                'message' => 'Recommended focus: fresh fruits, leafy vegetables, preservation products, and ventilated packaging. Increase rotation for sensitive stock.',
+            ];
+        }
+
+        if ($temperature >= 20 && $temperature < 30) {
+            return [
+                'title' => 'Balanced conditions',
+                'message' => 'Good time to diversify: citrus, seasonal vegetables, aromatic herbs, and premium local products.',
+            ];
+        }
+
+        return [
+            'title' => 'Cool weather',
+            'message' => 'Recommended focus: potatoes, onions, carrots, root vegetables, and long shelf-life products.',
+        ];
+    }
+
+    private function getOpenWeatherApiKey(): string
+    {
+        return trim((string) ($_SERVER['OPENWEATHER_API_KEY'] ?? $_ENV['OPENWEATHER_API_KEY'] ?? ''));
     }
 }
