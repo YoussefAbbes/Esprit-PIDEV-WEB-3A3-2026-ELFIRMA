@@ -12,21 +12,18 @@
         <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
         <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
         <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Blog</a></li>
-        <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+        {% set isParcellesCulturesRoute = app.request.get('_route') == 'app_client_parcelles' or app.request.get('_route') == 'app_client_cultures' or app.request.get('_route') starts with 'parcelle_' or app.request.get('_route') starts with 'culture_' %}
+        <li class="dropdown">
+          <a href="#" class="{% if isParcellesCulturesRoute %}active{% endif %}">
+            <span>Parcels &amp; Crops</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
+          </a>
           <ul>
-            <li><a href="#">Dropdown 1</a></li>
-            <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-              <ul>
-                <li><a href="#">Deep Dropdown 1</a></li>
-                <li><a href="#">Deep Dropdown 2</a></li>
-                <li><a href="#">Deep Dropdown 3</a></li>
-                <li><a href="#">Deep Dropdown 4</a></li>
-                <li><a href="#">Deep Dropdown 5</a></li>
-              </ul>
+            <li>
+              <a href="{{ path('app_client_parcelles') }}" class="{% if app.request.get('_route') == 'app_client_parcelles' or app.request.get('_route') starts with 'parcelle_' %}active{% endif %}">Parcels</a>
             </li>
-            <li><a href="#">Dropdown 2</a></li>
-            <li><a href="#">Dropdown 3</a></li>
-            <li><a href="#">Dropdown 4</a></li>
+            <li>
+              <a href="{{ path('app_client_cultures') }}" class="{% if app.request.get('_route') == 'app_client_cultures' or app.request.get('_route') starts with 'culture_' %}active{% endif %}">Crops</a>
+            </li>
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>

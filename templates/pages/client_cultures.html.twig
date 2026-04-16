@@ -1,0 +1,2125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Our Crops — EL FIRMA{% endblock %}
+{% block meta_description %}Explore crop lifecycles, planting schedules, and harvest progress on EL FIRMA's agricultural management platform.{% endblock %}
+{% block body_class %}client-cultures-page{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* =====================================================
+   CSS CUSTOM PROPERTIES
+   ===================================================== */
+:root {
+  --cf-primary:   #166534;
+  --cf-secondary: #ca8a04;
+  --cf-amber:     #fbbf24;
+  --cf-blue:      #1d4ed8;
+  --cf-bg:        #fffbeb;
+  --cf-radius:    20px;
+  --cf-shadow:    0 8px 32px rgba(15,23,42,0.10);
+  --cf-shadow-hv: 0 20px 48px rgba(22,101,52,0.18);
+}
+
+/* =====================================================
+   HERO
+   ===================================================== */
+.cc-hero {
+  position: relative;
+  min-height: 520px;
+  background: linear-gradient(135deg, #052e16 0%, #166534 50%, #ca8a04 100%);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 100px 0 0;
+}
+.cc-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("{{ asset('assets/img/hero_2.jpg') }}");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.08;
+  z-index: 0;
+}
+.cc-hero-content { position: relative; z-index: 2; }
+
+/* Floating particles */
+.cc-particles { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.cc-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(251,191,36,0.55);
+  animation: cc-float linear infinite;
+}
+@keyframes cc-float {
+  0%   { transform: translateY(110vh) scale(0);   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
+}
+
+.cc-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(251,191,36,0.14);
+  border: 1px solid rgba(251,191,36,0.38);
+  color: #fbbf24;
+  padding: 6px 20px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+.cc-hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.9rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.12;
+  margin-bottom: 18px;
+}
+.cc-hero-title .highlight { color: #fbbf24; }
+.cc-hero-sub {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.75);
+  max-width: 500px;
+  margin-bottom: 0;
+  line-height: 1.75;
+}
+
+/* Hero stat cards */
+.cc-stat-card {
+  background: rgba(255,255,255,0.09);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 18px;
+  padding: 20px 14px;
+  text-align: center;
+  transition: transform 0.25s, background 0.25s;
+  height: 100%;
+}
+.cc-stat-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255,255,255,0.15);
+}
+.cc-stat-card .s-icon  { font-size: 1.5rem; display: block; margin-bottom: 8px; }
+.cc-stat-card .s-num   { font-size: 1.9rem; font-weight: 800; color: #fbbf24; line-height: 1; margin-bottom: 4px; }
+.cc-stat-card .s-label { font-size: 0.68rem; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.9px; font-weight: 600; }
+
+/* Wave divider */
+.cc-wave { display: block; margin-bottom: -3px; position: relative; z-index: 3; }
+
+/* =====================================================
+   STICKY FILTER BAR
+   ===================================================== */
+.cc-filter-bar {
+  position: relative;
+  z-index: 1;
+  background: rgba(255,251,235,0.97);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid #fde68a;
+  padding: 12px 0;
+  box-shadow: 0 4px 24px rgba(22,101,52,0.08);
+}
+.cc-search-wrap { position: relative; }
+.cc-search-wrap .s-ico {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+.cc-search-wrap input {
+  padding-left: 38px;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  font-size: 0.87rem;
+  height: 42px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cc-search-wrap input:focus {
+  border-color: var(--cf-primary);
+  box-shadow: 0 0 0 3px rgba(22,101,52,0.1);
+}
+.cc-fbtn {
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  border-radius: 10px;
+  padding: 7px 15px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.cc-fbtn:hover { background: #f9fafb; }
+.cc-fbtn.active { background: var(--cf-primary); color: #fff; border-color: var(--cf-primary); }
+.cc-fbtn[data-status="In Progress"].active  { background: #1d4ed8; border-color: #1d4ed8; }
+.cc-fbtn[data-status="Planned"].active      { background: #92400e; border-color: #92400e; }
+.cc-fbtn[data-status="Harvested"].active    { background: #166534; border-color: #166534; }
+.cc-parcelle-sel {
+  height: 42px;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  font-size: 0.84rem;
+  padding: 0 12px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  min-width: 155px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.cc-parcelle-sel:focus { border-color: var(--cf-primary); }
+.cc-view-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 1.05rem;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.cc-view-btn:hover, .cc-view-btn.active {
+  background: var(--cf-primary);
+  color: #fff;
+  border-color: var(--cf-primary);
+}
+.cc-count-lbl { font-size: 0.8rem; color: #6b7280; font-weight: 600; white-space: nowrap; }
+
+/* =====================================================
+   PAGE SECTION WRAPPER
+   ===================================================== */
+.section-crops { padding: 56px 0 72px; background: var(--cf-bg); min-height: 400px; }
+
+/* =====================================================
+   STATUS + UTILITY
+   ===================================================== */
+.s-inprogress { background: rgba(219,234,254,0.92); color: #1d4ed8; }
+.s-planned    { background: rgba(254,249,195,0.92); color: #92400e; }
+.s-harvested  { background: rgba(220,252,231,0.92); color: #166534; }
+.s-default    { background: rgba(243,244,246,0.9);  color: #374151; }
+
+.cc-status-pill {
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+/* =====================================================
+   GRID VIEW CARDS
+   ===================================================== */
+.cc-grid-card {
+  background: #fff;
+  border-radius: var(--cf-radius);
+  border: 1.5px solid #f3f4f6;
+  box-shadow: var(--cf-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(.2,.8,.3,1), box-shadow 0.3s, border-color 0.3s;
+}
+.cc-grid-card:hover {
+  transform: translateY(-9px) scale(1.01);
+  box-shadow: var(--cf-shadow-hv);
+  border-color: var(--cf-amber);
+}
+
+/* Image area */
+.cc-img-wrap {
+  position: relative;
+  height: 210px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.cc-img-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.cc-grid-card:hover .cc-img-wrap img { transform: scale(1.07); }
+.cc-img-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #052e16 0%, #166534 60%, #ca8a04 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.7);
+  gap: 6px;
+  transition: transform 0.5s ease;
+}
+.cc-grid-card:hover .cc-img-placeholder { transform: scale(1.05); }
+.cc-img-placeholder .ph-ic  { font-size: 2.8rem; color: rgba(251,191,36,0.8); }
+.cc-img-placeholder .ph-txt { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; max-width: 120px; text-align: center; }
+
+/* Badges on image */
+.cc-badge-top-right {
+  position: absolute; top: 12px; right: 12px; z-index: 2;
+}
+.cc-badge-top-left {
+  position: absolute; top: 12px; left: 12px; z-index: 2;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  padding: 4px 11px;
+  border-radius: 50px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+/* Progress ring */
+.cc-ring-wrap {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  z-index: 3;
+  width: 54px; height: 54px;
+  background: rgba(0,0,0,0.45);
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+}
+.cc-ring-wrap svg {
+  position: absolute; top: 0; left: 0;
+  transform: rotate(-90deg);
+}
+.cc-ring-pct {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #fff;
+  z-index: 1;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* Card body */
+.cc-card-body { padding: 18px 18px 10px; flex: 1; display: flex; flex-direction: column; }
+.cc-crop-name    { font-size: 1.08rem; font-weight: 800; color: #111827; margin-bottom: 2px; }
+.cc-crop-variety { font-size: 0.77rem; color: #6b7280; margin-bottom: 10px; }
+.cc-parcelle-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  color: var(--cf-primary);
+  font-size: 0.74rem; font-weight: 700;
+  padding: 3px 11px; border-radius: 50px;
+  margin-bottom: 12px;
+}
+.cc-date-row   { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.cc-date-chip  {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #f9fafb; border: 1px solid #e5e7eb;
+  color: #374151; font-size: 0.69rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 8px;
+}
+.cc-date-chip .bi { color: var(--cf-secondary); }
+
+.cc-prog-row   { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.cc-prog-lbl   { font-size: 0.74rem; font-weight: 600; color: #374151; }
+.cc-prog-pct   { font-size: 0.74rem; font-weight: 800; color: var(--cf-primary); }
+.cc-prog-track {
+  height: 8px; background: #e5e7eb; border-radius: 50px;
+  overflow: hidden; margin-bottom: 10px;
+}
+.cc-prog-fill  {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, #166534, #16a34a, #fbbf24);
+  transition: width 0.9s cubic-bezier(.4,0,.2,1);
+}
+.cc-qty-row  { display: flex; gap: 8px; margin-bottom: 14px; }
+.cc-qty-chip {
+  flex: 1; background: #f9fafb; border: 1px solid #e5e7eb;
+  border-radius: 10px; padding: 8px 8px; text-align: center;
+}
+.cc-qty-chip .qv { font-size: 0.88rem; font-weight: 800; color: #111827; }
+.cc-qty-chip .ql { font-size: 0.63rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* Card footer */
+.cc-card-foot {
+  padding: 11px 16px;
+  border-top: 1px solid #f3f4f6;
+  display: flex; gap: 8px; align-items: center;
+}
+.cc-btn-details {
+  flex: 1; padding: 9px 10px;
+  background: linear-gradient(135deg, #166534, #ca8a04);
+  color: #fff; border: none; border-radius: 12px;
+  font-size: 0.79rem; font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.cc-btn-details:hover { opacity: 0.88; transform: scale(1.02); }
+.cc-btn-parcelles {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: #f0fdf4; border: 1.5px solid #bbf7d0;
+  color: var(--cf-primary); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cc-btn-parcelles:hover { background: var(--cf-primary); color: #fff; }
+
+/* =====================================================
+   LIST VIEW
+   ===================================================== */
+.cc-list-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #f3f4f6;
+  box-shadow: var(--cf-shadow);
+  display: flex;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cc-list-card:hover {
+  transform: translateX(5px);
+  box-shadow: var(--cf-shadow-hv);
+  border-color: var(--cf-amber);
+}
+.cc-list-img {
+  width: 160px; min-width: 160px; height: 140px;
+  object-fit: cover; flex-shrink: 0;
+}
+.cc-list-placeholder {
+  width: 160px; min-width: 160px; height: 140px;
+  background: linear-gradient(135deg, #052e16, #166534 70%, #ca8a04);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex-shrink: 0; color: rgba(255,255,255,0.65);
+  gap: 6px;
+}
+.cc-list-body {
+  flex: 1; padding: 14px 18px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.cc-list-name { font-size: 1rem; font-weight: 800; color: #111827; }
+.cc-list-meta { font-size: 0.77rem; color: #6b7280; margin-bottom: 8px; }
+.cc-list-actions {
+  padding: 12px 14px; min-width: 148px;
+  border-left: 1px solid #f3f4f6;
+  display: flex; flex-direction: column; gap: 6px; justify-content: center;
+}
+
+/* =====================================================
+   TIMELINE VIEW
+   ===================================================== */
+.cc-timeline { position: relative; padding: 0 0 24px; }
+.cc-timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #166534 0%, #ca8a04 50%, #166534 100%);
+  transform: translateX(-50%);
+  border-radius: 3px;
+}
+.cc-tl-item {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: calc(50% + 34px);
+  margin-bottom: 44px;
+  position: relative;
+}
+.cc-tl-item.tl-right {
+  justify-content: flex-start;
+  padding-right: 0;
+  padding-left: calc(50% + 34px);
+}
+.cc-tl-node {
+  position: absolute;
+  left: 50%; top: 20px;
+  transform: translateX(-50%);
+  width: 54px; height: 54px;
+  background: linear-gradient(135deg, #166534, #ca8a04);
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 3px #fbbf24;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+  line-height: 1.1; text-align: center;
+  color: #fff; font-size: 0.6rem; font-weight: 800;
+}
+.cc-tl-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #f3f4f6;
+  box-shadow: var(--cf-shadow);
+  padding: 18px 20px;
+  max-width: 440px; width: 100%;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cc-tl-card:hover {
+  transform: scale(1.025);
+  box-shadow: var(--cf-shadow-hv);
+  border-color: var(--cf-amber);
+}
+@media (max-width: 768px) {
+  .cc-timeline::before { left: 24px; }
+  .cc-tl-item,
+  .cc-tl-item.tl-right {
+    justify-content: flex-start;
+    padding-left: 64px;
+    padding-right: 0;
+  }
+  .cc-tl-node { left: 24px; }
+  .cc-tl-card { max-width: 100%; }
+}
+
+/* =====================================================
+   EMPTY / NO RESULTS STATES
+   ===================================================== */
+.cc-empty {
+  text-align: center;
+  padding: 80px 24px;
+  background: #fff;
+  border-radius: 24px;
+  border: 2px dashed #e5e7eb;
+}
+.cc-empty-icon { font-size: 4rem; color: #d1d5db; margin-bottom: 16px; }
+.cc-empty h4   { font-weight: 800; color: #374151; margin-bottom: 8px; }
+.cc-empty p    { color: #9ca3af; font-size: 0.9rem; margin: 0; }
+
+/* =====================================================
+   CULTURE DETAIL MODAL
+   ===================================================== */
+.cc-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(5,46,22,0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.cc-overlay.open { opacity: 1; pointer-events: all; }
+.cc-modal {
+  background: #fff;
+  border-radius: 24px;
+  max-width: 860px; width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(5,46,22,0.32);
+  transform: scale(0.9) translateY(28px);
+  transition: transform 0.32s cubic-bezier(.2,.8,.3,1);
+  position: relative;
+}
+.cc-overlay.open .cc-modal { transform: scale(1) translateY(0); }
+
+/* Modal banner */
+.cc-modal-banner {
+  position: relative;
+  height: 224px;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  flex-shrink: 0;
+}
+.cc-m-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #052e16, #166534, #ca8a04);
+}
+.cc-m-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+}
+.cc-m-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(5,46,22,0.92) 0%, rgba(5,46,22,0.25) 100%);
+}
+.cc-m-content {
+  position: absolute;
+  bottom: 20px; left: 26px; right: 60px;
+}
+.cc-m-close {
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: #fff; font-size: 1.05rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cc-m-close:hover { background: rgba(255,255,255,0.3); }
+.cc-m-crop-name { font-size: 1.65rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
+.cc-m-crop-sub  { font-size: 0.84rem; color: rgba(255,255,255,0.72); }
+
+/* Stats strip */
+.cc-m-strip {
+  background: linear-gradient(90deg, #052e16 0%, #166534 100%);
+  display: flex; flex-wrap: wrap;
+}
+.cc-m-strip-cell {
+  flex: 1; min-width: 110px;
+  padding: 15px 10px; text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.09);
+}
+.cc-m-strip-cell:last-child { border-right: none; }
+.cc-m-strip-cell .sv { font-size: 1.25rem; font-weight: 800; color: #fbbf24; }
+.cc-m-strip-cell .sl { font-size: 0.64rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+
+/* Tabs */
+.cc-m-tabs {
+  padding: 0 24px;
+  border-bottom: 2px solid #f3f4f6;
+  display: flex; gap: 2px; background: #fff;
+  position: sticky; top: 0; z-index: 5;
+}
+.cc-tab-btn {
+  padding: 14px 18px;
+  font-size: 0.83rem; font-weight: 700;
+  color: #6b7280;
+  border: none; background: transparent;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.cc-tab-btn:hover  { color: #374151; }
+.cc-tab-btn.active { color: var(--cf-primary); border-bottom-color: var(--cf-primary); }
+.cc-tab-body  { padding: 24px; }
+.cc-tab-pane  { display: none; }
+.cc-tab-pane.active { display: block; }
+
+/* Info grid */
+.cc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 576px) { .cc-info-grid { grid-template-columns: 1fr; } }
+.cc-info-cell { background: #f9fafb; border-radius: 12px; padding: 13px 15px; }
+.cc-info-cell .ic-lbl { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.9px; color: #9ca3af; font-weight: 700; margin-bottom: 4px; }
+.cc-info-cell .ic-val { font-size: 0.9rem; font-weight: 700; color: #111827; }
+
+/* Lifecycle timeline */
+.cc-lc-tl { position: relative; padding-left: 34px; }
+.cc-lc-tl::before {
+  content: '';
+  position: absolute; left: 12px; top: 14px; bottom: 14px;
+  width: 2px; background: #e5e7eb;
+}
+.cc-lc-phase { position: relative; padding-bottom: 30px; }
+.cc-lc-phase:last-child { padding-bottom: 0; }
+.cc-lc-dot {
+  position: absolute; left: -27px; top: 3px;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700;
+  border: 2px solid #e5e7eb; background: #fff; z-index: 1;
+}
+.cc-lc-dot.lc-done    { background: var(--cf-primary); border-color: var(--cf-primary); color: #fff; }
+.cc-lc-dot.lc-current { background: #fbbf24; border-color: #ca8a04; color: #fff; box-shadow: 0 0 0 4px rgba(251,191,36,0.22); }
+.cc-lc-dot.lc-pending { background: #f3f4f6; border-color: #d1d5db; color: #9ca3af; }
+.cc-lc-title { font-size: 0.9rem; font-weight: 700; color: #111827; margin-bottom: 3px; }
+.cc-lc-desc  { font-size: 0.78rem; color: #6b7280; margin: 0; }
+
+/* Observations */
+.cc-obs-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  font-size: 0.88rem;
+  color: #374151;
+  line-height: 1.75;
+  min-height: 110px;
+  white-space: pre-wrap;
+}
+
+/* =====================================================
+   UPCOMING HARVESTS SECTION
+   ===================================================== */
+.cc-upcoming-wrap {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: var(--cf-shadow);
+  overflow: hidden;
+}
+.cc-upcoming-head {
+  background: linear-gradient(135deg, #052e16 0%, #166534 100%);
+  padding: 20px 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.cc-upcoming-head h5 { color: #fff; margin: 0; font-weight: 800; font-size: 1.05rem; }
+.cc-upcoming-list  { list-style: none; margin: 0; padding: 0; }
+.cc-upcoming-item  {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.18s;
+}
+.cc-upcoming-item:last-child { border-bottom: none; }
+.cc-upcoming-item:hover { background: #fffbeb; }
+.cc-up-name    { font-weight: 700; color: #111827; font-size: 0.88rem; }
+.cc-up-parcelle { font-size: 0.74rem; color: #6b7280; margin-top: 1px; }
+.cc-up-badge {
+  font-size: 0.72rem; font-weight: 800;
+  padding: 5px 13px; border-radius: 50px;
+  white-space: nowrap;
+}
+.up-soon   { background: #fef3c7; color: #92400e; }
+.up-medium { background: #dcfce7; color: #166534; }
+.up-far    { background: #eff6ff; color: #1d4ed8; }
+
+/* =====================================================
+   CTA SECTION
+   ===================================================== */
+.cc-cta {
+  background: linear-gradient(135deg, #052e16 0%, #166534 55%, #1a300a 100%);
+  border-radius: 24px;
+  padding: 68px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cc-cta::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 65% 50%, rgba(251,191,36,0.14) 0%, transparent 68%);
+  pointer-events: none;
+}
+.cc-cta-title {
+  font-size: clamp(1.5rem, 3.2vw, 2.5rem);
+  font-weight: 800; color: #fff; margin-bottom: 12px;
+  position: relative;
+}
+.cc-cta-title span { color: #fbbf24; }
+.cc-cta-sub {
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 30px;
+  font-size: 1rem; max-width: 500px; margin-left: auto; margin-right: auto;
+  position: relative;
+}
+.cc-cta-btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: linear-gradient(135deg, #fbbf24, #ca8a04);
+  color: #052e16; font-weight: 800; font-size: 0.95rem;
+  padding: 15px 34px; border-radius: 14px; text-decoration: none;
+  position: relative;
+  box-shadow: 0 4px 22px rgba(251,191,36,0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cc-cta-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 36px rgba(251,191,36,0.5); color: #052e16; }
+
+/* =====================================================
+   TOAST NOTIFICATIONS
+   ===================================================== */
+.cc-toast-wrap {
+  position: fixed; bottom: 22px; right: 22px;
+  z-index: 10000;
+  display: flex; flex-direction: column; gap: 9px;
+  pointer-events: none;
+}
+.cc-toast {
+  background: #fff;
+  border-radius: 14px;
+  border-left: 4px solid var(--cf-primary);
+  padding: 14px 16px;
+  min-width: 250px; max-width: 330px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  display: flex; align-items: flex-start; gap: 11px;
+  pointer-events: all;
+  animation: toast-slide-in 0.35s cubic-bezier(.2,.8,.3,1) both;
+}
+.cc-toast.removing { animation: toast-slide-out 0.3s ease forwards; }
+.cc-toast-ico  { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
+.cc-toast-body .tt { font-size: 0.83rem; font-weight: 700; color: #111827; margin-bottom: 1px; }
+.cc-toast-body .ts { font-size: 0.76rem; color: #6b7280; }
+@keyframes toast-slide-in  { from { opacity: 0; transform: translateX(42px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toast-slide-out { from { opacity: 1; transform: translateX(0);    } to { opacity: 0; transform: translateX(42px); } }
+
+/* =====================================================
+   UTILITIES
+   ===================================================== */
+.d-none-force { display: none !important; }
+.fw-800 { font-weight: 800 !important; }
+.text-amber { color: #fbbf24 !important; }
+
+/* =====================================================
+   CROP SEASONAL CALENDAR
+   ===================================================== */
+.cc-cal-section { background: white; }
+.cc-cal-wrap {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(15,23,42,0.08);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+.cc-cal-head {
+  background: linear-gradient(135deg, #052e16 0%, #166534 100%);
+  padding: 24px 28px;
+  display: flex; align-items: center; gap: 16px;
+}
+.cc-cal-head-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; flex-shrink: 0;
+}
+.cc-cal-head h3  { color: #fff; margin: 0; font-size: 1.2rem; font-weight: 800; }
+.cc-cal-head p   { color: rgba(255,255,255,.65); margin: 3px 0 0; font-size: .82rem; }
+.cc-cal-head .cc-cal-badge {
+  margin-left: auto;
+  background: rgba(251,191,36,0.2); border: 1px solid rgba(251,191,36,0.4);
+  color: #fbbf24; padding: 4px 14px; border-radius: 20px;
+  font-size: .75rem; font-weight: 800; white-space: nowrap;
+}
+
+/* Month header row */
+.cc-cal-months-row {
+  display: grid;
+  grid-template-columns: 160px repeat(12, 1fr);
+  gap: 0;
+  border-bottom: 2px solid #f3f4f6;
+  background: #f9fafb;
+}
+.cc-cal-month-header {
+  padding: 10px 4px;
+  text-align: center;
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #6b7280;
+  border-right: 1px solid #f3f4f6;
+}
+.cc-cal-month-header.current-month {
+  background: #fef3c7; color: #92400e;
+}
+.cc-cal-crop-label-col {
+  padding: 10px 16px;
+  font-size: .75rem; font-weight: 800; color: #374151;
+  border-right: 2px solid #e5e7eb;
+}
+
+/* Crop rows */
+.cc-cal-body   { }
+.cc-cal-row {
+  display: grid;
+  grid-template-columns: 160px repeat(12, 1fr);
+  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+  transition: background 0.15s;
+}
+.cc-cal-row:last-child { border-bottom: none; }
+.cc-cal-row:hover { background: #fafafa; }
+
+.cc-cal-crop-name {
+  padding: 12px 16px;
+  border-right: 2px solid #e5e7eb;
+  display: flex; align-items: center; gap: 9px;
+}
+.cc-cal-crop-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.cc-cal-crop-txt   { font-size: .8rem; font-weight: 700; color: #111827; line-height: 1.3; }
+.cc-cal-crop-var   { font-size: .68rem; color: #6b7280; }
+
+.cc-cal-cell { padding: 6px 3px; border-right: 1px solid #f3f4f6; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+.cc-cal-cell:last-child { border-right: none; }
+
+.cc-cal-bar {
+  width: 100%; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .6rem; font-weight: 800; color: white;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.cc-bar-plant   { background: linear-gradient(90deg, #16a34a, #22c55e); }
+.cc-bar-grow    { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+.cc-bar-harvest { background: linear-gradient(90deg, #ca8a04, #eab308); }
+.cc-bar-empty   { background: transparent; }
+
+/* Legend */
+.cc-cal-legend {
+  display: flex; gap: 18px; padding: 16px 20px;
+  border-top: 1px solid #f3f4f6; flex-wrap: wrap;
+  background: #fafafa;
+}
+.cc-cal-legend-item {
+  display: flex; align-items: center; gap: 7px;
+  font-size: .75rem; font-weight: 600; color: #374151;
+}
+.cc-cal-legend-dot {
+  width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+}
+
+/* Current month indicator */
+.cc-cal-cell.current-month-col { background: rgba(251,191,36,0.06); }
+
+/* Recommended crops panel */
+.cc-recommend-panel {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-top: 20px;
+}
+.cc-recommend-panel h6 {
+  font-size: .8rem; font-weight: 800; color: #166534;
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.cc-recommend-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.cc-recommend-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: white; border: 1.5px solid #bbf7d0;
+  border-radius: 20px; padding: 6px 14px;
+  font-size: .78rem; font-weight: 700; color: #166534;
+  transition: all 0.2s;
+}
+.cc-recommend-chip:hover { background: #166534; color: white; border-color: #166534; }
+
+@media (max-width: 768px) {
+  .cc-cal-months-row,
+  .cc-cal-row { grid-template-columns: 110px repeat(12, 1fr); }
+  .cc-cal-crop-name,
+  .cc-cal-crop-label-col { padding: 10px 10px; }
+  .cc-cal-crop-txt { font-size: .7rem; }
+  .cc-cal-crop-emoji { display: none; }
+  .cc-cal-bar { height: 22px; font-size: 0; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ===========================================================
+   HERO SECTION
+   =========================================================== #}
+<section class="cc-hero">
+  <div class="cc-hero-bg"></div>
+  <div class="cc-particles" id="ccParticles"></div>
+
+  <div class="container cc-hero-content pb-5">
+    <div class="row align-items-center g-5">
+
+      {# Left col — headline #}
+      <div class="col-lg-5" data-aos="fade-right" data-aos-duration="950">
+        <span class="cc-hero-badge">
+          <i class="bi bi-flower2"></i> Crop Lifecycle Tracker
+        </span>
+        <h1 class="cc-hero-title">
+          Our <span class="highlight">Crops</span>
+        </h1>
+        <p class="cc-hero-sub">
+          Follow every stage of your crops — from planting day to final harvest.
+          Real-time progress, yield tracking, and full lifecycle transparency at a glance.
+        </p>
+      </div>
+
+      {# Right col — stat counters #}
+      <div class="col-lg-7" data-aos="fade-left" data-aos-duration="950" data-aos-delay="140">
+        <div class="row g-3">
+          <div class="col-4 col-sm-4">
+            <div class="cc-stat-card">
+              <span class="s-icon">🌾</span>
+              <div class="s-num" data-target="{{ stats.total }}">0</div>
+              <div class="s-label">Total Crops</div>
+            </div>
+          </div>
+          <div class="col-4 col-sm-4">
+            <div class="cc-stat-card">
+              <span class="s-icon">🌱</span>
+              <div class="s-num" data-target="{{ stats.inProgress }}">0</div>
+              <div class="s-label">In Progress</div>
+            </div>
+          </div>
+          <div class="col-4 col-sm-4">
+            <div class="cc-stat-card">
+              <span class="s-icon">📋</span>
+              <div class="s-num" data-target="{{ stats.planned }}">0</div>
+              <div class="s-label">Planned</div>
+            </div>
+          </div>
+          <div class="col-4 col-sm-4">
+            <div class="cc-stat-card">
+              <span class="s-icon">✅</span>
+              <div class="s-num" data-target="{{ stats.harvested }}">0</div>
+              <div class="s-label">Harvested</div>
+            </div>
+          </div>
+          <div class="col-4 col-sm-4">
+            <div class="cc-stat-card">
+              <span class="s-icon">🌿</span>
+              <div class="s-num" data-target="{{ stats.totalPlanted|round }}">0</div>
+              <div class="s-label">Planted Qty</div>
+            </div>
+          </div>
+          <div class="col-4 col-sm-4">
+            <div class="cc-stat-card">
+              <span class="s-icon">🏆</span>
+              <div class="s-num" data-target="{{ stats.totalHarvested|round }}">0</div>
+              <div class="s-label">Harvested Qty</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {# Bottom wave #}
+  <svg class="cc-wave w-100" style="position:absolute;bottom:0;left:0;" xmlns="http://www.w3.org/2000/svg"
+       viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path fill="#fffbeb"
+          d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z"/>
+  </svg>
+</section>
+
+{# ===========================================================
+   STICKY FILTER BAR
+   =========================================================== #}
+<div class="cc-filter-bar" id="ccFilterBar">
+  <div class="container">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+
+      {# Search #}
+      <div class="cc-search-wrap" style="min-width:175px;max-width:240px;flex:1;">
+        <i class="bi bi-search s-ico"></i>
+        <input type="text" id="ccSearch" placeholder="Search crops or variety…" autocomplete="off">
+      </div>
+
+      {# Status filters #}
+      <div class="d-flex gap-1 flex-wrap">
+        <button class="cc-fbtn active" data-status="all">All</button>
+        <button class="cc-fbtn" data-status="In Progress">
+          <i class="bi bi-arrow-repeat me-1"></i>In Progress
+        </button>
+        <button class="cc-fbtn" data-status="Planned">
+          <i class="bi bi-calendar3 me-1"></i>Planned
+        </button>
+        <button class="cc-fbtn" data-status="Harvested">
+          <i class="bi bi-basket2 me-1"></i>Harvested
+        </button>
+      </div>
+
+      {# Parcelle filter #}
+      <select class="cc-parcelle-sel" id="ccParcelleFilter">
+        <option value="">All Parcels</option>
+        {% set _seen = [] %}
+        {% for culture in cultures %}
+          {% if culture.parcelle %}
+            {% set _pnom = culture.parcelle.nom %}
+            {% if _pnom not in _seen %}
+              {% set _seen = _seen|merge([_pnom]) %}
+              <option value="{{ _pnom }}">{{ _pnom }}</option>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      </select>
+
+      {# View toggle #}
+      <div class="d-flex gap-1 ms-auto">
+        <button class="cc-view-btn active" id="btnGrid"     title="Grid view">   <i class="bi bi-grid-3x3-gap-fill"></i></button>
+        <button class="cc-view-btn"        id="btnList"     title="List view">   <i class="bi bi-list-ul"></i></button>
+        <button class="cc-view-btn"        id="btnTimeline" title="Timeline view"><i class="bi bi-clock-history"></i></button>
+      </div>
+
+      <span class="cc-count-lbl" id="ccCountLbl">{{ cultures|length }} crop(s)</span>
+    </div>
+  </div>
+</div>
+
+{# ===========================================================
+   MAIN CONTENT AREA
+   =========================================================== #}
+<section class="section-crops">
+  <div class="container">
+
+    {# ======================================================
+       GRID VIEW (default)
+       ====================================================== #}
+    <div id="viewGrid">
+      {% if cultures is empty %}
+        <div class="cc-empty" data-aos="fade-up">
+          <div class="cc-empty-icon"><i class="bi bi-flower1"></i></div>
+          <h4>No Crops Available</h4>
+          <p>Crops will appear here once they are added to the system.</p>
+        </div>
+      {% else %}
+        <div class="row g-4" id="gridContainer">
+          {% for culture in cultures %}
+            {% set progress = culture.quantitePlantee > 0 ? min(((culture.quantiteRecoltee / culture.quantitePlantee) * 100)|round, 100) : 0 %}
+            {% set _statut   = culture.statut|default('') %}
+            {% set _sk       = _statut == 'In Progress' ? 'inprogress' : (_statut == 'Planned' ? 'planned' : (_statut == 'Harvested' ? 'harvested' : 'default')) %}
+            {% set _imgUrl   = culture.image ? path('culture_image', {id: culture.id}) : '' %}
+            {% set _parcel   = culture.parcelle ? culture.parcelle.nom : 'Not linked' %}
+            {% set _ringOff  = (138.23 * (1 - progress / 100))|round(2) %}
+            {% set _aosDel   = (loop.index0 % 4) * 75 %}
+
+            <div class="col-xl-3 col-lg-4 col-md-6 cc-gcol"
+                 data-cname="{{ culture.nomCulture|lower }}"
+                 data-cvariety="{{ culture.variete|default('')|lower }}"
+                 data-cstatus="{{ _statut }}"
+                 data-cparcelle="{{ _parcel }}"
+                 data-aos="fade-up" data-aos-delay="{{ _aosDel }}">
+
+              <article class="cc-grid-card"
+                       onclick="openModal(this)"
+                       data-id="{{ culture.id }}"
+                       data-name="{{ culture.nomCulture|e('html_attr') }}"
+                       data-variete="{{ culture.variete|default('')|e('html_attr') }}"
+                       data-parcelle="{{ _parcel|e('html_attr') }}"
+                       data-statut="{{ _statut|e('html_attr') }}"
+                       data-sk="{{ _sk }}"
+                       data-date-plantation="{{ culture.datePlantation ? culture.datePlantation|date('d/m/Y') : '' }}"
+                       data-date-recolte-prevue="{{ culture.dateRecoltePrevue ? culture.dateRecoltePrevue|date('d/m/Y') : '' }}"
+                       data-date-recolte-reelle="{{ culture.dateRecolteReelle ? culture.dateRecolteReelle|date('d/m/Y') : '' }}"
+                       data-quantite-plantee="{{ culture.quantitePlantee|default(0) }}"
+                       data-quantite-recoltee="{{ culture.quantiteRecoltee|default(0) }}"
+
+                       data-observations="{{ culture.observations|default('')|e('html_attr') }}"
+                       data-image-url="{{ _imgUrl }}"
+                       data-progress="{{ progress }}">
+
+                {# — Image area — #}
+                <div class="cc-img-wrap">
+                  {% if _imgUrl %}
+                    <img src="{{ _imgUrl }}" alt="{{ culture.nomCulture }}">
+                  {% else %}
+                    <div class="cc-img-placeholder">
+                      <i class="bi bi-flower2 ph-ic"></i>
+                      <span class="ph-txt">{{ culture.nomCulture }}</span>
+                    </div>
+                  {% endif %}
+
+                  {# Status badge — top right #}
+                  <div class="cc-badge-top-right">
+                    <span class="cc-status-pill s-{{ _sk }}">{{ _statut }}</span>
+                  </div>
+
+                  {# Variety badge — top left #}
+                  {% if culture.variete %}
+                    <div class="cc-badge-top-left">{{ culture.variete }}</div>
+                  {% endif %}
+
+                  {# SVG progress ring — bottom right #}
+                  <div class="cc-ring-wrap" title="{{ progress }}% harvested">
+                    <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+                      <circle cx="27" cy="27" r="22" stroke="rgba(255,255,255,0.2)" stroke-width="4"/>
+                      <circle cx="27" cy="27" r="22" stroke="#fbbf24" stroke-width="4"
+                              stroke-linecap="round"
+                              stroke-dasharray="138.23"
+                              stroke-dashoffset="{{ _ringOff }}"/>
+                    </svg>
+                    <span class="cc-ring-pct">{{ progress }}%</span>
+                  </div>
+                </div>
+
+                {# — Card body — #}
+                <div class="cc-card-body">
+                  <div class="cc-crop-name">{{ culture.nomCulture }}</div>
+                  <div class="cc-crop-variety">{{ culture.variete|default('No variety specified') }}</div>
+
+                  <div class="cc-parcelle-tag">
+                    <i class="bi bi-map-fill"></i>{{ _parcel }}
+                  </div>
+
+                  <div class="cc-date-row">
+                    {% if culture.datePlantation %}
+                      <span class="cc-date-chip">
+                        <i class="bi bi-seedling"></i>{{ culture.datePlantation|date('d M Y') }}
+                      </span>
+                    {% endif %}
+                    {% if culture.dateRecoltePrevue %}
+                      <span class="cc-date-chip">
+                        <i class="bi bi-calendar-check"></i>{{ culture.dateRecoltePrevue|date('d M Y') }}
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  <div class="cc-prog-row">
+                    <span class="cc-prog-lbl">Harvest Progress</span>
+                    <span class="cc-prog-pct">{{ progress }}%</span>
+                  </div>
+                  <div class="cc-prog-track">
+                    <div class="cc-prog-fill" style="width:{{ progress }}%"></div>
+                  </div>
+
+                  <div class="cc-qty-row">
+                    <div class="cc-qty-chip">
+                      <div class="qv">{{ culture.quantitePlantee|number_format(0, '.', ',') }}</div>
+                      <div class="ql">Planted</div>
+                    </div>
+                    <div class="cc-qty-chip">
+                      <div class="qv">{{ culture.quantiteRecoltee|number_format(0, '.', ',') }}</div>
+                      <div class="ql">Harvested</div>
+                    </div>
+                  </div>
+                </div>
+
+                {# — Card footer — #}
+                <div class="cc-card-foot">
+                  <button class="cc-btn-details"
+                          onclick="event.stopPropagation(); openModal(this.closest('.cc-grid-card'))">
+                    <i class="bi bi-eye me-1"></i> View Details
+                  </button>
+                  <a href="{{ path('app_client_parcelles') }}"
+                     class="cc-btn-parcelles"
+                     onclick="event.stopPropagation()"
+                     title="View Parcelles">
+                    <i class="bi bi-map-fill"></i>
+                  </a>
+                </div>
+
+              </article>
+            </div>
+          {% endfor %}
+        </div>{# /row #}
+
+        <div id="noResGrid" class="cc-empty d-none-force mt-4">
+          <div class="cc-empty-icon"><i class="bi bi-search"></i></div>
+          <h4>No Matching Crops</h4>
+          <p>Try a different search term or adjust your filters.</p>
+        </div>
+      {% endif %}
+    </div>{# /viewGrid #}
+
+    {# ======================================================
+       LIST VIEW
+       ====================================================== #}
+    <div id="viewList" class="d-none-force">
+      {% if cultures is empty %}
+        <div class="cc-empty">
+          <div class="cc-empty-icon"><i class="bi bi-flower1"></i></div>
+          <h4>No Crops Available</h4>
+          <p>Crops will appear here once they are added to the system.</p>
+        </div>
+      {% else %}
+        <div class="d-flex flex-column gap-3" id="listContainer">
+          {% for culture in cultures %}
+            {% set progress = culture.quantitePlantee > 0 ? min(((culture.quantiteRecoltee / culture.quantitePlantee) * 100)|round, 100) : 0 %}
+            {% set _statut  = culture.statut|default('') %}
+            {% set _sk      = _statut == 'In Progress' ? 'inprogress' : (_statut == 'Planned' ? 'planned' : (_statut == 'Harvested' ? 'harvested' : 'default')) %}
+            {% set _imgUrl  = culture.image ? path('culture_image', {id: culture.id}) : '' %}
+            {% set _parcel  = culture.parcelle ? culture.parcelle.nom : 'Not linked' %}
+
+            <div class="cc-lcol"
+                 data-cname="{{ culture.nomCulture|lower }}"
+                 data-cvariety="{{ culture.variete|default('')|lower }}"
+                 data-cstatus="{{ _statut }}"
+                 data-cparcelle="{{ _parcel }}">
+
+              <article class="cc-list-card"
+                       onclick="openModal(this)"
+                       data-id="{{ culture.id }}"
+                       data-name="{{ culture.nomCulture|e('html_attr') }}"
+                       data-variete="{{ culture.variete|default('')|e('html_attr') }}"
+                       data-parcelle="{{ _parcel|e('html_attr') }}"
+                       data-statut="{{ _statut|e('html_attr') }}"
+                       data-sk="{{ _sk }}"
+                       data-date-plantation="{{ culture.datePlantation ? culture.datePlantation|date('d/m/Y') : '' }}"
+                       data-date-recolte-prevue="{{ culture.dateRecoltePrevue ? culture.dateRecoltePrevue|date('d/m/Y') : '' }}"
+                       data-date-recolte-reelle="{{ culture.dateRecolteReelle ? culture.dateRecolteReelle|date('d/m/Y') : '' }}"
+                       data-quantite-plantee="{{ culture.quantitePlantee|default(0) }}"
+                       data-quantite-recoltee="{{ culture.quantiteRecoltee|default(0) }}"
+
+                       data-observations="{{ culture.observations|default('')|e('html_attr') }}"
+                       data-image-url="{{ _imgUrl }}"
+                       data-progress="{{ progress }}">
+
+                {% if _imgUrl %}
+                  <img src="{{ _imgUrl }}" alt="{{ culture.nomCulture }}" class="cc-list-img">
+                {% else %}
+                  <div class="cc-list-placeholder">
+                    <i class="bi bi-flower2" style="font-size:2.2rem; color:rgba(251,191,36,0.75);"></i>
+                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.5); margin-top:4px;">No image</span>
+                  </div>
+                {% endif %}
+
+                <div class="cc-list-body">
+                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="cc-list-name">{{ culture.nomCulture }}</span>
+                    <span class="cc-status-pill s-{{ _sk }}">{{ _statut }}</span>
+                  </div>
+                  <div class="cc-list-meta">
+                    <i class="bi bi-map-fill text-success me-1"></i>{{ _parcel }}
+                    {% if culture.variete %}&nbsp;·&nbsp;<span>{{ culture.variete }}</span>{% endif %}
+                  </div>
+                  <div class="cc-date-row mb-2">
+                    {% if culture.datePlantation %}
+                      <span class="cc-date-chip"><i class="bi bi-seedling"></i>{{ culture.datePlantation|date('d M Y') }}</span>
+                    {% endif %}
+                    {% if culture.dateRecoltePrevue %}
+                      <span class="cc-date-chip"><i class="bi bi-calendar-check"></i>{{ culture.dateRecoltePrevue|date('d M Y') }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="cc-prog-track flex-grow-1" style="margin-bottom:0;">
+                      <div class="cc-prog-fill" style="width:{{ progress }}%"></div>
+                    </div>
+                    <span class="cc-prog-pct" style="min-width:38px;">{{ progress }}%</span>
+                  </div>
+                </div>
+
+                <div class="cc-list-actions" onclick="event.stopPropagation()">
+                  <button class="cc-btn-details"
+                          onclick="openModal(this.closest('.cc-list-card'))">
+                    <i class="bi bi-eye me-1"></i>Details
+                  </button>
+                  <a href="{{ path('app_client_parcelles') }}" class="cc-btn-parcelles w-100 justify-content-center">
+                    <i class="bi bi-map-fill me-1"></i>Parcelle
+                  </a>
+                </div>
+
+              </article>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div id="noResList" class="cc-empty d-none-force mt-4">
+          <div class="cc-empty-icon"><i class="bi bi-search"></i></div>
+          <h4>No Matching Crops</h4>
+          <p>Try a different search term or adjust your filters.</p>
+        </div>
+      {% endif %}
+    </div>{# /viewList #}
+
+    {# ======================================================
+       TIMELINE VIEW
+       ====================================================== #}
+    <div id="viewTimeline" class="d-none-force">
+      {% if cultures is empty %}
+        <div class="cc-empty">
+          <div class="cc-empty-icon"><i class="bi bi-flower1"></i></div>
+          <h4>No Crops Available</h4>
+          <p>Crops will appear here once they are added to the system.</p>
+        </div>
+      {% else %}
+        <div class="cc-timeline" id="timelineContainer">
+          {% for culture in cultures %}
+            {% set progress = culture.quantitePlantee > 0 ? min(((culture.quantiteRecoltee / culture.quantitePlantee) * 100)|round, 100) : 0 %}
+            {% set _statut  = culture.statut|default('') %}
+            {% set _sk      = _statut == 'In Progress' ? 'inprogress' : (_statut == 'Planned' ? 'planned' : (_statut == 'Harvested' ? 'harvested' : 'default')) %}
+            {% set _imgUrl  = culture.image ? path('culture_image', {id: culture.id}) : '' %}
+            {% set _parcel  = culture.parcelle ? culture.parcelle.nom : 'Not linked' %}
+
+            <div class="cc-tl-item {% if loop.index is even %}tl-right{% endif %} cc-tlcol"
+                 data-cname="{{ culture.nomCulture|lower }}"
+                 data-cvariety="{{ culture.variete|default('')|lower }}"
+                 data-cstatus="{{ _statut }}"
+                 data-cparcelle="{{ _parcel }}">
+
+              {# Date node #}
+              <div class="cc-tl-node">
+                {% if culture.datePlantation %}
+                  {{ culture.datePlantation|date('M') }}<br>{{ culture.datePlantation|date('Y') }}
+                {% else %}
+                  <i class="bi bi-question-lg"></i>
+                {% endif %}
+              </div>
+
+              {# Card #}
+              <div class="cc-tl-card"
+                   onclick="openModal(this)"
+                   data-id="{{ culture.id }}"
+                   data-name="{{ culture.nomCulture|e('html_attr') }}"
+                   data-variete="{{ culture.variete|default('')|e('html_attr') }}"
+                   data-parcelle="{{ _parcel|e('html_attr') }}"
+                   data-statut="{{ _statut|e('html_attr') }}"
+                   data-sk="{{ _sk }}"
+                   data-date-plantation="{{ culture.datePlantation ? culture.datePlantation|date('d/m/Y') : '' }}"
+                   data-date-recolte-prevue="{{ culture.dateRecoltePrevue ? culture.dateRecoltePrevue|date('d/m/Y') : '' }}"
+                   data-date-recolte-reelle="{{ culture.dateRecolteReelle ? culture.dateRecolteReelle|date('d/m/Y') : '' }}"
+                   data-quantite-plantee="{{ culture.quantitePlantee|default(0) }}"
+                   data-quantite-recoltee="{{ culture.quantiteRecoltee|default(0) }}"
+
+                   data-observations="{{ culture.observations|default('')|e('html_attr') }}"
+                   data-image-url="{{ _imgUrl }}"
+                   data-progress="{{ progress }}">
+
+                <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                  <div>
+                    <div class="fw-800 fs-6 text-dark">{{ culture.nomCulture }}</div>
+                    {% if culture.variete %}
+                      <div class="text-muted" style="font-size:0.78rem;">{{ culture.variete }}</div>
+                    {% endif %}
+                  </div>
+                  <span class="cc-status-pill s-{{ _sk }}" style="white-space:nowrap;">{{ _statut }}</span>
+                </div>
+
+                <div class="cc-parcelle-tag mb-2" style="display:inline-flex;">
+                  <i class="bi bi-map-fill"></i>{{ _parcel }}
+                </div>
+
+                <div class="cc-prog-row">
+                  <span class="cc-prog-lbl">Harvest Progress</span>
+                  <span class="cc-prog-pct">{{ progress }}%</span>
+                </div>
+                <div class="cc-prog-track">
+                  <div class="cc-prog-fill" style="width:{{ progress }}%"></div>
+                </div>
+
+                {% if culture.dateRecoltePrevue %}
+                  <div class="mt-2" style="font-size:0.78rem; color:#6b7280;">
+                    <i class="bi bi-calendar-check text-warning me-1"></i>
+                    Expected harvest: <strong>{{ culture.dateRecoltePrevue|date('d M Y') }}</strong>
+                  </div>
+                {% endif %}
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>{# /cc-timeline #}
+
+        <div id="noResTl" class="cc-empty d-none-force mt-4">
+          <div class="cc-empty-icon"><i class="bi bi-search"></i></div>
+          <h4>No Matching Crops</h4>
+          <p>Try a different search term or adjust your filters.</p>
+        </div>
+      {% endif %}
+    </div>{# /viewTimeline #}
+
+  </div>{# /container #}
+</section>
+
+{# ===========================================================
+   UPCOMING HARVESTS SECTION
+   =========================================================== #}
+{% set _upcoming = [] %}
+{% for culture in cultures %}
+  {% if culture.dateRecoltePrevue and culture.statut != 'Harvested' %}
+    {% set _upcoming = _upcoming|merge([culture]) %}
+  {% endif %}
+{% endfor %}
+
+{% if _upcoming is not empty %}
+<section class="py-5" style="background:var(--cf-bg);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-7 col-lg-9" data-aos="fade-up">
+        <div class="cc-upcoming-wrap">
+          <div class="cc-upcoming-head">
+            <i class="bi bi-calendar2-week text-warning fs-4"></i>
+            <h5>Upcoming Harvests</h5>
+            <span class="ms-auto badge"
+                  style="background:rgba(251,191,36,0.18);color:#fbbf24;font-size:0.75rem;">
+              {{ _upcoming|length }} crop(s)
+            </span>
+          </div>
+          <ul class="cc-upcoming-list">
+            {% for culture in _upcoming %}
+              <li class="cc-upcoming-item">
+                <div>
+                  <div class="cc-up-name">{{ culture.nomCulture }}</div>
+                  <div class="cc-up-parcelle">
+                    <i class="bi bi-map-fill text-success me-1"></i>
+                    {{ culture.parcelle ? culture.parcelle.nom : 'N/A' }}
+                  </div>
+                </div>
+                <span class="cc-up-badge up-medium"
+                      data-harvest="{{ culture.dateRecoltePrevue|date('Y-m-d') }}">
+                  <i class="bi bi-calendar3 me-1"></i>{{ culture.dateRecoltePrevue|date('d M Y') }}
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ===========================================================
+   CROP SEASONAL CALENDAR
+   =========================================================== #}
+<section class="cc-cal-section py-5">
+  <div class="container" data-aos="fade-up">
+
+    <div class="text-center mb-4">
+      <span style="display:inline-flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:7px 18px;border-radius:50px;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
+        <i class="bi bi-calendar3"></i> FAO-Based Seasonal Guide
+      </span>
+      <h2 style="font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;color:#111827;margin-bottom:8px;">
+        Crop <span style="color:var(--cf-primary);">Seasonal Calendar</span>
+      </h2>
+      <p style="color:#6b7280;max-width:560px;margin:0 auto;font-size:.95rem;">
+        Optimal planting, growing and harvest windows for common crops grown in your region — based on FAO agricultural guidelines.
+      </p>
+    </div>
+
+    <div class="cc-cal-wrap" id="ccCalWrap">
+      <div class="cc-cal-head">
+        <div class="cc-cal-head-icon">🗓️</div>
+        <div>
+          <h3>Seasonal Growing Calendar</h3>
+          <p>Tunisia &amp; North Africa • FAO-based planting windows</p>
+        </div>
+        <span class="cc-cal-badge" id="ccCalBadge">Loading…</span>
+      </div>
+
+      {# Month header row #}
+      <div class="cc-cal-months-row" id="ccCalMonthRow">
+        <div class="cc-cal-month-header cc-cal-crop-label-col">Crop</div>
+        {# Months will be injected by JS #}
+      </div>
+
+      {# Crop rows — injected by JS #}
+      <div class="cc-cal-body" id="ccCalBody"></div>
+
+      {# Legend #}
+      <div class="cc-cal-legend">
+        <div class="cc-cal-legend-item">
+          <div class="cc-cal-legend-dot" style="background:linear-gradient(90deg,#16a34a,#22c55e);"></div>
+          <span>Planting Season</span>
+        </div>
+        <div class="cc-cal-legend-item">
+          <div class="cc-cal-legend-dot" style="background:linear-gradient(90deg,#2563eb,#3b82f6);"></div>
+          <span>Growing Season</span>
+        </div>
+        <div class="cc-cal-legend-item">
+          <div class="cc-cal-legend-dot" style="background:linear-gradient(90deg,#ca8a04,#eab308);"></div>
+          <span>Harvest Season</span>
+        </div>
+        <div class="cc-cal-legend-item" style="margin-left:auto;">
+          <i class="bi bi-calendar-check text-warning"></i>
+          <span id="ccCalCurrentMonthLabel" style="color:#92400e;font-weight:800;"></span>
+        </div>
+      </div>
+    </div>
+
+    {# Recommended crops this month #}
+    <div class="cc-recommend-panel" id="ccRecommendPanel">
+      <h6><i class="bi bi-lightning-charge-fill"></i> Best to plant this month</h6>
+      <div class="cc-recommend-chips" id="ccRecommendChips"></div>
+    </div>
+
+  </div>
+</section>
+
+{# ===========================================================
+   CTA SECTION
+   =========================================================== #}
+<section class="py-5" style="background:var(--cf-bg);">
+  <div class="container" data-aos="fade-up">
+    <div class="cc-cta">
+      <h2 class="cc-cta-title">Ready to start your <span>farming journey</span>?</h2>
+      <p class="cc-cta-sub">
+        Get in touch with our expert team and discover how EL FIRMA
+        can help you manage your crops more efficiently and profitably.
+      </p>
+      <a href="{{ path('app_contact') }}" class="cc-cta-btn">
+        <i class="bi bi-envelope-fill"></i> Contact Us Today
+      </a>
+    </div>
+  </div>
+</section>
+
+{# ===========================================================
+   CULTURE DETAIL MODAL
+   =========================================================== #}
+<div class="cc-overlay" id="ccOverlay" role="dialog" aria-modal="true" aria-labelledby="mCropName">
+  <div class="cc-modal" id="ccModal">
+
+    {# Banner #}
+    <div class="cc-modal-banner">
+      <div class="cc-m-bg"></div>
+      <img src="" alt="" class="cc-m-img" id="mBannerImg" style="display:none;">
+      <div class="cc-m-overlay"></div>
+      <button class="cc-m-close" id="mCloseBtn" aria-label="Close modal">
+        <i class="bi bi-x-lg"></i>
+      </button>
+      <div class="cc-m-content">
+        <span class="cc-status-pill mb-2 d-inline-block" id="mStatusBadge"></span>
+        <div class="cc-m-crop-name" id="mCropName"></div>
+        <div class="cc-m-crop-sub"  id="mCropSub"></div>
+      </div>
+    </div>
+
+    {# Stats strip #}
+    <div class="cc-m-strip">
+      <div class="cc-m-strip-cell">
+        <div class="sv" id="mQtyP">—</div>
+        <div class="sl">Planted Qty</div>
+      </div>
+      <div class="cc-m-strip-cell">
+        <div class="sv" id="mQtyH">—</div>
+        <div class="sl">Harvested Qty</div>
+      </div>
+      <div class="cc-m-strip-cell">
+        <div class="sv" id="mProg">—</div>
+        <div class="sl">Progress</div>
+      </div>
+
+    </div>
+
+    {# Tabs nav #}
+    <div class="cc-m-tabs">
+      <button class="cc-tab-btn active" data-tab="overview">
+        <i class="bi bi-grid-1x2 me-1"></i>Overview
+      </button>
+      <button class="cc-tab-btn" data-tab="lifecycle">
+        <i class="bi bi-arrow-right-circle me-1"></i>Lifecycle
+      </button>
+      <button class="cc-tab-btn" data-tab="observations">
+        <i class="bi bi-journal-text me-1"></i>Observations
+      </button>
+    </div>
+
+    {# Tab content #}
+    <div class="cc-tab-body">
+
+      {# Overview #}
+      <div class="cc-tab-pane active" id="tab-overview">
+        <div class="cc-info-grid">
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Crop Name</div>
+            <div class="ic-val" id="iName">—</div>
+          </div>
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Variety</div>
+            <div class="ic-val" id="iVariete">—</div>
+          </div>
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Parcel</div>
+            <div class="ic-val" id="iParcelle">—</div>
+          </div>
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Status</div>
+            <div class="ic-val" id="iStatut">—</div>
+          </div>
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Planting Date</div>
+            <div class="ic-val" id="iDp">—</div>
+          </div>
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Expected Harvest</div>
+            <div class="ic-val" id="iDrp">—</div>
+          </div>
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Actual Harvest</div>
+            <div class="ic-val" id="iDrr">—</div>
+          </div>
+
+          <div class="cc-info-cell">
+            <div class="ic-lbl">Harvest Progress</div>
+            <div class="ic-val" id="iProgBar">—</div>
+          </div>
+        </div>
+      </div>
+
+      {# Lifecycle #}
+      <div class="cc-tab-pane" id="tab-lifecycle">
+        <div class="cc-lc-tl" id="lcTimeline">
+          {# Built dynamically by JS #}
+        </div>
+      </div>
+
+      {# Observations #}
+      <div class="cc-tab-pane" id="tab-observations">
+        <div class="cc-obs-box" id="obsContent">No observations recorded.</div>
+      </div>
+
+    </div>{# /tab body #}
+  </div>{# /cc-modal #}
+</div>{# /cc-overlay #}
+
+{# ===========================================================
+   TOAST CONTAINER
+   =========================================================== #}
+<div class="cc-toast-wrap" id="ccToasts"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+/* ============================================================
+   1 · PARTICLES
+   ============================================================ */
+(function () {
+  const wrap = document.getElementById('ccParticles');
+  if (!wrap) return;
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement('div');
+    el.className = 'cc-particle';
+    const size = 3 + Math.random() * 6;
+    el.style.cssText = [
+      `left:${Math.random() * 100}%`,
+      `width:${size}px`,
+      `height:${size}px`,
+      `animation-duration:${7 + Math.random() * 14}s`,
+      `animation-delay:${Math.random() * 12}s`,
+      `opacity:${0.3 + Math.random() * 0.55}`
+    ].join(';');
+    wrap.appendChild(el);
+  }
+})();
+
+/* ============================================================
+   2 · HERO COUNTER ANIMATION
+   ============================================================ */
+function animateCounters() {
+  document.querySelectorAll('[data-target]').forEach(function (el) {
+    const target   = parseFloat(el.dataset.target) || 0;
+    const duration = 1700;
+    const step     = target / (duration / 16);
+    let current    = 0;
+    const tick = setInterval(function () {
+      current = Math.min(current + step, target);
+      el.textContent = Math.round(current).toLocaleString();
+      if (current >= target) clearInterval(tick);
+    }, 16);
+  });
+}
+
+const heroEl = document.querySelector('.cc-hero');
+if (heroEl) {
+  const heroObs = new IntersectionObserver(function (entries) {
+    if (entries[0].isIntersecting) { animateCounters(); heroObs.disconnect(); }
+  }, { threshold: 0.25 });
+  heroObs.observe(heroEl);
+}
+
+/* ============================================================
+   3 · UPCOMING HARVEST DAYS-UNTIL LABELS
+   ============================================================ */
+document.querySelectorAll('[data-harvest]').forEach(function (el) {
+  const date  = new Date(el.dataset.harvest);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff  = Math.ceil((date - today) / 86400000);
+
+  if (diff <= 0) {
+    el.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Ready to harvest!';
+    el.className = 'cc-up-badge up-soon';
+  } else if (diff <= 14) {
+    el.innerHTML = '<i class="bi bi-alarm me-1"></i>In ' + diff + ' day' + (diff === 1 ? '' : 's');
+    el.className = 'cc-up-badge up-soon';
+  } else if (diff <= 60) {
+    el.innerHTML = '<i class="bi bi-calendar3 me-1"></i>In ' + diff + ' days';
+    el.className = 'cc-up-badge up-medium';
+  } else {
+    el.innerHTML = '<i class="bi bi-calendar3 me-1"></i>In ' + diff + ' days';
+    el.className = 'cc-up-badge up-far';
+  }
+});
+
+/* ============================================================
+   4 · FILTERING — shared state
+   ============================================================ */
+var _filterStatus   = 'all';
+var _filterParcelle = '';
+var _filterSearch   = '';
+
+function getColsForView(viewId) {
+  if (viewId === 'grid')     return document.querySelectorAll('#gridContainer .cc-gcol');
+  if (viewId === 'list')     return document.querySelectorAll('#listContainer .cc-lcol');
+  if (viewId === 'timeline') return document.querySelectorAll('#timelineContainer .cc-tlcol');
+  return [];
+}
+
+function applyFilters() {
+  var search  = _filterSearch.toLowerCase().trim();
+  var total   = 0;
+
+  ['grid', 'list', 'timeline'].forEach(function (v) {
+    var cols   = getColsForView(v);
+    var hidden = 0;
+
+    cols.forEach(function (col) {
+      var nameOk    = !search || (col.dataset.cname    || '').includes(search)
+                               || (col.dataset.cvariety || '').includes(search);
+      var statusOk  = _filterStatus   === 'all' || col.dataset.cstatus   === _filterStatus;
+      var parcelOk  = !_filterParcelle             || col.dataset.cparcelle === _filterParcelle;
+      var visible   = nameOk && statusOk && parcelOk;
+
+      col.classList.toggle('d-none-force', !visible);
+      if (!visible) hidden++;
+    });
+
+    var noResId = v === 'grid' ? 'noResGrid' : v === 'list' ? 'noResList' : 'noResTl';
+    var noResEl = document.getElementById(noResId);
+    if (noResEl) noResEl.classList.toggle('d-none-force', !(cols.length > 0 && hidden === cols.length));
+
+    if (v === 'grid') total = cols.length - hidden;
+  });
+
+  var lbl = document.getElementById('ccCountLbl');
+  if (lbl) lbl.textContent = total + ' crop(s)';
+}
+
+/* Search */
+var searchInput = document.getElementById('ccSearch');
+if (searchInput) {
+  searchInput.addEventListener('input', function () {
+    _filterSearch = this.value;
+    applyFilters();
+  });
+}
+
+/* Status buttons */
+document.querySelectorAll('.cc-fbtn[data-status]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.cc-fbtn[data-status]').forEach(function (b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    _filterStatus = btn.dataset.status;
+    applyFilters();
+  });
+});
+
+/* Parcelle dropdown */
+var parcelSel = document.getElementById('ccParcelleFilter');
+if (parcelSel) {
+  parcelSel.addEventListener('change', function () {
+    _filterParcelle = this.value;
+    applyFilters();
+  });
+}
+
+/* ============================================================
+   5 · VIEW TOGGLE
+   ============================================================ */
+var viewMap = { grid: 'viewGrid', list: 'viewList', timeline: 'viewTimeline' };
+var btnMap  = { grid: 'btnGrid',  list: 'btnList',  timeline: 'btnTimeline'  };
+
+function switchView(v) {
+  Object.keys(viewMap).forEach(function (key) {
+    var el  = document.getElementById(viewMap[key]);
+    var btn = document.getElementById(btnMap[key]);
+    if (el)  el.classList.toggle('d-none-force', key !== v);
+    if (btn) btn.classList.toggle('active',       key === v);
+  });
+  /* Recalculate count for new view */
+  var cols   = getColsForView(v);
+  var visible = 0;
+  cols.forEach(function (c) { if (!c.classList.contains('d-none-force')) visible++; });
+  var lbl = document.getElementById('ccCountLbl');
+  if (lbl) lbl.textContent = visible + ' crop(s)';
+  showToast('View Changed', 'Switched to ' + v + ' view', 'info');
+}
+
+['grid', 'list', 'timeline'].forEach(function (v) {
+  var btn = document.getElementById('btn' + v.charAt(0).toUpperCase() + v.slice(1));
+  if (btn) btn.addEventListener('click', function () { switchView(v); });
+});
+
+/* ============================================================
+   6 · MODAL
+   ============================================================ */
+var ccOverlay = document.getElementById('ccOverlay');
+var ccModal   = document.getElementById('ccModal');
+
+function openModal(card) {
+  if (!card) return;
+  var d = card.dataset;
+  var name    = d.name    || 'Unknown Crop';
+  var variete = d.variete || 'Not specified';
+  var parcel  = d.parcelle|| 'Not linked';
+  var statut  = d.statut  || '';
+  var sk      = d.sk      || 'default';
+  var dp      = d.datePlantation      || '';
+  var drp     = d.dateRecoltePrevue   || '';
+  var drr     = d.dateRecolteReelle   || '';
+  var qp      = parseFloat(d.quantitePlantee)  || 0;
+  var qr      = parseFloat(d.quantiteRecoltee) || 0;
+
+  var obs     = d.observations || '';
+  var imgUrl  = d.imageUrl     || '';
+  var prog    = parseInt(d.progress)           || 0;
+
+  /* Banner image */
+  var mImg = document.getElementById('mBannerImg');
+  if (imgUrl) { mImg.src = imgUrl; mImg.style.display = 'block'; }
+  else          mImg.style.display = 'none';
+
+  /* Header */
+  document.getElementById('mCropName').textContent = name;
+  document.getElementById('mCropSub').innerHTML =
+    '<i class="bi bi-flower2 me-1"></i>' + variete +
+    ' &bull; <i class="bi bi-map-fill ms-1 me-1"></i>' + parcel;
+
+  var badge = document.getElementById('mStatusBadge');
+  badge.textContent = statut;
+  badge.className   = 'cc-status-pill s-' + sk + ' mb-2 d-inline-block';
+
+  /* Strip */
+  document.getElementById('mQtyP').textContent = qp.toLocaleString();
+  document.getElementById('mQtyH').textContent = qr.toLocaleString();
+  document.getElementById('mProg').textContent = prog + '%';
+
+
+  /* Overview */
+  document.getElementById('iName').textContent    = name;
+  document.getElementById('iVariete').textContent = variete;
+  document.getElementById('iParcelle').textContent= parcel;
+  document.getElementById('iStatut').innerHTML    =
+    '<span class="cc-status-pill s-' + sk + '">' + statut + '</span>';
+  document.getElementById('iDp').textContent      = dp  || '—';
+  document.getElementById('iDrp').textContent     = drp || '—';
+  document.getElementById('iDrr').textContent     = drr || 'Not yet harvested';
+
+  document.getElementById('iProgBar').innerHTML   =
+    '<div class="cc-prog-track" style="margin-bottom:4px;">' +
+      '<div class="cc-prog-fill" style="width:' + prog + '%"></div>' +
+    '</div>' +
+    '<small class="fw-800" style="color:#166534;">' + prog + '%</small>';
+
+  /* Lifecycle */
+  buildLifecycle(statut, dp, drp, drr);
+
+  /* Observations */
+  document.getElementById('obsContent').textContent = obs || 'No observations recorded.';
+
+  /* Reset to first tab */
+  activateTab('overview');
+
+  /* Open */
+  ccOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  showToast('Crop Details', 'Viewing details for ' + name, 'success');
+}
+
+function buildLifecycle(statut, dp, drp, drr) {
+  var phases = [
+    { icon: 'bi-file-earmark-check', label: 'Planning',  desc: 'Crop planned for the season',            date: null },
+    { icon: 'bi-seedling',            label: 'Planting',  desc: 'Seeds or seedlings placed in the field', date: dp },
+    { icon: 'bi-flower1',             label: 'Growing',   desc: 'Crop actively grows and matures',        date: null },
+    { icon: 'bi-basket2-fill',        label: 'Harvest',   desc: 'Crops collected from the field',         date: drr || drp }
+  ];
+
+  var states;
+  if      (statut === 'Harvested')   states = ['lc-done','lc-done','lc-done','lc-done'];
+  else if (statut === 'In Progress') states = ['lc-done','lc-done','lc-current','lc-pending'];
+  else                               states = ['lc-current','lc-pending','lc-pending','lc-pending'];
+
+  var stateIcons = { 'lc-done': '<i class="bi bi-check-lg"></i>', 'lc-current': '<i class="bi bi-play-fill"></i>', 'lc-pending': '<i class="bi bi-three-dots"></i>' };
+  var stateLabelHtml = {
+    'lc-done':    '<span class="badge ms-1" style="background:#dcfce7;color:#166534;font-size:0.62rem;">Done</span>',
+    'lc-current': '<span class="badge ms-1" style="background:#fef3c7;color:#92400e;font-size:0.62rem;">Current</span>',
+    'lc-pending': ''
+  };
+  var iconColors = { 'lc-done': '#166534', 'lc-current': '#ca8a04', 'lc-pending': '#9ca3af' };
+
+  var html = phases.map(function (p, i) {
+    var s    = states[i];
+    var date = p.date ? ' &mdash; <strong>' + p.date + '</strong>' : '';
+    return '<div class="cc-lc-phase">' +
+      '<div class="cc-lc-dot ' + s + '">' + stateIcons[s] + '</div>' +
+      '<div class="cc-lc-title">' +
+        '<i class="' + p.icon + ' me-1" style="color:' + iconColors[s] + '"></i>' +
+        p.label + stateLabelHtml[s] +
+      '</div>' +
+      '<p class="cc-lc-desc">' + p.desc + date + '</p>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('lcTimeline').innerHTML = html;
+}
+
+function closeModal() {
+  ccOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('mCloseBtn').addEventListener('click', closeModal);
+ccOverlay.addEventListener('click', function (e) { if (e.target === ccOverlay) closeModal(); });
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && ccOverlay.classList.contains('open')) closeModal();
+});
+
+/* Tabs */
+function activateTab(name) {
+  document.querySelectorAll('.cc-tab-btn').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('.cc-tab-pane').forEach(function (p) {
+    p.classList.toggle('active', p.id === 'tab-' + name);
+  });
+}
+document.querySelectorAll('.cc-tab-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () { activateTab(btn.dataset.tab); });
+});
+
+/* ============================================================
+   7 · TOAST SYSTEM
+   ============================================================ */
+function showToast(title, message, type) {
+  type = type || 'success';
+  var icons  = { success:'✅', info:'ℹ️', warning:'⚠️', error:'❌' };
+  var colors = { success:'#166534', info:'#1d4ed8', warning:'#ca8a04', error:'#dc2626' };
+  var wrap   = document.getElementById('ccToasts');
+  var el     = document.createElement('div');
+  el.className = 'cc-toast';
+  el.style.borderLeftColor = colors[type] || colors.success;
+  el.innerHTML =
+    '<span class="cc-toast-ico">' + (icons[type] || '✅') + '</span>' +
+    '<div class="cc-toast-body">' +
+      '<div class="tt">' + title   + '</div>' +
+      '<div class="ts">' + message + '</div>' +
+    '</div>';
+  wrap.appendChild(el);
+  setTimeout(function () {
+    el.classList.add('removing');
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 340);
+  }, 3400);
+}
+
+/* ============================================================
+   8 · AOS + INITIAL FILTER PASS
+   ============================================================ */
+if (typeof AOS !== 'undefined') {
+  AOS.init({ duration: 720, once: true, offset: 55 });
+}
+
+/* Run once to initialise count label */
+applyFilters();
+
+/* ============================================================
+   CROP SEASONAL CALENDAR (FAO-based data for Tunisia / N.Africa)
+   ============================================================ */
+(function () {
+  var CROP_DB = [
+    { key:['wheat','blé','ble','triticum','hard wheat','soft wheat'], name:'Wheat', emoji:'🌾',
+      phases:[{type:'plant',months:[9,10]},{type:'grow',months:[11,0,1,2,3]},{type:'harvest',months:[4,5]}] },
+    { key:['barley','orge','hordeum'], name:'Barley', emoji:'🌾',
+      phases:[{type:'plant',months:[9,10]},{type:'grow',months:[11,0,1,2]},{type:'harvest',months:[3,4]}] },
+    { key:['tomato','tomate','lycopersicum'], name:'Tomato', emoji:'🍅',
+      phases:[{type:'plant',months:[2,3,4]},{type:'grow',months:[4,5,6]},{type:'harvest',months:[6,7,8,9]}] },
+    { key:['potato','pomme de terre','solanum'], name:'Potato', emoji:'🥔',
+      phases:[{type:'plant',months:[1,2,3]},{type:'grow',months:[3,4]},{type:'harvest',months:[4,5,6]}] },
+    { key:['pepper','poivron','capsicum','piment'], name:'Pepper', emoji:'🫑',
+      phases:[{type:'plant',months:[2,3]},{type:'grow',months:[4,5,6]},{type:'harvest',months:[6,7,8,9]}] },
+    { key:['watermelon','pastèque','pasteque','citrullus'], name:'Watermelon', emoji:'🍉',
+      phases:[{type:'plant',months:[3,4]},{type:'grow',months:[4,5,6]},{type:'harvest',months:[6,7,8]}] },
+    { key:['olive','olea','olivier'], name:'Olive', emoji:'🫒',
+      phases:[{type:'grow',months:[0,1,2,3,4,5,6,7,8]},{type:'harvest',months:[9,10,11]}] },
+    { key:['onion','oignon','allium'], name:'Onion', emoji:'🧅',
+      phases:[{type:'plant',months:[9,10]},{type:'grow',months:[11,0,1,2]},{type:'harvest',months:[3,4,5]}] },
+    { key:['carrot','carotte','daucus'], name:'Carrot', emoji:'🥕',
+      phases:[{type:'plant',months:[8,9,10]},{type:'grow',months:[10,11,0,1]},{type:'harvest',months:[1,2,3]}] },
+    { key:['corn','maize','maïs','mais','zea'], name:'Corn', emoji:'🌽',
+      phases:[{type:'plant',months:[3,4]},{type:'grow',months:[4,5,6,7]},{type:'harvest',months:[7,8,9]}] },
+    { key:['sunflower','tournesol','helianthus'], name:'Sunflower', emoji:'🌻',
+      phases:[{type:'plant',months:[3,4]},{type:'grow',months:[4,5,6]},{type:'harvest',months:[7,8]}] },
+    { key:['melon','cucumis'], name:'Melon', emoji:'🍈',
+      phases:[{type:'plant',months:[3,4]},{type:'grow',months:[5,6]},{type:'harvest',months:[6,7,8]}] }
+  ];
+
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var MONTH_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var currentMonth = new Date().getMonth();
+
+  function matchCrop(cultureName) {
+    if (!cultureName) return null;
+    var n = cultureName.toLowerCase().trim();
+    for (var i = 0; i < CROP_DB.length; i++) {
+      for (var j = 0; j < CROP_DB[i].key.length; j++) {
+        if (n.indexOf(CROP_DB[i].key[j]) !== -1) return CROP_DB[i];
+      }
+    }
+    return null;
+  }
+
+  function buildCalendar() {
+    var cards   = document.querySelectorAll('[data-name][data-statut]');
+    var matched = [];
+    var seen    = {};
+
+    cards.forEach(function (card) {
+      var crop = matchCrop(card.dataset.name);
+      if (crop && !seen[crop.name]) { seen[crop.name] = true; matched.push(crop); }
+    });
+    if (matched.length === 0) { CROP_DB.forEach(function (c) { matched.push(c); }); }
+    matched = matched.slice(0, 8);
+
+    var badge = document.getElementById('ccCalBadge');
+    if (badge) badge.textContent = matched.length + ' crop' + (matched.length !== 1 ? 's' : '');
+
+    var lbl = document.getElementById('ccCalCurrentMonthLabel');
+    if (lbl) lbl.textContent = 'Current month: ' + MONTH_FULL[currentMonth];
+
+    var monthRow = document.getElementById('ccCalMonthRow');
+    if (monthRow) {
+      MONTH_NAMES.forEach(function (m, i) {
+        var div = document.createElement('div');
+        div.className = 'cc-cal-month-header' + (i === currentMonth ? ' current-month' : '');
+        div.textContent = m;
+        monthRow.appendChild(div);
+      });
+    }
+
+    var body = document.getElementById('ccCalBody');
+    if (!body) return;
+
+    matched.forEach(function (crop) {
+      var monthPhase = {};
+      crop.phases.forEach(function (p) { p.months.forEach(function (m) { monthPhase[m] = p.type; }); });
+
+      var row = document.createElement('div');
+      row.className = 'cc-cal-row';
+
+      var nameCell = document.createElement('div');
+      nameCell.className = 'cc-cal-crop-name';
+      nameCell.innerHTML = '<span class="cc-cal-crop-emoji">' + crop.emoji + '</span><div><div class="cc-cal-crop-txt">' + crop.name + '</div></div>';
+      row.appendChild(nameCell);
+
+      for (var m = 0; m < 12; m++) {
+        var cell = document.createElement('div');
+        cell.className = 'cc-cal-cell' + (m === currentMonth ? ' current-month-col' : '');
+        var phase = monthPhase[m];
+        if (phase) {
+          var bar = document.createElement('div');
+          bar.className = 'cc-cal-bar cc-bar-' + phase;
+          if (phase !== monthPhase[m - 1]) {
+            bar.textContent = phase === 'plant' ? 'Plant' : phase === 'grow' ? 'Grow' : 'Harvest';
+          }
+          cell.appendChild(bar);
+        }
+        row.appendChild(cell);
+      }
+      body.appendChild(row);
+    });
+
+    var chips = document.getElementById('ccRecommendChips');
+    var panel = document.getElementById('ccRecommendPanel');
+    if (chips && panel) {
+      var plantable = CROP_DB.filter(function (c) {
+        return c.phases.some(function (p) { return p.type === 'plant' && p.months.indexOf(currentMonth) !== -1; });
+      });
+      chips.innerHTML = plantable.length
+        ? plantable.map(function (c) { return '<div class="cc-recommend-chip">' + c.emoji + ' ' + c.name + '</div>'; }).join('')
+        : '<span style="color:#6b7280;font-size:.82rem;">No specific planting recommended this month.</span>';
+      panel.style.display = 'block';
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildCalendar);
+  } else {
+    buildCalendar();
+  }
+})();
+</script>
+{% endblock %}

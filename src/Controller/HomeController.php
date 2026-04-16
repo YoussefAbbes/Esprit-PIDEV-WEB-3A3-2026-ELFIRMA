@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\CultureRepository;
+use App\Repository\ParcelleRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -9,6 +11,49 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
+    #[Route('/client/parcelles', name: 'app_client_parcelles')]
+    public function clientParcelles(ParcelleRepository $parcelleRepository): Response
+    {
+        $parcelles = $parcelleRepository->findAllWithCultures();
+
+        return $this->render('pages/client_parcelles.html.twig', [
+            'parcelles' => $parcelles,
+            'stats' => [
+                'total' => count($parcelles),
+                'available' => $parcelleRepository->countByStatus('Available'),
+                'occupied' => $parcelleRepository->countByStatus('Occupied'),
+                'resting' => $parcelleRepository->countByStatus('Resting'),
+                'totalArea' => $parcelleRepository->getTotalArea(),
+            ],
+        ]);
+    }
+
+    #[Route('/client/cultures', name: 'app_client_cultures')]
+    public function clientCultures(CultureRepository $cultureRepository): Response
+    {
+        $cultures = $cultureRepository->findAllWithParcelle();
+
+        $totalPlanted = 0.0;
+        $totalHarvested = 0.0;
+
+        foreach ($cultures as $culture) {
+            $totalPlanted += $culture->getQuantitePlantee();
+            $totalHarvested += $culture->getQuantiteRecoltee();
+        }
+
+        return $this->render('pages/client_cultures.html.twig', [
+            'cultures' => $cultures,
+            'stats' => [
+                'total' => count($cultures),
+                'inProgress' => $cultureRepository->countByStatus('In Progress'),
+                'planned' => $cultureRepository->countByStatus('Planned'),
+                'harvested' => $cultureRepository->countByStatus('Harvested'),
+                'totalPlanted' => $totalPlanted,
+                'totalHarvested' => $totalHarvested,
+            ],
+        ]);
+    }
+
     #[Route('/about', name: 'app_about')]
     public function about(): Response
     {

@@ -1,0 +1,2558 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Parcels – EL FIRMA{% endblock %}
+{% block meta_description %}Explore our agricultural land parcels — soil profiles, availability status, crop history and GPS location data.{% endblock %}
+{% block body_class %}pf-client-parcelles{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+/* ================================================================
+   DESIGN TOKENS
+================================================================ */
+:root {
+  --pf-primary:   #166534;
+  --pf-secondary: #16a34a;
+  --pf-light:     #dcfce7;
+  --pf-dark:      #052e16;
+  --pf-accent:    #4ade80;
+  --pf-bg:        #f0fdf4;
+}
+
+/* ================================================================
+   HERO
+================================================================ */
+.pf-hero {
+  position: relative;
+  min-height: 500px;
+  background: linear-gradient(135deg, #052e16 0%, #14532d 45%, #166534 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0 0;
+}
+
+.pf-hero-bg {
+  position: absolute;
+  inset: 0;
+  background: url('{{ asset('assets/img/hero_1.jpg') }}') center / cover no-repeat;
+  opacity: 0.08;
+  z-index: 0;
+}
+
+.pf-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pf-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(74, 222, 128, 0.18);
+  animation: pfFloat linear infinite;
+}
+
+@keyframes pfFloat {
+  0%   { transform: translateY(110vh) scale(0); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 0.9; }
+  100% { transform: translateY(-80px)  scale(1); opacity: 0; }
+}
+
+.pf-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.pf-badge-pill {
+  display: inline-block;
+  background: rgba(74, 222, 128, 0.18);
+  border: 1px solid rgba(74, 222, 128, 0.42);
+  color: #86efac;
+  padding: 6px 20px;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.pf-hero-title {
+  font-family: 'Marcellus', serif;
+  font-size: clamp(2.3rem, 5.5vw, 4rem);
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.12;
+  margin-bottom: 18px;
+}
+
+.pf-hero-title .highlight {
+  color: var(--pf-accent);
+  position: relative;
+}
+
+.pf-hero-subtitle {
+  font-size: 1.05rem;
+  color: #bbf7d0;
+  max-width: 520px;
+  margin: 0 auto 44px;
+  line-height: 1.75;
+  opacity: .9;
+}
+
+/* Stat strip */
+.pf-stat-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-bottom: 70px;
+}
+
+.pf-stat-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 18px 26px;
+  text-align: center;
+  min-width: 118px;
+  transition: background .3s, transform .3s;
+}
+
+.pf-stat-card:hover {
+  background: rgba(255, 255, 255, 0.13);
+  transform: translateY(-4px);
+}
+
+.pf-stat-num {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.pf-stat-num.c-green  { color: var(--pf-accent); }
+.pf-stat-num.c-yellow { color: #fbbf24; }
+.pf-stat-num.c-sky    { color: #38bdf8; }
+
+.pf-stat-lbl {
+  display: block;
+  font-size: .69rem;
+  font-weight: 700;
+  color: #86efac;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-top: 5px;
+}
+
+/* Wave */
+.pf-hero-wave {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  z-index: 3;
+  line-height: 0;
+}
+
+/* ================================================================
+   FILTER BAR
+================================================================ */
+.pf-filter-bar {
+  position: static;
+  top: unset;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.07);
+  padding: 13px 0;
+}
+
+.pf-filter-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pf-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.pf-search-wrap .search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: .95rem;
+  pointer-events: none;
+}
+
+.pf-search-input {
+  width: 100%;
+  padding: 9px 14px 9px 39px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: .88rem;
+  outline: none;
+  background: #f8fafc;
+  transition: border-color .22s, box-shadow .22s, background .22s;
+  color: #1e293b;
+}
+
+.pf-search-input:focus {
+  border-color: var(--pf-secondary);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+  background: #fff;
+}
+
+.pf-filter-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pf-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 15px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .22s;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.pf-filter-btn .fdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+
+.pf-filter-btn:hover .fdot,
+.pf-filter-btn.active .fdot {
+  transform: scale(1.25);
+}
+
+.pf-filter-btn[data-filter="All"]       .fdot { background: #64748b; }
+.pf-filter-btn[data-filter="Available"] .fdot { background: #16a34a; }
+.pf-filter-btn[data-filter="Occupied"]  .fdot { background: #d97706; }
+.pf-filter-btn[data-filter="Resting"]   .fdot { background: #0ea5e9; }
+
+.pf-filter-btn:hover,
+.pf-filter-btn.active {
+  border-color: var(--pf-secondary);
+  background: var(--pf-light);
+  color: var(--pf-primary);
+}
+
+.pf-view-toggle {
+  display: flex;
+  gap: 3px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 3px;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.pf-view-btn {
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  color: #94a3b8;
+  font-size: .95rem;
+  cursor: pointer;
+  transition: all .2s;
+  line-height: 1;
+}
+
+.pf-view-btn.active {
+  background: var(--pf-primary);
+  color: #fff;
+}
+
+.pf-result-count {
+  font-size: .78rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* ================================================================
+   MAIN SECTION
+================================================================ */
+.pf-main {
+  background: var(--pf-bg);
+  padding: 44px 0 90px;
+  min-height: 400px;
+}
+
+/* ── GRID ── */
+.pf-grid        { display: none; }
+.pf-grid.active { display: flex; flex-wrap: wrap; gap: 24px; }
+
+.pf-card-col {
+  flex: 0 0 calc(33.333% - 16px);
+  max-width: calc(33.333% - 16px);
+}
+
+@media (max-width: 1199px) {
+  .pf-card-col { flex: 0 0 calc(50% - 12px); max-width: calc(50% - 12px); }
+}
+@media (max-width: 767px) {
+  .pf-card-col { flex: 0 0 100%; max-width: 100%; }
+}
+
+.pf-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: border-color .25s, transform .25s ease, box-shadow .25s;
+}
+
+.pf-card:hover {
+  border-color: var(--pf-secondary);
+  transform: translateY(-6px);
+  box-shadow: 0 18px 44px rgba(22, 101, 52, 0.15);
+}
+
+.pf-card-img-wrap {
+  position: relative;
+  height: 210px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pf-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .45s ease;
+}
+
+.pf-card:hover .pf-card-img { transform: scale(1.07); }
+
+.pf-card-no-img {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #052e16 0%, #166534 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #86efac;
+  gap: 10px;
+}
+
+.pf-card-no-img i    { font-size: 2.6rem; }
+.pf-card-no-img span { font-size: .75rem; font-weight: 600; opacity: .65; letter-spacing: .05em; }
+
+/* Image badges */
+.pf-img-badge-tl,
+.pf-img-badge-tr {
+  position: absolute;
+  top: 12px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  letter-spacing: .04em;
+  line-height: 1.5;
+}
+
+.pf-img-badge-tl { left: 12px;  background: rgba(5, 46, 22, 0.78); color: #86efac; }
+.pf-img-badge-tr { right: 12px; }
+
+.pf-badge-available { background: rgba(22, 163, 74, 0.84);  color: #fff; }
+.pf-badge-occupied  { background: rgba(217, 119, 6, 0.84);  color: #fff; }
+.pf-badge-resting   { background: rgba(14, 165, 233, 0.84); color: #fff; }
+.pf-badge-default   { background: rgba(100, 116, 139, 0.84);color: #fff; }
+
+/* Card body */
+.pf-card-body {
+  padding: 18px 18px 12px;
+  flex: 1;
+}
+
+.pf-card-title {
+  font-family: 'Marcellus', serif;
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.pf-card-loc {
+  font-size: .8rem;
+  color: #64748b;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pf-meta-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.pf-meta-pill {
+  background: var(--pf-bg);
+  border: 1px solid #d1fae5;
+  color: var(--pf-primary);
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: .72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Card footer */
+.pf-card-footer {
+  padding: 12px 18px 18px;
+  display: flex;
+  gap: 8px;
+}
+
+.pf-btn-view {
+  flex: 1;
+  padding: 10px 0;
+  background: var(--pf-primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: .84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .22s, transform .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.pf-btn-view:hover { background: var(--pf-secondary); transform: translateY(-1px); }
+
+.pf-btn-cultures {
+  padding: 10px 13px;
+  background: var(--pf-light);
+  color: var(--pf-primary);
+  border: 1.5px solid #bbf7d0;
+  border-radius: 10px;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background .2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pf-btn-cultures:hover { background: #bbf7d0; color: var(--pf-primary); }
+
+/* ── LIST VIEW ── */
+.pf-list        { display: none; flex-direction: column; gap: 16px; }
+.pf-list.active { display: flex; }
+
+.pf-list-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  cursor: pointer;
+  transition: border-color .25s, transform .22s, box-shadow .25s;
+}
+
+.pf-list-card:hover {
+  border-color: var(--pf-secondary);
+  transform: translateX(5px);
+  box-shadow: 0 8px 30px rgba(22, 101, 52, 0.12);
+}
+
+.pf-list-img-wrap {
+  width: 180px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.pf-list-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .42s ease;
+}
+
+.pf-list-card:hover .pf-list-img-wrap img { transform: scale(1.06); }
+
+.pf-list-no-img {
+  width: 100%;
+  height: 100%;
+  min-height: 130px;
+  background: linear-gradient(135deg, #052e16, #166534);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #86efac;
+  font-size: 2rem;
+}
+
+.pf-list-body {
+  flex: 1;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pf-list-info    { flex: 1; min-width: 180px; }
+
+.pf-list-title {
+  font-family: 'Marcellus', serif;
+  font-size: 1.05rem;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.pf-list-loc {
+  font-size: .78rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.pf-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pf-list-status-badge {
+  display: inline-block;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+/* ── EMPTY / NO RESULTS ── */
+.pf-empty {
+  text-align: center;
+  padding: 90px 20px;
+}
+
+.pf-icon-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--pf-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 2.2rem;
+  color: var(--pf-primary);
+}
+
+.pf-no-results              { display: none; text-align: center; padding: 70px 20px; }
+.pf-no-results.pf-show      { display: block; }
+
+/* ================================================================
+   MODAL
+================================================================ */
+.pf-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 46, 22, 0.52);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s, visibility .3s;
+  padding: 16px;
+}
+
+.pf-overlay.pf-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pf-modal {
+  background: #fff;
+  border-radius: 22px;
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.94) translateY(24px);
+  transition: transform .32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.26);
+}
+
+.pf-overlay.pf-open .pf-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* Banner */
+.pf-modal-banner {
+  height: 220px;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #052e16, #166534);
+}
+
+.pf-modal-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .68;
+}
+
+.pf-modal-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(5, 46, 22, .88) 0%, rgba(5, 46, 22, .18) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 26px;
+  z-index: 2;
+}
+
+.pf-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.17);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+  z-index: 5;
+}
+
+.pf-modal-close:hover { background: rgba(255, 255, 255, 0.3); }
+
+.pf-modal-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: .04em;
+}
+
+.pf-modal-name {
+  font-family: 'Marcellus', serif;
+  font-size: 1.7rem;
+  color: #fff;
+  margin: 0 0 5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .4);
+  line-height: 1.2;
+}
+
+.pf-modal-loc-line {
+  font-size: .84rem;
+  color: #bbf7d0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Stats strip */
+.pf-stats-strip {
+  background: var(--pf-dark);
+  display: flex;
+  justify-content: space-around;
+  padding: 15px 20px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pf-strip-item { text-align: center; }
+
+.pf-strip-val {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--pf-accent);
+  line-height: 1;
+}
+
+.pf-strip-lbl {
+  display: block;
+  font-size: .66rem;
+  font-weight: 700;
+  color: #86efac;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-top: 4px;
+}
+
+/* Scrollable body */
+.pf-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1fae5 transparent;
+}
+
+/* Tabs */
+.pf-tab-nav {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+}
+
+.pf-tab-btn {
+  padding: 14px 18px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: .86rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  transition: color .2s, border-color .2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.pf-tab-btn.active {
+  color: var(--pf-primary);
+  border-bottom-color: var(--pf-secondary);
+}
+
+.pf-tab-panel         { display: none; padding: 24px; }
+.pf-tab-panel.active  { display: block; }
+
+/* Info grid */
+.pf-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 575px) { .pf-info-grid { grid-template-columns: 1fr; } }
+
+.pf-info-item {
+  background: var(--pf-bg);
+  border-radius: 10px;
+  padding: 13px 15px;
+  border: 1px solid #d1fae5;
+}
+
+.pf-info-lbl {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--pf-secondary);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 4px;
+}
+
+.pf-info-val {
+  font-size: .92rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.pf-gps-card {
+  background: linear-gradient(135deg, #052e16, #166534);
+  border-radius: 14px;
+  padding: 16px 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.pf-gps-card .gps-icon { font-size: 1.8rem; color: var(--pf-accent); flex-shrink: 0; }
+.pf-gps-label { font-weight: 700; font-size: .9rem; margin-bottom: 2px; }
+.pf-gps-coords { font-size: .82rem; color: #bbf7d0; }
+
+/* Map */
+#pf-map {
+  height: 320px;
+  border-radius: 13px;
+  z-index: 1;
+}
+
+.pf-map-placeholder {
+  height: 320px;
+  border-radius: 13px;
+  background: var(--pf-bg);
+  border: 2px dashed #bbf7d0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  gap: 10px;
+  font-size: .9rem;
+  font-weight: 500;
+}
+
+/* Crops */
+.pf-culture-item {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  padding: 15px 17px;
+  margin-bottom: 12px;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.pf-culture-item:hover {
+  border-color: var(--pf-secondary);
+  box-shadow: 0 4px 16px rgba(22, 101, 52, 0.08);
+}
+
+.pf-culture-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pf-culture-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--pf-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.pf-culture-name    { font-weight: 700; color: #1e293b; font-size: .9rem; }
+.pf-culture-variety { font-size: .76rem; color: #64748b; margin-top: 1px; }
+
+.pf-culture-dates {
+  display: flex;
+  gap: 18px;
+  font-size: .76rem;
+  color: #64748b;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pf-progress-wrap {
+  background: #f1f5f9;
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.pf-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--pf-secondary), var(--pf-accent));
+  transition: width .65s ease;
+}
+
+/* Modal footer btn */
+.pf-modal-footer-btn {
+  display: flex;
+  justify-content: center;
+  padding: 6px 24px 30px;
+}
+
+/* ================================================================
+   CTA SECTION
+================================================================ */
+.pf-cta {
+  position: relative;
+  background: linear-gradient(135deg, #052e16 0%, #166534 100%);
+  overflow: hidden;
+  padding: 88px 0;
+  text-align: center;
+}
+
+.pf-cta-bg {
+  position: absolute;
+  inset: 0;
+  background: url('{{ asset('assets/img/hero_1.jpg') }}') center / cover no-repeat;
+  opacity: 0.06;
+}
+
+.pf-cta-content  { position: relative; z-index: 1; color: #fff; }
+
+.pf-cta h2 {
+  font-family: 'Marcellus', serif;
+  font-size: clamp(1.9rem, 3.5vw, 2.9rem);
+  margin-bottom: 14px;
+}
+
+.pf-cta p {
+  color: #bbf7d0;
+  max-width: 460px;
+  margin: 0 auto 30px;
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.pf-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 34px;
+  background: var(--pf-accent);
+  color: var(--pf-dark);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: .95rem;
+  text-decoration: none;
+  transition: background .22s, transform .2s, box-shadow .2s;
+}
+
+.pf-cta-btn:hover {
+  background: #86efac;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(74, 222, 128, 0.3);
+  color: var(--pf-dark);
+}
+
+/* ================================================================
+   TOAST
+================================================================ */
+.pf-toast-container {
+  position: fixed;
+  bottom: 26px;
+  right: 26px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.pf-toast {
+  background: #1e293b;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 13px;
+  font-size: .83rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  pointer-events: all;
+  transform: translateX(130%);
+  opacity: 0;
+  transition: transform .38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity .3s;
+  max-width: 300px;
+}
+
+.pf-toast.pf-show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.pf-toast .ti { font-size: 1rem; color: var(--pf-accent); }
+
+/* ================================================================
+   RESPONSIVE
+================================================================ */
+@media (max-width: 575px) {
+  .pf-list-img-wrap { width: 110px; }
+  .pf-stat-card     { min-width: 90px; padding: 14px 16px; }
+  .pf-stat-num      { font-size: 1.5rem; }
+  .pf-modal-name    { font-size: 1.3rem; }
+}
+
+/* ================================================================
+   WEATHER TAB
+================================================================ */
+.pf-api-loading {
+  text-align: center; padding: 40px 20px; color: #94a3b8;
+}
+.pf-api-loading i { font-size: 2rem; display: block; margin-bottom: 10px; animation: pf-spin 1.1s linear infinite; }
+@keyframes pf-spin { to { transform: rotate(360deg); } }
+
+.pf-api-no-coords {
+  text-align: center; padding: 40px 20px; color: #94a3b8;
+  border: 2px dashed #d1fae5; border-radius: 14px;
+}
+.pf-api-no-coords i { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+.pf-weather-alert {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 18px; border-radius: 12px; margin-bottom: 16px;
+  font-size: .86rem; font-weight: 600; line-height: 1.5;
+}
+.pf-alert-frost   { background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af; }
+.pf-alert-drought { background: #fff7ed; border: 1.5px solid #fed7aa; color: #9a3412; }
+.pf-alert-storm   { background: #fdf4ff; border: 1.5px solid #e9d5ff; color: #6b21a8; }
+.pf-alert-good    { background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #166534; }
+.pf-alert-icon    { font-size: 1.3rem; flex-shrink: 0; margin-top: 1px; }
+
+.pf-current-card {
+  background: linear-gradient(135deg, #052e16 0%, #166534 55%, #15803d 100%);
+  border-radius: 18px; padding: 22px 24px; color: white;
+  display: flex; align-items: center; gap: 20px; margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.pf-current-card::before {
+  content: ''; position: absolute; top: -50px; right: -50px;
+  width: 180px; height: 180px; background: rgba(255,255,255,0.06); border-radius: 50%;
+}
+.pf-current-card::after {
+  content: ''; position: absolute; bottom: -40px; left: 30%;
+  width: 120px; height: 120px; background: rgba(255,255,255,0.04); border-radius: 50%;
+}
+.pf-wx-icon-big  { font-size: 3.8rem; line-height: 1; flex-shrink: 0; z-index: 1; }
+.pf-wx-info      { z-index: 1; }
+.pf-wx-temp      { font-size: 2.6rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.pf-wx-desc      { font-size: .88rem; color: rgba(255,255,255,.8); margin-bottom: 8px; }
+.pf-wx-meta      { display: flex; gap: 14px; flex-wrap: wrap; }
+.pf-wx-meta span { font-size: .76rem; color: rgba(255,255,255,.7); display: flex; align-items: center; gap: 5px; }
+
+.pf-agro-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px;
+}
+.pf-agro-item {
+  background: var(--pf-bg); border: 1px solid #d1fae5; border-radius: 13px;
+  padding: 14px 10px; text-align: center;
+}
+.pf-agro-emoji { font-size: 1.6rem; margin-bottom: 6px; }
+.pf-agro-val   { font-size: 1.05rem; font-weight: 800; color: var(--pf-primary); }
+.pf-agro-lbl   { font-size: .65rem; color: #64748b; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; margin-top: 2px; }
+
+.pf-forecast-lbl { font-size: .75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.pf-forecast-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+}
+.pf-fc-day {
+  background: var(--pf-bg); border: 1px solid #d1fae5; border-radius: 11px;
+  padding: 9px 3px; text-align: center; font-size: .7rem;
+}
+.pf-fc-day.pf-fc-today { background: var(--pf-primary); border-color: var(--pf-primary); color: white; }
+.pf-fc-name  { font-weight: 700; margin-bottom: 4px; }
+.pf-fc-icon  { font-size: 1.2rem; margin: 3px 0; }
+.pf-fc-max   { font-weight: 800; color: #dc2626; font-size: .75rem; }
+.pf-fc-today .pf-fc-max { color: #fca5a5; }
+.pf-fc-min   { color: #2563eb; font-size: .7rem; }
+.pf-fc-today .pf-fc-min { color: #bfdbfe; }
+.pf-fc-rain  { height: 4px; background: rgba(0,0,0,.1); border-radius: 2px; margin-top: 4px; }
+.pf-fc-rain-fill { height: 100%; border-radius: 2px; background: #38bdf8; transition: width .5s; }
+
+@media (max-width: 480px) {
+  .pf-forecast-grid { grid-template-columns: repeat(4, 1fr); }
+  .pf-agro-grid     { grid-template-columns: 1fr 1fr; }
+}
+
+/* ================================================================
+   SOIL ANALYSIS TAB
+================================================================ */
+.pf-soil-source {
+  font-size: .72rem; color: #9ca3af; text-align: right; margin-bottom: 14px;
+}
+.pf-soil-source a { color: #16a34a; text-decoration: none; font-weight: 600; }
+
+.pf-ph-card {
+  background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; margin-bottom: 14px;
+}
+.pf-ph-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #6b7280; margin-bottom: 12px; }
+.pf-ph-scale { display: flex; border-radius: 8px; overflow: hidden; height: 14px; margin-bottom: 8px; }
+.pf-ph-seg   { flex: 1; }
+.pf-ph-pointer-row { position: relative; height: 22px; margin-bottom: 6px; }
+.pf-ph-pointer {
+  position: absolute; transform: translateX(-50%);
+  background: #111827; color: white; font-size: .68rem; font-weight: 800;
+  padding: 3px 8px; border-radius: 20px; white-space: nowrap; top: 0;
+}
+.pf-ph-interpret {
+  font-size: .78rem; font-weight: 600; padding: 8px 12px; border-radius: 8px;
+}
+
+.pf-soil-props  { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.pf-prop-card   { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; }
+.pf-prop-head   { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.pf-prop-name   { font-size: .82rem; font-weight: 700; color: #374151; display: flex; align-items: center; gap: 6px; }
+.pf-prop-pct    { font-size: .86rem; font-weight: 800; }
+.pf-prop-bg     { height: 8px; background: #f3f4f6; border-radius: 4px; }
+.pf-prop-fill   { height: 8px; border-radius: 4px; transition: width .9s cubic-bezier(.4,0,.2,1); width: 0; }
+.pf-prop-hint   { font-size: .7rem; color: #6b7280; margin-top: 4px; }
+
+.pf-soil-card {
+  border-radius: 14px; padding: 16px 18px;
+  display: flex; align-items: flex-start; gap: 14px; margin-top: 4px;
+}
+.pf-soil-card-icon { font-size: 1.8rem; flex-shrink: 0; margin-top: 2px; }
+.pf-soil-card-body h5 { font-size: .92rem; font-weight: 800; margin-bottom: 4px; }
+.pf-soil-card-body p  { font-size: .78rem; margin: 0; line-height: 1.55; }
+
+/* Nominatim geocoded address */
+.pf-geocode-row {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1px solid #bbf7d0; border-radius: 12px;
+  padding: 12px 15px; margin-top: 10px;
+  display: flex; align-items: flex-start; gap: 10px; font-size: .82rem;
+}
+.pf-geocode-row i { color: var(--pf-secondary); font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+.pf-geocode-row span { color: #374151; font-weight: 500; line-height: 1.5; }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ================================================================
+   HERO
+================================================================ #}
+<section class="pf-hero">
+  <div class="pf-hero-bg"></div>
+  <div class="pf-particles" id="pfParticles"></div>
+
+  <div class="pf-hero-content container">
+    <div class="pf-badge-pill" data-aos="fade-down">
+      <i class="bi bi-geo-alt-fill me-1"></i> Agricultural Land Registry
+    </div>
+    <h1 class="pf-hero-title" data-aos="fade-up" data-aos-delay="60">
+      Our <span class="highlight">Parcels</span>
+    </h1>
+    <p class="pf-hero-subtitle" data-aos="fade-up" data-aos-delay="120">
+      Explore our curated agricultural land parcels — detailed soil profiles,
+      real-time availability, and full growing history.
+    </p>
+
+    <div class="pf-stat-strip" data-aos="fade-up" data-aos-delay="180">
+      <div class="pf-stat-card">
+        <span class="pf-stat-num" data-target="{{ stats.total }}">0</span>
+        <span class="pf-stat-lbl">Total Parcels</span>
+      </div>
+      <div class="pf-stat-card">
+        <span class="pf-stat-num c-green" data-target="{{ stats.available }}">0</span>
+        <span class="pf-stat-lbl">Available</span>
+      </div>
+      <div class="pf-stat-card">
+        <span class="pf-stat-num c-yellow" data-target="{{ stats.occupied }}">0</span>
+        <span class="pf-stat-lbl">Occupied</span>
+      </div>
+      <div class="pf-stat-card">
+        <span class="pf-stat-num c-sky" data-target="{{ stats.resting }}">0</span>
+        <span class="pf-stat-lbl">Resting</span>
+      </div>
+      <div class="pf-stat-card">
+        <span class="pf-stat-num c-green"
+              data-target="{{ stats.totalArea|number_format(1, '.', '') }}"
+              data-suffix=" ha">0</span>
+        <span class="pf-stat-lbl">Total Area</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf-hero-wave">
+    <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,36 C240,72 480,0 720,36 C960,72 1200,0 1440,36 L1440,72 L0,72 Z"
+            fill="var(--pf-bg)"/>
+    </svg>
+  </div>
+</section>
+
+{# ================================================================
+   STICKY FILTER BAR
+================================================================ #}
+<div class="pf-filter-bar">
+  <div class="container">
+    <div class="pf-filter-inner">
+
+      <div class="pf-search-wrap">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" id="pfSearch" class="pf-search-input"
+               placeholder="Search parcel name or location…" autocomplete="off">
+      </div>
+
+      <div class="pf-filter-btns">
+        <button class="pf-filter-btn active" data-filter="All">
+          <span class="fdot"></span>All
+        </button>
+        <button class="pf-filter-btn" data-filter="Available">
+          <span class="fdot"></span>Available
+        </button>
+        <button class="pf-filter-btn" data-filter="Occupied">
+          <span class="fdot"></span>Occupied
+        </button>
+        <button class="pf-filter-btn" data-filter="Resting">
+          <span class="fdot"></span>Resting
+        </button>
+      </div>
+
+      <div class="pf-view-toggle">
+        <button class="pf-view-btn active" id="pfGridBtn" title="Grid view">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+        </button>
+        <button class="pf-view-btn" id="pfListBtn" title="List view">
+          <i class="bi bi-list-ul"></i>
+        </button>
+      </div>
+
+      <span class="pf-result-count" id="pfResultCount"></span>
+    </div>
+  </div>
+</div>
+
+{# ================================================================
+   MAIN PARCELLES SECTION
+================================================================ #}
+<section class="pf-main">
+  <div class="container">
+
+    {% if parcelles is empty %}
+    {# ── EMPTY STATE ── #}
+    <div class="pf-empty" data-aos="fade-up">
+      <div class="pf-icon-wrap"><i class="bi bi-map"></i></div>
+      <h4 class="mb-2">No Parcels Available</h4>
+      <p class="text-muted mb-0">
+        Parcels will appear here once they are added to the registry.
+      </p>
+    </div>
+
+    {% else %}
+
+    {# ── NO RESULTS (JS-controlled) ── #}
+    <div class="pf-no-results" id="pfNoResults">
+      <div class="pf-icon-wrap" style="margin:0 auto 18px;">
+        <i class="bi bi-search"></i>
+      </div>
+      <h5 class="mb-2">No results found</h5>
+      <p class="text-muted mb-3">Try a different search term or reset your filters.</p>
+      <button class="btn btn-outline-success btn-sm" id="pfClearFilters">
+        <i class="bi bi-x-circle me-1"></i>Clear Filters
+      </button>
+    </div>
+
+    {# ================================================================
+       GRID VIEW
+    ================================================================ #}
+    <div class="pf-grid active" id="pfGrid">
+      {% for parcelle in parcelles %}
+
+      {% set badgeClass = 'pf-badge-default' %}
+      {% if parcelle.statut == 'Available' %}{% set badgeClass = 'pf-badge-available' %}
+      {% elseif parcelle.statut == 'Occupied' %}{% set badgeClass = 'pf-badge-occupied' %}
+      {% elseif parcelle.statut == 'Resting'  %}{% set badgeClass = 'pf-badge-resting'  %}
+      {% endif %}
+
+      <div class="pf-card-col pf-parcel-item"
+           data-status="{{ parcelle.statut }}"
+           data-name="{{ parcelle.nom|lower }}"
+           data-loc="{{ parcelle.localisation|lower }}"
+           data-aos="fade-up"
+           data-aos-delay="{{ (loop.index0 % 3) * 80 }}">
+
+        <article class="pf-card"
+                 data-id="{{ parcelle.id }}"
+                 data-name="{{ parcelle.nom }}"
+                 data-loc="{{ parcelle.localisation|default('—') }}"
+                 data-area="{{ parcelle.superficie is not null ? parcelle.superficie|number_format(2, '.', '') : '0.00' }}"
+                 data-soil="{{ parcelle.typeSol|default('N/A') }}"
+                 data-statut="{{ parcelle.statut|default('Unknown') }}"
+                 data-date="{{ parcelle.dateCreation ? parcelle.dateCreation|date('d/m/Y') : 'N/A' }}"
+                 data-lat="{{ parcelle.latitude ?? '' }}"
+                 data-lng="{{ parcelle.longitude ?? '' }}"
+                 data-image-url="{{ parcelle.image ? path('parcelle_image', {id: parcelle.id}) : '' }}"
+                 data-cultures="{{ parcelle.cultures|map(c => {
+                   'id':             c.id,
+                   'nom':            c.nomCulture,
+                   'variete':        c.variete,
+                   'statut':         c.statut,
+                   'datePlantation': c.datePlantation ? c.datePlantation|date('d/m/Y') : 'N/A',
+                   'dateRecolte':    c.dateRecoltePrevue ? c.dateRecoltePrevue|date('d/m/Y') : 'N/A',
+                   'progress':       c.quantitePlantee > 0 ? ((c.quantiteRecoltee / c.quantitePlantee) * 100)|round : 0
+                 })|json_encode|e('html_attr') }}"
+                 onclick="PF.openModal(this)">
+
+          {# Image area #}
+          <div class="pf-card-img-wrap">
+            {% if parcelle.image %}
+              <img class="pf-card-img"
+                   src="{{ path('parcelle_image', {id: parcelle.id}) }}"
+                   alt="{{ parcelle.nom }}"
+                   loading="lazy">
+            {% else %}
+              <div class="pf-card-no-img">
+                <i class="bi bi-tree-fill"></i>
+                <span>No Image</span>
+              </div>
+            {% endif %}
+            <span class="pf-img-badge-tl">{{ parcelle.typeSol|default('N/A') }}</span>
+            <span class="pf-img-badge-tr {{ badgeClass }}">{{ parcelle.statut|default('Unknown') }}</span>
+          </div>
+
+          {# Body #}
+          <div class="pf-card-body">
+            <h3 class="pf-card-title">{{ parcelle.nom }}</h3>
+            <p class="pf-card-loc">
+              <i class="bi bi-geo-alt-fill" style="color:var(--pf-secondary);"></i>
+              {{ parcelle.localisation|default('Unknown location') }}
+            </p>
+            <div class="pf-meta-pills">
+              <span class="pf-meta-pill">
+                <i class="bi bi-rulers"></i>
+                {{ parcelle.superficie is not null
+                   ? parcelle.superficie|number_format(2, '.', '')
+                   : '0.00' }} ha
+              </span>
+              <span class="pf-meta-pill">
+                <i class="bi bi-flower2"></i>
+                {{ parcelle.cultures|length }}
+                crop{{ parcelle.cultures|length != 1 ? 's' : '' }}
+              </span>
+              {% if parcelle.dateCreation %}
+              <span class="pf-meta-pill">
+                <i class="bi bi-calendar3"></i>
+                {{ parcelle.dateCreation|date('Y') }}
+              </span>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Footer #}
+          <div class="pf-card-footer" onclick="event.stopPropagation()">
+            <button class="pf-btn-view"
+                    onclick="PF.openModal(this.closest('.pf-card'))">
+              <i class="bi bi-eye"></i> View Details
+            </button>
+            <a href="{{ path('app_client_cultures') }}"
+               class="pf-btn-cultures"
+               title="Browse crops">
+              Crops <i class="bi bi-arrow-right-short"></i>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      {% endfor %}
+    </div>{# end pf-grid #}
+
+    {# ================================================================
+       LIST VIEW
+    ================================================================ #}
+    <div class="pf-list" id="pfList">
+      {% for parcelle in parcelles %}
+
+      {% set badgeClass = 'pf-badge-default' %}
+      {% if parcelle.statut == 'Available' %}{% set badgeClass = 'pf-badge-available' %}
+      {% elseif parcelle.statut == 'Occupied' %}{% set badgeClass = 'pf-badge-occupied' %}
+      {% elseif parcelle.statut == 'Resting'  %}{% set badgeClass = 'pf-badge-resting'  %}
+      {% endif %}
+
+      <div class="pf-parcel-item"
+           data-status="{{ parcelle.statut }}"
+           data-name="{{ parcelle.nom|lower }}"
+           data-loc="{{ parcelle.localisation|lower }}"
+           data-aos="fade-right"
+           data-aos-delay="{{ loop.index0 * 50 }}">
+
+        <article class="pf-list-card"
+                 data-id="{{ parcelle.id }}"
+                 data-name="{{ parcelle.nom }}"
+                 data-loc="{{ parcelle.localisation|default('—') }}"
+                 data-area="{{ parcelle.superficie is not null ? parcelle.superficie|number_format(2, '.', '') : '0.00' }}"
+                 data-soil="{{ parcelle.typeSol|default('N/A') }}"
+                 data-statut="{{ parcelle.statut|default('Unknown') }}"
+                 data-date="{{ parcelle.dateCreation ? parcelle.dateCreation|date('d/m/Y') : 'N/A' }}"
+                 data-lat="{{ parcelle.latitude ?? '' }}"
+                 data-lng="{{ parcelle.longitude ?? '' }}"
+                 data-image-url="{{ parcelle.image ? path('parcelle_image', {id: parcelle.id}) : '' }}"
+                 data-cultures="{{ parcelle.cultures|map(c => {
+                   'id':             c.id,
+                   'nom':            c.nomCulture,
+                   'variete':        c.variete,
+                   'statut':         c.statut,
+                   'datePlantation': c.datePlantation ? c.datePlantation|date('d/m/Y') : 'N/A',
+                   'dateRecolte':    c.dateRecoltePrevue ? c.dateRecoltePrevue|date('d/m/Y') : 'N/A',
+                   'progress':       c.quantitePlantee > 0 ? ((c.quantiteRecoltee / c.quantitePlantee) * 100)|round : 0
+                 })|json_encode|e('html_attr') }}"
+                 onclick="PF.openModal(this)">
+
+          <div class="pf-list-img-wrap">
+            {% if parcelle.image %}
+              <img src="{{ path('parcelle_image', {id: parcelle.id}) }}"
+                   alt="{{ parcelle.nom }}" loading="lazy">
+            {% else %}
+              <div class="pf-list-no-img"><i class="bi bi-tree-fill"></i></div>
+            {% endif %}
+          </div>
+
+          <div class="pf-list-body">
+            <div class="pf-list-info">
+              <h3 class="pf-list-title">{{ parcelle.nom }}</h3>
+              <p class="pf-list-loc">
+                <i class="bi bi-geo-alt-fill" style="color:var(--pf-secondary);"></i>
+                {{ parcelle.localisation|default('Unknown') }}
+              </p>
+              <div class="pf-meta-pills">
+                <span class="pf-meta-pill">
+                  <i class="bi bi-rulers"></i>
+                  {{ parcelle.superficie is not null
+                     ? parcelle.superficie|number_format(2, '.', '')
+                     : '0.00' }} ha
+                </span>
+                <span class="pf-meta-pill">
+                  <i class="bi bi-flower2"></i>
+                  {{ parcelle.cultures|length }} crop{{ parcelle.cultures|length != 1 ? 's' : '' }}
+                </span>
+                <span class="pf-meta-pill">
+                  <i class="bi bi-layers-fill"></i>
+                  {{ parcelle.typeSol|default('N/A') }}
+                </span>
+              </div>
+            </div>
+
+            <div class="pf-list-actions" onclick="event.stopPropagation()">
+              <span class="pf-list-status-badge {{ badgeClass }}">
+                {{ parcelle.statut }}
+              </span>
+              <button class="pf-btn-view"
+                      style="padding:9px 20px;flex:none;"
+                      onclick="PF.openModal(this.closest('.pf-list-card'))">
+                <i class="bi bi-eye"></i> Details
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      {% endfor %}
+    </div>{# end pf-list #}
+
+    {% endif %}
+  </div>
+</section>
+
+{# ================================================================
+   PARCELLE DETAIL MODAL
+================================================================ #}
+<div class="pf-overlay" id="pfOverlay" onclick="PF.closeOnBackdrop(event)">
+  <div class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="pfModalName">
+
+    {# Banner #}
+    <div class="pf-modal-banner" id="pfModalBanner">
+      <img id="pfModalImg" src="" alt="" style="display:none;">
+      <button class="pf-modal-close" id="pfModalClose" aria-label="Close modal">
+        <i class="bi bi-x-lg"></i>
+      </button>
+      <div class="pf-modal-banner-overlay">
+        <span class="pf-modal-status" id="pfModalStatus"></span>
+        <h2 class="pf-modal-name" id="pfModalName"></h2>
+        <p class="pf-modal-loc-line">
+          <i class="bi bi-geo-alt-fill"></i>
+          <span id="pfModalLocSpan"></span>
+        </p>
+      </div>
+    </div>
+
+    {# Stats strip #}
+    <div class="pf-stats-strip">
+      <div class="pf-strip-item">
+        <span class="pf-strip-val" id="pfStripArea">—</span>
+        <span class="pf-strip-lbl">Area (ha)</span>
+      </div>
+      <div class="pf-strip-item">
+        <span class="pf-strip-val" id="pfStripSoil">—</span>
+        <span class="pf-strip-lbl">Soil Type</span>
+      </div>
+      <div class="pf-strip-item">
+        <span class="pf-strip-val" id="pfStripCrops">—</span>
+        <span class="pf-strip-lbl">Crop Count</span>
+      </div>
+      <div class="pf-strip-item">
+        <span class="pf-strip-val" id="pfStripDate">—</span>
+        <span class="pf-strip-lbl">Registered</span>
+      </div>
+    </div>
+
+    {# Modal body – scrollable #}
+    <div class="pf-modal-body">
+
+      {# Tab nav #}
+      <div class="pf-tab-nav">
+        <button class="pf-tab-btn active" data-tab="overview">
+          <i class="bi bi-info-circle"></i> Overview
+        </button>
+        <button class="pf-tab-btn" data-tab="map">
+          <i class="bi bi-map"></i> Location Map
+        </button>
+        <button class="pf-tab-btn" data-tab="crops">
+          <i class="bi bi-flower2"></i> Crops
+          <span id="pfCropsBadge"
+                class="badge rounded-pill ms-1"
+                style="background:var(--pf-light);color:var(--pf-primary);font-size:.68rem;"></span>
+        </button>
+        <button class="pf-tab-btn" data-tab="weather">
+          <i class="bi bi-cloud-sun"></i> Weather
+        </button>
+        <button class="pf-tab-btn" data-tab="soil">
+          <i class="bi bi-layers-fill"></i> Soil Analysis
+        </button>
+      </div>
+
+      {# Overview tab #}
+      <div class="pf-tab-panel active" id="pfTabOverview">
+        <div class="pf-info-grid">
+          <div class="pf-info-item">
+            <div class="pf-info-lbl">Name</div>
+            <div class="pf-info-val" id="pfInfoName">—</div>
+          </div>
+          <div class="pf-info-item">
+            <div class="pf-info-lbl">Location</div>
+            <div class="pf-info-val" id="pfInfoLoc">—</div>
+          </div>
+          <div class="pf-info-item">
+            <div class="pf-info-lbl">Area</div>
+            <div class="pf-info-val" id="pfInfoArea">—</div>
+          </div>
+          <div class="pf-info-item">
+            <div class="pf-info-lbl">Soil Type</div>
+            <div class="pf-info-val" id="pfInfoSoil">—</div>
+          </div>
+          <div class="pf-info-item">
+            <div class="pf-info-lbl">Status</div>
+            <div class="pf-info-val" id="pfInfoStatut">—</div>
+          </div>
+          <div class="pf-info-item">
+            <div class="pf-info-lbl">Registered</div>
+            <div class="pf-info-val" id="pfInfoDate">—</div>
+          </div>
+        </div>
+
+        <div id="pfGpsCard" class="pf-gps-card" style="display:none;">
+          <i class="bi bi-crosshair2 gps-icon"></i>
+          <div>
+            <div class="pf-gps-label">GPS Coordinates</div>
+            <div class="pf-gps-coords" id="pfGpsCoords"></div>
+          </div>
+        </div>
+        <div class="pf-geocode-row" id="pfGeocodeRow" style="display:none;">
+          <i class="bi bi-pin-map-fill"></i>
+          <span id="pfGeocodeSpan">—</span>
+        </div>
+      </div>
+
+      {# Map tab #}
+      <div class="pf-tab-panel" id="pfTabMap">
+        <div id="pf-map"></div>
+        <div class="pf-map-placeholder" id="pfMapPlaceholder" style="display:none;">
+          <i class="bi bi-map" style="font-size:2.2rem;"></i>
+          <span>No GPS coordinates available for this parcelle.</span>
+        </div>
+      </div>
+
+      {# Crops tab #}
+      <div class="pf-tab-panel" id="pfTabCrops">
+        <div id="pfCropsList"></div>
+        <div id="pfNoCrops" style="display:none;text-align:center;padding:36px 20px;color:#94a3b8;">
+          <i class="bi bi-flower2" style="font-size:2.2rem;display:block;margin-bottom:10px;"></i>
+          No crops recorded for this parcelle.
+        </div>
+      </div>
+
+      {# Weather tab #}
+      <div class="pf-tab-panel" id="pfTabWeather">
+        <div class="pf-api-loading" id="pfWxLoading">
+          <i class="bi bi-cloud-arrow-down"></i>
+          <span>Fetching weather data…</span>
+        </div>
+        <div class="pf-api-no-coords" id="pfWxNoCoords" style="display:none;">
+          <i class="bi bi-geo-alt-slash"></i>
+          <strong>No GPS coordinates</strong><br>
+          <span style="font-size:.82rem;">Weather data requires GPS coordinates for this parcel.</span>
+        </div>
+        <div id="pfWxContent" style="display:none;">
+          <div id="pfWxAlert"></div>
+          <div class="pf-current-card" id="pfCurrentCard">
+            <div class="pf-wx-icon-big" id="pfWxIcon">⛅</div>
+            <div class="pf-wx-info">
+              <div class="pf-wx-temp" id="pfWxTemp">—°C</div>
+              <div class="pf-wx-desc" id="pfWxDesc">—</div>
+              <div class="pf-wx-meta">
+                <span><i class="bi bi-droplet-fill"></i> <span id="pfWxRain">—</span> mm</span>
+                <span><i class="bi bi-wind"></i> <span id="pfWxWind">—</span> km/h</span>
+                <span><i class="bi bi-moisture"></i> <span id="pfWxHumid">—</span>%</span>
+              </div>
+            </div>
+          </div>
+          <div class="pf-agro-grid">
+            <div class="pf-agro-item">
+              <div class="pf-agro-emoji">🌡️</div>
+              <div class="pf-agro-val" id="pfSoilTemp">—°C</div>
+              <div class="pf-agro-lbl">Soil Temp</div>
+            </div>
+            <div class="pf-agro-item">
+              <div class="pf-agro-emoji">💧</div>
+              <div class="pf-agro-val" id="pfSoilMoist">—%</div>
+              <div class="pf-agro-lbl">Soil Moisture</div>
+            </div>
+            <div class="pf-agro-item">
+              <div class="pf-agro-emoji">🌬️</div>
+              <div class="pf-agro-val" id="pfEtO">— mm</div>
+              <div class="pf-agro-lbl">Evapotrans.</div>
+            </div>
+          </div>
+          <p class="pf-forecast-lbl">7-Day Forecast</p>
+          <div class="pf-forecast-grid" id="pfForecastGrid"></div>
+        </div>
+      </div>
+
+      {# Soil Analysis tab #}
+      <div class="pf-tab-panel" id="pfTabSoil">
+        <div class="pf-api-loading" id="pfSoilLoading">
+          <i class="bi bi-layers-fill"></i>
+          <span>Fetching soil data from SoilGrids (ISRIC)…</span>
+        </div>
+        <div class="pf-api-no-coords" id="pfSoilNoCoords" style="display:none;">
+          <i class="bi bi-geo-alt-slash"></i>
+          <strong>No GPS coordinates</strong><br>
+          <span style="font-size:.82rem;">Soil analysis requires GPS coordinates for this parcel.</span>
+        </div>
+        <div id="pfSoilContent" style="display:none;">
+          <p class="pf-soil-source">
+            Data source: <a href="https://soilgrids.org" target="_blank">SoilGrids (ISRIC)</a> — depth 0–5 cm
+          </p>
+          <div class="pf-ph-card">
+            <div class="pf-ph-title">Soil pH (Water)</div>
+            <div class="pf-ph-scale">
+              <div class="pf-ph-seg" style="background:#ef4444;" title="pH 0-3 (Strongly acidic)"></div>
+              <div class="pf-ph-seg" style="background:#f97316;" title="pH 3-4"></div>
+              <div class="pf-ph-seg" style="background:#eab308;" title="pH 4-5 (Acidic)"></div>
+              <div class="pf-ph-seg" style="background:#84cc16;" title="pH 5-6 (Slightly acidic)"></div>
+              <div class="pf-ph-seg" style="background:#22c55e;" title="pH 6-7 (Neutral - Optimal)"></div>
+              <div class="pf-ph-seg" style="background:#10b981;" title="pH 7-8 (Slightly alkaline)"></div>
+              <div class="pf-ph-seg" style="background:#06b6d4;" title="pH 8-9 (Alkaline)"></div>
+              <div class="pf-ph-seg" style="background:#8b5cf6;" title="pH 9+ (Strongly alkaline)"></div>
+            </div>
+            <div class="pf-ph-pointer-row">
+              <div class="pf-ph-pointer" id="pfPhPointer" style="left:50%;">7.0</div>
+            </div>
+            <div class="pf-ph-interpret" id="pfPhInterpret"></div>
+          </div>
+          <div class="pf-soil-props">
+            <div class="pf-prop-card">
+              <div class="pf-prop-head">
+                <span class="pf-prop-name"><span>🟤</span> Clay Content</span>
+                <span class="pf-prop-pct" id="pfClayStat" style="color:#92400e;">—%</span>
+              </div>
+              <div class="pf-prop-bg"><div class="pf-prop-fill" id="pfClayBar" style="background:#a16207;"></div></div>
+              <div class="pf-prop-hint" id="pfClayHint"></div>
+            </div>
+            <div class="pf-prop-card">
+              <div class="pf-prop-head">
+                <span class="pf-prop-name"><span>🟡</span> Sand Content</span>
+                <span class="pf-prop-pct" id="pfSandStat" style="color:#ca8a04;">—%</span>
+              </div>
+              <div class="pf-prop-bg"><div class="pf-prop-fill" id="pfSandBar" style="background:#d97706;"></div></div>
+              <div class="pf-prop-hint" id="pfSandHint"></div>
+            </div>
+            <div class="pf-prop-card">
+              <div class="pf-prop-head">
+                <span class="pf-prop-name"><span>🍂</span> Organic Carbon</span>
+                <span class="pf-prop-pct" id="pfOcStat" style="color:#166534;">— g/kg</span>
+              </div>
+              <div class="pf-prop-bg"><div class="pf-prop-fill" id="pfOcBar" style="background:#16a34a;"></div></div>
+              <div class="pf-prop-hint" id="pfOcHint"></div>
+            </div>
+          </div>
+          <div class="pf-soil-card" id="pfSoilSummaryCard">
+            <div class="pf-soil-card-icon" id="pfSoilSummaryIcon">🌱</div>
+            <div class="pf-soil-card-body">
+              <h5 id="pfSoilSummaryTitle">Soil Summary</h5>
+              <p id="pfSoilSummaryText">—</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Footer CTA inside modal #}
+      <div class="pf-modal-footer-btn">
+        <a href="{{ path('app_client_cultures') }}"
+           class="pf-btn-view text-decoration-none"
+           style="display:inline-flex;align-items:center;gap:8px;padding:11px 30px;border-radius:11px;flex:none;">
+          <i class="bi bi-flower2"></i> Browse All Crops
+        </a>
+      </div>
+
+    </div>{# end pf-modal-body #}
+  </div>{# end pf-modal #}
+</div>{# end pf-overlay #}
+
+{# ================================================================
+   CTA SECTION
+================================================================ #}
+<section class="pf-cta">
+  <div class="pf-cta-bg"></div>
+  <div class="container pf-cta-content" data-aos="fade-up">
+    <h2>Interested in Our Land?</h2>
+    <p>
+      Reach out to our team to learn more about parcelle availability,
+      rental options, and agricultural partnerships.
+    </p>
+    <a href="{{ path('app_contact') }}" class="pf-cta-btn">
+      <i class="bi bi-envelope-fill"></i> Contact Us
+    </a>
+  </div>
+</section>
+
+{# Toast container #}
+<div class="pf-toast-container" id="pfToastContainer"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs="
+        crossorigin=""></script>
+<script>
+/* ================================================================
+   EL FIRMA — Client Parcelles Module
+================================================================ */
+var PF = (function () {
+  'use strict';
+
+  /* ──────────────────────────────────────────────────────────────
+     PARTICLES
+  ────────────────────────────────────────────────────────────── */
+  function initParticles() {
+    var c = document.getElementById('pfParticles');
+    if (!c) return;
+    for (var i = 0; i < 24; i++) {
+      var el   = document.createElement('div');
+      el.className = 'pf-particle';
+      var sz   = (Math.random() * 14 + 5).toFixed(1);
+      var dur  = (Math.random() * 13 + 10).toFixed(1);
+      var del  = (Math.random() * -22).toFixed(1);
+      var left = (Math.random() * 100).toFixed(1);
+      el.style.cssText =
+        'width:'              + sz   + 'px;' +
+        'height:'             + sz   + 'px;' +
+        'left:'               + left + '%;'  +
+        'animation-duration:' + dur  + 's;'  +
+        'animation-delay:'    + del  + 's;';
+      c.appendChild(el);
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     COUNTER ANIMATION
+  ────────────────────────────────────────────────────────────── */
+  function animateCounter(el) {
+    var raw    = el.dataset.target || '0';
+    var target = parseFloat(raw);
+    var suffix = el.dataset.suffix || '';
+    var isFloat = raw.indexOf('.') !== -1;
+    var duration = 1700;
+    var start    = performance.now();
+
+    function step(now) {
+      var elapsed  = now - start;
+      var progress = Math.min(elapsed / duration, 1);
+      var ease     = 1 - Math.pow(1 - progress, 3);
+      var current  = target * ease;
+      el.textContent = (isFloat ? current.toFixed(1) : Math.floor(current)) + suffix;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = (isFloat ? target.toFixed(1) : Math.floor(target)) + suffix;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function initCounters() {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          animateCounter(e.target);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    document.querySelectorAll('[data-target]').forEach(function (el) {
+      io.observe(el);
+    });
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     TOAST
+  ────────────────────────────────────────────────────────────── */
+  function toast(msg, icon) {
+    icon = icon || 'check-circle-fill';
+    var container = document.getElementById('pfToastContainer');
+    var t = document.createElement('div');
+    t.className = 'pf-toast';
+    t.innerHTML = '<i class="bi bi-' + icon + ' ti"></i><span>' + msg + '</span>';
+    container.appendChild(t);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { t.classList.add('pf-show'); });
+    });
+    setTimeout(function () {
+      t.classList.remove('pf-show');
+      setTimeout(function () { t.remove(); }, 420);
+    }, 3000);
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     FILTER / SEARCH
+  ────────────────────────────────────────────────────────────── */
+  var currentStatus = 'All';
+  var currentSearch = '';
+
+  function applyFilters() {
+    var items   = document.querySelectorAll('.pf-parcel-item');
+    var visible = 0;
+
+    items.forEach(function (item) {
+      var name    = item.dataset.name   || '';
+      var loc     = item.dataset.loc    || '';
+      var status  = item.dataset.status || '';
+
+      var okStatus = currentStatus === 'All' || status === currentStatus;
+      var okSearch = !currentSearch ||
+                     name.indexOf(currentSearch) !== -1 ||
+                     loc.indexOf(currentSearch)  !== -1;
+
+      var show = okStatus && okSearch;
+      item.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    var cnt = document.getElementById('pfResultCount');
+    if (cnt) cnt.textContent = visible + ' parcel' + (visible !== 1 ? 's' : '');
+
+    var noRes = document.getElementById('pfNoResults');
+    if (noRes) {
+      noRes.classList.toggle('pf-show', visible === 0 && items.length > 0);
+    }
+  }
+
+  function initFilters() {
+    var searchInput = document.getElementById('pfSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        currentSearch = this.value.trim().toLowerCase();
+        applyFilters();
+        if (currentSearch) toast('Searching for "' + this.value.trim() + '"', 'search');
+      });
+    }
+
+    document.querySelectorAll('.pf-filter-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.pf-filter-btn').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        this.classList.add('active');
+        currentStatus = this.dataset.filter;
+        applyFilters();
+        toast('Filter: ' + currentStatus, 'funnel-fill');
+      });
+    });
+
+    var clearBtn = document.getElementById('pfClearFilters');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function () {
+        currentSearch = '';
+        currentStatus = 'All';
+        var si = document.getElementById('pfSearch');
+        if (si) si.value = '';
+        document.querySelectorAll('.pf-filter-btn').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        var allBtn = document.querySelector('.pf-filter-btn[data-filter="All"]');
+        if (allBtn) allBtn.classList.add('active');
+        applyFilters();
+        toast('Filters cleared', 'x-circle');
+      });
+    }
+
+    applyFilters();
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     VIEW TOGGLE
+  ────────────────────────────────────────────────────────────── */
+  function initViewToggle() {
+    var grid    = document.getElementById('pfGrid');
+    var list    = document.getElementById('pfList');
+    var gridBtn = document.getElementById('pfGridBtn');
+    var listBtn = document.getElementById('pfListBtn');
+
+    if (!gridBtn || !listBtn) return;
+
+    gridBtn.addEventListener('click', function () {
+      if (grid) grid.classList.add('active');
+      if (list) list.classList.remove('active');
+      gridBtn.classList.add('active');
+      listBtn.classList.remove('active');
+      toast('Grid view', 'grid-3x3-gap-fill');
+    });
+
+    listBtn.addEventListener('click', function () {
+      if (list) list.classList.add('active');
+      if (grid) grid.classList.remove('active');
+      listBtn.classList.add('active');
+      gridBtn.classList.remove('active');
+      toast('List view', 'list-ul');
+    });
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     MODAL
+  ────────────────────────────────────────────────────────────── */
+  var overlay  = document.getElementById('pfOverlay');
+  var leaflet  = null;
+  var pendLat  = NaN;
+  var pendLng  = NaN;
+
+  function openModal(card) {
+    var name    = card.dataset.name    || '—';
+    var loc     = card.dataset.loc     || '—';
+    var area    = card.dataset.area    || '—';
+    var soil    = card.dataset.soil    || '—';
+    var statut  = card.dataset.statut  || '—';
+    var date    = card.dataset.date    || '—';
+    var imgUrl  = card.dataset.imageUrl || '';
+    var lat     = parseFloat(card.dataset.lat);
+    var lng     = parseFloat(card.dataset.lng);
+    var cultRaw = card.dataset.cultures || '[]';
+    var cultures = [];
+    try { cultures = JSON.parse(cultRaw); } catch (e) { cultures = []; }
+
+    /* Banner image */
+    var img = document.getElementById('pfModalImg');
+    if (imgUrl) {
+      img.src = imgUrl;
+      img.style.display = 'block';
+    } else {
+      img.style.display = 'none';
+    }
+
+    /* Status badge */
+    var statusEl = document.getElementById('pfModalStatus');
+    statusEl.textContent = statut;
+    statusEl.className = 'pf-modal-status';
+    var cls = 'pf-badge-default';
+    if (statut === 'Available') cls = 'pf-badge-available';
+    else if (statut === 'Occupied') cls = 'pf-badge-occupied';
+    else if (statut === 'Resting')  cls = 'pf-badge-resting';
+    statusEl.classList.add(cls);
+
+    /* Header text */
+    document.getElementById('pfModalName').textContent    = name;
+    document.getElementById('pfModalLocSpan').textContent = loc;
+
+    /* Stats strip */
+    document.getElementById('pfStripArea').textContent  = area + ' ha';
+    document.getElementById('pfStripSoil').textContent  = soil;
+    document.getElementById('pfStripCrops').textContent = cultures.length;
+    document.getElementById('pfStripDate').textContent  = date;
+
+    /* Overview tab content */
+    document.getElementById('pfInfoName').textContent   = name;
+    document.getElementById('pfInfoLoc').textContent    = loc;
+    document.getElementById('pfInfoArea').textContent   = area + ' ha';
+    document.getElementById('pfInfoSoil').textContent   = soil;
+    document.getElementById('pfInfoStatut').textContent = statut;
+    document.getElementById('pfInfoDate').textContent   = date;
+
+    var gpsCard = document.getElementById('pfGpsCard');
+    if (!isNaN(lat) && !isNaN(lng)) {
+      gpsCard.style.display = 'flex';
+      document.getElementById('pfGpsCoords').textContent =
+        lat.toFixed(6) + ',  ' + lng.toFixed(6);
+    } else {
+      gpsCard.style.display = 'none';
+    }
+
+    /* Crops tab */
+    var cb = document.getElementById('pfCropsBadge');
+    if (cb) cb.textContent = cultures.length;
+    renderCrops(cultures);
+
+    /* Store coords for map init */
+    pendLat = lat;
+    pendLng = lng;
+
+    /* Reset tab – reset weather/soil panels to loading state */
+    document.getElementById('pfWxLoading').style.display    = 'block';
+    document.getElementById('pfWxNoCoords').style.display   = 'none';
+    document.getElementById('pfWxContent').style.display    = 'none';
+    document.getElementById('pfSoilLoading').style.display  = 'block';
+    document.getElementById('pfSoilNoCoords').style.display = 'none';
+    document.getElementById('pfSoilContent').style.display  = 'none';
+    activateTab('overview');
+
+    /* Nominatim reverse geocode (overview location enrichment) */
+    if (!isNaN(lat) && !isNaN(lng)) {
+      fetchNominatim(lat, lng).then(function (geo) {
+        var addr = geo && geo.address;
+        if (!addr) return;
+        var parts = [
+          addr.village || addr.town || addr.city || addr.county,
+          addr.state || addr.region,
+          addr.country
+        ].filter(Boolean);
+        var label = parts.join(', ');
+        var geocodeRow = document.getElementById('pfGeocodeRow');
+        var geocodeSpan = document.getElementById('pfGeocodeSpan');
+        if (geocodeRow && geocodeSpan && label) {
+          geocodeSpan.textContent = label;
+          geocodeRow.style.display = 'flex';
+        }
+      }).catch(function () {});
+    } else {
+      var gcRow = document.getElementById('pfGeocodeRow');
+      if (gcRow) gcRow.style.display = 'none';
+    }
+
+    /* Open */
+    overlay.classList.add('pf-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    overlay.classList.remove('pf-open');
+    document.body.style.overflow = '';
+    destroyMap();
+  }
+
+  function closeOnBackdrop(e) {
+    if (e.target === overlay) closeModal();
+  }
+
+  /* ── TABS ── */
+  function activateTab(name) {
+    document.querySelectorAll('.pf-tab-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.tab === name);
+    });
+    var panels = {
+      overview: 'pfTabOverview', map: 'pfTabMap',
+      crops: 'pfTabCrops', weather: 'pfTabWeather', soil: 'pfTabSoil'
+    };
+    Object.keys(panels).forEach(function (k) {
+      var p = document.getElementById(panels[k]);
+      if (p) p.classList.toggle('active', k === name);
+    });
+
+    if (name === 'map') {
+      destroyMap();
+      setTimeout(function () { initMap(pendLat, pendLng); }, 90);
+    } else {
+      destroyMap();
+    }
+    if (name === 'weather' && !isNaN(pendLat) && !isNaN(pendLng)) {
+      fetchAndRenderWeather(pendLat, pendLng);
+    }
+    if (name === 'soil' && !isNaN(pendLat) && !isNaN(pendLng)) {
+      fetchAndRenderSoil(pendLat, pendLng);
+    }
+    if (name === 'weather' && (isNaN(pendLat) || isNaN(pendLng))) {
+      document.getElementById('pfWxLoading').style.display  = 'none';
+      document.getElementById('pfWxNoCoords').style.display = 'block';
+      document.getElementById('pfWxContent').style.display  = 'none';
+    }
+    if (name === 'soil' && (isNaN(pendLat) || isNaN(pendLng))) {
+      document.getElementById('pfSoilLoading').style.display  = 'none';
+      document.getElementById('pfSoilNoCoords').style.display = 'block';
+      document.getElementById('pfSoilContent').style.display  = 'none';
+    }
+  }
+
+  /* ── LEAFLET MAP ── */
+  function initMap(lat, lng) {
+    var mapEl   = document.getElementById('pf-map');
+    var phEl    = document.getElementById('pfMapPlaceholder');
+    if (!mapEl || !phEl) return;
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+      mapEl.style.display = 'block';
+      phEl.style.display  = 'none';
+
+      leaflet = L.map('pf-map').setView([lat, lng], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+      }).addTo(leaflet);
+
+      var icon = L.divIcon({
+        className: '',
+        html: '<div style="' +
+          'width:30px;height:30px;' +
+          'background:linear-gradient(135deg,#166534,#16a34a);' +
+          'border:3px solid #fff;' +
+          'border-radius:50% 50% 50% 0;' +
+          'transform:rotate(-45deg);' +
+          'box-shadow:0 4px 14px rgba(22,101,52,.55)' +
+          '"></div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -34]
+      });
+
+      var label = document.getElementById('pfModalName');
+      var popupName = label ? label.textContent : 'Parcelle';
+
+      L.marker([lat, lng], { icon: icon })
+        .addTo(leaflet)
+        .bindPopup(
+          '<strong>' + popupName + '</strong><br>' +
+          '<small style="color:#64748b">' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '</small>'
+        )
+        .openPopup();
+
+      setTimeout(function () { leaflet.invalidateSize(); }, 200);
+    } else {
+      mapEl.style.display = 'none';
+      phEl.style.display  = 'flex';
+    }
+  }
+
+  function destroyMap() {
+    if (leaflet) { leaflet.remove(); leaflet = null; }
+  }
+
+  /* ── CROPS RENDER ── */
+  var cropIcons = ['🌾','🥦','🌽','🍅','🥬','🌿','🫑','🧅','🥕','🍆','🌻','🫐'];
+
+  function statusColor(s) {
+    var map = { Growing: '#16a34a', Harvested: '#d97706', Planned: '#0ea5e9', Failed: '#dc2626' };
+    return map[s] || '#64748b';
+  }
+
+  function renderCrops(cultures) {
+    var list  = document.getElementById('pfCropsList');
+    var empty = document.getElementById('pfNoCrops');
+    if (!list || !empty) return;
+
+    if (!cultures || cultures.length === 0) {
+      list.innerHTML    = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    var html = cultures.map(function (c, i) {
+      var prog = Math.min(100, Math.max(0, Number(c.progress) || 0));
+      var col  = statusColor(c.statut);
+      return (
+        '<div class="pf-culture-item">' +
+          '<div class="pf-culture-header">' +
+            '<div class="pf-culture-icon">' + cropIcons[i % cropIcons.length] + '</div>' +
+            '<div style="flex:1">' +
+              '<div class="pf-culture-name">' + (c.nom || 'Unknown Crop') + '</div>' +
+              '<div class="pf-culture-variety">' + (c.variete || '') + '</div>' +
+            '</div>' +
+            '<span style="background:' + col + ';color:#fff;padding:3px 11px;border-radius:999px;font-size:.69rem;font-weight:700;flex-shrink:0;">' +
+              (c.statut || 'N/A') +
+            '</span>' +
+          '</div>' +
+          '<div class="pf-culture-dates">' +
+            '<span><i class="bi bi-calendar-check" style="color:var(--pf-secondary);margin-right:4px;"></i>Planted: ' + (c.datePlantation || 'N/A') + '</span>' +
+            '<span><i class="bi bi-calendar2-x" style="color:#d97706;margin-right:4px;"></i>Harvest: ' + (c.dateRecolte || 'N/A') + '</span>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<div class="pf-progress-wrap" style="flex:1">' +
+              '<div class="pf-progress-bar" style="width:' + prog + '%"></div>' +
+            '</div>' +
+            '<span style="font-size:.74rem;font-weight:700;color:var(--pf-primary);min-width:36px;text-align:right;">' + prog + '%</span>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    list.innerHTML = html;
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     WMO WEATHER CODE LOOKUP
+  ────────────────────────────────────────────────────────────── */
+  var WMO_ICON = {
+    0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
+    45:'🌫️', 48:'🌫️',
+    51:'🌦️', 53:'🌦️', 55:'🌧️',
+    61:'🌧️', 63:'🌧️', 65:'🌧️',
+    71:'❄️', 73:'❄️', 75:'❄️', 77:'🌨️',
+    80:'🌦️', 81:'🌧️', 82:'⛈️',
+    85:'🌨️', 86:'🌨️',
+    95:'⛈️', 96:'⛈️', 99:'⛈️'
+  };
+  var WMO_DESC = {
+    0:'Clear sky', 1:'Mainly clear', 2:'Partly cloudy', 3:'Overcast',
+    45:'Foggy', 48:'Icy fog',
+    51:'Light drizzle', 53:'Drizzle', 55:'Heavy drizzle',
+    61:'Light rain', 63:'Moderate rain', 65:'Heavy rain',
+    71:'Light snow', 73:'Moderate snow', 75:'Heavy snow', 77:'Snow grains',
+    80:'Light showers', 81:'Showers', 82:'Violent showers',
+    85:'Light snow showers', 86:'Heavy snow showers',
+    95:'Thunderstorm', 96:'Thunderstorm + hail', 99:'Severe thunderstorm'
+  };
+  var DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  /* ──────────────────────────────────────────────────────────────
+     OPEN-METEO WEATHER + AGRO FETCH
+  ────────────────────────────────────────────────────────────── */
+  var wxFetchedFor = '';
+
+  function fetchAndRenderWeather(lat, lng) {
+    var key = lat.toFixed(4) + ',' + lng.toFixed(4);
+    if (wxFetchedFor === key) return; /* already loaded */
+
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude='  + lat + '&longitude=' + lng +
+      '&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m' +
+      '&hourly=soil_temperature_0cm,soil_moisture_0_to_1cm,et0_fao_evapotranspiration' +
+      '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code' +
+      '&forecast_days=7&timezone=auto';
+
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        wxFetchedFor = key;
+        renderWeather(data);
+      })
+      .catch(function () {
+        document.getElementById('pfWxLoading').innerHTML =
+          '<i class="bi bi-exclamation-circle" style="color:#ef4444;"></i>' +
+          '<span style="color:#ef4444;">Could not load weather data.</span>';
+      });
+  }
+
+  function renderWeather(d) {
+    var cur  = d.current   || {};
+    var daily = d.daily    || {};
+    var hourly = d.hourly  || {};
+
+    var temp  = cur.temperature_2m;
+    var code  = cur.weather_code;
+    var rain  = cur.precipitation;
+    var wind  = cur.wind_speed_10m;
+    var humid = cur.relative_humidity_2m;
+
+    /* Show content */
+    document.getElementById('pfWxLoading').style.display = 'none';
+    document.getElementById('pfWxContent').style.display = 'block';
+
+    /* Current card */
+    document.getElementById('pfWxIcon').textContent  = WMO_ICON[code]  || '🌡️';
+    document.getElementById('pfWxTemp').textContent  = (temp !== undefined ? temp.toFixed(1) : '—') + '°C';
+    document.getElementById('pfWxDesc').textContent  = WMO_DESC[code]  || 'Unknown';
+    document.getElementById('pfWxRain').textContent  = rain !== undefined ? rain.toFixed(1) : '—';
+    document.getElementById('pfWxWind').textContent  = wind !== undefined ? wind.toFixed(1) : '—';
+    document.getElementById('pfWxHumid').textContent = humid !== undefined ? humid : '—';
+
+    /* Alert logic */
+    var alertEl = document.getElementById('pfWxAlert');
+    alertEl.innerHTML = '';
+    if (temp !== undefined && temp <= 2) {
+      alertEl.innerHTML = '<div class="pf-weather-alert pf-alert-frost"><span class="pf-alert-icon">🥶</span><div><strong>Frost Risk</strong> — Temperature is at or below 2°C. Protect sensitive crops from frost damage.</div></div>';
+    } else if (rain !== undefined && rain === 0 && wind > 25) {
+      alertEl.innerHTML = '<div class="pf-weather-alert pf-alert-drought"><span class="pf-alert-icon">🌵</span><div><strong>Drought Conditions</strong> — No precipitation and high winds detected. Consider irrigation for your crops.</div></div>';
+    } else if (code >= 95) {
+      alertEl.innerHTML = '<div class="pf-weather-alert pf-alert-storm"><span class="pf-alert-icon">⛈️</span><div><strong>Storm Alert</strong> — Thunderstorm conditions detected. Avoid field operations and secure equipment.</div></div>';
+    } else {
+      alertEl.innerHTML = '<div class="pf-weather-alert pf-alert-good"><span class="pf-alert-icon">✅</span><div><strong>Good Conditions</strong> — No extreme weather events detected for this parcel today.</div></div>';
+    }
+
+    /* Agro metrics — use first hourly value for today */
+    var soilT  = hourly.soil_temperature_0cm  && hourly.soil_temperature_0cm[0];
+    var soilM  = hourly.soil_moisture_0_to_1cm && hourly.soil_moisture_0_to_1cm[0];
+    var eto    = hourly.et0_fao_evapotranspiration && hourly.et0_fao_evapotranspiration[0];
+
+    document.getElementById('pfSoilTemp').textContent  = soilT !== undefined && soilT !== null ? soilT.toFixed(1) + '°C' : 'N/A';
+    document.getElementById('pfSoilMoist').textContent = soilM !== undefined && soilM !== null ? (soilM * 100).toFixed(0) + '%' : 'N/A';
+    document.getElementById('pfEtO').textContent       = eto   !== undefined && eto   !== null ? eto.toFixed(2) + ' mm' : 'N/A';
+
+    /* 7-day forecast */
+    var grid   = document.getElementById('pfForecastGrid');
+    var dates  = daily.time             || [];
+    var codes  = daily.weather_code     || [];
+    var maxes  = daily.temperature_2m_max || [];
+    var mins   = daily.temperature_2m_min || [];
+    var rains  = daily.precipitation_sum  || [];
+    var maxRain = Math.max.apply(null, rains.map(function(v){ return v||0; })) || 1;
+
+    grid.innerHTML = dates.map(function (dt, i) {
+      var d   = new Date(dt + 'T12:00:00');
+      var isToday = i === 0;
+      var icon    = WMO_ICON[codes[i]] || '🌡️';
+      var mx      = maxes[i] !== undefined ? maxes[i].toFixed(0) : '—';
+      var mn      = mins[i]  !== undefined ? mins[i].toFixed(0)  : '—';
+      var rPct    = rains[i] ? Math.round((rains[i] / maxRain) * 100) : 0;
+      return '<div class="pf-fc-day' + (isToday ? ' pf-fc-today' : '') + '">' +
+        '<div class="pf-fc-name">' + (isToday ? 'Today' : DAY_NAMES[d.getDay()]) + '</div>' +
+        '<div class="pf-fc-icon">' + icon + '</div>' +
+        '<div class="pf-fc-max">' + mx + '°</div>' +
+        '<div class="pf-fc-min">' + mn + '°</div>' +
+        '<div class="pf-fc-rain"><div class="pf-fc-rain-fill" style="width:' + rPct + '%"></div></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     SOILGRIDS FETCH
+  ────────────────────────────────────────────────────────────── */
+  var soilFetchedFor = '';
+
+  function fetchAndRenderSoil(lat, lng) {
+    var key = lat.toFixed(4) + ',' + lng.toFixed(4);
+    if (soilFetchedFor === key) return;
+
+    var url = 'https://rest.isric.org/soilgrids/v2.0/properties/query' +
+      '?lon=' + lng + '&lat=' + lat +
+      '&property=phh2o&property=clay&property=sand&property=ocd' +
+      '&depth=0-5cm&value=mean';
+
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        soilFetchedFor = key;
+        renderSoil(data);
+      })
+      .catch(function () {
+        document.getElementById('pfSoilLoading').innerHTML =
+          '<i class="bi bi-exclamation-circle" style="color:#ef4444;"></i>' +
+          '<span style="color:#ef4444;">Could not load soil data. Try again later.</span>';
+      });
+  }
+
+  function renderSoil(data) {
+    document.getElementById('pfSoilLoading').style.display  = 'none';
+    document.getElementById('pfSoilContent').style.display  = 'block';
+
+    /* Parse SoilGrids response */
+    var props = {};
+    if (data && data.properties && data.properties.layers) {
+      data.properties.layers.forEach(function (layer) {
+        var name  = layer.name;
+        var depth = layer.depths && layer.depths[0];
+        var val   = depth && depth.values && depth.values.mean;
+        props[name] = val;
+      });
+    }
+
+    /* pH: SoilGrids returns pH * 10 */
+    var phRaw = props['phh2o'];
+    var ph    = phRaw !== undefined && phRaw !== null ? phRaw / 10 : null;
+    /* Clay: g/kg -> % */
+    var clayRaw = props['clay'];
+    var clay    = clayRaw !== undefined && clayRaw !== null ? clayRaw / 10 : null;
+    /* Sand: g/kg -> % */
+    var sandRaw = props['sand'];
+    var sand    = sandRaw !== undefined && sandRaw !== null ? sandRaw / 10 : null;
+    /* OCD: g/kg (organic carbon density) */
+    var ocd  = props['ocd'];
+
+    /* pH gauge */
+    if (ph !== null) {
+      var pct = Math.min(100, Math.max(0, (ph / 14) * 100));
+      document.getElementById('pfPhPointer').style.left = pct + '%';
+      document.getElementById('pfPhPointer').textContent = ph.toFixed(1);
+
+      var phInterp, phColor;
+      if      (ph < 4.5) { phInterp = '⚠️ Strongly acidic — most crops will struggle. Lime application recommended.'; phColor = '#fef2f2'; }
+      else if (ph < 5.5) { phInterp = '⚠️ Acidic — suitable for blueberries, potatoes. Lime may help other crops.'; phColor = '#fff7ed'; }
+      else if (ph < 6.5) { phInterp = '✅ Slightly acidic — ideal for most vegetables, fruits and cereals.'; phColor = '#f0fdf4'; }
+      else if (ph < 7.5) { phInterp = '✅ Neutral — optimal range for the widest variety of crops.'; phColor = '#f0fdf4'; }
+      else if (ph < 8.5) { phInterp = '⚠️ Alkaline — suitable for wheat, barley. May limit phosphorus availability.'; phColor = '#eff6ff'; }
+      else               { phInterp = '⚠️ Strongly alkaline — limited crop options. Sulfur amendment may help.'; phColor = '#fdf4ff'; }
+
+      var interpEl = document.getElementById('pfPhInterpret');
+      interpEl.textContent = phInterp;
+      interpEl.style.background = phColor;
+      interpEl.style.color = '#374151';
+    }
+
+    /* Clay bar */
+    if (clay !== null) {
+      document.getElementById('pfClayStat').textContent = clay.toFixed(1) + '%';
+      setTimeout(function () {
+        document.getElementById('pfClayBar').style.width = Math.min(100, clay) + '%';
+      }, 200);
+      document.getElementById('pfClayHint').textContent =
+        clay < 15  ? 'Low clay — sandy-loam texture, drains quickly' :
+        clay < 35  ? 'Moderate clay — good water retention and structure' :
+                     'High clay — may compact; needs good drainage management';
+    }
+
+    /* Sand bar */
+    if (sand !== null) {
+      document.getElementById('pfSandStat').textContent = sand.toFixed(1) + '%';
+      setTimeout(function () {
+        document.getElementById('pfSandBar').style.width = Math.min(100, sand) + '%';
+      }, 200);
+      document.getElementById('pfSandHint').textContent =
+        sand > 70 ? 'Sandy soil — low water/nutrient retention, irrigate frequently' :
+        sand > 40 ? 'Loamy sand — reasonable drainage and workability' :
+                    'Low sand content — soil may be heavier and slower-draining';
+    }
+
+    /* Organic carbon */
+    if (ocd !== null && ocd !== undefined) {
+      document.getElementById('pfOcStat').textContent = ocd.toFixed(1) + ' g/kg';
+      setTimeout(function () {
+        document.getElementById('pfOcBar').style.width = Math.min(100, (ocd / 30) * 100) + '%';
+      }, 200);
+      document.getElementById('pfOcHint').textContent =
+        ocd < 5  ? 'Very low organic matter — compost application strongly recommended' :
+        ocd < 15 ? 'Moderate organic matter — suitable for most crops' :
+                   'High organic matter — excellent soil health indicator';
+    }
+
+    /* Summary card */
+    var summaryTitle, summaryText, summaryIcon, summaryBg;
+    if (ph !== null && clay !== null && sand !== null) {
+      if (ph >= 5.5 && ph <= 7.5 && clay >= 15 && clay <= 35) {
+        summaryTitle = 'Good Agricultural Soil'; summaryIcon = '🌱';
+        summaryText  = 'This parcel has a well-balanced soil profile suitable for a wide range of crops including cereals, vegetables, and legumes.';
+        summaryBg    = 'linear-gradient(135deg,#f0fdf4,#dcfce7)';
+      } else if (sand > 70) {
+        summaryTitle = 'Sandy Soil'; summaryIcon = '🏖️';
+        summaryText  = 'High sand content means good drainage but low water retention. Best suited for root vegetables. Consider drip irrigation and organic matter amendments.';
+        summaryBg    = 'linear-gradient(135deg,#fffbeb,#fef3c7)';
+      } else if (clay > 40) {
+        summaryTitle = 'Heavy Clay Soil'; summaryIcon = '🪨';
+        summaryText  = 'High clay content provides good nutrient retention but may cause waterlogging. Avoid working when wet. Benefits from organic matter and raised beds.';
+        summaryBg    = 'linear-gradient(135deg,#fff7ed,#fed7aa)';
+      } else {
+        summaryTitle = 'Mixed Soil Profile'; summaryIcon = '🌿';
+        summaryText  = 'Soil properties are mixed. Review pH and nutrient levels carefully before selecting crops. Amendments may improve productivity.';
+        summaryBg    = 'linear-gradient(135deg,#f9fafb,#f3f4f6)';
+      }
+    } else {
+      summaryTitle = 'Partial Data'; summaryIcon = '📊';
+      summaryText  = 'Some soil properties could not be retrieved for this location. Try again or check the GPS coordinates.';
+      summaryBg    = 'linear-gradient(135deg,#f9fafb,#f3f4f6)';
+    }
+    document.getElementById('pfSoilSummaryIcon').textContent  = summaryIcon;
+    document.getElementById('pfSoilSummaryTitle').textContent = summaryTitle;
+    document.getElementById('pfSoilSummaryText').textContent  = summaryText;
+    document.getElementById('pfSoilSummaryCard').style.background = summaryBg;
+    document.getElementById('pfSoilSummaryCard').style.border = '1px solid #e5e7eb';
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     NOMINATIM REVERSE GEOCODING
+  ────────────────────────────────────────────────────────────── */
+  function fetchNominatim(lat, lng) {
+    return fetch(
+      'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json',
+      { headers: { 'Accept-Language': 'en' } }
+    ).then(function (r) { return r.json(); });
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     INIT
+  ────────────────────────────────────────────────────────────── */
+  function init() {
+    initParticles();
+    initCounters();
+    initFilters();
+    initViewToggle();
+
+    /* Modal close button */
+    var closeBtn = document.getElementById('pfModalClose');
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    /* Tab buttons */
+    document.querySelectorAll('.pf-tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        activateTab(this.dataset.tab);
+      });
+    });
+
+    /* Keyboard ESC */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay && overlay.classList.contains('pf-open')) {
+        closeModal();
+      }
+    });
+  }
+
+  /* ── Public API ── */
+  return {
+    openModal:       openModal,
+    closeOnBackdrop: closeOnBackdrop,
+    init:            init
+  };
+
+})();
+
+document.addEventListener('DOMContentLoaded', PF.init);
+</script>
+{% endblock %}

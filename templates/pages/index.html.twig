@@ -294,7 +294,7 @@
             {% for produit in produits %}
             <div class="col-lg-3 col-md-4 col-sm-6 product-item" data-category="{{ produit.categorie ? produit.categorie.id : 0 }}" data-aos="fade-up" data-aos-delay="100">
               <div class="product-card" style="border: 2px solid #e8f5e8; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 10px 30px rgba(45, 80, 22, 0.12); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; backdrop-filter: blur(10px); height: 100%;" onclick="openProductDetails({{ produit.idProduit }})">>>
-                
+
                 <!-- Organic certification badge -->
                 <div style="position: absolute; top: 15px; left: 15px; z-index: 10;">
                   <span style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 8px 16px; border-radius: 25px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); backdrop-filter: blur(10px);">
@@ -321,7 +321,7 @@
                       <span class="material-symbols-outlined" style="font-size: 100px; color: rgba(255,255,255,0.3);">package_2</span>
                     </div>
                   {% endif %}
-                  
+
                   <!-- Overlay gradient -->
                   <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.5), transparent); pointer-events: none;"></div>
                 </div>
@@ -329,7 +329,7 @@
                 <div class="product-body" style="padding: 28px;">
                   <div style="margin-bottom: 18px;">
                     <h3 style="font-size: 20px; font-weight: 900; color: #2d5016; margin-bottom: 10px; line-height: 1.2; min-height: 50px;">{{ produit.nom }}</h3>
-                    
+
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                       <span class="material-symbols-outlined" style="font-size: 18px; color: #10b981;">category</span>
                       <span style="font-size: 14px; color: #6b7280; font-weight: 600;">{{ produit.categorie ? produit.categorie.nom : 'Uncategorized' }}</span>
@@ -349,7 +349,7 @@
                       {{ qualiteLabelMap[produit.qualite]|default(produit.qualite) }}
                     </span>
                     {% endif %}
-                    
+
                     <span style="background: {{ produit.quantiteStock < 20 ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; box-shadow: {{ produit.quantiteStock < 20 ? '0 2px 10px rgba(239, 68, 68, 0.3)' : '0 2px 10px rgba(16, 185, 129, 0.3)' }};">
                       <span class="material-symbols-outlined" style="font-size: 14px;">inventory_2</span>
                       {{ produit.quantiteStock }} units
@@ -362,7 +362,7 @@
                       <span style="font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); background-clip: text; -webkit-background-clip: text; color: transparent;">{{ produit.prixUnitaire }}</span>
                       <small style="font-size: 14px; font-weight: 700; color: #6b7280; margin-left: 4px;">DT</small>
                     </div>
-                    
+
                     <div style="display: flex; gap: 8px;">
                       <button onclick="openProductDetails({{ produit.idProduit }}); event.stopPropagation();" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
@@ -489,7 +489,7 @@
           <div class="row g-5">
             <div class="col-md-5">
               <div style="border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); height: 500px; display: flex; align-items: center; justify-content: center; position: relative; border: 3px solid #e8f5e8; box-shadow: 0 15px 40px rgba(45, 80, 22, 0.2);">
-                ${product.image ? 
+                ${product.image ?
                   `<img src="${product.image}" alt="${product.nom}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">` :
                   `<div style="text-align: center; color: rgba(255,255,255,0.6);">
                     <span class="material-symbols-outlined" style="font-size: 100px; margin-bottom: 20px; display: block; color: rgba(255,255,255,0.3);">agriculture</span>
@@ -506,7 +506,7 @@
             <div class="col-md-7">
               <div style="padding-right: 10px;">
                 <h3 style="font-size: 40px; font-weight: 900; background: linear-gradient(135deg, #2d5016 0%, #16a34a 100%); background-clip: text; -webkit-background-clip: text; color: transparent; margin-bottom: 24px; line-height: 1.2;">${product.nom}</h3>
-                
+
                 <div style="display: flex; gap: 12px; margin-bottom: 35px; flex-wrap: wrap;">
                   <span style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px 20px; border-radius: 30px; font-size: 15px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); backdrop-filter: blur(10px);">
                     <span class="material-symbols-outlined" style="font-size: 22px;">spa</span>
@@ -648,7 +648,7 @@
             e.preventDefault();
             const categoryId = this.dataset.category;
             filterByCategory(categoryId);
-            
+
             // Update active button styling
             categoryFilters.forEach(btn => {
               if (btn === this) {
@@ -713,7 +713,7 @@
           });
 
           const result = await response.json();
-          
+
           if (result.success) {
             showNotification('Product added to cart!', 'success');
             updateCartBadge(result.total_items);
@@ -779,7 +779,7 @@
           });
 
           const result = await response.json();
-          
+
           if (result.success) {
             showNotification(`Order #${result.order_id} created successfully! Total: ${result.total} DT`, 'success');
             closeOrderForm();
@@ -817,7 +817,7 @@
       function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         const bgColor = type === 'success' ? '#10b981' : '#ef4444';
-        
+
         notification.style.cssText = `
           position: fixed;
           top: 20px;
@@ -831,7 +831,7 @@
           box-shadow: 0 4px 15px rgba(0,0,0,0.2);
           animation: slideIn 0.3s ease-out;
         `;
-        
+
         notification.textContent = message;
         document.body.appendChild(notification);
 
@@ -871,7 +871,7 @@
             min-width: 20px;
             text-align: center;
           `;
-          
+
           // Attach badge to cart link in header (if it exists)
           const cartLink = document.querySelector('a[href*="panier"]');
           if (cartLink) {
@@ -879,7 +879,7 @@
             cartLink.appendChild(badge);
           }
         }
-        
+
         if (badge) {
           badge.textContent = count;
           badge.style.display = count > 0 ? 'block' : 'none';
@@ -920,7 +920,7 @@
       });
     </script>
 
-    
+
 
     <!-- About Section -->
     <section id="about" class="about section">
@@ -971,7 +971,7 @@
       </div>
     </section><!-- /About Section -->
 
-   
+
 
     <!-- About 3 Section -->
     <section id="about-3" class="about-3 section">
@@ -1563,5 +1563,3 @@
       </div>
     </section><!-- /Call To Action Section -->
 {% endblock %}
-
-
