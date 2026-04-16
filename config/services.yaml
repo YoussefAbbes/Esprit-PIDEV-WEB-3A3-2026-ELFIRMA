@@ -5,6 +5,16 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     app.maptiler_api_key: '%env(MAPTILER_API_KEY)%'
+    rag.python_path: '%env(string:RAG_PYTHON_PATH)%'
+    rag.chat_engine_path: '%env(string:RAG_CHAT_ENGINE_PATH)%'
+    rag.default_top_k: '%env(int:RAG_DEFAULT_TOP_K)%'
+    rag.process_timeout: '%env(float:RAG_PROCESS_TIMEOUT)%'
+    rag.enable_llm: '%env(bool:RAG_ENABLE_LLM)%'
+    rag.llm_provider: '%env(string:RAG_LLM_PROVIDER)%'
+    rag.llm_model: '%env(string:RAG_LLM_MODEL)%'
+    rag.llm_timeout_seconds: '%env(float:RAG_LLM_TIMEOUT_SECONDS)%'
+    rag.llm_max_output_tokens: '%env(int:RAG_LLM_MAX_OUTPUT_TOKENS)%'
+    rag.gemini_api_key: '%env(string:GEMINI_API_KEY)%'
 
 services:
     # default configuration for services in *this* file

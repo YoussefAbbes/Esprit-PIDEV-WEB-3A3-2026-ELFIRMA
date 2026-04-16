@@ -155,6 +155,12 @@ final class ElfirmaController extends AbstractController
         return $this->renderLivestockAnimalManagementView('map', $request, $livestockRepository, $animalRepository);
     }
 
+    #[Route('/elfirma/chatbot', name: 'elfirma_chatbot', methods: ['GET'])]
+    public function chatbotPage(): Response
+    {
+        return $this->render('elfirma/Livestock&Animal Management/chatbot.html.twig');
+    }
+
     #[Route(
         '/elfirma/{module}',
         name: 'elfirma_page',

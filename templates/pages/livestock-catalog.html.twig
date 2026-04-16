@@ -1,0 +1,795 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Livestock Catalog - EL FIRMA{% endblock %}
+{% block body_class %}livestock-catalog-page{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .livestock-catalog-page {
+      --catalog-soft: #f6faf7;
+      --catalog-line: color-mix(in srgb, var(--default-color), transparent 85%);
+      --catalog-card-shadow: 0 14px 34px color-mix(in srgb, #102f20, transparent 90%);
+    }
+
+    .livestock-catalog-page .page-title {
+      padding-top: 95px;
+      padding-bottom: 95px;
+    }
+
+    .catalog-intro .intro-shell {
+      background: linear-gradient(135deg, #ffffff, var(--catalog-soft));
+      border: 1px solid var(--catalog-line);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--catalog-card-shadow);
+    }
+
+    .catalog-intro .intro-visual {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--catalog-line);
+      box-shadow: var(--catalog-card-shadow);
+      min-height: 100%;
+    }
+
+    .catalog-intro .intro-visual img {
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .catalog-intro .content-title {
+      color: var(--accent-color);
+    }
+
+    .catalog-intro .kpi-band {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .catalog-intro .kpi-card {
+      border: 1px solid var(--catalog-line);
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 12px 14px;
+    }
+
+    .catalog-intro .kpi-card span {
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 42%);
+      font-weight: 700;
+    }
+
+    .catalog-intro .kpi-card strong {
+      display: block;
+      font-family: var(--heading-font);
+      font-size: 34px;
+      line-height: 1;
+      margin-top: 6px;
+      color: var(--heading-color);
+    }
+
+    .catalog-workbench {
+      background: #fbfdfb;
+    }
+
+    .catalog-workbench .section-title {
+      padding-bottom: 34px;
+    }
+
+    .catalog-workbench .section-title h2 {
+      color: var(--accent-color);
+      font-size: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    .catalog-workbench .content {
+      padding: 0;
+    }
+
+    .catalog-sidebar,
+    .catalog-detail {
+      background: #ffffff;
+      border: 1px solid var(--catalog-line);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: var(--catalog-card-shadow);
+      height: 100%;
+    }
+
+    .catalog-sidebar h3,
+    .catalog-detail h3 {
+      margin: 0;
+      font-size: 31px;
+      color: var(--heading-color);
+    }
+
+    .catalog-overline {
+      margin: 0 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 45%);
+      font-weight: 700;
+    }
+
+    .catalog-input-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--heading-color);
+    }
+
+    .catalog-input,
+    .catalog-select {
+      width: 100%;
+      border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%);
+      border-radius: 9px;
+      padding: 10px 12px;
+      font-size: 15px;
+      color: var(--default-color);
+      background: #ffffff;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .catalog-input:focus,
+    .catalog-select:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--accent-color), transparent 35%);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color), transparent 85%);
+    }
+
+    .catalog-error {
+      margin-top: 8px;
+      margin-bottom: 0;
+      color: #bd2a2a;
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .catalog-error.is-visible {
+      display: block;
+    }
+
+    .catalog-list-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    .catalog-list-head h4 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--heading-color);
+    }
+
+    .catalog-list-head span {
+      font-size: 13px;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--default-color), transparent 42%);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .catalog-list {
+      display: grid;
+      gap: 10px;
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .catalog-entry {
+      width: 100%;
+      border: 1px solid var(--catalog-line);
+      border-radius: 10px;
+      background: #ffffff;
+      text-align: left;
+      padding: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .catalog-entry:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--accent-color), transparent 30%);
+      box-shadow: 0 10px 20px color-mix(in srgb, #102f20, transparent 88%);
+    }
+
+    .catalog-entry.is-active {
+      border-color: color-mix(in srgb, var(--accent-color), transparent 20%);
+      box-shadow: inset 3px 0 0 var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), #ffffff 95%);
+    }
+
+    .entry-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .entry-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .entry-number {
+      font-size: 13px;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--default-color), transparent 55%);
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .entry-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--heading-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .entry-sub {
+      display: block;
+      margin-top: 6px;
+      color: color-mix(in srgb, var(--default-color), transparent 30%);
+      font-size: 14px;
+    }
+
+    .entry-chip,
+    .catalog-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 75%);
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--accent-color), #000000 22%);
+      background: color-mix(in srgb, var(--accent-color), #ffffff 94%);
+      white-space: nowrap;
+    }
+
+    .catalog-empty {
+      margin: 12px 0 0;
+      border: 1px dashed var(--catalog-line);
+      border-radius: 10px;
+      padding: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 40%);
+      font-weight: 600;
+      display: none;
+    }
+
+    .catalog-empty.is-visible {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .detail-state {
+      margin-top: 6px;
+      margin-bottom: 0;
+      color: color-mix(in srgb, var(--default-color), transparent 25%);
+      font-size: 16px;
+    }
+
+    .detail-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .detail-kpi {
+      border: 1px solid var(--catalog-line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .detail-kpi p {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 42%);
+      font-weight: 700;
+    }
+
+    .detail-kpi strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 32px;
+      line-height: 1;
+      color: var(--heading-color);
+      font-family: var(--heading-font);
+    }
+
+    .season-grid .service-item {
+      border: 1px solid var(--catalog-line);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: none;
+      background: #ffffff;
+      height: 100%;
+    }
+
+    .season-grid .service-item .number {
+      right: 14px;
+      top: 14px;
+      color: color-mix(in srgb, var(--default-color), transparent 78%);
+      font-weight: 600;
+    }
+
+    .season-grid .service-item .service-item-content .service-heading {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: var(--heading-color);
+    }
+
+    .season-grid .service-item .service-item-content p {
+      margin-bottom: 0;
+      color: color-mix(in srgb, var(--default-color), transparent 20%);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 991px) {
+      .catalog-intro .intro-shell {
+        padding: 20px;
+      }
+
+      .catalog-intro .kpi-band,
+      .detail-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 575px) {
+      .catalog-intro .kpi-band,
+      .detail-kpis {
+        grid-template-columns: 1fr;
+      }
+
+      .catalog-sidebar,
+      .catalog-detail {
+        padding: 16px;
+      }
+
+      .catalog-sidebar h3,
+      .catalog-detail h3 {
+        font-size: 27px;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
+    <div class="container position-relative">
+      <h1>Livestock Catalog</h1>
+      <p>A premium client view inspired by the Home and About visual identity of EL FIRMA.</p>
+      <nav class="breadcrumbs">
+        <ol>
+          <li><a href="{{ path('app_home') }}">Home</a></li>
+          <li class="current">Livestock Catalog</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <section class="about-3 section catalog-intro">
+    <div class="container">
+      <div class="intro-shell">
+        <div class="row gy-4 justify-content-between align-items-center">
+          <div class="col-lg-6 order-lg-2" data-aos="zoom-out">
+            <div class="intro-visual">
+              <img src="{{ asset('assets/img/img_sq_1.jpg') }}" alt="Livestock operations overview" class="img-fluid">
+            </div>
+          </div>
+          <div class="col-lg-5 order-lg-1" data-aos="fade-up" data-aos-delay="120">
+            <h2 class="content-title mb-4">Curated livestock intelligence for clients</h2>
+            <p class="mb-4">
+              This catalog transforms operational records into a polished narrative: capacity, occupancy, productivity, and seasonal strategy in one coherent experience.
+            </p>
+            <ul class="list-unstyled list-check">
+              <li>Quick filtering by type and state</li>
+              <li>Live occupancy and production insights</li>
+              <li>Season-by-season strategic messaging</li>
+            </ul>
+
+            <div class="kpi-band" data-aos="fade-up" data-aos-delay="180">
+              <article class="kpi-card">
+                <span>Total livestock</span>
+                <strong>{{ catalog_summary.total_livestock }}</strong>
+              </article>
+              <article class="kpi-card">
+                <span>Total capacity</span>
+                <strong>{{ catalog_summary.total_capacity }}</strong>
+              </article>
+              <article class="kpi-card">
+                <span>Total animals</span>
+                <strong>{{ catalog_summary.total_animals }}</strong>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section catalog-workbench">
+    <div class="container section-title" data-aos="fade-up">
+      <h2>Livestock Explorer</h2>
+      <p>Structured like Home and About, built for modern client navigation</p>
+    </div>
+
+    <div class="content">
+      <div class="container">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-4" data-aos="fade-right" data-aos-delay="90">
+            <aside class="catalog-sidebar">
+              <p class="catalog-overline">Search and filters</p>
+              <h3>Catalog list</h3>
+
+              <div class="mt-3">
+                <label for="livestock-search" class="catalog-input-label">Search</label>
+                <input id="livestock-search" class="catalog-input" type="text" maxlength="60" pattern="[A-Za-z0-9À-ÖØ-öø-ÿ\s'\-]+" title="Use letters, numbers, spaces, apostrophes, or hyphens only" placeholder="Search livestock...">
+                <p id="livestock-search-error" class="catalog-error">Search can contain letters, numbers, spaces, apostrophes, and hyphens only.</p>
+              </div>
+
+              <div class="row g-2 mt-2">
+                <div class="col-12">
+                  <label for="livestock-type" class="catalog-input-label">Type</label>
+                  <select id="livestock-type" class="catalog-select">
+                    <option value="">All type</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="livestock-state" class="catalog-input-label">State</label>
+                  <select id="livestock-state" class="catalog-select">
+                    <option value="">All state</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="catalog-list-head">
+                <h4>Livestock</h4>
+                <span id="livestock-count">0 items</span>
+              </div>
+
+              <div id="livestock-list" class="catalog-list" aria-live="polite"></div>
+              <p id="livestock-empty" class="catalog-empty">No livestock matches the current filters.</p>
+            </aside>
+          </div>
+
+          <div class="col-lg-8" data-aos="fade-left" data-aos-delay="130">
+            <article class="catalog-detail">
+              <div class="detail-header">
+                <div>
+                  <p class="catalog-overline">Selected livestock</p>
+                  <h3 id="detail-title">Select a livestock</h3>
+                  <p id="detail-state" class="detail-state">State: --</p>
+                </div>
+                <span id="detail-production" class="catalog-chip"><i class="bi bi-flower1"></i> Production: --</span>
+              </div>
+
+              <div class="detail-kpis">
+                <article class="detail-kpi">
+                  <p>Capacity</p>
+                  <strong id="detail-capacity">--</strong>
+                </article>
+                <article class="detail-kpi">
+                  <p>Animals</p>
+                  <strong id="detail-animals">--</strong>
+                </article>
+                <article class="detail-kpi">
+                  <p>Occupancy</p>
+                  <strong id="detail-occupancy">--</strong>
+                </article>
+              </div>
+
+              <div class="row g-3 season-grid">
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">01</span>
+                    <div class="service-item-content">
+                      <h4 class="service-heading">Autumn plan</h4>
+                      <p id="season-autumn">Select a livestock to display strategic autumn planning.</p>
+                    </div>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">02</span>
+                    <div class="service-item-content">
+                      <h4 class="service-heading">Winter stability</h4>
+                      <p id="season-winter">Select a livestock to display winter resilience strategy.</p>
+                    </div>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">03</span>
+                    <div class="service-item-content">
+                      <h4 class="service-heading">Spring growth</h4>
+                      <p id="season-spring">Select a livestock to display spring growth strategy.</p>
+                    </div>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">04</span>
+                    <div class="service-item-content">
+                      <h4 class="service-heading">Summer output</h4>
+                      <p id="season-summer">Select a livestock to display summer productivity strategy.</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function () {
+      const livestockData = {{ livestocks|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+      if (!Array.isArray(livestockData)) {
+        return;
+      }
+
+      const searchInput = document.getElementById('livestock-search');
+      const searchError = document.getElementById('livestock-search-error');
+      const typeFilter = document.getElementById('livestock-type');
+      const stateFilter = document.getElementById('livestock-state');
+      const listNode = document.getElementById('livestock-list');
+      const countNode = document.getElementById('livestock-count');
+      const emptyNode = document.getElementById('livestock-empty');
+
+      const detailTitle = document.getElementById('detail-title');
+      const detailState = document.getElementById('detail-state');
+      const detailProduction = document.getElementById('detail-production');
+      const detailCapacity = document.getElementById('detail-capacity');
+      const detailAnimals = document.getElementById('detail-animals');
+      const detailOccupancy = document.getElementById('detail-occupancy');
+
+      const seasonAutumn = document.getElementById('season-autumn');
+      const seasonWinter = document.getElementById('season-winter');
+      const seasonSpring = document.getElementById('season-spring');
+      const seasonSummer = document.getElementById('season-summer');
+
+      const searchPattern = /^[A-Za-z0-9À-ÖØ-öø-ÿ\s'\-]*$/;
+      let activeId = livestockData.length > 0 ? Number(livestockData[0].id_elevage || 0) : null;
+
+      const normalize = (value) => String(value || '').trim().toLowerCase();
+
+      const occupancyRate = (item) => {
+        const capacity = Number(item.capacite || 0);
+        const animals = Number(item.nombre_animaux || 0);
+        if (capacity <= 0) {
+          return 0;
+        }
+
+        return (animals / capacity) * 100;
+      };
+
+      const formatSeasonMessage = (season, item, occupancyText) => {
+        const type = item.type_elevage || 'Livestock';
+        const production = item.production || 'production';
+        const state = item.etat_elevage || 'Unknown state';
+
+        if (season === 'autumn') {
+          return 'Autumn reserves for ' + type + ' are tuned to secure ' + production + ' while occupancy remains around ' + occupancyText + '. Current state: ' + state + '.';
+        }
+        if (season === 'winter') {
+          return 'Winter protocol keeps ' + type + ' stable with controlled ventilation, thermal bedding, and continuity of ' + production + ' output.';
+        }
+        if (season === 'spring') {
+          return 'Spring cycle boosts resilience through selective nutrition and paddock rotation to maintain healthy growth for this operation.';
+        }
+        return 'Summer plan optimizes hydration and heat protection so ' + production + ' output stays predictable through high temperatures.';
+      };
+
+      const renderDetail = (item) => {
+        if (!item) {
+          detailTitle.textContent = 'Select a livestock';
+          detailState.textContent = 'State: --';
+          detailProduction.innerHTML = '<i class="bi bi-flower1"></i> Production: --';
+          detailCapacity.textContent = '--';
+          detailAnimals.textContent = '--';
+          detailOccupancy.textContent = '--';
+          seasonAutumn.textContent = 'Select a livestock to display strategic autumn planning.';
+          seasonWinter.textContent = 'Select a livestock to display winter resilience strategy.';
+          seasonSpring.textContent = 'Select a livestock to display spring growth strategy.';
+          seasonSummer.textContent = 'Select a livestock to display summer productivity strategy.';
+          return;
+        }
+
+        const capacity = Number(item.capacite || 0);
+        const animals = Number(item.nombre_animaux || 0);
+        const occupancy = occupancyRate(item);
+        const occupancyText = occupancy.toFixed(1) + '%';
+
+        detailTitle.textContent = item.type_elevage || 'Livestock';
+        detailState.textContent = 'State: ' + (item.etat_elevage || 'Unknown');
+        detailProduction.innerHTML = '<i class="bi bi-flower1"></i> Production: ' + (item.production || 'Not specified');
+        detailCapacity.textContent = String(capacity);
+        detailAnimals.textContent = String(animals);
+        detailOccupancy.textContent = occupancyText;
+
+        seasonAutumn.textContent = formatSeasonMessage('autumn', item, occupancyText);
+        seasonWinter.textContent = formatSeasonMessage('winter', item, occupancyText);
+        seasonSpring.textContent = formatSeasonMessage('spring', item, occupancyText);
+        seasonSummer.textContent = formatSeasonMessage('summer', item, occupancyText);
+      };
+
+      const filteredData = () => {
+        const term = normalize(searchInput.value);
+        const type = normalize(typeFilter.value);
+        const state = normalize(stateFilter.value);
+
+        return livestockData.filter((item) => {
+          const itemType = normalize(item.type_elevage);
+          const itemState = normalize(item.etat_elevage);
+          const itemProduction = normalize(item.production);
+          const itemId = normalize(item.id_elevage);
+          const searchable = [itemType, itemState, itemProduction, itemId].join(' ');
+
+          const matchesTerm = term === '' || searchable.includes(term);
+          const matchesType = type === '' || itemType === type;
+          const matchesState = state === '' || itemState === state;
+
+          return matchesTerm && matchesType && matchesState;
+        });
+      };
+
+      const validateSearch = () => {
+        const value = String(searchInput.value || '').trim();
+        const isValid = searchPattern.test(value);
+
+        console.assert(isValid || value === '', 'Invalid livestock search term.');
+
+        if (!isValid) {
+          searchError.classList.add('is-visible');
+          return false;
+        }
+
+        searchError.classList.remove('is-visible');
+        return true;
+      };
+
+      const createEntry = (item, index) => {
+        const id = Number(item.id_elevage || 0);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'catalog-entry' + (id === Number(activeId || 0) ? ' is-active' : '');
+
+        const top = document.createElement('span');
+        top.className = 'entry-top';
+
+        const left = document.createElement('span');
+        left.className = 'entry-left';
+
+        const number = document.createElement('span');
+        number.className = 'entry-number';
+        number.textContent = String(index + 1).padStart(2, '0');
+
+        const title = document.createElement('span');
+        title.className = 'entry-title';
+        title.textContent = item.type_elevage || 'Livestock';
+
+        const chip = document.createElement('span');
+        chip.className = 'entry-chip';
+        chip.textContent = item.production || 'No production';
+
+        const sub = document.createElement('span');
+        sub.className = 'entry-sub';
+        sub.textContent = 'State: ' + (item.etat_elevage || 'Unknown');
+
+        left.appendChild(number);
+        left.appendChild(title);
+        top.appendChild(left);
+        top.appendChild(chip);
+
+        button.appendChild(top);
+        button.appendChild(sub);
+
+        button.addEventListener('click', () => {
+          activeId = id;
+          renderList();
+        });
+
+        return button;
+      };
+
+      const renderList = () => {
+        if (!validateSearch()) {
+          return;
+        }
+
+        const rows = filteredData();
+        listNode.innerHTML = '';
+        countNode.textContent = rows.length + (rows.length === 1 ? ' item' : ' items');
+        emptyNode.classList.toggle('is-visible', rows.length === 0);
+
+        if (rows.length === 0) {
+          activeId = null;
+          renderDetail(null);
+          return;
+        }
+
+        if (!rows.some((item) => Number(item.id_elevage || 0) === Number(activeId || 0))) {
+          activeId = Number(rows[0].id_elevage || 0);
+        }
+
+        rows.forEach((item, index) => {
+          listNode.appendChild(createEntry(item, index));
+        });
+
+        const activeItem = rows.find((item) => Number(item.id_elevage || 0) === Number(activeId || 0)) || rows[0];
+        renderDetail(activeItem);
+      };
+
+      const hydrateFilters = () => {
+        const types = [...new Set(livestockData.map((item) => String(item.type_elevage || '').trim()).filter(Boolean))].sort();
+        const states = [...new Set(livestockData.map((item) => String(item.etat_elevage || '').trim()).filter(Boolean))].sort();
+
+        types.forEach((value) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          typeFilter.appendChild(option);
+        });
+
+        states.forEach((value) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          stateFilter.appendChild(option);
+        });
+      };
+
+      hydrateFilters();
+      renderList();
+
+      searchInput.addEventListener('input', renderList);
+      typeFilter.addEventListener('change', renderList);
+      stateFilter.addEventListener('change', renderList);
+    })();
+  </script>
+{% endblock %}

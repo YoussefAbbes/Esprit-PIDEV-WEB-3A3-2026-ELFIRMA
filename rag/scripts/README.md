@@ -239,7 +239,12 @@ Optional routing controls:
 - Retrieval is runtime-stable only when doctor.py passes in the active interpreter.
 - For reproducibility, prefer requirements-lock.txt over requirements-rag.txt, then validate with doctor.py.
 - Runtime is now validated in project .venv; current optimization priority is retrieval relevance and backend chatbot flow.
-- Route-aware regression reports are now available for backend quality checks before Symfony endpoint integration.
-- Symfony prep artifacts now exist in rag/configs/symfony_backend_plan.md and rag/configs/chat_api_contract.json.
-- Frontend UX is intentionally out of scope at this stage.
+- Route-aware regression reports are now available for backend quality checks alongside Symfony endpoint operation.
+- Symfony backend endpoint is now implemented at POST /api/chat using the Python chat engine.
+- Symfony request contract support includes: query, top_k, min_score, route_override, disable_routing, rerank_pool_size, filters, debug.
+- Symfony success contract requires: contract_version, query, answer_text, route, sources, confidence_summary, evidence_summary, context_metadata, retrieval_debug.
+- Symfony request validation runtime uses mbstring when available and falls back to native length checks otherwise.
+- Integration docs are available in docs/elfirma/CHATBOT_BACKEND_INTEGRATION.md.
+- Frontend UX should start only after backend readiness checks pass.
+- Frontend UX starts only after endpoint readiness checks pass (router, container lint, POST /api/chat smoke test; mbstring check recommended).
 - If validation reports unknown confidence labels or missing files, fix those before embedding.

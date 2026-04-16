@@ -46,24 +46,49 @@
         "type": "object",
         "properties": {
           "domain": {
-            "type": "array",
-            "items": {"type": "string"}
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            ]
           },
           "document_type": {
-            "type": "array",
-            "items": {"type": "string"}
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            ]
           },
           "confidence": {
-            "type": "array",
-            "items": {"type": "string"}
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            ]
           },
           "language": {
-            "type": "array",
-            "items": {"type": "string"}
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            ]
           },
           "evidence_scope": {
-            "type": "array",
-            "items": {"type": "string"}
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -127,10 +152,13 @@
         "type": "string",
         "enum": [
           "validation_error",
+          "missing_python_executable",
+          "missing_chat_engine_script",
           "python_execution_error",
           "python_timeout",
           "python_output_parse_error",
           "upstream_contract_error",
+          "empty_answer_payload",
           "internal_error"
         ]
       },

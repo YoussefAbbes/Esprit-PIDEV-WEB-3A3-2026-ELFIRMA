@@ -136,6 +136,8 @@ Optional runtime report export
 - python rag/scripts/chat_engine.py --query What does vaccination status mean --top-k 5 --json
 
 chat_engine stable response contract fields:
+- contract_version
+- query
 - answer_text
 - route
 - sources
@@ -178,27 +180,50 @@ The project now supports:
 - query routing with document-type preference reranking
 - route-aware retrieval quality evaluation and regression reporting
 - context and prompt payload preparation for answer generation
-- local chatbot backend orchestration via chat_engine.py with stable JSON contract fields
-- Symfony backend integration preparation assets under rag/configs
+- local chatbot backend orchestration via chat_engine.py with stable request/response JSON contract fields
+- Symfony web-facing backend integration via POST /api/chat
+- Symfony process-based Python invocation with timeout and error mapping
+- Symfony request validation and normalized error payload contract
+- full request contract support for min_score, disable_routing, rerank_pool_size, and debug
+- strict response contract gate on contract_version/query/answer_text/route/sources summaries
 
 Runtime validation status:
 - doctor.py passes in project .venv.
 - runtime_report.py confirms active .venv interpreter and core package health.
 - retrieval scripts are operational when doctor.py is PASS.
 
+Symfony runtime prerequisite:
+- request validation uses mbstring when available and falls back safely when unavailable.
+
+## Backend UX Readiness Gate
+Backend is UX-ready only after all checks pass in target environment:
+1. php bin/console debug:router api_chat
+2. php bin/console lint:container
+3. POST /api/chat smoke test returns required fields:
+	- contract_version
+	- query
+	- answer_text
+	- route
+	- sources
+	- confidence_summary
+	- evidence_summary
+	- context_metadata
+	- retrieval_debug
+4. Optional recommended runtime check: php -m | findstr mbstring
+
 ## Next Technical Step
-1. Continue tuning retrieval relevance/routing on real question sets and monitor route regression outputs.
-2. Integrate chat backend flow into Symfony services/controllers using rag/configs/symfony_backend_plan.md.
-3. Keep chat_engine.py in local-only mode while preserving the explicit LLM extension hook.
-4. Add automated regression checks over retrieval_eval_cases, route_relevance_cases, and rag_answer_cases.
-5. Frontend UX remains a later phase after backend behavior is stable.
+1. Run and record endpoint smoke-test evidence for /api/chat in target environment.
+2. Add Symfony integration tests for happy path and failure mapping around /api/chat.
+3. Continue tuning retrieval relevance/routing on real question sets and monitor route regression outputs.
+4. Keep chat_engine.py in local-only mode while preserving the explicit LLM extension hook.
+5. Start final frontend UX implementation on top of verified /api/chat contract.
 
 ## Symfony Integration Direction
-Future integration points:
-- src/Service for retrieval orchestration
-- src/Controller for chat endpoint
+Implemented integration points:
+- src/Service/ChatbotEngineService.php for retrieval orchestration and Python process handling
+- src/Service/ChatbotRequestValidator.php for request schema validation and normalization
+- src/Controller/ChatbotController.php exposing POST /api/chat
 - rag/configs/chat_api_contract.json for request/response/error contract reference
-- prompt assembly using rag/prompts assets
-- hybrid planner for RAG + SQL live queries
+- docs/elfirma/CHATBOT_BACKEND_INTEGRATION.md for local runbook
 
 Keep confidence-aware behavior active during all integration stages.

@@ -8,6 +8,7 @@ from importlib import metadata as importlib_metadata
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
+import traceback
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "rag" / "configs" / "embedding_config.json"
@@ -80,6 +81,15 @@ def _runtime_versions_summary() -> str:
     return ", ".join(parts)
 
 
+def _last_trace_frame(exc: BaseException) -> str:
+    tb = traceback.extract_tb(exc.__traceback__) if exc.__traceback__ is not None else []
+    if not tb:
+        return ""
+
+    last = tb[-1]
+    return f"{last.filename}:{last.lineno} in {last.name}"
+
+
 def ensure_dependencies() -> None:
     import importlib
 
@@ -93,13 +103,24 @@ def ensure_dependencies() -> None:
             importlib.import_module(module_name)
         except ModuleNotFoundError as exc:
             missing_name = (exc.name or "").strip()
+            missing_message = str(exc).strip()
+            chained_detail = ""
+            frame_detail = _last_trace_frame(exc)
+            root_exc = exc.__cause__ if exc.__cause__ is not None else exc.__context__
+            if root_exc is not None and root_exc is not exc:
+                root_frame_detail = _last_trace_frame(root_exc)
+                chained_detail = f" | root={root_exc.__class__.__name__}: {root_exc}"
+                if root_frame_detail:
+                    chained_detail += f" @ {root_frame_detail}"
             if missing_name == top_module and dist_ver == "missing":
                 missing.append(f"- {package_name} (distribution not installed)")
             else:
                 if not missing_name:
                     missing_name = "unknown"
                 broken.append(
-                    f"- {module_name} [{package_name}={dist_ver}] -> ModuleNotFoundError({missing_name})"
+                    f"- {module_name} [{package_name}={dist_ver}] -> "
+                    f"ModuleNotFoundError({missing_name}): {missing_message}"
+                    f"{(' @ ' + frame_detail) if frame_detail else ''}{chained_detail}"
                 )
         except Exception as exc:
             broken.append(
