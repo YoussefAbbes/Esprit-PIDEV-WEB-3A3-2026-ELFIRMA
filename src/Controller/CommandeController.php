@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Commande;
 use App\Entity\Produit;
@@ -19,6 +20,7 @@ final class CommandeController extends AbstractController
     private const PROMO_MIN_TOTAL = 50.0;
     private const PROMO_DISCOUNT_PERCENT = 10;
     private const PROMO_VALID_DAYS = 3;
+    private const STRIPE_API_BASE = 'https://api.stripe.com/v1';
 
     #[Route('/commandes', name: 'app_commandes_index', methods: ['GET'])]
     public function index(EntityManagerInterface $em, SessionInterface $session): Response
@@ -52,7 +54,7 @@ final class CommandeController extends AbstractController
     }
 
     #[Route('/commander', name: 'app_commande_create', methods: ['GET', 'POST'])]
-    public function create(Request $request, SessionInterface $session, EntityManagerInterface $em, ValidatorInterface $validator): Response
+    public function create(Request $request, SessionInterface $session, EntityManagerInterface $em, ValidatorInterface $validator, HttpClientInterface $httpClient): Response
     {
         $panier = $session->get('panier', []);
 
@@ -98,7 +100,7 @@ final class CommandeController extends AbstractController
                 return $this->handlePromoApplication($request, $panierWithData, $total, $session);
             }
 
-            return $this->processOrder($request, $panierWithData, $total, $session, $em, $validator);
+            return $this->processOrder($request, $panierWithData, $total, $session, $em, $validator, $httpClient);
         }
 
         return $this->renderCheckout($panierWithData, $total, $session, [], [
@@ -114,18 +116,21 @@ final class CommandeController extends AbstractController
         float $total,
         SessionInterface $session,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        HttpClientInterface $httpClient
     ): Response
     {
         $formErrors = [];
         $nomClient = trim((string) $request->request->get('nom_client', ''));
         $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
         $promoCode = strtoupper(trim((string) $request->request->get('promo_code', '')));
+        $stripePaymentIntentId = trim((string) $request->request->get('stripe_payment_intent_id', ''));
 
         $old = [
             'nom_client' => $nomClient,
             'mode_paiement' => $modePaiement,
             'promo_code' => $promoCode,
+            'stripe_payment_intent_id' => $stripePaymentIntentId,
         ];
 
         if ($nomClient === '') {
@@ -144,6 +149,20 @@ final class CommandeController extends AbstractController
         if ($promoCode !== '' && (!$promoSummary['is_applied'] || $promoSummary['applied_code'] !== $promoCode)) {
             $formErrors['promo_code'][] = 'Code promo invalide, expire ou non applique.';
             return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+        }
+
+        if ($modePaiement === 'Carte bancaire') {
+            if ($stripePaymentIntentId === '') {
+                $formErrors['mode_paiement'][] = 'Paiement carte non confirme. Veuillez verifier votre carte.';
+                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+            }
+
+            $expectedAmount = (int) round(((float) $promoSummary['final_total']) * 100);
+            $verification = $this->verifyStripePaymentIntent($stripePaymentIntentId, $expectedAmount, $httpClient);
+            if (!$verification['ok']) {
+                $formErrors['mode_paiement'][] = $verification['message'];
+                return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old);
+            }
         }
 
         $sessionUserId = $session->get('user_id');
@@ -175,7 +194,7 @@ final class CommandeController extends AbstractController
                 $commande->setPrixTotal(number_format((float) $lineTotals[$index], 2, '.', ''));
                 $commande->setNomClient($nomClient);
                 $commande->setStatutCommande('En attente');
-                $commande->setStatutPaiement('Non payé');
+                $commande->setStatutPaiement($modePaiement === 'Carte bancaire' ? 'Payé' : 'Non payé');
                 $commande->setModePaiement($modePaiement !== '' ? $modePaiement : 'Cash');
                 $commande->setDateCommande(new \DateTime());
                 $commande->setUtilisateur($utilisateur);
@@ -334,6 +353,9 @@ final class CommandeController extends AbstractController
     private function renderCheckout(array $panierWithData, float $total, SessionInterface $session, array $formErrors, array $old): Response
     {
         $promoSummary = $this->resolvePromoSummary($session, $total);
+        $stripePublicKey = $this->getStripePublicKey();
+        $stripeSecretKey = $this->getStripeSecretKey();
+        $stripeEnabled = $stripePublicKey !== '' && $stripeSecretKey !== '';
 
         return $this->render('commande_create.html.twig', [
             'items' => $panierWithData,
@@ -345,9 +367,133 @@ final class CommandeController extends AbstractController
             'promo_expires_at' => $promoSummary['expires_at'],
             'promo_is_applied' => $promoSummary['is_applied'],
             'promo_min_total' => self::PROMO_MIN_TOTAL,
+            'stripe_enabled' => $stripeEnabled,
+            'stripe_public_key' => $stripePublicKey,
             'form_errors' => $formErrors,
             'old' => $old,
         ]);
+    }
+
+    #[Route('/commande/stripe/create-intent', name: 'app_commande_stripe_create_intent', methods: ['POST'])]
+    public function createStripePaymentIntent(SessionInterface $session, EntityManagerInterface $em, HttpClientInterface $httpClient): JsonResponse
+    {
+        $panier = $session->get('panier', []);
+        if (!is_array($panier) || $panier === []) {
+            return new JsonResponse(['error' => 'Panier vide.'], 400);
+        }
+
+        $total = 0.0;
+        foreach ($panier as $productId => $quantite) {
+            $produit = $em->getRepository(Produit::class)->find((int) $productId);
+            if (!$produit || $produit->getStatut() !== 'Disponible') {
+                continue;
+            }
+
+            $qty = (int) $quantite;
+            if ($qty <= 0 || $qty > $produit->getQuantiteStock()) {
+                continue;
+            }
+
+            $total += ((float) $produit->getPrixUnitaire()) * $qty;
+        }
+
+        if ($total <= 0) {
+            return new JsonResponse(['error' => 'Aucun produit valide dans le panier.'], 400);
+        }
+
+        $promoSummary = $this->resolvePromoSummary($session, $total);
+        $amountCents = (int) round(((float) $promoSummary['final_total']) * 100);
+        if ($amountCents <= 0) {
+            return new JsonResponse(['error' => 'Montant invalide.'], 400);
+        }
+
+        $secretKey = $this->getStripeSecretKey();
+        if ($secretKey === '') {
+            return new JsonResponse(['error' => 'Stripe non configure.'], 500);
+        }
+
+        try {
+            $payload = [
+                'amount' => $amountCents,
+                'currency' => $this->getStripeCurrency(),
+                'automatic_payment_methods[enabled]' => 'true',
+                'description' => 'Paiement commande EL FIRMA',
+                'metadata[source]' => 'checkout_commande',
+            ];
+
+            $response = $httpClient->request('POST', self::STRIPE_API_BASE . '/payment_intents', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $secretKey,
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ],
+                'body' => http_build_query($payload),
+            ]);
+
+            $data = $response->toArray(false);
+            if (!isset($data['client_secret'], $data['id'])) {
+                return new JsonResponse(['error' => 'Reponse Stripe invalide.'], 502);
+            }
+
+            return new JsonResponse([
+                'clientSecret' => $data['client_secret'],
+                'paymentIntentId' => $data['id'],
+                'amount' => $amountCents,
+                'currency' => $this->getStripeCurrency(),
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse(['error' => 'Impossible de creer le paiement Stripe.'], 502);
+        }
+    }
+
+    /**
+     * @return array{ok: bool, message: string}
+     */
+    private function verifyStripePaymentIntent(string $paymentIntentId, int $expectedAmount, HttpClientInterface $httpClient): array
+    {
+        $secretKey = $this->getStripeSecretKey();
+        if ($secretKey === '') {
+            return ['ok' => false, 'message' => 'Stripe non configure.'];
+        }
+
+        try {
+            $response = $httpClient->request('GET', self::STRIPE_API_BASE . '/payment_intents/' . rawurlencode($paymentIntentId), [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $secretKey,
+                ],
+            ]);
+
+            $data = $response->toArray(false);
+            $status = (string) ($data['status'] ?? '');
+            $amount = (int) ($data['amount'] ?? 0);
+
+            if ($status !== 'succeeded') {
+                return ['ok' => false, 'message' => 'Le paiement carte n\'est pas confirme.'];
+            }
+
+            if ($amount !== $expectedAmount) {
+                return ['ok' => false, 'message' => 'Le montant paye ne correspond pas a la commande.'];
+            }
+
+            return ['ok' => true, 'message' => 'OK'];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => 'Verification Stripe impossible.'];
+        }
+    }
+
+    private function getStripePublicKey(): string
+    {
+        return trim((string) ($_SERVER['STRIPE_PUBLIC_KEY'] ?? $_ENV['STRIPE_PUBLIC_KEY'] ?? ''));
+    }
+
+    private function getStripeSecretKey(): string
+    {
+        return trim((string) ($_SERVER['STRIPE_SECRET_KEY'] ?? $_ENV['STRIPE_SECRET_KEY'] ?? ''));
+    }
+
+    private function getStripeCurrency(): string
+    {
+        $currency = strtolower(trim((string) ($_SERVER['STRIPE_CURRENCY'] ?? $_ENV['STRIPE_CURRENCY'] ?? 'eur')));
+        return $currency !== '' ? $currency : 'eur';
     }
 
     /**
