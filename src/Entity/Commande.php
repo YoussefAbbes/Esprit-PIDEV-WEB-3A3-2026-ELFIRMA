@@ -21,8 +21,8 @@ class Commande
     }
 
     #[ORM\Column(type: 'integer')]
-    #[Assert\NotNull(message: 'Quantity is required.')]
-    #[Assert\Positive(message: 'Quantity must be greater than 0.')]
+    #[Assert\NotNull(message: 'La quantite est obligatoire.')]
+    #[Assert\Positive(message: 'La quantite doit etre superieure a 0.')]
     private ?int $quantite = null;
 
     public function getQuantite(): ?int
@@ -37,9 +37,9 @@ class Commande
     }
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Assert\NotBlank(message: 'Total price is required.')]
-    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/', message: 'Total price must be a valid decimal with up to 2 decimals.')]
-    #[Assert\Positive(message: 'Total price must be greater than 0.')]
+    #[Assert\NotBlank(message: 'Le prix total est obligatoire.')]
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/', message: 'Le prix total doit etre un decimal valide avec 2 chiffres maximum apres la virgule.')]
+    #[Assert\Positive(message: 'Le prix total doit etre superieur a 0.')]
     private ?string $prix_total = null;
 
     public function getPrixTotal(): ?string
@@ -54,10 +54,10 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
-    #[Assert\NotBlank(message: 'Order status is required.')]
+    #[Assert\NotBlank(message: 'Le statut de la commande est obligatoire.')]
     #[Assert\Choice(
         choices: ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'],
-        message: 'Order status must be one of: En attente, Confirmée, En cours, Livrée, Annulée.'
+        message: 'Le statut de commande est invalide.'
     )]
     private ?string $statut_commande = null;
 
@@ -73,10 +73,10 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 30, nullable: true)]
-    #[Assert\NotBlank(message: 'Payment mode is required.')]
+    #[Assert\NotBlank(message: 'Le mode de paiement est obligatoire.')]
     #[Assert\Choice(
         choices: ['Cash', 'Carte bancaire', 'Virement'],
-        message: 'Payment mode must be one of: Cash, Carte bancaire, Virement.'
+        message: 'Le mode de paiement est invalide.'
     )]
     private ?string $mode_paiement = null;
 
@@ -92,10 +92,10 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 30, nullable: true)]
-    #[Assert\NotBlank(message: 'Payment status is required.')]
+    #[Assert\NotBlank(message: 'Le statut du paiement est obligatoire.')]
     #[Assert\Choice(
         choices: ['Non payé', 'Payé', 'Remboursé'],
-        message: 'Payment status must be one of: Non payé, Payé, Remboursé.'
+        message: 'Le statut du paiement est invalide.'
     )]
     private ?string $statut_paiement = null;
 
@@ -111,6 +111,10 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'La facture ne doit pas depasser {{ limit }} caracteres.'
+    )]
     private ?string $facture = null;
 
     public function getFacture(): ?string
@@ -126,7 +130,7 @@ class Commande
 
     #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(name: 'id_produit', referencedColumnName: 'id_produit', nullable: true)]
-    #[Assert\NotNull(message: 'Product is required.')]
+    #[Assert\NotNull(message: 'Le produit est obligatoire.')]
     private ?Produit $produit = null;
 
     public function getProduit(): ?Produit
@@ -141,12 +145,12 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    #[Assert\NotBlank(message: 'Full name is required.')]
+    #[Assert\NotBlank(message: 'Le nom du client est obligatoire.')]
     #[Assert\Length(
         min: 2,
         max: 100,
-        minMessage: 'Full name must be at least {{ limit }} characters.',
-        maxMessage: 'Full name cannot exceed {{ limit }} characters.'
+        minMessage: 'Le nom du client doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'Le nom du client ne doit pas depasser {{ limit }} caracteres.'
     )]
     private ?string $nom_client = null;
 
@@ -162,8 +166,8 @@ class Commande
     }
 
     #[ORM\Column(type: 'date')]
-    #[Assert\NotNull(message: 'Order date is required.')]
-    #[Assert\Type(type: \DateTimeInterface::class, message: 'Order date is invalid.')]
+    #[Assert\NotNull(message: 'La date de commande est obligatoire.')]
+    #[Assert\Type(type: \DateTimeInterface::class, message: 'La date de commande est invalide.')]
     private ?\DateTimeInterface $date_commande = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]

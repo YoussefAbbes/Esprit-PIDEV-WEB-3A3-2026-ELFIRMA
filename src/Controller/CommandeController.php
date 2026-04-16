@@ -89,7 +89,16 @@ final class CommandeController extends AbstractController
 
         return $this->render('commande_create.html.twig', [
             'items' => $panierWithData,
-            'total' => $total
+            'total' => $total,
+            'form_errors' => [],
+            'old' => [
+                'nom_client' => (string) $session->get('user_name', ''),
+                'email_client' => '',
+                'telephone_client' => '',
+                'adresse_client' => '',
+                'mode_paiement' => 'Cash',
+                'commentaires' => '',
+            ],
         ]);
     }
 
@@ -102,17 +111,49 @@ final class CommandeController extends AbstractController
         ValidatorInterface $validator
     ): Response
     {
+        $formErrors = [];
         $nomClient = trim((string) $request->request->get('nom_client', ''));
         $emailClient = trim((string) $request->request->get('email_client', ''));
         $telephoneClient = trim((string) $request->request->get('telephone_client', ''));
         $adresseClient = trim((string) $request->request->get('adresse_client', ''));
         $modePaiement = trim((string) $request->request->get('mode_paiement', 'Cash'));
+        $commentaires = trim((string) $request->request->get('commentaires', ''));
 
-        if ($nomClient === '' || $emailClient === '' || $telephoneClient === '' || $adresseClient === '') {
-            $this->addFlash('error', 'Tous les champs obligatoires doivent être remplis');
+        $old = [
+            'nom_client' => $nomClient,
+            'email_client' => $emailClient,
+            'telephone_client' => $telephoneClient,
+            'adresse_client' => $adresseClient,
+            'mode_paiement' => $modePaiement,
+            'commentaires' => $commentaires,
+        ];
+
+        if ($nomClient === '') {
+            $formErrors['nom_client'][] = 'Le nom complet est obligatoire.';
+        }
+
+        if ($emailClient === '') {
+            $formErrors['email_client'][] = 'L\'email est obligatoire.';
+        } elseif (!filter_var($emailClient, FILTER_VALIDATE_EMAIL)) {
+            $formErrors['email_client'][] = 'Veuillez saisir une adresse email valide.';
+        }
+
+        if ($telephoneClient === '') {
+            $formErrors['telephone_client'][] = 'Le telephone est obligatoire.';
+        } elseif (!preg_match('/^[0-9\s+\-().]{8,20}$/', $telephoneClient)) {
+            $formErrors['telephone_client'][] = 'Veuillez saisir un numero de telephone valide.';
+        }
+
+        if ($adresseClient === '') {
+            $formErrors['adresse_client'][] = 'L\'adresse de livraison est obligatoire.';
+        }
+
+        if ($formErrors !== []) {
             return $this->render('commande_create.html.twig', [
                 'items' => $panierWithData,
-                'total' => $total
+                'total' => $total,
+                'form_errors' => $formErrors,
+                'old' => $old,
             ]);
         }
 
@@ -126,13 +167,15 @@ final class CommandeController extends AbstractController
             $connection->beginTransaction();
 
             $createdOrders = [];
+            $pendingPersist = [];
 
             foreach ($panierWithData as $item) {
                 $produit = $item['produit'];
                 $quantite = $item['quantite'];
 
                 if ($quantite > $produit->getQuantiteStock()) {
-                    throw new \Exception("Stock insuffisant pour {$produit->getNom()}");
+                    $formErrors['_global'][] = "Stock insuffisant pour {$produit->getNom()}.";
+                    continue;
                 }
 
                 $commande = new Commande();
@@ -148,8 +191,33 @@ final class CommandeController extends AbstractController
 
                 $violations = $validator->validate($commande);
                 if (count($violations) > 0) {
-                    throw new \RuntimeException((string) $violations[0]->getMessage());
+                    $this->appendValidationErrors($formErrors, $violations);
+                    continue;
                 }
+
+                $pendingPersist[] = [
+                    'commande' => $commande,
+                    'produit' => $produit,
+                    'quantite' => $quantite,
+                ];
+            }
+
+            if ($formErrors !== []) {
+                $connection->rollBack();
+                return $this->render('commande_create.html.twig', [
+                    'items' => $panierWithData,
+                    'total' => $total,
+                    'form_errors' => $formErrors,
+                    'old' => $old,
+                ]);
+            }
+
+            foreach ($pendingPersist as $entry) {
+                /** @var Produit $produit */
+                $produit = $entry['produit'];
+                $quantite = (int) $entry['quantite'];
+                /** @var Commande $commande */
+                $commande = $entry['commande'];
 
                 $nouveauStock = $produit->getQuantiteStock() - $quantite;
                 $produit->setQuantiteStock($nouveauStock);
@@ -184,7 +252,9 @@ final class CommandeController extends AbstractController
 
             return $this->render('commande_create.html.twig', [
                 'items' => $panierWithData,
-                'total' => $total
+                'total' => $total,
+                'form_errors' => ['_global' => ['Erreur lors de la creation de la commande: ' . $e->getMessage()]],
+                'old' => $old,
             ]);
         }
     }
