@@ -53,6 +53,10 @@
             </span>
           {% endif %}
         </a>
+        <a href="{{ path('app_commandes_index') }}" class="btn-orders" title="My Orders" style="display: flex; align-items: center; justify-content: center; min-width: 44px; height: 40px; padding: 0 12px; border-radius: 999px; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);">
+          <i class="bi bi-receipt" style="font-size: 1.05rem;"></i>
+          <span style="margin-left: 6px; font-size: 0.85rem;">My Orders</span>
+        </a>
         <span style="color: #116530; font-weight: 600;">{{ app.session.get('user_name') }}</span>
         <a href="{{ path('elfirma_profile') }}" class="btn-profile" title="My Profile" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(17, 101, 48, 0.15);">
           <i class="bi bi-person-fill" style="font-size: 1.3rem;"></i>

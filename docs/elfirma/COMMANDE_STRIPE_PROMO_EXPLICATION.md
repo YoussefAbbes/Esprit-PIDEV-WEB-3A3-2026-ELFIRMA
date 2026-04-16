@@ -89,6 +89,11 @@ Ce qui a ete implemente dans le front office commande:
   - affichage messages d'erreur sous chaque champ,
   - ajout champ adresse_livraison create/edit.
 
+### templates/partials/_header.html.twig
+- Ajout d'un bouton front office "My Orders" a cote du bouton panier.
+- Route cible: app_commandes_index.
+- Libelle en anglais pour coherence du site.
+
 ### .env
 - Ajout placeholders config Stripe:
   - STRIPE_PUBLIC_KEY,
@@ -366,6 +371,7 @@ R: Date expires_at stockee en session et verifiee a chaque action.
 - Etape 6: ajout chatbot client checkout (API Symfony + UI chat + quick replies + doc).
 - Etape 7: ajout recu paiement carte (message anime, telechargement HTML, bouton imprimer, routes dediees).
 - Etape 8: redesign moderne vert agriculture du recu + integration du logo EL FIRMA.
+- Etape 9: ajout bouton "My Orders" dans le header front office a cote de "Panier".
 
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.
