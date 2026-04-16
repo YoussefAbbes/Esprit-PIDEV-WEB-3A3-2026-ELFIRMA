@@ -80,6 +80,8 @@ Ce qui a ete implemente dans le front office commande:
 - Design moderne responsive.
 - Bouton Imprimer (window.print).
 - Compatible affichage navigateur + telechargement HTML.
+- Theme vert agriculture renforce (gradient + elements visuels modernes).
+- Logo EL FIRMA ajoute dans l'en-tete du recu.
 
 ### templates/elfirma/commandes.html.twig
 - Back office add/edit commande:
@@ -363,6 +365,7 @@ R: Date expires_at stockee en session et verifiee a chaque action.
 - Etape 5: ajout adresse_livraison (entite + formulaire front + controller + admin + affichage detail).
 - Etape 6: ajout chatbot client checkout (API Symfony + UI chat + quick replies + doc).
 - Etape 7: ajout recu paiement carte (message anime, telechargement HTML, bouton imprimer, routes dediees).
+- Etape 8: redesign moderne vert agriculture du recu + integration du logo EL FIRMA.
 
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.
