@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 final class AuthController extends AbstractController
 {
@@ -46,6 +48,8 @@ final class AuthController extends AbstractController
         }
         return $this->render('auth/login.html.twig');
     }
+
+
 
 
     #[Route('/verify-captcha', name: 'app_verify_captcha', methods: ['GET', 'POST'])]

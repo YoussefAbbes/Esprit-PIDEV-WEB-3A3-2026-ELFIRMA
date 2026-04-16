@@ -12,49 +12,63 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Encoding\Encoding;
 
 final class UserController extends AbstractController
 {
     #[Route('/elfirma/utilisateurs', name: 'user_page', methods: ['GET'], priority: 10)]
-    public function page(EntityManagerInterface $entityManager): Response
-    {
-        $utilisateurRepo = $entityManager->getRepository(Utilisateur::class);
-        $allUsers = $utilisateurRepo->findAll();
+public function page(EntityManagerInterface $entityManager): Response
+{
+    $utilisateurRepo = $entityManager->getRepository(Utilisateur::class);
+    $allUsers = $utilisateurRepo->findAll();
 
-        $totalUsers = count($allUsers);
-        $employeeCount = 0;
-        $clientCount = 0;
-        $adminCount = 0;
+    $totalUsers = count($allUsers);
+    $employeeCount = 0;
+    $clientCount = 0;
+    $adminCount = 0;
 
-        foreach ($allUsers as $user) {
-            $role = $user->getRoleU();
-            if ($role === 'employee') {
-                $employeeCount++;
-            } elseif ($role === 'client') {
-                $clientCount++;
-            } elseif ($role === 'admin') {
-                $adminCount++;
-            }
+    foreach ($allUsers as $user) {
+
+        $role = $user->getRoleU();
+
+        if ($role === 'employee') {
+            $employeeCount++;
+        } elseif ($role === 'client') {
+            $clientCount++;
+        } elseif ($role === 'admin') {
+            $adminCount++;
         }
 
-        // Get all complaints
-        $reclamationRepo = $entityManager->getRepository(Reclamation::class);
-        $allComplaints = $reclamationRepo->findAll();
+        // =========================
+        // QR CODE GENERATION
+        // =========================
+       $profileUrl = 'http://192.168.43.3:8000/elfirma/user/' . $user->getIdU() . '/profile';
 
-        return $this->render('utilisateurs.html.twig', [
-            'users' => $allUsers,
-            'totalUsers' => $totalUsers,
-            'employeeCount' => $employeeCount,
-            'clientCount' => $clientCount,
-            'adminCount' => $adminCount,
-            'complaints' => $allComplaints,
-            'module_meta' => [
-                'folder' => 'utilisateurs',
-                'title' => 'Users',
-            ],
-            'current_module' => 'utilisateurs',
-        ]);
+        $user->qrCode = $this->generateQrCode($profileUrl);
     }
+
+    // Get all complaints
+    $reclamationRepo = $entityManager->getRepository(Reclamation::class);
+    $allComplaints = $reclamationRepo->findAll();
+
+    return $this->render('utilisateurs.html.twig', [
+        'users' => $allUsers,
+        'totalUsers' => $totalUsers,
+        'employeeCount' => $employeeCount,
+        'clientCount' => $clientCount,
+        'adminCount' => $adminCount,
+        'complaints' => $allComplaints,
+        'module_meta' => [
+            'folder' => 'utilisateurs',
+            'title' => 'Users',
+        ],
+        'current_module' => 'utilisateurs',
+    ]);
+}
+
+
 
     #[Route('/elfirma/user/add', name: 'elfirma_add_user', methods: ['POST'])]
     public function addUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
@@ -321,4 +335,37 @@ final class UserController extends AbstractController
             ]);
         }
     }
+
+
+    #[Route('/elfirma/user/{id}/profile', name: 'elfirma_user_profile', methods: ['GET'])]
+    public function userProfile(int $id, EntityManagerInterface $em): Response
+    {
+        $user = $em->getRepository(Utilisateur::class)->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        return $this->render('user/profile_public.html.twig', [
+            'user' => $user
+        ]);
+    }
+
+   
+  private function generateQrCode(string $url): string
+{
+    $qrCode = new QrCode(
+        data: $url,
+        encoding: new Encoding('UTF-8'),
+        size: 250,
+        margin: 10
+    );
+
+    $writer = new PngWriter();
+    $result = $writer->write($qrCode);
+
+    return 'data:image/png;base64,' . base64_encode($result->getString());
+}
+
+
 }

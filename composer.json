@@ -10,6 +10,7 @@
         "doctrine/doctrine-bundle": "^2.18",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
+        "endroid/qr-code": "^6.0",
         "knpuniversity/oauth2-client-bundle": "*",
         "league/oauth2-github": "^3.1",
         "league/oauth2-google": "*",
@@ -35,6 +36,7 @@
         "symfony/property-info": "6.4.*",
         "symfony/runtime": "6.4.*",
         "symfony/security-bundle": "6.4.*",
+        "symfony/sendgrid-mailer": "6.4.*",
         "symfony/serializer": "6.4.*",
         "symfony/stimulus-bundle": "^2.34",
         "symfony/string": "6.4.*",
@@ -45,7 +47,8 @@
         "symfony/web-link": "6.4.*",
         "symfony/yaml": "6.4.*",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0"
+        "twig/twig": "^2.12|^3.0",
+        "twilio/sdk": "^8.11"
     },
     "config": {
         "allow-plugins": {
