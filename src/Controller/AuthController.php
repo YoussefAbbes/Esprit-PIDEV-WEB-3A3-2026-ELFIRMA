@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 
 final class AuthController extends AbstractController
 {
@@ -85,7 +86,91 @@ public function verifyCaptcha(Request $request): Response
     'error' => null
 ]);
 }
+#[Route('/connect/google', name: 'connect_google')]
+public function connectGoogle(ClientRegistry $clientRegistry)
+{
+    return $clientRegistry->getClient('google')
+        ->redirect(['email', 'profile']);
+}
 
+#[Route('/connect/google/check', name: 'connect_google_check')]
+public function connectGoogleCheck(ClientRegistry $clientRegistry, EntityManagerInterface $em, Request $request)
+{
+    $client = $clientRegistry->getClient('google');
+    $googleUser = $client->fetchUser();
+
+    $email = $googleUser->getEmail();
+
+    $user = $em->getRepository(Utilisateur::class)
+        ->findOneBy(['email_u' => $email]);
+
+    if (!$user) {
+        $user = new Utilisateur();
+        $user->setEmailU($email);
+        $user->setPrenomU($googleUser->getFirstName() ?? 'Google');
+        $user->setNomU($googleUser->getLastName() ?? 'User');
+        $user->setMotDePasseU('GOOGLE');
+        $user->setRoleU('client');
+        $user->setDateCreationU(new \DateTime());
+
+        $em->persist($user);
+        $em->flush();
+    }
+
+    // SESSION (comme ton login classique)
+    $session = $request->getSession();
+    $session->set('user_id', $user->getIdU());
+    $session->set('user_email', $user->getEmailU());
+    $session->set('user_role', $user->getRoleU());
+    $session->set('user_name', $user->getPrenomU().' '.$user->getNomU());
+
+    return $this->redirectToRoute('app_pages_home');
+}
+
+#[Route('/connect/github', name: 'connect_github')]
+public function connectGithub(ClientRegistry $clientRegistry)
+{
+    return $clientRegistry->getClient('github')->redirect();
+}
+
+#[Route('/connect/github/check', name: 'connect_github_check')]
+public function connectGithubCheck(ClientRegistry $clientRegistry, EntityManagerInterface $em, Request $request)
+{
+    $client = $clientRegistry->getClient('github');
+    $githubUser = $client->fetchUser();
+
+    $email = $githubUser->getEmail();
+
+    // GitHub peut retourner null email
+    if (!$email) {
+        $email = $githubUser->getNickname().'@github.com';
+    }
+
+    $user = $em->getRepository(Utilisateur::class)
+        ->findOneBy(['email_u' => $email]);
+
+    if (!$user) {
+        $user = new Utilisateur();
+        $user->setEmailU($email);
+        $user->setPrenomU($githubUser->getNickname());
+        $user->setNomU('GitHub');
+        $user->setMotDePasseU('GITHUB');
+        $user->setRoleU('client');
+        $user->setDateCreationU(new \DateTime());
+
+        $em->persist($user);
+        $em->flush();
+    }
+
+    // SESSION (même système que login normal)
+    $session = $request->getSession();
+    $session->set('user_id', $user->getIdU());
+    $session->set('user_email', $user->getEmailU());
+    $session->set('user_role', $user->getRoleU());
+    $session->set('user_name', $user->getPrenomU().' '.$user->getNomU());
+
+    return $this->redirectToRoute('app_pages_home');
+}
 
     #[Route('/signup', name: 'app_signup', methods: ['GET', 'POST'])]
     public function signup(Request $request, EntityManagerInterface $em): Response
