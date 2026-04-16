@@ -25,6 +25,80 @@ Ce qui a ete implemente dans le front office commande:
 - .env
 - .env.local
 
+## 2.1) Detail exact: fichier par fichier (ou j'ai mis quoi)
+### src/Controller/CommandeController.php
+- Ajout du flux checkout securise:
+  - creation seulement sur checkout_action = confirm_order,
+  - actions separées pour generate_promo / apply_promo.
+- Ajout logique promo:
+  - generation code (>= 50 DT),
+  - validite 3 jours,
+  - application et calcul final_total,
+  - nettoyage session promo apres commande.
+- Ajout Stripe:
+  - endpoint create-intent,
+  - verification serveur PaymentIntent (status + montant),
+  - statut paiement passe a Paye pour carte validee.
+- Ajout adresse_livraison dans le flux creation (front + admin + quick API).
+- Ajout chatbot API:
+  - endpoint /api/commande/chatbot,
+  - generation de reponse selon contexte panier/promo/paiement.
+- Ajout recu paiement:
+  - route voir recu,
+  - route telecharger recu HTML.
+
+### src/Entity/Commande.php
+- Ajout/normalisation des contraintes Assert pour controle de saisie.
+- Ajout champ adresse_livraison + validation:
+  - NotBlank,
+  - Length min/max.
+
+### templates/commande_create.html.twig
+- Form checkout front aligne table commande.
+- Erreurs de validation affichees sous chaque champ.
+- Bloc promo (generer/appliquer + affichage reduction).
+- Bloc Stripe anime (carte visuelle + Stripe Elements).
+- JS Stripe:
+  - create PaymentIntent,
+  - confirmCardPayment,
+  - envoi stripe_payment_intent_id.
+- Chatbot UI + JS:
+  - bouton flottant,
+  - panneau chat,
+  - appels API chatbot,
+  - quick replies.
+
+### templates/commande_show.html.twig
+- Affichage adresse_livraison.
+- Ajout toast anime apres paiement carte confirme.
+- Ajout boutons:
+  - Voir le recu,
+  - Telecharger le recu.
+
+### templates/commande_receipt.html.twig
+- Nouveau template dedie recu paiement.
+- Design moderne responsive.
+- Bouton Imprimer (window.print).
+- Compatible affichage navigateur + telechargement HTML.
+
+### templates/elfirma/commandes.html.twig
+- Back office add/edit commande:
+  - suppression validation HTML native (required/min/maxlength),
+  - affichage messages d'erreur sous chaque champ,
+  - ajout champ adresse_livraison create/edit.
+
+### .env
+- Ajout placeholders config Stripe:
+  - STRIPE_PUBLIC_KEY,
+  - STRIPE_SECRET_KEY,
+  - STRIPE_CURRENCY.
+
+### .env.local
+- Ajout valeurs locales de test Stripe (dev uniquement).
+
+### docs/elfirma/COMMANDE_STRIPE_PROMO_EXPLICATION.md
+- Documentation complete des routes, fonctions, MVC, API et journal des changements.
+
 ## 3) Respect MVC
 - Model:
   - Entite Commande + contraintes de validation Symfony (Assert).
@@ -55,6 +129,17 @@ Ce qui a ete implemente dans le front office commande:
 - name: app_api_commande_chatbot
 - Methode controller: chatbot(...)
 - Role: assistant intelligent pour aider le client pendant le checkout (promo, paiement, adresse, total)
+
+### Recu paiement carte (nouveau)
+- GET /commande/{id}/receipt
+- name: app_commande_receipt
+- Methode controller: receipt(...)
+- Role: ouvrir le recu de paiement dans une page moderne avec bouton Imprimer.
+
+- GET /commande/{id}/receipt/download
+- name: app_commande_receipt_download
+- Methode controller: downloadReceipt(...)
+- Role: telecharger le recu en fichier HTML.
 
 ## 4.1) Ou j'ai mis l'API (emplacement exact)
 ### API Stripe backend (Symfony)
@@ -220,6 +305,20 @@ Note:
 - Controller:
   - endpoint API dans CommandeController (chatbot + buildCheckoutChatbotReply).
 
+## 7.2) Recu de paiement apres confirmation
+- Apres confirmation d'une commande carte payee:
+  - message anime affiche dans la page detail commande,
+  - bouton "Telecharger le recu" disponible.
+- Le recu est un template HTML dedie:
+  - fichier: templates/commande_receipt.html.twig
+  - contient un design moderne + bouton "Imprimer" (window.print).
+
+Pourquoi un fichier HTML?
+- Oui, c'est une bonne pratique ici:
+  - View MVC propre (template dedie recu),
+  - telechargement simple sans dependance PDF,
+  - impression native navigateur.
+
 ## 8) Regles metier actuelles
 - Promo disponible uniquement a partir de 50 DT.
 - Validite promo: 3 jours.
@@ -263,6 +362,7 @@ R: Date expires_at stockee en session et verifiee a chaque action.
 - Etape 4: ajout Stripe (intent + verification + UI animee).
 - Etape 5: ajout adresse_livraison (entite + formulaire front + controller + admin + affichage detail).
 - Etape 6: ajout chatbot client checkout (API Symfony + UI chat + quick replies + doc).
+- Etape 7: ajout recu paiement carte (message anime, telechargement HTML, bouton imprimer, routes dediees).
 
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

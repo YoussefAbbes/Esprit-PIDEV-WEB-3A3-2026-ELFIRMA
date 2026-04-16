@@ -53,6 +53,52 @@ final class CommandeController extends AbstractController
         ]);
     }
 
+    #[Route('/commande/{id}/receipt', name: 'app_commande_receipt', methods: ['GET'])]
+    public function receipt(int $id, EntityManagerInterface $em): Response
+    {
+        $commande = $em->getRepository(Commande::class)->find($id);
+
+        if (!$commande) {
+            throw $this->createNotFoundException('Commande introuvable');
+        }
+
+        if ($commande->getModePaiement() !== 'Carte bancaire' || $commande->getStatutPaiement() !== 'Payé') {
+            $this->addFlash('error', 'Le recu est disponible uniquement pour les commandes payees par carte.');
+            return $this->redirectToRoute('app_commande_show', ['id' => $id]);
+        }
+
+        return $this->render('commande_receipt.html.twig', [
+            'commande' => $commande,
+        ]);
+    }
+
+    #[Route('/commande/{id}/receipt/download', name: 'app_commande_receipt_download', methods: ['GET'])]
+    public function downloadReceipt(int $id, EntityManagerInterface $em): Response
+    {
+        $commande = $em->getRepository(Commande::class)->find($id);
+
+        if (!$commande) {
+            throw $this->createNotFoundException('Commande introuvable');
+        }
+
+        if ($commande->getModePaiement() !== 'Carte bancaire' || $commande->getStatutPaiement() !== 'Payé') {
+            $this->addFlash('error', 'Le recu est disponible uniquement pour les commandes payees par carte.');
+            return $this->redirectToRoute('app_commande_show', ['id' => $id]);
+        }
+
+        $content = $this->renderView('commande_receipt.html.twig', [
+            'commande' => $commande,
+            'is_download' => true,
+        ]);
+
+        $filename = sprintf('recu-paiement-commande-%d.html', (int) ($commande->getIdCommande() ?? 0));
+
+        return new Response($content, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     #[Route('/commander', name: 'app_commande_create', methods: ['GET', 'POST'])]
     public function create(Request $request, SessionInterface $session, EntityManagerInterface $em, ValidatorInterface $validator, HttpClientInterface $httpClient): Response
     {
@@ -263,6 +309,10 @@ final class CommandeController extends AbstractController
             $this->clearPromoState($session);
 
             $this->addFlash('success', 'Commande créée avec succès!');
+
+            if ($modePaiement === 'Carte bancaire' && !empty($createdOrders)) {
+                $this->addFlash('card_receipt_ready', 'Paiement confirme. Vous pouvez telecharger votre recu.');
+            }
 
             if (!empty($createdOrders)) {
                 return $this->redirectToRoute('app_commande_show', ['id' => $createdOrders[0]->getIdCommande()]);

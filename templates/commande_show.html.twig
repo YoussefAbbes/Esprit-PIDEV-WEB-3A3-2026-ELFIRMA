@@ -141,6 +141,17 @@
                             <a href="{{ path('app_commandes_index') }}" style="background: #6b7280; color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600;">
                                 ← Retour aux commandes
                             </a>
+
+                            {% if commande.modePaiement == 'Carte bancaire' and commande.statutPaiement == 'Payé' %}
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                                <a href="{{ path('app_commande_receipt', {id: commande.idCommande}) }}" target="_blank" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; padding: 12px 18px; border-radius: 10px; text-decoration: none; font-weight: 700;">
+                                    Voir le recu
+                                </a>
+                                <a href="{{ path('app_commande_receipt_download', {id: commande.idCommande}) }}" style="background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); color: white; padding: 12px 18px; border-radius: 10px; text-decoration: none; font-weight: 700;">
+                                    Telecharger le recu
+                                </a>
+                            </div>
+                            {% endif %}
                             
                             {% if commande.statutCommande == 'Livrée' %}
                             <a href="{{ path('app_pages_home') }}#products" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600;">
@@ -216,4 +227,36 @@
         </div>
     </div>
 </div>
+
+{% for message in app.flashes('card_receipt_ready') %}
+    <div id="receipt-toast" style="position: fixed; right: 18px; bottom: 18px; z-index: 9999; background: linear-gradient(135deg, #0f766e 0%, #16a34a 100%); color: #f0fdfa; padding: 16px; border-radius: 14px; box-shadow: 0 14px 30px rgba(15,118,110,.35); max-width: 380px; animation: receiptPopIn .45s ease-out;">
+        <div style="font-weight: 800; margin-bottom: 6px;">Paiement confirme</div>
+        <div style="font-size: 14px; margin-bottom: 10px;">{{ message }}</div>
+        <a href="{{ path('app_commande_receipt_download', {id: commande.idCommande}) }}" style="display: inline-block; background: rgba(255,255,255,.2); color: #fff; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: 700;">Telecharger le recu</a>
+    </div>
+{% endfor %}
+
+<style>
+    @keyframes receiptPopIn {
+        from { opacity: 0; transform: translateY(22px) scale(.92); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+</style>
+
+<script>
+    (function () {
+        const toast = document.getElementById('receipt-toast');
+        if (!toast) {
+            return;
+        }
+
+        setTimeout(function () {
+            toast.style.transition = 'opacity .35s ease';
+            toast.style.opacity = '0';
+            setTimeout(function () {
+                toast.remove();
+            }, 360);
+        }, 7000);
+    })();
+</script>
 {% endblock %}
