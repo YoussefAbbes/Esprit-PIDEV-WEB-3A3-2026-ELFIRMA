@@ -6,6 +6,11 @@
 <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
 <title>Elfirma - Fournisseurs &amp; Contrats</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<<<<<<< HEAD
+=======
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+>>>>>>> livestock-parcel-product-integration
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Open_Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -122,10 +127,17 @@
 <span class="material-symbols-outlined">handyman</span>
 <span>Équipements &amp; Maintenance</span>
 </a>
+<<<<<<< HEAD
 <!-- Active State: Fournisseurs & Contrats -->
 <a class="flex items-center gap-4 px-8 py-4 bg-primary text-surface rounded-r-full shadow-lg opacity-100 transition-opacity" href="#">
 <span class="material-symbols-outlined">contract</span>
 <span>Fournisseurs &amp; Contrats</span>
+=======
+<!-- Active State: Suppliers & Contract Management -->
+<a class="flex items-center gap-4 px-8 py-4 bg-primary text-surface rounded-r-full shadow-lg opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined">contract</span>
+<span>Suppliers &amp; Contract Management</span>
+>>>>>>> livestock-parcel-product-integration
 </a>
 <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
 <span class="material-symbols-outlined">report_problem</span>
@@ -154,10 +166,13 @@
 <!-- TopNavBar (Authority: JSON) -->
 <header class="sticky top-0 z-30 bg-surface/70 backdrop-blur-xl flex justify-between items-center w-full px-12 py-6 font-headline font-bold tracking-tight">
 <div class="flex items-center gap-6 flex-grow">
+<<<<<<< HEAD
 <div class="relative w-96">
 <input class="w-full bg-surface-container-low border-none rounded-full py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Rechercher un contrat ou fournisseur..." type="text"/>
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
 </div>
+=======
+>>>>>>> livestock-parcel-product-integration
 </div>
 <div class="flex items-center gap-4">
 <button class="p-3 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
@@ -180,9 +195,15 @@
 <p class="text-on-surface-variant max-w-xl text-lg">Gérez vos relations commerciales et le suivi des engagements contractuels pour la saison 2026.</p>
 </div>
 <div class="flex gap-4">
+<<<<<<< HEAD
 <button class="px-8 py-4 rounded-full bg-surface-container-highest text-primary font-bold hover:bg-surface-variant transition-colors flex items-center gap-2">
 <span class="material-symbols-outlined">person_add</span>
                         Ajouter un fournisseur
+=======
+<button id="addSupplierBtn" class="px-8 py-4 rounded-full bg-surface-container-highest text-primary font-bold hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">person_add</span>
+                        Add Supplier
+>>>>>>> livestock-parcel-product-integration
                     </button>
 <button class="px-8 py-4 rounded-full bg-primary text-surface font-bold shadow-xl hover:opacity-90 transition-all flex items-center gap-2">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
@@ -199,9 +220,25 @@
                     </h3>
 <button class="text-secondary font-bold text-sm uppercase tracking-widest hover:underline transition-all">Tout voir</button>
 </div>
+<<<<<<< HEAD
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 <!-- Supplier Card 1 -->
 <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border-none flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500">
+=======
+
+<!-- Search Filter for Suppliers -->
+<div class="relative w-full mb-6">
+<input id="supplierSearchInput" class="w-full bg-surface-container-low border-2 border-surface-variant rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Search suppliers by name, location, or category..." type="text"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="suppliersGrid">
+<!-- Supplier Card 1 -->
+<div class="supplier-card bg-surface-container-lowest p-8 rounded-xl shadow-sm border-none flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500"
+     data-supplier-name="SOTUVER"
+     data-location="Tunis, Zone Industrielle Megrine"
+     data-category="Emballage">
+>>>>>>> livestock-parcel-product-integration
 <div class="space-y-4">
 <div class="flex justify-between items-start">
 <div class="bg-surface-container-low w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-surface">
@@ -227,7 +264,14 @@
 </div>
 </div>
 <!-- Supplier Card 2 -->
+<<<<<<< HEAD
 <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500">
+=======
+<div class="supplier-card bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500"
+     data-supplier-name="Comptoir Agricole de Béja"
+     data-location="Béja, Route de Mateur"
+     data-category="Fertilisants">
+>>>>>>> livestock-parcel-product-integration
 <div class="space-y-4">
 <div class="flex justify-between items-start">
 <div class="bg-surface-container-low w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-surface">
@@ -252,7 +296,14 @@
 </div>
 </div>
 <!-- Supplier Card 3 -->
+<<<<<<< HEAD
 <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500">
+=======
+<div class="supplier-card bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col justify-between group hover:bg-primary-container transition-colors duration-500"
+     data-supplier-name="Agri-Maintenance S.A."
+     data-location="Sousse, Sidi Abdelhamid"
+     data-category="Matériel">
+>>>>>>> livestock-parcel-product-integration
 <div class="space-y-4">
 <div class="flex justify-between items-start">
 <div class="bg-surface-container-low w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-surface">
@@ -278,6 +329,7 @@
 </div>
 </div>
 </section>
+<<<<<<< HEAD
 <!-- Contract Tracking Table Section -->
 <section class="bg-surface-container-low rounded-xl p-8 space-y-8">
 <div class="flex items-center justify-between">
@@ -388,10 +440,239 @@
 </button>
 </td>
 </tr>
+=======
+
+<!-- Suppliers Statistics Section -->
+<div class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-6 lg:p-8 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)] mb-8">
+  <div class="pointer-events-none absolute -top-14 -right-14 h-52 w-52 rounded-full bg-[#9ac75f]/25 blur-3xl"></div>
+  <div class="pointer-events-none absolute -bottom-10 -left-10 h-44 w-44 rounded-full bg-[#2d5016]/15 blur-2xl"></div>
+
+  <div class="relative z-10 mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="inline-flex items-center gap-2 rounded-full border border-[#bad19a] bg-[#f9fde6] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#2d5016]">
+        <span class="material-symbols-outlined text-sm">analytics</span>
+        Supplier Analytics
+      </p>
+      <h3 class="mt-3 text-2xl lg:text-3xl font-black tracking-tight text-[#0a2200]">Suppliers Overview</h3>
+      <p class="mt-1 text-sm text-[#355025]">Key metrics and status distribution of your suppliers.</p>
+    </div>
+  </div>
+
+  <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Chart Container -->
+    <div class="rounded-2xl bg-white/95 border border-[#dce7cd] p-6 shadow-sm">
+      <h4 class="text-sm font-bold uppercase tracking-wide text-[#4f6b38] mb-4">Status Distribution</h4>
+      <div class="h-64 relative">
+        <canvas id="supplierStatusChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="stats-appear rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Total Suppliers</p>
+        <p class="mt-2 text-3xl font-black text-[#123b12]" id="totalCount">{{ supplierStats.total }}</p>
+        <p class="mt-1 text-xs text-[#5e6f4f]">All suppliers</p>
+      </div>
+      <div class="stats-appear delay-1 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Active</p>
+        <p class="mt-2 text-3xl font-black text-emerald-600" id="activeCount">{{ supplierStats.active }}</p>
+        <p class="mt-1 text-xs text-[#5e6f4f]">Currently active</p>
+      </div>
+      <div class="stats-appear delay-2 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Inactive</p>
+        <p class="mt-2 text-3xl font-black text-gray-600" id="inactiveCount">{{ supplierStats.inactive }}</p>
+        <p class="mt-1 text-xs text-[#5e6f4f]">Not active</p>
+      </div>
+      <div class="stats-appear delay-3 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Suspended</p>
+        <p class="mt-2 text-3xl font-black text-red-600" id="suspendedCount">{{ supplierStats.suspended }}</p>
+        <p class="mt-1 text-xs text-[#5e6f4f]">Suspended</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contracts Statistics Section -->
+<div class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-6 lg:p-8 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)] mb-8">
+  <div class="pointer-events-none absolute -top-14 -right-14 h-52 w-52 rounded-full bg-[#9ac75f]/25 blur-3xl"></div>
+  <div class="pointer-events-none absolute -bottom-10 -left-10 h-44 w-44 rounded-full bg-[#2d5016]/15 blur-2xl"></div>
+
+  <div class="relative z-10 mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="inline-flex items-center gap-2 rounded-full border border-[#bad19a] bg-[#f9fde6] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#2d5016]">
+        <span class="material-symbols-outlined text-sm">description</span>
+        Contract Analytics
+      </p>
+      <h3 class="mt-3 text-2xl lg:text-3xl font-black tracking-tight text-[#0a2200]">Contracts Overview</h3>
+      <p class="mt-1 text-sm text-[#355025]">Key metrics and status distribution of your contracts.</p>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="relative z-10 grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div class="stats-appear rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Total</p>
+      <p class="mt-2 text-3xl font-black text-[#123b12]" id="contractTotalCount">{{ contractStats.total ?? 0 }}</p>
+      <p class="mt-1 text-xs text-[#5e6f4f]">All contracts</p>
+    </div>
+    <div class="stats-appear delay-1 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Active</p>
+      <p class="mt-2 text-3xl font-black text-emerald-600" id="contractActiveCount">{{ contractStats.active ?? 0 }}</p>
+      <p class="mt-1 text-xs text-[#5e6f4f]">Currently active</p>
+    </div>
+    <div class="stats-appear delay-2 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Inactive</p>
+      <p class="mt-2 text-3xl font-black text-gray-600" id="contractInactiveCount">{{ contractStats.inactive ?? 0 }}</p>
+      <p class="mt-1 text-xs text-[#5e6f4f]">Inactive</p>
+    </div>
+    <div class="stats-appear delay-3 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Expiring</p>
+      <p class="mt-2 text-3xl font-black text-yellow-600" id="contractExpiringCount">{{ contractStats.expiring ?? 0 }}</p>
+      <p class="mt-1 text-xs text-[#5e6f4f]">Within 30 days</p>
+    </div>
+    <div class="stats-appear delay-4 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Expired</p>
+      <p class="mt-2 text-3xl font-black text-red-600" id="contractExpiredCount">{{ contractStats.expired ?? 0 }}</p>
+      <p class="mt-1 text-xs text-[#5e6f4f]">Past due</p>
+    </div>
+  </div>
+</div>
+<section class="bg-surface-container-low rounded-xl p-8 space-y-8">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-2xl font-bold text-primary flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">business</span>
+Suppliers
+</h3>
+<select id="supplierSortSelect" class="px-4 py-2 bg-surface-container-lowest border-2 border-surface-variant rounded-lg text-sm font-semibold text-on-surface cursor-pointer hover:border-primary transition-colors">
+  <option value="name-asc">A - Z</option>
+  <option value="name-desc">Z - A</option>
+  <option value="type-asc">Type A - Z</option>
+  <option value="status">By Status</option>
+</select>
+</div>
+
+<!-- Search Filter for Suppliers Table -->
+<div class="relative w-full mb-6">
+<input id="tableSearchInput" class="w-full bg-surface-container-low border-2 border-surface-variant rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Search suppliers by type, description, email, phone..."/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-3" id="suppliersTable">
+<thead>
+<tr class="text-on-surface-variant text-xs uppercase tracking-widest font-bold">
+<th class="px-6 py-4">Type</th>
+<th class="px-6 py-4">Description</th>
+<th class="px-6 py-4">Address</th>
+<th class="px-6 py-4">Email</th>
+<th class="px-6 py-4">Telephone</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody id="supplierTableBody">
+{% if suppliers is defined and suppliers|length > 0 %}
+  {% for supplier in suppliers %}
+    <tr class="supplier-row bg-surface-container-lowest hover:bg-surface transition-colors"
+        data-supplier-id="{{ supplier.getIdF() }}"
+        data-supplier-type="{{ supplier.getTypeF()|lower }}"
+        data-supplier-description="{{ supplier.getDescriptionF()|lower }}"
+        data-supplier-address="{{ supplier.getAdresseF()|lower }}"
+        data-supplier-email="{{ supplier.getEmailF()|lower }}"
+        data-supplier-phone="{{ supplier.getTelF()|lower }}"
+        data-supplier-status="{{ supplier.getStatutF() }}">
+      <td class="px-6 py-5 rounded-l-2xl border-none">
+        <span class="font-bold text-primary">{{ supplier.getTypeF() }}</span>
+      </td>
+      <td class="px-6 py-5 text-sm text-on-surface">
+        {{ supplier.getDescriptionF() ?? 'N/A' }}
+      </td>
+      <td class="px-6 py-5 text-sm text-on-surface">
+        {{ supplier.getAdresseF() ?? 'N/A' }}
+      </td>
+      <td class="px-6 py-5 text-sm text-on-surface">
+        {{ supplier.getEmailF() ?? 'N/A' }}
+      </td>
+      <td class="px-6 py-5 text-sm text-on-surface">
+        {{ supplier.getTelF() ?? 'N/A' }}
+      </td>
+      <td class="px-6 py-5">
+        <span class="px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 w-fit {% if supplier.getStatutF() == 'Active' %}bg-primary-fixed text-on-primary-fixed{% elseif supplier.getStatutF() == 'Inactive' %}bg-surface-variant text-on-surface-variant{% else %}bg-error text-on-error{% endif %}">
+          {% if supplier.getStatutF() == 'Active' %}
+            <span class="w-2 h-2 rounded-full bg-on-primary-fixed animate-pulse"></span>
+          {% elseif supplier.getStatutF() == 'Suspended' %}
+            <span class="material-symbols-outlined text-[14px]">block</span>
+          {% else %}
+            <span class="material-symbols-outlined text-[14px]">pause_circle</span>
+          {% endif %}
+          {{ supplier.getStatutF() }}
+        </span>
+      </td>
+      <td class="px-6 py-5 rounded-r-2xl text-right">
+        <div class="flex items-center justify-end gap-2">
+          <button class="edit-supplier-btn p-2 hover:bg-surface-variant rounded-full transition-colors text-primary" data-supplier-id="{{ supplier.getIdF() }}" type="button">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="delete-supplier-btn p-2 hover:bg-error/10 rounded-full transition-colors text-error" data-supplier-id="{{ supplier.getIdF() }}" type="button">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+{% else %}
+  <tr>
+    <td colspan="7" class="px-6 py-12 text-center">
+      <div class="flex flex-col items-center justify-center">
+        <span class="material-symbols-outlined text-4xl text-outline mb-4">inventory_2</span>
+        <p class="text-on-surface-variant font-semibold">No suppliers found</p>
+      </div>
+    </td>
+  </tr>
+{% endif %}
+>>>>>>> livestock-parcel-product-integration
 </tbody>
 </table>
 </div>
 </section>
+<<<<<<< HEAD
+=======
+
+<!-- Contracts Table Section -->
+<section class="bg-surface-container-low rounded-xl p-8 space-y-8">
+
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold text-primary flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">description</span>
+Contracts
+</h3>
+<div class="flex items-center gap-3">
+<select id="contractSortSelect" class="px-4 py-2 bg-surface-container-lowest border-2 border-surface-variant rounded-lg text-sm font-semibold text-on-surface cursor-pointer hover:border-primary transition-colors">
+  <option value="date-desc">Newest First</option>
+  <option value="date-asc">Oldest First</option>
+  <option value="status">By Status</option>
+  <option value="supplier">By Supplier</option>
+</select>
+<button id="addContractQuickBtn" class="px-6 py-2 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all" style="display: none;">
+  <span class="flex items-center gap-2">
+    <span class="material-symbols-outlined">add</span>
+    Add Contract
+  </span>
+</button>
+</div>
+</div>
+
+<!-- Contracts Table -->
+<div class="overflow-x-auto" id="contractsTableContainer">
+<div class="text-center py-12">
+<span class="material-symbols-outlined text-5xl text-outline mb-4 block">handshake</span>
+<p class="text-on-surface-variant font-semibold">Select a supplier to view contracts</p>
+</div>
+</div>
+</section>
+
+>>>>>>> livestock-parcel-product-integration
 <!-- Bottom Insights & Visual Content -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pb-20">
 <div class="relative h-64 rounded-xl overflow-hidden group">
@@ -433,6 +714,1831 @@
 <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Confidentialité</a>
 </div>
 </footer>
+<<<<<<< HEAD
+=======
+
+<!-- Add Supplier Modal -->
+<div id="addSupplierModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2] dark:bg-[#173901]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Add New Supplier</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Fill in the details to create a new supplier account</p>
+      </div>
+      <button id="closeSupplierModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="addSupplierForm" class="p-8 space-y-6">
+      <!-- Type -->
+      <div>
+        <label for="type" class="block font-semibold text-primary mb-2">Supplier Type</label>
+        <input type="text" id="type" name="type" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="e.g., Equipment, Seeds, Fertilizer" maxlength="50">
+        <p class="text-xs text-on-surface-variant mt-1">Max. 50 characters</p>
+        <div class="error-message-supplier" id="typeError"></div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="description" class="block font-semibold text-primary mb-2">Description</label>
+        <textarea id="description" name="description" rows="3" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="Describe the supplier" maxlength="100"></textarea>
+        <p class="text-xs text-on-surface-variant mt-1">Max. 100 characters</p>
+        <div class="error-message-supplier" id="descriptionError"></div>
+      </div>
+
+      <!-- Address -->
+      <div>
+        <label for="adresse" class="block font-semibold text-primary mb-2">Address</label>
+        <input type="text" id="adresse" name="adresse" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="e.g., 123 marsa or marsa">
+        <p class="text-xs text-on-surface-variant mt-1">Must contain at least one letter (e.g., 123 marsa, marsa, or marsa 123)</p>
+        <div class="error-message-supplier" id="adresseError"></div>
+      </div>
+
+      <!-- Telephone -->
+      <div>
+        <label for="tel" class="block font-semibold text-primary mb-2">Telephone</label>
+        <input type="text" id="tel" name="tel" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="12345678" maxlength="8">
+        <p class="text-xs text-on-surface-variant mt-1">Exactly 8 digits (only numbers: 0-9, no spaces or symbols)</p>
+        <div class="error-message-supplier" id="telError"></div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label for="email" class="block font-semibold text-primary mb-2">Email Address</label>
+        <input type="text" id="email" name="email" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="supplier@example.com">
+        <p class="text-xs text-on-surface-variant mt-1">Format: name@domain.com (e.g., contact@company.tn)</p>
+        <div class="error-message-supplier" id="emailError"></div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="statut" class="block font-semibold text-primary mb-2">Status</label>
+        <div class="relative">
+          <select id="statut" name="statut" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2243682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="" class="bg-white text-gray-900">Select status</option>
+            <option value="Active" class="bg-white text-gray-900">✓ Active</option>
+            <option value="Inactive" class="bg-white text-gray-900">✗ Inactive</option>
+            <option value="Suspended" class="bg-white text-gray-900">⏸ Suspended</option>
+          </select>
+        </div>
+        <div class="error-message-supplier" id="statutError"></div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelSupplierBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg">
+          <span class="flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">business</span>
+            Create Supplier
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Supplier Modal -->
+<div id="editSupplierModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2] dark:bg-[#173901]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Edit Supplier</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Update supplier information</p>
+      </div>
+      <button id="closeEditModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="editSupplierForm" class="p-8 space-y-6">
+      <!-- Type -->
+      <div>
+        <label for="editType" class="block font-semibold text-primary mb-2">Supplier Type</label>
+        <input type="text" id="editType" name="type" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="e.g., Equipment, Seeds, Fertilizer" maxlength="50">
+        <p class="text-xs text-on-surface-variant mt-1">Max. 50 characters</p>
+        <div class="error-message-supplier" id="editTypeError"></div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="editDescription" class="block font-semibold text-primary mb-2">Description</label>
+        <textarea id="editDescription" name="description" rows="3" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="Describe the supplier" maxlength="100"></textarea>
+        <p class="text-xs text-on-surface-variant mt-1">Max. 100 characters</p>
+        <div class="error-message-supplier" id="editDescriptionError"></div>
+      </div>
+
+      <!-- Address -->
+      <div>
+        <label for="editAdresse" class="block font-semibold text-primary mb-2">Address</label>
+        <input type="text" id="editAdresse" name="adresse" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="e.g., 123 marsa or marsa">
+        <p class="text-xs text-on-surface-variant mt-1">Must contain at least one letter (e.g., 123 marsa, marsa, or marsa 123)</p>
+        <div class="error-message-supplier" id="editAdresseError"></div>
+      </div>
+
+      <!-- Telephone -->
+      <div>
+        <label for="editTel" class="block font-semibold text-primary mb-2">Telephone</label>
+        <input type="text" id="editTel" name="tel" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="12345678" maxlength="8">
+        <p class="text-xs text-on-surface-variant mt-1">Exactly 8 digits (only numbers: 0-9, no spaces or symbols)</p>
+        <div class="error-message-supplier" id="editTelError"></div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label for="editEmail" class="block font-semibold text-primary mb-2">Email Address</label>
+        <input type="text" id="editEmail" name="email" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="supplier@example.com">
+        <p class="text-xs text-on-surface-variant mt-1">Format: name@domain.com (e.g., contact@company.tn)</p>
+        <div class="error-message-supplier" id="editEmailError"></div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="editStatut" class="block font-semibold text-primary mb-2">Status</label>
+        <div class="relative">
+          <select id="editStatut" name="statut" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2243682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="Active">✓ Active</option>
+            <option value="Inactive">✗ Inactive</option>
+            <option value="Suspended">⏸ Suspended</option>
+          </select>
+        </div>
+        <div class="error-message-supplier" id="editStatutError"></div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelEditBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg">
+          <span class="flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">save</span>
+            Update Supplier
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-md w-full mx-4">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-8 border-b border-outline-variant/20">
+      <div>
+        <h2 class="text-2xl font-black text-error">Delete Supplier</h2>
+      </div>
+      <button id="closeDeleteModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-8">
+      <div class="flex gap-4 mb-6">
+        <span class="material-symbols-outlined text-4xl text-error">warning</span>
+        <div>
+          <p class="text-on-surface font-semibold mb-2">Are you sure?</p>
+          <p class="text-sm text-on-surface-variant">This action cannot be undone. The supplier will be permanently deleted from the system.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex gap-4 p-8 border-t border-outline-variant/20">
+      <button type="button" id="cancelDeleteBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+        Cancel
+      </button>
+      <button type="button" id="confirmDeleteBtn" class="flex-1 px-6 py-3 bg-error text-on-error font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg">
+        <span class="flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">delete</span>
+          Delete
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contract Modal -->
+<div id="contractModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2] dark:bg-[#173901]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Add New Contract</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Fill in the details to create a new supplier contract</p>
+      </div>
+      <button id="closeContractModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="addContractForm" class="p-8 space-y-6">
+      <input type="hidden" id="supplierId" name="id_f">
+
+      <!-- Start Date -->
+      <div>
+        <label for="dateDebut" class="block font-semibold text-primary mb-2">Start Date</label>
+        <input type="date" id="dateDebut" name="date_debut" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <p class="text-xs text-on-surface-variant mt-1">Select the contract start date</p>
+        <div class="error-message-supplier" id="dateDebutError"></div>
+      </div>
+
+      <!-- End Date -->
+      <div>
+        <label for="dateFin" class="block font-semibold text-primary mb-2">End Date</label>
+        <input type="date" id="dateFin" name="date_fin" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <p class="text-xs text-on-surface-variant mt-1">End date must be after start date</p>
+        <div class="error-message-supplier" id="dateFinError"></div>
+      </div>
+
+      <!-- Contract Type -->
+      <div>
+        <label for="contractType" class="block font-semibold text-primary mb-2">Contract Type</label>
+        <div class="relative">
+          <select id="contractType" name="type" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2243682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="" class="bg-white text-gray-900">Select type</option>
+            <option value="annual" class="bg-white text-gray-900">Annual</option>
+            <option value="monthly" class="bg-white text-gray-900">Monthly</option>
+          </select>
+        </div>
+        <div class="error-message-supplier" id="contractTypeError"></div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="contractStatus" class="block font-semibold text-primary mb-2">Status</label>
+        <div class="relative">
+          <select id="contractStatus" name="statut" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2243682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="" class="bg-white text-gray-900">Select status</option>
+            <option value="Active" class="bg-white text-gray-900">✓ Active</option>
+            <option value="Inactive" class="bg-white text-gray-900">✗ Inactive</option>
+          </select>
+        </div>
+        <div class="error-message-supplier" id="contractStatusError"></div>
+      </div>
+
+      <!-- PDF File -->
+      <div>
+        <label for="pdfFile" class="block font-semibold text-primary mb-2">Contract PDF</label>
+        <div class="relative">
+          <input type="file" id="pdfFile" name="pdf_file" accept=".pdf" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-on-primary file:cursor-pointer hover:file:opacity-80">
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">PDF files only (optional)</p>
+        <div class="error-message-supplier" id="pdfFileError"></div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelContractBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg">
+          <span class="flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">description</span>
+            Create Contract
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Contract Modal -->
+<div id="editContractModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2] dark:bg-[#173901]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Edit Contract</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Update contract information</p>
+      </div>
+      <button id="closeEditContractModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="editContractForm" class="p-8 space-y-6">
+      <input type="hidden" id="editContractId" name="id_contrat">
+
+      <!-- Start Date -->
+      <div>
+        <label for="editDateDebut" class="block font-semibold text-primary mb-2">Start Date</label>
+        <input type="date" id="editDateDebut" name="date_debut" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <p class="text-xs text-on-surface-variant mt-1">Select the contract start date</p>
+        <div class="error-message-supplier" id="editDateDebutError"></div>
+      </div>
+
+      <!-- End Date -->
+      <div>
+        <label for="editDateFin" class="block font-semibold text-primary mb-2">End Date</label>
+        <input type="date" id="editDateFin" name="date_fin" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <p class="text-xs text-on-surface-variant mt-1">End date must be after start date</p>
+        <div class="error-message-supplier" id="editDateFinError"></div>
+      </div>
+
+      <!-- Contract Type -->
+      <div>
+        <label for="editContractType" class="block font-semibold text-primary mb-2">Contract Type</label>
+        <div class="relative">
+          <select id="editContractType" name="type" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2243682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="annual">Annual</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="error-message-supplier" id="editContractTypeError"></div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="editContractStatus" class="block font-semibold text-primary mb-2">Status</label>
+        <div class="relative">
+          <select id="editContractStatus" name="statut" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2243682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="Active">✓ Active</option>
+            <option value="Inactive">✗ Inactive</option>
+          </select>
+        </div>
+        <div class="error-message-supplier" id="editContractStatusError"></div>
+      </div>
+
+      <!-- PDF File -->
+      <div>
+        <label for="editPdfFile" class="block font-semibold text-primary mb-2">Contract PDF</label>
+        <div class="relative">
+          <input type="file" id="editPdfFile" name="pdf_file" accept=".pdf" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-on-primary file:cursor-pointer hover:file:opacity-80">
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">PDF files only (optional)</p>
+        <div class="error-message-supplier" id="editPdfFileError"></div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelEditContractBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg">
+          <span class="flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">save</span>
+            Update Contract
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Contract Confirmation Modal -->
+<div id="deleteContractModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-md w-full mx-4">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-8 border-b border-outline-variant/20">
+      <div>
+        <h2 class="text-2xl font-black text-error">Delete Contract</h2>
+      </div>
+      <button id="closeDeleteContractModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-8">
+      <div class="flex gap-4 mb-6">
+        <span class="material-symbols-outlined text-4xl text-error">warning</span>
+        <div>
+          <p class="text-on-surface font-semibold mb-2">Are you sure?</p>
+          <p class="text-sm text-on-surface-variant">This action cannot be undone. The contract will be permanently deleted from the system.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex gap-4 p-8 border-t border-outline-variant/20">
+      <button type="button" id="cancelDeleteContractBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+        Cancel
+      </button>
+      <button type="button" id="confirmDeleteContractBtn" class="flex-1 px-6 py-3 bg-error text-on-error font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg">
+        <span class="flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">delete</span>
+          Delete
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Styles -->
+<style>
+  .error-message-supplier {
+    color: #ba1a1a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;    display: block;
+    min-height: 1.2em;
+  }
+
+  #type.error-field,
+  #description.error-field,
+  #adresse.error-field,
+  #tel.error-field,
+  #email.error-field,
+  #statut.error-field,
+  #editType.error-field,
+  #editDescription.error-field,
+  #editAdresse.error-field,
+  #editTel.error-field,
+  #editEmail.error-field,
+  #editStatut.error-field {
+    border-color: #ba1a1a !important;
+    background-color: rgba(186, 26, 26, 0.05);
+  }
+
+  /* Status Select Styling */
+  #statut,
+  #editStatut {
+    appearance: none !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color: #1b1d0e;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  #statut:hover,
+  #editStatut:hover {
+    border-color: #116530 !important;
+  }
+
+  #statut:focus,
+  #editStatut:focus {
+    border-color: #116530 !important;
+    box-shadow: 0 0 0 4px rgba(17, 101, 48, 0.1) !important;
+  }
+
+  #statut option,
+  #editStatut option {
+    padding: 8px 12px;
+    background: #ffffff;
+    color: #1b1d0e;
+    font-weight: 500;
+  }
+
+  #statut option:hover,
+  #editStatut option:hover {
+    background: #116530;
+    color: #ffffff;
+  }
+
+  #statut option:checked,
+  #editStatut option:checked {
+    background: linear-gradient(135deg, #116530 0%, #0d4c23 100%);
+    color: #ffffff;
+  }
+
+  #contractType,
+  #contractStatus {
+    appearance: none !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color: #1b1d0e;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  #contractType:hover,
+  #contractStatus:hover {
+    border-color: #116530 !important;
+  }
+
+  #contractType:focus,
+  #contractStatus:focus {
+    border-color: #116530 !important;
+    box-shadow: 0 0 0 4px rgba(17, 101, 48, 0.1) !important;
+  }
+
+  #contractType option,
+  #contractStatus option {
+    padding: 8px 12px;
+    background: #ffffff;
+    color: #1b1d0e;
+    font-weight: 500;
+  }
+
+  #contractType option:hover,
+  #contractStatus option:hover {
+    background: #116530;
+    color: #ffffff;
+  }
+
+  #contractType option:checked,
+  #contractStatus option:checked {
+    background: linear-gradient(135deg, #116530 0%, #0d4c23 100%);
+    color: #ffffff;
+  }
+
+  #dateDebut.error-field,
+  #dateFin.error-field,
+  #contractType.error-field,
+  #contractStatus.error-field,
+  #pdfFile.error-field,
+  #editDateDebut.error-field,
+  #editDateFin.error-field,
+  #editContractType.error-field,
+  #editContractStatus.error-field,
+  #editPdfFile.error-field {
+    border-color: #ba1a1a !important;
+    background-color: rgba(186, 26, 26, 0.05);
+  }
+
+  #editContractType,
+  #editContractStatus {
+    appearance: none !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color: #1b1d0e;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  #editContractType:hover,
+  #editContractStatus:hover {
+    border-color: #116530 !important;
+  }
+
+  #editContractType:focus,
+  #editContractStatus:focus {
+    border-color: #116530 !important;
+    box-shadow: 0 0 0 4px rgba(17, 101, 48, 0.1) !important;
+  }
+
+  #editContractType option,
+  #editContractStatus option {
+    padding: 8px 12px;
+    background: #ffffff;
+    color: #1b1d0e;
+    font-weight: 500;
+  }
+
+  #editContractType option:hover,
+  #editContractStatus option:hover {
+    background: #116530;
+    color: #ffffff;
+  }
+
+  #editContractType option:checked,
+  #editContractStatus option:checked {
+    background: linear-gradient(135deg, #116530 0%, #0d4c23 100%);
+    color: #ffffff;
+  }
+
+
+</style>
+
+<!-- Modal JavaScript -->
+<script>
+  // Validation Functions
+  function validateType(value) {
+    if (value.length > 50) {
+      return { valid: false, message: 'Max. 50 characters' };
+    }
+    if (value.trim() === '') {
+      return { valid: false, message: 'Supplier type is required' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateDescription(value) {
+    if (value.length > 100) {
+      return { valid: false, message: 'Max. 100 characters' };
+    }
+    if (value.trim() === '') {
+      return { valid: false, message: 'Description is required' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateAdresse(value) {
+    if (value.trim() === '') {
+      return { valid: false, message: 'Address is required' };
+    }
+    // Address must contain at least one letter
+    if (!/[a-zA-Z]/.test(value)) {
+      return { valid: false, message: 'Address must contain at least one letter (e.g., 123 marsa or marsa)' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateTel(value) {
+    if (value.trim() === '') {
+      return { valid: false, message: 'Telephone is required' };
+    }
+    if (!/^\d{8}$/.test(value)) {
+      return { valid: false, message: 'Must be exactly 8 digits (only numbers)' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateEmail(value) {
+    if (value.trim() === '') {
+      return { valid: false, message: 'Email is required' };
+    }
+    // Simple email validation: name@domain.com
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return { valid: false, message: 'Invalid email format (e.g., name@domain.com)' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateStatut(value) {
+    if (value === '') {
+      return { valid: false, message: 'Please select a status' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  // Update field styles and error message
+  function updateFieldValidation(fieldId, isValid, message = '') {
+    const field = document.getElementById(fieldId);
+    const errorEl = document.getElementById(fieldId + 'Error');
+
+    if (isValid) {
+      field.classList.remove('error-field');
+      if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.style.display = 'none';
+      }
+    } else {
+      field.classList.add('error-field');
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+      }
+    }
+  }
+
+  // Modal Control
+  const addSupplierBtn = document.getElementById('addSupplierBtn');
+  const addSupplierModal = document.getElementById('addSupplierModal');
+  const closeSupplierModalBtn = document.getElementById('closeSupplierModalBtn');
+  const cancelSupplierBtn = document.getElementById('cancelSupplierBtn');
+  const addSupplierForm = document.getElementById('addSupplierForm');
+
+  // Get all form fields
+  const typeField = document.getElementById('type');
+  const descriptionField = document.getElementById('description');
+  const adresseField = document.getElementById('adresse');
+  const telField = document.getElementById('tel');
+  const emailField = document.getElementById('email');
+  const statutField = document.getElementById('statut');
+
+  // Open Modal
+  addSupplierBtn.addEventListener('click', function() {
+    addSupplierModal.classList.remove('hidden');
+    addSupplierForm.reset();
+    // Reset error states
+    document.querySelectorAll('[id$="Error"]').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+    document.querySelectorAll('.error-field').forEach(el => {
+      el.classList.remove('error-field');
+    });
+  });
+
+  // Close Modal
+  closeSupplierModalBtn.addEventListener('click', function() {
+    addSupplierModal.classList.add('hidden');
+  });
+
+  cancelSupplierBtn.addEventListener('click', function() {
+    addSupplierModal.classList.add('hidden');
+  });
+
+  // Close on backdrop click
+  addSupplierModal.addEventListener('click', function(e) {
+    if (e.target === addSupplierModal) {
+      addSupplierModal.classList.add('hidden');
+    }
+  });
+
+  // Real-time validation
+  typeField.addEventListener('input', function() {
+    const validation = validateType(this.value);
+    updateFieldValidation('type', validation.valid, validation.message);
+  });
+
+  descriptionField.addEventListener('input', function() {
+    const validation = validateDescription(this.value);
+    updateFieldValidation('description', validation.valid, validation.message);
+  });
+
+  adresseField.addEventListener('input', function() {
+    const validation = validateAdresse(this.value);
+    updateFieldValidation('adresse', validation.valid, validation.message);
+  });
+
+  telField.addEventListener('input', function() {
+    const validation = validateTel(this.value);
+    updateFieldValidation('tel', validation.valid, validation.message);
+  });
+
+  emailField.addEventListener('input', function() {
+    const validation = validateEmail(this.value);
+    updateFieldValidation('email', validation.valid, validation.message);
+  });
+
+  statutField.addEventListener('change', function() {
+    const validation = validateStatut(this.value);
+    updateFieldValidation('statut', validation.valid, validation.message);
+  });
+
+  // Form Submission
+  addSupplierForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.querySelectorAll('.error-field').forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('.error-message-supplier').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+
+    // Get form data
+    const formData = new FormData(addSupplierForm);
+
+    try {
+      const response = await fetch('{{ path("elfirma_add_supplier") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Supplier created successfully!');
+        addSupplierModal.classList.add('hidden');
+
+        // Store supplier ID for contract creation
+        const supplierId = data.id || null;
+        if (supplierId) {
+          // Show SweetAlert confirmation dialog
+          Swal.fire({
+            title: 'Add Contract?',
+            text: 'Would you like to add a contract for this supplier?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Add Contract',
+            cancelButtonText: 'No, Not Now',
+            confirmButtonColor: '#116530',
+            cancelButtonColor: '#6c757d',
+            reverseButtons: true
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Open contract modal with supplier ID
+              document.getElementById('supplierId').value = supplierId;
+              document.getElementById('contractModal').classList.remove('hidden');
+            } else {
+              window.location.reload();
+            }
+          });
+        } else {
+          window.location.reload();
+        }
+      } else {
+        // Display errors
+        if (data.errors) {
+          for (const [field, message] of Object.entries(data.errors)) {
+            const input = document.getElementById(field);
+            const errorEl = document.getElementById(field + 'Error');
+            if (input) input.classList.add('error-field');
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.style.display = 'block';
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while creating the supplier');
+    }
+  });
+
+  // Edit Supplier Functionality
+  const editSupplierModal = document.getElementById('editSupplierModal');
+  const editSupplierForm = document.getElementById('editSupplierForm');
+  const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+  let currentEditingSupplierId = null;
+
+  // Get edit form fields
+  const editTypeField = document.getElementById('editType');
+  const editDescriptionField = document.getElementById('editDescription');
+  const editAdresseField = document.getElementById('editAdresse');
+  const editTelField = document.getElementById('editTel');
+  const editEmailField = document.getElementById('editEmail');
+  const editStatutField = document.getElementById('editStatut');
+
+  // Real-time validation for edit form
+  editTypeField.addEventListener('input', function() {
+    const validation = validateType(this.value);
+    updateFieldValidation('editType', validation.valid, validation.message);
+  });
+
+  editDescriptionField.addEventListener('input', function() {
+    const validation = validateDescription(this.value);
+    updateFieldValidation('editDescription', validation.valid, validation.message);
+  });
+
+  editAdresseField.addEventListener('input', function() {
+    const validation = validateAdresse(this.value);
+    updateFieldValidation('editAdresse', validation.valid, validation.message);
+  });
+
+  editTelField.addEventListener('input', function() {
+    const validation = validateTel(this.value);
+    updateFieldValidation('editTel', validation.valid, validation.message);
+  });
+
+  editEmailField.addEventListener('input', function() {
+    const validation = validateEmail(this.value);
+    updateFieldValidation('editEmail', validation.valid, validation.message);
+  });
+
+  editStatutField.addEventListener('change', function() {
+    const validation = validateStatut(this.value);
+    updateFieldValidation('editStatut', validation.valid, validation.message);
+  });
+
+  // Edit button listeners
+  document.querySelectorAll('.edit-supplier-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const row = this.closest('tr');
+      const supplierId = this.dataset.supplierId;
+
+      // Get data from table row
+      const cells = row.querySelectorAll('td');
+      const type = cells[0].textContent.trim();
+      const description = cells[1].textContent.trim();
+      const address = cells[2].textContent.trim();
+      const email = cells[3].textContent.trim();
+      const telephone = cells[4].textContent.trim();
+      const status = cells[5].querySelector('span').textContent.trim();
+
+      // Populate form
+      document.getElementById('editType').value = type;
+      document.getElementById('editDescription').value = description;
+      document.getElementById('editAdresse').value = address;
+      document.getElementById('editTel').value = telephone;
+      document.getElementById('editEmail').value = email;
+      document.getElementById('editStatut').value = status;
+
+      // Clear previous errors
+      document.querySelectorAll('[id^="edit"][id$="Error"]').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('#editSupplierForm .error-field').forEach(el => {
+        el.classList.remove('error-field');
+      });
+
+      currentEditingSupplierId = supplierId;
+      editSupplierModal.classList.remove('hidden');
+    });
+  });
+
+  closeEditModalBtn?.addEventListener('click', function() {
+    editSupplierModal.classList.add('hidden');
+  });
+
+  cancelEditBtn?.addEventListener('click', function() {
+    editSupplierModal.classList.add('hidden');
+  });
+
+  editSupplierModal?.addEventListener('click', function(e) {
+    if (e.target === editSupplierModal) {
+      editSupplierModal.classList.add('hidden');
+    }
+  });
+
+  // Edit form submission
+  editSupplierForm?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.querySelectorAll('#editSupplierForm .error-field').forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('[id^="edit"][id$="Error"]').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+
+    const formData = new FormData();
+    formData.append('supplier_id', currentEditingSupplierId);
+    formData.append('type', document.getElementById('editType').value);
+    formData.append('description', document.getElementById('editDescription').value);
+    formData.append('adresse', document.getElementById('editAdresse').value);
+    formData.append('tel', document.getElementById('editTel').value);
+    formData.append('email', document.getElementById('editEmail').value);
+    formData.append('statut', document.getElementById('editStatut').value);
+
+    try {
+      const response = await fetch('{{ path("elfirma_update_supplier") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Supplier updated successfully!');
+        editSupplierModal.classList.add('hidden');
+        window.location.reload();
+      } else {
+        // Display errors from backend
+        if (data.errors) {
+          for (const [field, message] of Object.entries(data.errors)) {
+            const fieldId = 'edit' + field.charAt(0).toUpperCase() + field.slice(1);
+            const input = document.getElementById(fieldId);
+            const errorEl = document.getElementById(fieldId + 'Error');
+            if (input) input.classList.add('error-field');
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.style.display = 'block';
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while updating the supplier');
+    }
+  });
+
+  // Delete Supplier Functionality
+  const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+  const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+  const closeDeleteModalBtn = document.getElementById('closeDeleteModalBtn');
+
+  let currentDeletingSupplierId = null;
+
+  // Delete button listeners
+  document.querySelectorAll('.delete-supplier-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentDeletingSupplierId = this.dataset.supplierId;
+      deleteConfirmModal.classList.remove('hidden');
+    });
+  });
+
+  closeDeleteModalBtn?.addEventListener('click', function() {
+    deleteConfirmModal.classList.add('hidden');
+  });
+
+  cancelDeleteBtn?.addEventListener('click', function() {
+    deleteConfirmModal.classList.add('hidden');
+  });
+
+  deleteConfirmModal?.addEventListener('click', function(e) {
+    if (e.target === deleteConfirmModal) {
+      deleteConfirmModal.classList.add('hidden');
+    }
+  });
+
+  confirmDeleteBtn?.addEventListener('click', async function() {
+    const formData = new FormData();
+    formData.append('supplier_id', currentDeletingSupplierId);
+
+    try {
+      const response = await fetch('{{ path("elfirma_delete_supplier") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Supplier deleted successfully!');
+        deleteConfirmModal.classList.add('hidden');
+        window.location.reload();
+      } else {
+        alert('Error deleting supplier');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while deleting the supplier');
+    }
+  });
+
+  // Contract Form Functionality
+  const contractModal = document.getElementById('contractModal');
+  const addContractForm = document.getElementById('addContractForm');
+  const closeContractModalBtn = document.getElementById('closeContractModalBtn');
+  const cancelContractBtn = document.getElementById('cancelContractBtn');
+
+  // Get contract form fields
+  const dateDebutField = document.getElementById('dateDebut');
+  const dateFinField = document.getElementById('dateFin');
+  const contractTypeField = document.getElementById('contractType');
+  const contractStatusField = document.getElementById('contractStatus');
+  const pdfFileField = document.getElementById('pdfFile');
+
+  // Supplier Row Click Handler - Display Contracts
+  let currentSelectedSupplierId = null;
+  document.querySelectorAll('tbody tr').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', async function(e) {
+      // Don't trigger if clicking edit/delete buttons
+      if (e.target.closest('button')) return;
+
+      const supplierId = this.querySelector('.edit-supplier-btn')?.dataset.supplierId;
+      if (!supplierId) return;
+
+      currentSelectedSupplierId = supplierId;
+
+      // Highlight selected row
+      document.querySelectorAll('tbody tr').forEach(r => {
+        r.style.backgroundColor = '';
+      });
+      this.style.backgroundColor = 'rgba(67, 104, 43, 0.1)';
+
+      // Fetch contracts
+      try {
+        const response = await fetch(`{{ path('elfirma_get_supplier_contracts') }}?supplier_id=${supplierId}`);
+        const data = await response.json();
+
+        if (data.success && data.contracts) {
+          displayContracts(data.contracts, supplierId);
+        } else {
+          displayContracts([], supplierId);
+        }
+      } catch (error) {
+        console.error('Error fetching contracts:', error);
+        displayContracts([], supplierId);
+      }
+    });
+  });
+
+  function displayContracts(contracts, supplierId) {
+    const container = document.getElementById('contractsTableContainer');
+    const addContractQuickBtn = document.getElementById('addContractQuickBtn');
+
+    if (contracts.length === 0) {
+      addContractQuickBtn.style.display = 'inline-flex';
+      addContractQuickBtn.onclick = function() {
+        document.getElementById('supplierId').value = supplierId;
+        document.getElementById('contractModal').classList.remove('hidden');
+      };
+
+      container.innerHTML = `
+        <div class="text-center py-12">
+          <span class="material-symbols-outlined text-5xl text-outline mb-4 block">description</span>
+          <p class="text-on-surface-variant font-semibold">No contracts found for this supplier</p>
+        </div>
+      `;
+      return;
+    }
+
+    addContractQuickBtn.style.display = 'inline-flex';
+    addContractQuickBtn.onclick = function() {
+      document.getElementById('supplierId').value = supplierId;
+      document.getElementById('contractModal').classList.remove('hidden');
+    };
+
+    let tableHTML = `
+      <table class="w-full text-left border-separate border-spacing-y-3">
+        <thead>
+          <tr class="text-on-surface-variant text-xs uppercase tracking-widest font-bold">
+            <th class="px-6 py-4">Type</th>
+            <th class="px-6 py-4">Start Date</th>
+            <th class="px-6 py-4">End Date</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4">PDF</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    contracts.forEach(contract => {
+      const statusClass = contract.statut === 'Active'
+        ? 'bg-primary-fixed text-on-primary-fixed'
+        : 'bg-surface-variant text-on-surface-variant';
+
+      const statusIcon = contract.statut === 'Active'
+        ? '<span class="w-2 h-2 rounded-full bg-on-primary-fixed animate-pulse"></span>'
+        : '<span class="material-symbols-outlined text-[14px]">pause_circle</span>';
+
+      const pdfLink = contract.pdf_file
+        ? `<a href="/${contract.pdf_file}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:opacity-80 transition-all text-xs font-semibold">
+            <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+            Download
+          </a>`
+        : '<span class="text-on-surface-variant text-sm">—</span>';
+
+      const typeText = contract.type === 'annual' ? 'Annual' : 'Monthly';
+
+      tableHTML += `
+        <tr class="bg-surface-container-lowest hover:bg-surface transition-colors contract-row" data-contract-status="${contract.statut}" data-supplier-name="${contract.supplier_name || ''}" data-contract-end-date="${contract.date_fin}" data-contract-start-date="${contract.date_debut}" data-contract-type="${contract.type}">
+          <td class="px-6 py-5 rounded-l-2xl border-none">
+            <span class="font-bold text-primary">${typeText}</span>
+          </td>
+          <td class="px-6 py-5 text-sm text-on-surface">
+            ${new Date(contract.date_debut).toLocaleDateString()}
+          </td>
+          <td class="px-6 py-5 text-sm text-on-surface">
+            ${new Date(contract.date_fin).toLocaleDateString()}
+          </td>
+          <td class="px-6 py-5">
+            <span class="px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 w-fit ${statusClass}">
+              ${statusIcon}
+              ${contract.statut}
+            </span>
+          </td>
+          <td class="px-6 py-5">
+            ${pdfLink}
+          </td>
+          <td class="px-6 py-5 rounded-r-2xl text-right">
+            <div class="flex items-center justify-end gap-2">
+              <button class="edit-contract-btn p-2 hover:bg-surface-variant rounded-full transition-colors text-primary" data-contract-id="${contract.id}" data-contract-type="${contract.type}" data-contract-debut="${contract.date_debut}" data-contract-fin="${contract.date_fin}" data-contract-statut="${contract.statut}" type="button">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="delete-contract-btn p-2 hover:bg-error/10 rounded-full transition-colors text-error" data-contract-id="${contract.id}" type="button">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+
+    tableHTML += `
+        </tbody>
+      </table>
+    `;
+
+    container.innerHTML = tableHTML;
+  }
+
+  // Validation functions for contract
+  function validateDateDebut(value) {
+    if (value.trim() === '') {
+      return { valid: false, message: 'Start date is required' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateDateFin(value, dateDebutValue) {
+    if (value.trim() === '') {
+      return { valid: false, message: 'End date is required' };
+    }
+    if (dateDebutValue && value <= dateDebutValue) {
+      return { valid: false, message: 'End date must be after start date' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateContractType(value) {
+    if (value === '') {
+      return { valid: false, message: 'Please select a contract type' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateContractStatus(value) {
+    if (value === '') {
+      return { valid: false, message: 'Please select a status' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  // Real-time validation
+  dateDebutField.addEventListener('change', function() {
+    const validation = validateDateDebut(this.value);
+    updateFieldValidation('dateDebut', validation.valid, validation.message);
+    // Also validate end date if it has a value
+    if (dateFinField.value) {
+      const finValidation = validateDateFin(dateFinField.value, this.value);
+      updateFieldValidation('dateFin', finValidation.valid, finValidation.message);
+    }
+  });
+
+  dateFinField.addEventListener('change', function() {
+    const validation = validateDateFin(this.value, dateDebutField.value);
+    updateFieldValidation('dateFin', validation.valid, validation.message);
+  });
+
+  contractTypeField.addEventListener('change', function() {
+    const validation = validateContractType(this.value);
+    updateFieldValidation('contractType', validation.valid, validation.message);
+  });
+
+  contractStatusField.addEventListener('change', function() {
+    const validation = validateContractStatus(this.value);
+    updateFieldValidation('contractStatus', validation.valid, validation.message);
+  });
+
+  // Close contract modal
+  closeContractModalBtn.addEventListener('click', function() {
+    contractModal.classList.add('hidden');
+    addContractForm.reset();
+  });
+
+  cancelContractBtn.addEventListener('click', function() {
+    contractModal.classList.add('hidden');
+    addContractForm.reset();
+  });
+
+  contractModal.addEventListener('click', function(e) {
+    if (e.target === contractModal) {
+      contractModal.classList.add('hidden');
+      addContractForm.reset();
+    }
+  });
+
+  // Form submission
+  addContractForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.querySelectorAll('#addContractForm .error-field').forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('[id$="Error"]').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+
+    // Validate before submission
+    let hasErrors = false;
+    const dateDebutValidation = validateDateDebut(dateDebutField.value);
+    const dateFinValidation = validateDateFin(dateFinField.value, dateDebutField.value);
+    const typeValidation = validateContractType(contractTypeField.value);
+    const statusValidation = validateContractStatus(contractStatusField.value);
+
+    if (!dateDebutValidation.valid) {
+      updateFieldValidation('dateDebut', false, dateDebutValidation.message);
+      hasErrors = true;
+    }
+    if (!dateFinValidation.valid) {
+      updateFieldValidation('dateFin', false, dateFinValidation.message);
+      hasErrors = true;
+    }
+    if (!typeValidation.valid) {
+      updateFieldValidation('contractType', false, typeValidation.message);
+      hasErrors = true;
+    }
+    if (!statusValidation.valid) {
+      updateFieldValidation('contractStatus', false, statusValidation.message);
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      return;
+    }
+
+    const formData = new FormData(addContractForm);
+
+    try {
+      const response = await fetch('{{ path("elfirma_add_contract") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Contract created successfully!');
+        contractModal.classList.add('hidden');
+        window.location.reload();
+      } else {
+        // Display errors from backend
+        if (data.errors) {
+          for (const [field, message] of Object.entries(data.errors)) {
+            const input = document.getElementById(field === 'date_debut' ? 'dateDebut' : field === 'date_fin' ? 'dateFin' : field === 'type' ? 'contractType' : field === 'statut' ? 'contractStatus' : field === 'pdf_file' ? 'pdfFile' : field);
+            const errorEl = document.getElementById((field === 'date_debut' ? 'dateDebut' : field === 'date_fin' ? 'dateFin' : field === 'type' ? 'contractType' : field === 'statut' ? 'contractStatus' : field === 'pdf_file' ? 'pdfFile' : field) + 'Error');
+            if (input) input.classList.add('error-field');
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.style.display = 'block';
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while creating the contract');
+    }
+  });
+
+  // Edit Contract Functionality
+  const editContractModal = document.getElementById('editContractModal');
+  const editContractForm = document.getElementById('editContractForm');
+  const closeEditContractModalBtn = document.getElementById('closeEditContractModalBtn');
+  const cancelEditContractBtn = document.getElementById('cancelEditContractBtn');
+
+  const editDateDebutField = document.getElementById('editDateDebut');
+  const editDateFinField = document.getElementById('editDateFin');
+  const editContractTypeField = document.getElementById('editContractType');
+  const editContractStatusField = document.getElementById('editContractStatus');
+
+  // Real-time validation for edit contract
+  editDateDebutField.addEventListener('change', function() {
+    const validation = validateDateDebut(this.value);
+    updateFieldValidation('editDateDebut', validation.valid, validation.message);
+    if (editDateFinField.value) {
+      const finValidation = validateDateFin(editDateFinField.value, this.value);
+      updateFieldValidation('editDateFin', finValidation.valid, finValidation.message);
+    }
+  });
+
+  editDateFinField.addEventListener('change', function() {
+    const validation = validateDateFin(this.value, editDateDebutField.value);
+    updateFieldValidation('editDateFin', validation.valid, validation.message);
+  });
+
+  editContractTypeField.addEventListener('change', function() {
+    const validation = validateContractType(this.value);
+    updateFieldValidation('editContractType', validation.valid, validation.message);
+  });
+
+  editContractStatusField.addEventListener('change', function() {
+    const validation = validateContractStatus(this.value);
+    updateFieldValidation('editContractStatus', validation.valid, validation.message);
+  });
+
+  // Edit button handlers
+  let currentEditingContractId = null;
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.edit-contract-btn')) {
+      const btn = e.target.closest('.edit-contract-btn');
+      currentEditingContractId = btn.dataset.contractId;
+
+      // Populate form
+      document.getElementById('editContractId').value = btn.dataset.contractId;
+      editDateDebutField.value = btn.dataset.contractDebut;
+      editDateFinField.value = btn.dataset.contractFin;
+      editContractTypeField.value = btn.dataset.contractType;
+      editContractStatusField.value = btn.dataset.contractStatut;
+
+      // Clear previous errors
+      document.querySelectorAll('[id^="edit"][id$="Error"]').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('#editContractForm .error-field').forEach(el => {
+        el.classList.remove('error-field');
+      });
+
+      editContractModal.classList.remove('hidden');
+    }
+  });
+
+  closeEditContractModalBtn.addEventListener('click', function() {
+    editContractModal.classList.add('hidden');
+    editContractForm.reset();
+  });
+
+  cancelEditContractBtn.addEventListener('click', function() {
+    editContractModal.classList.add('hidden');
+    editContractForm.reset();
+  });
+
+  editContractModal.addEventListener('click', function(e) {
+    if (e.target === editContractModal) {
+      editContractModal.classList.add('hidden');
+      editContractForm.reset();
+    }
+  });
+
+  // Edit form submission
+  editContractForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.querySelectorAll('#editContractForm .error-field').forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('[id^="edit"][id$="Error"]').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+
+    // Validate before submission
+    let hasErrors = false;
+    const dateDebutValidation = validateDateDebut(editDateDebutField.value);
+    const dateFinValidation = validateDateFin(editDateFinField.value, editDateDebutField.value);
+    const typeValidation = validateContractType(editContractTypeField.value);
+    const statusValidation = validateContractStatus(editContractStatusField.value);
+
+    if (!dateDebutValidation.valid) {
+      updateFieldValidation('editDateDebut', false, dateDebutValidation.message);
+      hasErrors = true;
+    }
+    if (!dateFinValidation.valid) {
+      updateFieldValidation('editDateFin', false, dateFinValidation.message);
+      hasErrors = true;
+    }
+    if (!typeValidation.valid) {
+      updateFieldValidation('editContractType', false, typeValidation.message);
+      hasErrors = true;
+    }
+    if (!statusValidation.valid) {
+      updateFieldValidation('editContractStatus', false, statusValidation.message);
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      return;
+    }
+
+    const formData = new FormData(editContractForm);
+
+    try {
+      const response = await fetch('{{ path("elfirma_update_contract") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Contract updated successfully!',
+          icon: 'success',
+          confirmButtonColor: '#116530'
+        }).then(() => {
+          editContractModal.classList.add('hidden');
+          location.reload();
+        });
+      } else {
+        // Display errors from backend
+        if (data.errors) {
+          for (const [field, message] of Object.entries(data.errors)) {
+            const fieldId = 'edit' + field.charAt(0).toUpperCase() + field.slice(1);
+            const input = document.getElementById(fieldId);
+            const errorEl = document.getElementById(fieldId + 'Error');
+            if (input) input.classList.add('error-field');
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.style.display = 'block';
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while updating the contract');
+    }
+  });
+
+  // Delete Contract Functionality
+  const deleteContractModal = document.getElementById('deleteContractModal');
+  const confirmDeleteContractBtn = document.getElementById('confirmDeleteContractBtn');
+  const cancelDeleteContractBtn = document.getElementById('cancelDeleteContractBtn');
+  const closeDeleteContractModalBtn = document.getElementById('closeDeleteContractModalBtn');
+
+  let currentDeletingContractId = null;
+
+  // Delete button handlers
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.delete-contract-btn')) {
+      const btn = e.target.closest('.delete-contract-btn');
+      currentDeletingContractId = btn.dataset.contractId;
+      deleteContractModal.classList.remove('hidden');
+    }
+  });
+
+  closeDeleteContractModalBtn.addEventListener('click', function() {
+    deleteContractModal.classList.add('hidden');
+  });
+
+  cancelDeleteContractBtn.addEventListener('click', function() {
+    deleteContractModal.classList.add('hidden');
+  });
+
+  deleteContractModal.addEventListener('click', function(e) {
+    if (e.target === deleteContractModal) {
+      deleteContractModal.classList.add('hidden');
+    }
+  });
+
+  confirmDeleteContractBtn.addEventListener('click', async function() {
+    const formData = new FormData();
+    formData.append('id_contrat', currentDeletingContractId);
+
+    try {
+      const response = await fetch('{{ path("elfirma_delete_contract") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Contract deleted successfully!',
+          icon: 'success',
+          confirmButtonColor: '#116530'
+        }).then(() => {
+          deleteContractModal.classList.add('hidden');
+          location.reload();
+        });
+      } else {
+        alert('Error deleting contract');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while deleting the contract');
+    }
+  });
+
+
+
+  // Suppliers Table Search Filter
+  document.addEventListener('DOMContentLoaded', function() {
+    const tableSearchInput = document.getElementById('tableSearchInput');
+    const supplierRows = document.querySelectorAll('.supplier-row');
+
+    if (tableSearchInput) {
+      tableSearchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+
+        supplierRows.forEach(row => {
+          const type = (row.getAttribute('data-supplier-type') || '').toLowerCase();
+          const description = (row.getAttribute('data-supplier-description') || '').toLowerCase();
+          const address = (row.getAttribute('data-supplier-address') || '').toLowerCase();
+          const email = (row.getAttribute('data-supplier-email') || '').toLowerCase();
+          const phone = (row.getAttribute('data-supplier-phone') || '').toLowerCase();
+
+          const matches = type.includes(searchTerm) ||
+                         description.includes(searchTerm) ||
+                         address.includes(searchTerm) ||
+                         email.includes(searchTerm) ||
+                         phone.includes(searchTerm) ||
+                         searchTerm === '';
+
+          row.style.display = matches ? '' : 'none';
+        });
+      });
+    }
+  });
+
+  // Supplier Status Statistics Chart
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get data from Twig variables
+    const activeCount = {{ supplierStats.active ?? 0 }};
+    const inactiveCount = {{ supplierStats.inactive ?? 0 }};
+    const suspendedCount = {{ supplierStats.suspended ?? 0 }};
+    const totalCount = {{ supplierStats.total ?? 0 }};
+
+    // Update stat cards
+    document.getElementById('activeCount').textContent = activeCount;
+    document.getElementById('inactiveCount').textContent = inactiveCount;
+    document.getElementById('suspendedCount').textContent = suspendedCount;
+    document.getElementById('totalCount').textContent = totalCount;
+
+    // Contract Statistics
+    const contractTotalCount = {{ contractStats.total ?? 0 }};
+    const contractActiveCount = {{ contractStats.active ?? 0 }};
+    const contractInactiveCount = {{ contractStats.inactive ?? 0 }};
+    const contractExpiringCount = {{ contractStats.expiring ?? 0 }};
+    const contractExpiredCount = {{ contractStats.expired ?? 0 }};
+
+    // Update contract stat cards
+    document.getElementById('contractTotalCount').textContent = contractTotalCount;
+    document.getElementById('contractActiveCount').textContent = contractActiveCount;
+    document.getElementById('contractInactiveCount').textContent = contractInactiveCount;
+    document.getElementById('contractExpiringCount').textContent = contractExpiringCount;
+    document.getElementById('contractExpiredCount').textContent = contractExpiredCount;
+
+    // Create Chart.js Doughnut Chart
+    const ctx = document.getElementById('supplierStatusChart');
+    if (ctx) {
+      const chartData = {
+        labels: ['Active', 'Inactive', 'Suspended'],
+        datasets: [{
+          data: [activeCount, inactiveCount, suspendedCount],
+          backgroundColor: [
+            '#116530', // Active - primary green (main project color)
+            '#73796c', // Inactive - outline neutral
+            '#ba1a1a'  // Suspended - error red
+          ],
+          borderColor: [
+            '#0a2200', // Active border darker
+            '#475240', // Inactive border darker
+            '#8a1515'  // Suspended border darker
+          ],
+          borderWidth: 2.5,
+          borderRadius: 10,
+          spacing: 3
+        }]
+      };
+
+      const chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: {
+                  family: "'Inter', sans-serif",
+                  size: 13,
+                  weight: '600'
+                },
+                color: '#43493d',
+                padding: 20,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(10, 34, 0, 0.9)',
+              titleFont: {
+                family: "'Inter', sans-serif",
+                size: 14,
+                weight: '700'
+              },
+              bodyFont: {
+                family: "'Open Sans', sans-serif",
+                size: 13
+              },
+              padding: 12,
+              titleColor: '#fbfbe2',
+              bodyColor: '#fbfbe2',
+              borderColor: 'rgba(210, 226, 201, 0.3)',
+              borderWidth: 1,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? Math.round((context.parsed / total) * 100) : 0;
+                  return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // SUPPLIERS SORT FUNCTIONALITY
+    const supplierSortSelect = document.getElementById('supplierSortSelect');
+    const supplierTableBody = document.getElementById('supplierTableBody');
+
+    if (supplierSortSelect) {
+      supplierSortSelect.addEventListener('change', function() {
+        const rows = Array.from(supplierTableBody.querySelectorAll('tr.supplier-row'));
+        const sortValue = this.value;
+
+        rows.sort((a, b) => {
+          let comparison = 0;
+
+          if (sortValue === 'name-asc') {
+            const nameA = a.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            const nameB = b.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            comparison = nameA.localeCompare(nameB);
+          } else if (sortValue === 'name-desc') {
+            const nameA = a.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            const nameB = b.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            comparison = nameB.localeCompare(nameA);
+          } else if (sortValue === 'type-asc') {
+            const typeA = a.getAttribute('data-supplier-type');
+            const typeB = b.getAttribute('data-supplier-type');
+            comparison = typeA.localeCompare(typeB);
+          } else if (sortValue === 'status') {
+            const statusOrder = { 'Active': 0, 'Inactive': 1, 'Suspended': 2 };
+            const statusA = a.querySelector('td:nth-child(6)').textContent.trim();
+            const statusB = b.querySelector('td:nth-child(6)').textContent.trim();
+            comparison = (statusOrder[statusA] || 999) - (statusOrder[statusB] || 999);
+          }
+
+          return comparison;
+        });
+
+        rows.forEach(row => supplierTableBody.appendChild(row));
+      });
+    }
+
+    // CONTRACTS SORT FUNCTIONALITY
+    const contractSortSelect = document.getElementById('contractSortSelect');
+
+    if (contractSortSelect) {
+      contractSortSelect.addEventListener('change', function() {
+        const contractsTableContainer = document.getElementById('contractsTableContainer');
+        const contractTable = contractsTableContainer.querySelector('table');
+
+        if (!contractTable) return;
+
+        const rows = Array.from(contractTable.querySelectorAll('tbody tr.contract-row'));
+        const sortValue = this.value;
+
+        rows.sort((a, b) => {
+          let comparison = 0;
+
+          if (sortValue === 'date-desc') {
+            const dateA = new Date(a.getAttribute('data-contract-end-date') || 0);
+            const dateB = new Date(b.getAttribute('data-contract-end-date') || 0);
+            comparison = dateB - dateA;
+          } else if (sortValue === 'date-asc') {
+            const dateA = new Date(a.getAttribute('data-contract-end-date') || 0);
+            const dateB = new Date(b.getAttribute('data-contract-end-date') || 0);
+            comparison = dateA - dateB;
+          } else if (sortValue === 'status') {
+            const statusOrder = { 'Active': 0, 'Inactive': 1, 'Expired': 2 };
+            const statusA = a.getAttribute('data-contract-status') || 'Inactive';
+            const statusB = b.getAttribute('data-contract-status') || 'Inactive';
+            comparison = (statusOrder[statusA] || 999) - (statusOrder[statusB] || 999);
+          } else if (sortValue === 'supplier') {
+            const supplierA = (a.getAttribute('data-supplier-name') || '').toLowerCase();
+            const supplierB = (b.getAttribute('data-supplier-name') || '').toLowerCase();
+            comparison = supplierA.localeCompare(supplierB);
+          } else if (sortValue === 'type-asc') {
+            const typeA = (a.getAttribute('data-contract-type') || '').toLowerCase();
+            const typeB = (b.getAttribute('data-contract-type') || '').toLowerCase();
+            comparison = typeA.localeCompare(typeB);
+          } else if (sortValue === 'type-desc') {
+            const typeA = (a.getAttribute('data-contract-type') || '').toLowerCase();
+            const typeB = (b.getAttribute('data-contract-type') || '').toLowerCase();
+            comparison = typeB.localeCompare(typeA);
+          }
+
+          return comparison;
+        });
+
+        const tbody = contractTable.querySelector('tbody');
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    }
+
+    // Add animation styles if not already present
+    if (!document.getElementById('sort-animation-styles')) {
+      const style = document.createElement('style');
+      style.id = 'sort-animation-styles';
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .supplier-row {
+          animation: slideIn 0.3s ease-out;
+        }
+        @keyframes popUp {
+          0% {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .stats-appear {
+          animation: popUp 0.5s ease-out;
+        }
+        .stats-appear.delay-1 {
+          animation-delay: 0.1s;
+        }
+        .stats-appear.delay-2 {
+          animation-delay: 0.2s;
+        }
+        .stats-appear.delay-3 {
+          animation-delay: 0.3s;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  });
+
+</script>
+
+>>>>>>> livestock-parcel-product-integration
 </main>
 <!-- Contextual FAB (Logic Check: Primary screen - show) -->
 <button class="fixed bottom-12 right-12 w-16 h-16 rounded-full bg-primary text-surface shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-transform z-50">

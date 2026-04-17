@@ -6,9 +6,20 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\ProduitRepository;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 #[ORM\Table(name: 'produit')]
+
+
+#[ORM\Entity(repositoryClass: ProduitRepository::class)]
+#[ORM\Table(name: 'produit')]
+#[Assert\Expression(
+    'this.getDateProduction() === null || this.getDateExpiration() === null || this.getDateExpiration() >= this.getDateProduction()',
+    message: 'Expiration date must be on or after production date.'
+)]
+#[Assert\Callback('validateStatusDateConsistency')]
 class Produit
 {
     #[ORM\Id]
@@ -22,6 +33,8 @@ class Produit
     }
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Product name is required.')]
+    #[Assert\Length(max: 100, maxMessage: 'Product name cannot exceed {{ limit }} characters.')]
     private ?string $nom = null;
 
     public function getNom(): ?string
@@ -36,6 +49,11 @@ class Produit
     }
 
     #[ORM\Column(type: 'string', length: 30)]
+    #[Assert\NotBlank(message: 'Type is required.')]
+    #[Assert\Choice(
+        choices: ['Frais', 'Transformé', 'Biologique', 'Séché', 'Conditionné'],
+        message: 'Type must be one of: Frais, Transformé, Biologique, Séché, Conditionné.'
+    )]
     private ?string $type = null;
 
     public function getType(): ?string
@@ -50,6 +68,9 @@ class Produit
     }
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[Assert\NotBlank(message: 'Price is required.')]
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/', message: 'Price must be a valid decimal with up to 2 decimals.')]
+    #[Assert\Positive(message: 'Price must be greater than 0.')]
     private ?string $prix_unitaire = null;
 
     public function getPrixUnitaire(): ?string
@@ -64,6 +85,8 @@ class Produit
     }
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\NotNull(message: 'Stock quantity is required.')]
+    #[Assert\PositiveOrZero(message: 'Stock quantity must be greater than or equal to 0.')]
     private ?int $quantite_stock = null;
 
     public function getQuantiteStock(): ?int
@@ -71,13 +94,18 @@ class Produit
         return $this->quantite_stock;
     }
 
-    public function setQuantiteStock(int $quantite_stock): self
+    public function setQuantiteStock(?int $quantite_stock): self
     {
         $this->quantite_stock = $quantite_stock;
         return $this;
     }
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    #[Assert\NotBlank(message: 'Quality is required.')]
+    #[Assert\Choice(
+        choices: ['Premium', 'Standard', 'Économique', 'Bio', 'Certifié'],
+        message: 'Quality must be one of: Premium, Standard, Économique, Bio, Certifié.'
+    )]
     private ?string $qualite = null;
 
     public function getQualite(): ?string
@@ -92,6 +120,9 @@ class Produit
     }
 
     #[ORM\Column(type: 'date', nullable: true)]
+    #[Assert\NotNull(message: 'Production date is required.')]
+    #[Assert\Type(type: \DateTimeInterface::class, message: 'Production date is invalid.')]
+    #[Assert\LessThanOrEqual('today', message: 'Production date cannot be in the future.')]
     private ?\DateTimeInterface $date_production = null;
 
     public function getDateProduction(): ?\DateTimeInterface
@@ -106,6 +137,9 @@ class Produit
     }
 
     #[ORM\Column(type: 'date', nullable: true)]
+    #[Assert\NotNull(message: 'Expiration date is required.')]
+    #[Assert\Type(type: \DateTimeInterface::class, message: 'Expiration date is invalid.')]
+    #[Assert\GreaterThanOrEqual(propertyPath: 'date_production', message: 'Expiration date must be on or after production date.')]
     private ?\DateTimeInterface $date_expiration = null;
 
     public function getDateExpiration(): ?\DateTimeInterface
@@ -120,6 +154,8 @@ class Produit
     }
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Product image is required.')]
+    #[Assert\Length(max: 255, maxMessage: 'Image name cannot exceed {{ limit }} characters.')]
     private ?string $image = null;
 
     public function getImage(): ?string
@@ -134,6 +170,11 @@ class Produit
     }
 
     #[ORM\Column(type: 'string', length: 20, nullable: true, options: ['default' => 'Disponible'])]
+    #[Assert\NotBlank(message: 'Status is required.')]
+    #[Assert\Choice(
+        choices: ['Disponible', 'Rupture', 'Expiré'],
+        message: 'Status must be one of: Disponible, Rupture, Expiré.'
+    )]
     private ?string $statut = 'Disponible';
 
     public function getStatut(): ?string
@@ -149,6 +190,7 @@ class Produit
 
     #[ORM\ManyToOne(targetEntity: Categorie::class, inversedBy: 'produits')]
     #[ORM\JoinColumn(name: 'categorie_id', referencedColumnName: 'id')]
+    #[Assert\NotNull(message: 'Category is required.')]
     private ?Categorie $categorie = null;
 
     public function getCategorie(): ?Categorie
@@ -187,5 +229,32 @@ class Produit
     {
         $this->commandes->removeElement($commande);
         return $this;
+    }
+
+    public function validateStatusDateConsistency(ExecutionContextInterface $context): void
+    {
+        $status = $this->getStatut();
+        $expiration = $this->getDateExpiration();
+
+        if ($status === null || $expiration === null) {
+            return;
+        }
+
+        $today = new \DateTimeImmutable('today');
+        $expirationDay = \DateTimeImmutable::createFromInterface($expiration)->setTime(0, 0);
+
+        if ($status === 'Disponible' && $expirationDay < $today) {
+            $context
+                ->buildViolation('Available product must have an expiration date that is today or later.')
+                ->atPath('date_expiration')
+                ->addViolation();
+        }
+
+        if ($status === 'Expiré' && $expirationDay > $today) {
+            $context
+                ->buildViolation('Expired product must have an expiration date in the past or today.')
+                ->atPath('date_expiration')
+                ->addViolation();
+        }
     }
 }

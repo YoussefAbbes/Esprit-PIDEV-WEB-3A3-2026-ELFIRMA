@@ -63,6 +63,73 @@
         <label class="form-check-label" for="agree">
           I agree to the <a href="#">Terms of Service</a>
         </label>
+    <!-- Store errors data -->
+    <div id="errors-data" data-errors="{{ errors is defined ? errors|json_encode() : '{}' }}"></div>
+
+    {% if error is defined and error %}
+      <div style="background-color: #ffebee; border: 1px solid #ef5350; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; color: #d32f2f; display: flex; gap: 0.75rem; align-items: flex-start;">
+        <i class="bi bi-exclamation-circle" style="font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem;"></i>
+        <span>{{ error }}</span>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{{ path('app_signup') }}" class="auth-form" id="signupForm" enctype="multipart/form-data">
+      <!-- Photo Upload -->
+      <div class="form-group photo-upload-group">
+        <p class="photo-label-text">Add profile photo</p>
+        <div class="photo-preview-container">
+          <div class="photo-preview-circle" id="photoPreview">
+            <i class="bi bi-person-circle"></i>
+          </div>
+          <label for="photo" class="photo-upload-label" title="Click to select a photo">
+            <i class="bi bi-cloud-upload-fill"></i>
+          </label>
+          <input type="file" id="photo" name="photo" class="d-none" accept="image/*">
+        </div>
+      </div>
+
+      <!-- Last Name -->
+      <div class="form-group">
+        <label for="nom">Last Name</label>
+        <input type="text" id="nom" name="nom" class="form-control" placeholder="Dupont" value="{{ app.request.request.get('nom', '') }}" maxlength="10">
+        <small class="text-muted">Max. 10 characters</small>
+      </div>
+
+      <!-- First Name -->
+      <div class="form-group">
+        <label for="prenom">First Name</label>
+        <input type="text" id="prenom" name="prenom" class="form-control" placeholder="Jean" value="{{ app.request.request.get('prenom', '') }}" maxlength="10">
+        <small class="text-muted">Max. 10 characters</small>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="text" id="email" name="email" class="form-control" placeholder="you@example.com" value="{{ app.request.request.get('email', '') }}">
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••" maxlength="7">
+        <small class="text-muted">Between 3 and 7 characters</small>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <label for="confirm_password">Confirm Password</label>
+        <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="••••••" maxlength="7">
+        <small class="text-muted">Must match password</small>
+      </div>
+
+      <!-- Role -->
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" name="role" class="form-control">
+          <option value="">Select a role</option>
+          <option value="employee" {% if app.request.request.get('role') == 'employee' %}selected{% endif %}>Employee</option>
+          <option value="client" {% if app.request.request.get('role') == 'client' %}selected{% endif %}>Client</option>
+        </select>
       </div>
 
       <button type="submit" class="btn-auth"><span>Create Account</span></button>
@@ -77,6 +144,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
 <script>
   // Password strength calculator
   const passwordInput = document.getElementById('password');
@@ -135,6 +203,217 @@
       this.style.borderColor = '#e0e0e0';
     }
   });
+=======
+  <!-- Errors data for JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get errors from the data attribute
+      const errorsData = document.getElementById('errors-data');
+      let formErrors = {};
+
+      if (errorsData) {
+        const errorsJson = errorsData.getAttribute('data-errors');
+        if (errorsJson) {
+          try {
+            formErrors = JSON.parse(errorsJson);
+          } catch(e) {
+            console.error('Error parsing errors:', e);
+          }
+        }
+      }
+
+      // Only apply red styles if there are errors (after submit with validation errors)
+      if (Object.keys(formErrors).length > 0) {
+        console.log('Applying error styles for fields:', Object.keys(formErrors));
+
+        for (const [fieldName, errorMsg] of Object.entries(formErrors)) {
+          const field = document.getElementById(fieldName);
+          if (field) {
+            // Add red border
+            field.style.borderColor = '#dc3545';
+            field.style.borderWidth = '2px';
+            field.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.2)';
+
+            // Create error message element
+            const formGroup = field.parentElement;
+            let errorElement = formGroup.querySelector('.error-message');
+
+            if (!errorElement) {
+              errorElement = document.createElement('div');
+              errorElement.className = 'error-message';
+            }
+
+            errorElement.textContent = errorMsg;
+            errorElement.style.color = '#dc3545';
+            errorElement.style.fontSize = '0.875rem';
+            errorElement.style.marginTop = '0.5rem';
+            errorElement.style.marginBottom = '0.5rem';
+            errorElement.style.fontWeight = '500';
+            errorElement.style.display = 'block';
+
+            // Insert after field if not already there
+            if (!formGroup.querySelector('.error-message')) {
+              formGroup.insertBefore(errorElement, field.nextElementSibling);
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+<style>
+  .photo-upload-group {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding: 1.5rem 0;
+  }
+
+  .photo-label-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #060606;
+    margin-bottom: 1rem;
+  }
+
+  .photo-preview-container {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .photo-preview-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #116530 0%, #0d4c23 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: white;
+    border: 4px solid #e0e0e0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 15px rgba(17, 101, 48, 0.2);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .photo-preview-circle i {
+    transition: all 0.3s ease;
+  }
+
+  .photo-preview-container:hover .photo-preview-circle {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(17, 101, 48, 0.35);
+  }
+
+  .photo-upload-label {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #116530 0%, #0d4c23 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 1.4rem;
+    border: 3px solid white;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 12px rgba(17, 101, 48, 0.3);
+  }
+
+  .photo-upload-label:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 18px rgba(17, 101, 48, 0.4);
+    background: linear-gradient(135deg, #0d4c23 0%, #116530 100%);
+  }
+
+  .photo-upload-label:active {
+    transform: scale(0.95);
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    font-weight: 600;
+    color: #060606;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .form-control {
+    width: 100%;
+    border-radius: 6px;
+    border: 1.5px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  .form-control:focus {
+    border-color: #116530 !important;
+    box-shadow: 0 0 0 3px rgba(17, 101, 48, 0.1) !important;
+    outline: none;
+  }
+
+  .form-control.is-invalid {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2) !important;
+  }
+
+  .form-control.is-invalid:focus {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.3) !important;
+  }
+
+  .error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    display: block;
+  }
+
+  small.text-muted {
+    font-size: 0.8rem;
+    display: block;
+    margin-top: 0.3rem;
+    color: #999;
+  }
+</style>
+
+<script>
+  // Photo preview
+  const photoInput = document.getElementById('photo');
+  const photoPreview = document.getElementById('photoPreview');
+
+  if (photoInput && photoPreview) {
+    photoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          photoPreview.style.backgroundImage = `url(${event.target.result})`;
+          photoPreview.style.backgroundColor = 'transparent';
+          const icon = photoPreview.querySelector('i');
+          if (icon) icon.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+>>>>>>> livestock-parcel-product-integration
 
   // Smooth form focus animation
   const inputs = document.querySelectorAll('.form-control');

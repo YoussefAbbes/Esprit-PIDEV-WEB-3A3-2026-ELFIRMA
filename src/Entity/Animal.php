@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\AnimalRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
 #[ORM\Table(name: 'animal')]
@@ -21,22 +22,27 @@ class Animal
         return $this->id_animal;
     }
 
-    #[ORM\ManyToOne(targetEntity: Elevage::class, inversedBy: 'animals')]
+    #[ORM\ManyToOne(targetEntity: Livestock::class, inversedBy: 'animals')]
     #[ORM\JoinColumn(name: 'id_elevage', referencedColumnName: 'id_elevage', nullable: true)]
-    private ?Elevage $elevage = null;
+    private ?Livestock $elevage = null;
 
-    public function getElevage(): ?Elevage
+    public function getElevage(): ?Livestock
     {
         return $this->elevage;
     }
 
-    public function setElevage(?Elevage $elevage): self
+    public function setElevage(?Livestock $elevage): self
     {
         $this->elevage = $elevage;
         return $this;
     }
 
     #[ORM\Column(type: 'string', length: 50)]
+    #[Assert\NotBlank(message: 'Type is required.')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\s]+$/u',
+        message: 'Type can contain letters and spaces only.'
+    )]
     private ?string $type_animal = null;
 
     public function getTypeAnimal(): ?string

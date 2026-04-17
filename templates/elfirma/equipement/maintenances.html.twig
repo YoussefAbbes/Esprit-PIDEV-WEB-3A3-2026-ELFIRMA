@@ -3,7 +3,11 @@
 {% block body %}
 
 <main class="min-h-screen p-12">
+<<<<<<< HEAD
 
+=======
+<div data-equipement-cost="{{ maintenances[0].equipement.coutAchat ?? 0 }}"></div>
+>>>>>>> livestock-parcel-product-integration
 <!-- HEADER -->
 <div class="flex justify-between items-center mb-8">
 
@@ -33,6 +37,19 @@
         <h2 id="stat-m-cout" class="text-xl font-bold text-green-700">0</h2>
     </div>
 
+<<<<<<< HEAD
+=======
+    <div class="bg-purple-100 rounded-xl p-5 shadow">
+        <p>Maintenances (6 mois)</p>
+        <h2 id="stat-m-6months" class="text-xl font-bold text-purple-700">0</h2>
+    </div>
+
+    <div class="bg-orange-100 rounded-xl p-5 shadow">
+        <p>Ratio coût / équipement</p>
+        <h2 id="stat-m-ratio" class="text-xl font-bold text-orange-700">0%</h2>
+    </div>
+
+>>>>>>> livestock-parcel-product-integration
 </div>
 
 <!-- 🔍 SEARCH + FILTER -->
@@ -101,7 +118,10 @@
     <th>Statut</th>
     <th>Priorité</th>
     <th>Technicien</th>
+<<<<<<< HEAD
     <th>Équipement</th>
+=======
+>>>>>>> livestock-parcel-product-integration
     <th>Actions</th>
 </tr>
 </thead>
@@ -112,7 +132,11 @@
 <tr class="maintenance-row"
     data-type="{{ m.typeM|lower }}"
     data-desc="{{ m.description|lower }}"
+<<<<<<< HEAD
     data-tech="{{ m.technicien|lower }}"
+=======
+    data-tech="{{ (m.technicien.prenomU ~ ' ' ~ m.technicien.nomU)|lower }}"
+>>>>>>> livestock-parcel-product-integration
     data-priorite="{{ m.priorite.value|lower }}"
     data-date="{{ m.dateM|date('Y-m-d') }}"
     data-cout="{{ m.cout }}">
@@ -157,11 +181,27 @@
     </td>
 
     <td>
+<<<<<<< HEAD
         <span id="text-tech-{{ m.idM }}">{{ m.technicien }}</span>
         <input id="input-tech-{{ m.idM }}" value="{{ m.technicien }}" class="hidden border p-1 w-full">
     </td>
 
     <td>{{ m.equipement.nomEq }}</td>
+=======
+        <span id="text-tech-{{ m.idM }}">
+            {{ m.technicien.prenomU }} {{ m.technicien.nomU }}
+        </span>
+
+        <select id="input-tech-{{ m.idM }}" class="hidden border p-1 w-full">
+            {% for emp in employees %}
+                <option value="{{ emp.idU }}"
+                    {% if m.technicien and m.technicien.idU == emp.idU %}selected{% endif %}>
+                    {{ emp.prenomU }} {{ emp.nomU }}
+                </option>
+            {% endfor %}
+        </select>
+    </td>
+>>>>>>> livestock-parcel-product-integration
 
     <td class="flex gap-2">
         <button onclick="editMaintenance({{ m.idM }})">✏️</button>
@@ -407,6 +447,7 @@ function calculateMaintenanceStats() {
     let total = maintenances.length;
     let coutTotal = 0;
 
+<<<<<<< HEAD
     maintenances.forEach(m => {
         const cout = parseFloat(m.dataset.cout || 0);
 
@@ -416,6 +457,48 @@ function calculateMaintenanceStats() {
     document.getElementById('stat-m-total').textContent = total;
     document.getElementById('stat-m-cout').textContent = coutTotal + ' €';
 }
+=======
+    // 🔥 NEW
+    let count6Months = 0;
+
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+    maintenances.forEach(m => {
+        const cout = parseFloat(m.dataset.cout || 0);
+        const date = new Date(m.dataset.date);
+
+        coutTotal += cout;
+
+        // 🔥 calcul 6 mois
+        if (date >= sixMonthsAgo) {
+            count6Months++;
+        }
+    });
+
+    // 👉 IMPORTANT : coût équipement (on le récupère depuis l’URL ou autre)
+    let equipementCost = 0;
+
+    // ⚠️ temporaire (on améliorera après)
+    const equipementCostElement = document.querySelector('[data-equipement-cost]');
+    if (equipementCostElement) {
+        equipementCost = parseFloat(equipementCostElement.dataset.equipementCost);
+    }
+
+    let ratio = equipementCost > 0 
+        ? (coutTotal / equipementCost) * 100 
+        : 0;
+
+    // 🎯 UPDATE UI
+    document.getElementById('stat-m-total').textContent = total;
+    document.getElementById('stat-m-cout').textContent = coutTotal + ' €';
+
+    document.getElementById('stat-m-6months').textContent = count6Months;
+    document.getElementById('stat-m-ratio').textContent = ratio.toFixed(1) + ' %';
+}
+
+>>>>>>> livestock-parcel-product-integration
 document.addEventListener('DOMContentLoaded', function() {
     calculateMaintenanceStats();
 });

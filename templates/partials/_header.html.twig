@@ -30,10 +30,28 @@
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
-        <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
+        {% if app.session.get('user_role') == 'admin' %}
+          <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
+        {% endif %}
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
+
+    {% if app.session.get('user_id') %}
+      <div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+        <span style="color: #116530; font-weight: 600;">{{ app.session.get('user_name') }}</span>
+        <a href="{{ path('elfirma_profile') }}" class="btn-profile" title="My Profile" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(17, 101, 48, 0.15);">
+          <i class="bi bi-person-fill" style="font-size: 1.3rem;"></i>
+        </a>
+        <a href="{{ path('app_logout') }}" class="btn-logout" title="Logout" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);">
+          <i class="bi bi-box-arrow-right" style="font-size: 1.3rem;"></i>
+        </a>
+      </div>
+    {% else %}
+      <a href="{{ path('app_login') }}" style="margin-left: auto; padding: 0.5rem 1rem; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+        Login
+      </a>
+    {% endif %}
 
   </div>
 </header>

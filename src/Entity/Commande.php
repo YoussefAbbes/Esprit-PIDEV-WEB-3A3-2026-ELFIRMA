@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CommandeRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ORM\Table(name: 'commande')]
@@ -20,6 +21,8 @@ class Commande
     }
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\NotNull(message: 'Quantity is required.')]
+    #[Assert\Positive(message: 'Quantity must be greater than 0.')]
     private ?int $quantite = null;
 
     public function getQuantite(): ?int
@@ -119,6 +122,13 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Full name is required.')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Full name must be at least {{ limit }} characters.',
+        maxMessage: 'Full name cannot exceed {{ limit }} characters.'
+    )]
     private ?string $nom_client = null;
 
     public function getNomClient(): ?string

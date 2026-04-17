@@ -1,9 +1,10 @@
 when@dev:
     web_profiler:
-        toolbar: true
+        toolbar: false
 
     framework:
         profiler:
+            collect: false
             collect_serializer_data: true
 
 when@test:

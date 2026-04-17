@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <title>Elfirma - Products</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Open Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .submenu-item { transition: all 0.2s ease; }
+        .submenu-item:hover { transform: translateX(4px); }
+        .stats-appear { opacity: 0; transform: translateY(18px) scale(0.98); animation: statsEntrance 0.8s ease forwards; }
+        .stats-appear.delay-1 { animation-delay: 0.08s; }
+        .stats-appear.delay-2 { animation-delay: 0.16s; }
+        .stats-appear.delay-3 { animation-delay: 0.24s; }
+        .stats-appear.delay-4 { animation-delay: 0.32s; }
+        @keyframes statsEntrance {
+            from { opacity: 0; transform: translateY(18px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-[#fbfbe2] text-[#1b1d0e] min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 py-8 pr-4 bg-[#f5f5dc]">
+        <div class="px-8 mb-8">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="text-[#43493d] text-sm">Agricultural Management</p>
+        </div>
+        <nav class="flex-1 flex flex-col space-y-1">
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
+                <span class="material-symbols-outlined">group</span>
+                <span>User Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('parcelle_index') }}">
+                <span class="material-symbols-outlined">agriculture</span>
+                <span>Field Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
+                <span class="material-symbols-outlined">pets</span>
+                <span>Livestock Management</span>
+            </a>
+            
+            <!-- Product Management with submenu -->
+            <div class="py-1">
+                <div class="flex items-center gap-4 py-3 px-8 bg-[#2d5016] text-white rounded-l-full ml-auto">
+                
+                    <span class="flex-1">Product Management</span>
+                    <span class="material-symbols-outlined text-sm">expand_less</span>
+                </div>
+                <div class="mt-1 ml-8">
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_categories') }}">
+                        <span class="material-symbols-outlined text-sm">category</span>
+                        <span>Categories</span>
+                    </a>
+                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('elfirma_products') }}">
+                        
+                        <span>Products</span>
+                    </a>
+                </div>
+            </div>
+            
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
+                <span class="material-symbols-outlined">handyman</span>
+                <span>Equipment Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
+                <span class="material-symbols-outlined">description</span>
+                <span>Contract Management</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-72 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-[#fbfbe2]/70 backdrop-blur-xl px-8 py-4 flex justify-between items-center border-b border-[#c3c9b9]/20">
+            <h2 class="text-2xl font-black text-[#0a2200]">Product Management</h2>
+            <div class="flex items-center gap-3 bg-[#f5f5dc] px-4 py-1.5 rounded-full">
+                <div class="text-right">
+                    <p class="text-sm font-bold text-[#0a2200]">Admin Elfirma</p>
+                    <p class="text-xs text-[#43493d]">Director</p>
+                </div>
+            </div>
+        </header>
+
+        {% set produitCreateErrors = app.flashes('form_errors_produit_create')|first|default({}) %}
+        {% set produitCreateOld = app.flashes('form_old_produit_create')|first|default({}) %}
+        {% set produitEditErrors = app.flashes('form_errors_produit_edit')|first|default({}) %}
+        {% set produitEditOld = app.flashes('form_old_produit_edit')|first|default({}) %}
+        {% set typeOptions = ['Frais', 'Transformé', 'Biologique', 'Séché', 'Conditionné'] %}
+        {% set qualiteOptions = ['Premium', 'Standard', 'Économique', 'Bio', 'Certifié'] %}
+        {% set typeLabelMap = {'Frais': 'Fresh', 'Transformé': 'Processed', 'Biologique': 'Organic', 'Séché': 'Dried', 'Conditionné': 'Packaged'} %}
+        {% set qualiteLabelMap = {'Premium': 'Premium', 'Standard': 'Standard', 'Économique': 'Economy', 'Bio': 'Organic', 'Certifié': 'Certified'} %}
+        {% set statutLabelMap = {'Disponible': 'Available', 'Rupture': 'Out of Stock', 'Expiré': 'Expired'} %}
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="mx-8 mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-8 mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endfor %}
+
+        <!-- Content -->
+        <div class="p-8 lg:p-12 space-y-8">
+            <!-- Statistics Cards -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Products -->
+                <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="mb-4">
+                        <p class="text-green-100 text-sm font-semibold uppercase tracking-wide">Total Products</p>
+                        <p class="text-4xl font-black mt-2">{{ product_stats.total_products }}</p>
+                    </div>
+                    <p class="text-green-100 text-sm">Available products in catalog</p>
+                </div>
+
+                <!-- Total Stock -->
+                <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="mb-4">
+                        <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wide">Total Stock</p>
+                        <p class="text-4xl font-black mt-2">{{ product_stats.total_stock }}</p>
+                    </div>
+                    <p class="text-emerald-100 text-sm">Units in inventory</p>
+                </div>
+
+                <!-- Total Value -->
+                <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="mb-4">
+                        <p class="text-teal-100 text-sm font-semibold uppercase tracking-wide">Stock Value</p>
+                        <p class="text-3xl font-black mt-2">{{ product_stats.total_value|number_format(2, ',', ' ') }} DT</p>
+                    </div>
+                    <p class="text-teal-100 text-sm">Total value of stock</p>
+                </div>
+            </section>
+
+            <!-- Advanced Analytics -->
+            <section class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-6 lg:p-8 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)]">
+                <div class="pointer-events-none absolute -top-14 -right-14 h-52 w-52 rounded-full bg-[#9ac75f]/25 blur-3xl"></div>
+                <div class="pointer-events-none absolute -bottom-10 -left-10 h-44 w-44 rounded-full bg-[#2d5016]/15 blur-2xl"></div>
+
+                <div class="relative z-10 mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="inline-flex items-center gap-2 rounded-full border border-[#bad19a] bg-[#f9fde6] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#2d5016]">
+                            <span class="material-symbols-outlined text-sm">monitoring</span>
+                            Product Insights
+                        </p>
+                        <h3 class="mt-3 text-2xl lg:text-3xl font-black tracking-tight text-[#0a2200]">Smart Insights</h3>
+                        <p class="mt-1 text-sm text-[#355025]">Dynamic overview of stock, value, and product distribution.</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/80 px-4 py-2 text-right shadow-sm border border-[#d8e5c8]">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-[#4f6b38]">Last updated</p>
+                        <p class="text-sm font-bold text-[#123b12]" id="statsLastUpdated">--</p>
+                    </div>
+                </div>
+
+                <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="stats-appear rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Average Value / Product</p>
+                        <p class="mt-2 text-3xl font-black text-[#123b12]" id="avgValueCard">0 DT</p>
+                        <p class="mt-1 text-xs text-[#5e6f4f]">Based on your current stock</p>
+                    </div>
+                    <div class="stats-appear delay-1 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Top Category</p>
+                        <p class="mt-2 text-2xl font-black text-[#123b12]" id="topCategoryCard">-</p>
+                        <p class="mt-1 text-xs text-[#5e6f4f]" id="topCategoryCount">0 product(s)</p>
+                    </div>
+                    <div class="stats-appear delay-2 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+                        <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Availability Rate</p>
+                        <p class="mt-2 text-3xl font-black text-[#123b12]" id="availabilityRateCard">0%</p>
+                        <p class="mt-1 text-xs text-[#5e6f4f]">Products with available status</p>
+                    </div>
+                </div>
+
+                <div class="relative z-10 grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <article class="stats-appear delay-2 xl:col-span-7 rounded-2xl border border-[#d9e6cb] bg-white/90 p-5 shadow-sm">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h4 class="text-lg font-black text-[#123b12]">Top Products by Stock Value</h4>
+                            <span class="text-xs font-semibold text-[#5f7350]">Quantity x Unit Price</span>
+                        </div>
+                        <div class="h-72">
+                            <canvas id="stockValueChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="stats-appear delay-3 xl:col-span-5 rounded-2xl border border-[#d9e6cb] bg-white/90 p-5 shadow-sm">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h4 class="text-lg font-black text-[#123b12]">Status Distribution</h4>
+                            <span class="text-xs font-semibold text-[#5f7350]">Available, Out of Stock, Expired</span>
+                        </div>
+                        <div class="h-72">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="stats-appear delay-4 xl:col-span-12 rounded-2xl border border-[#d9e6cb] bg-white/90 p-5 shadow-sm">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h4 class="text-lg font-black text-[#123b12]">Stock Volume by Category</h4>
+                            <span class="text-xs font-semibold text-[#5f7350]">Quick view of replenishment priorities</span>
+                        </div>
+                        <div class="h-80">
+                            <canvas id="categoryStockChart"></canvas>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Header Section -->
+            <section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <h2 class="text-4xl font-black text-[#0a2200] tracking-tight leading-none mb-2">Agricultural Products</h2>
+                            <p class="text-[#43493d] max-w-xl">Manage your product inventory and stock.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <a href="{{ path('elfirma_products_export_pdf', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort }) }}" class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105">
+                                <span class="material-symbols-outlined">picture_as_pdf</span>
+                                <span>Export PDF</span>
+                            </a>
+                            <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105">
+                                <span class="material-symbols-outlined">add</span>
+                                <span>New Product</span>
+                            </button>
+                        </div>
+            </section>
+
+            <!-- Search, Filter and Sort Section -->
+            <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100">
+                <form id="productFiltersForm" method="GET" action="{{ path('elfirma_products') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <!-- Search Bar -->
+                    <div class="md:col-span-4 relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">search</span>
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            name="q"
+                            value="{{ filters.q|default('') }}"
+                            placeholder="Search for a product..." 
+                            class="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                        />
+                    </div>
+                    
+                    <!-- Category Filter -->
+                    <div class="md:col-span-3">
+                        <select 
+                            id="categoryFilter" 
+                            name="category"
+                            class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer">
+                            <option value="">All categories</option>
+                            {% for categorie in categories %}
+                                <option value="{{ categorie.nom|lower }}" {% if filters.category == categorie.nom|lower %}selected{% endif %}>{{ categorie.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="md:col-span-2">
+                        <select 
+                            id="statusFilter" 
+                            name="status"
+                            class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer">
+                            <option value="">All statuses</option>
+                            <option value="disponible" {% if filters.status == 'disponible' %}selected{% endif %}>Available</option>
+                            <option value="rupture" {% if filters.status == 'rupture' %}selected{% endif %}>Out of Stock</option>
+                            <option value="expiré" {% if filters.status == 'expiré' %}selected{% endif %}>Expired</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <div class="md:col-span-2">
+                        <select 
+                            id="sortSelect" 
+                            name="sort"
+                            class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 bg-white font-semibold text-gray-700 cursor-pointer">
+                            <option value="name-asc" {% if filters.sort == 'name-asc' %}selected{% endif %}>Name A→Z</option>
+                            <option value="name-desc" {% if filters.sort == 'name-desc' %}selected{% endif %}>Name Z→A</option>
+                            <option value="stock-desc" {% if filters.sort == 'stock-desc' %}selected{% endif %}>Stock ↓</option>
+                            <option value="stock-asc" {% if filters.sort == 'stock-asc' %}selected{% endif %}>Stock ↑</option>
+                            <option value="price-desc" {% if filters.sort == 'price-desc' %}selected{% endif %}>Price ↓</option>
+                            <option value="price-asc" {% if filters.sort == 'price-asc' %}selected{% endif %}>Price ↑</option>
+                            <option value="id-desc" {% if filters.sort == 'id-desc' or filters.sort is empty %}selected{% endif %}>Newest</option>
+                            <option value="id-asc" {% if filters.sort == 'id-asc' %}selected{% endif %}>Oldest</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-1">
+                        <button type="submit" class="w-full px-4 py-3 bg-[#1e3a0f] hover:bg-[#16300b] text-white font-semibold rounded-xl transition-all">
+                            <span class="material-symbols-outlined">check</span>
+                        </button>
+                    </div>
+
+                    <div class="md:col-span-1">
+                        <a href="{{ path('elfirma_products') }}" class="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all inline-flex items-center justify-center">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </a>
+                    </div>
+                </form>
+                
+                <!-- Results Counter -->
+                <div class="mt-4 text-sm text-gray-600">
+                    <span id="resultCount">{{ produits|length }}</span> product(s) found
+                </div>
+            </section>
+
+            <!-- Products Table -->
+            <section class="bg-white rounded-xl p-8 shadow-sm border-2 border-green-100">
+                <h3 class="text-2xl font-bold text-[#0a2200] mb-6 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-green-600">list</span>
+                    Product List
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="produitsTable">
+                        <thead>
+                            <tr class="text-left text-[#43493d] text-xs uppercase tracking-widest font-black border-b-2 border-green-200">
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Image</div>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_products', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort == 'name-asc' ? 'name-desc' : 'name-asc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Name
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Category</div>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Type</div>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Quality</div>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_products', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort == 'price-desc' ? 'price-asc' : 'price-desc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Price (DT)
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <a href="{{ path('elfirma_products', { q: filters.q, category: filters.category, status: filters.status, sort: filters.sort == 'stock-desc' ? 'stock-asc' : 'stock-desc' }) }}" class="inline-flex items-center gap-2 hover:text-green-800 transition-colors">
+                                        Stock
+                                        <span class="material-symbols-outlined text-sm">swap_vert</span>
+                                    </a>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Dates</div>
+                                </th>
+                                <th class="pb-4 px-4">
+                                    <div class="flex items-center gap-2">Status</div>
+                                </th>
+                                <th class="pb-4 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm" id="tableBody">
+                            {% for produit in produits %}
+                            <tr class="border-b border-green-50 hover:bg-green-50 transition-colors" 
+                                data-name="{{ produit.nom|lower }}" 
+                                data-category="{{ produit.categorie ? produit.categorie.nom|lower : '' }}" 
+                                data-type="{{ produit.type|lower }}"
+                                data-quality="{{ produit.qualite|lower }}"
+                                data-status="{{ produit.statut|lower }}"
+                                data-stock="{{ produit.quantiteStock }}"
+                                data-price="{{ produit.prixUnitaire }}"
+                                data-dates="{{ produit.dateProduction|date('Y-m-d') }}"
+                                data-id="{{ produit.idProduit }}">
+                                <!-- Image -->
+                                <td class="py-4 px-4">
+                                    <div class="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center border-2 border-green-200 shadow-sm">
+                                        {% if produit.image %}
+                                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.nom }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <span class="material-symbols-outlined text-3xl text-green-600">image</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <!-- Name & ID -->
+                                <td class="py-4 px-4">
+                                    <p class="font-bold text-[#1b1d0e]">{{ produit.nom }}</p>
+                                    <p class="text-xs text-gray-500 font-mono">#{{ produit.idProduit }}</p>
+                                </td>
+                                <!-- Category -->
+                                <td class="py-4 px-4">
+                                    {% if produit.categorie %}
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
+                                            <span class="material-symbols-outlined text-xs">category</span>
+                                            {{ produit.categorie.nom }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-red-500 text-xs">Undefined</span>
+                                    {% endif %}
+                                </td>
+                                <!-- Type -->
+                                <td class="py-4 px-4">
+                                    <span class="text-[#43493d] font-medium">{{ typeLabelMap[produit.type]|default(produit.type) }}</span>
+                                </td>
+                                <!-- Quality -->
+                                <td class="py-4 px-4">
+                                    {% if produit.qualite %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">
+                                            <span class="material-symbols-outlined text-xs">star</span>
+                                            {{ qualiteLabelMap[produit.qualite]|default(produit.qualite) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-gray-400 text-xs">-</span>
+                                    {% endif %}
+                                </td>
+                                <!-- Price -->
+                                <td class="py-4 px-4">
+                                    <span class="font-black text-green-700">{{ produit.prixUnitaire }} DT</span>
+                                </td>
+                                <!-- Stock -->
+                                <td class="py-4 px-4">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
+                                        {% if produit.quantiteStock < 20 %}bg-gradient-to-r from-red-100 to-orange-100 text-red-700 border border-red-200
+                                        {% else %}bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200{% endif %}">
+                                    
+                                        {{ produit.quantiteStock }}
+                                    </span>
+                                </td>
+                                <!-- Dates -->
+                                <td class="py-4 px-4">
+                                    <div class="text-xs space-y-1">
+                                        {% if produit.dateProduction %}
+                                            <div class="flex items-center gap-1 text-green-700">
+                                                <span class="material-symbols-outlined text-xs">event</span>
+                                                Prod: {{ produit.dateProduction|date('d/m/Y') }}
+                                            </div>
+                                        {% endif %}
+                                        {% if produit.dateExpiration %}
+                                            <div class="flex items-center gap-1 text-orange-700">
+                                                <span class="material-symbols-outlined text-xs">alarm</span>
+                                                Exp: {{ produit.dateExpiration|date('d/m/Y') }}
+                                            </div>
+                                        {% endif %}
+                                        {% if not produit.dateProduction and not produit.dateExpiration %}
+                                            <span class="text-gray-400">-</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <!-- Status -->
+                                <td class="py-4 px-4">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                        {% if produit.statut == 'Disponible' %}bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200
+                                        {% elseif produit.statut == 'Rupture' %}bg-gradient-to-r from-red-100 to-orange-100 text-red-700 border border-red-200
+                                        {% else %}bg-gray-100 text-gray-700 border border-gray-200{% endif %}">
+                                        {{ statutLabelMap[produit.statut]|default(produit.statut) }}
+                                    </span>
+                                </td>
+                                <!-- Actions -->
+                                <td class="py-4 px-4">
+                                    <div class="flex gap-2">
+                                        <button onclick='openEditModal({{ produit.idProduit }}, {nom: "{{ produit.nom|escape("js") }}", type: "{{ produit.type|escape("js") }}", prix_unitaire: {{ produit.prixUnitaire }}, quantite_stock: {{ produit.quantiteStock }}, qualite: "{{ produit.qualite|escape("js") }}", statut: "{{ produit.statut }}", image: "{{ produit.image|escape("js") }}", categorie: {id: {{ produit.categorie.id|default("null") }}}, date_production: "{{ produit.dateProduction|date("Y-m-d") }}", date_expiration: "{{ produit.dateExpiration|date("Y-m-d") }}"})' 
+                                                class="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
+                                                title="Edit">
+                                            <span class="material-symbols-outlined text-sm">edit</span>
+                                        </button>
+                                        <form method="POST" action="{{ path('produit_delete', { id: produit.idProduit }) }}" 
+                                              onsubmit="return confirm('Are you sure you want to delete this product?');" style="display: inline;">
+                                            <button type="submit" class="p-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm"
+                                                    title="Delete">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr id="emptyRow">
+                                <td colspan="10" class="py-12 px-4 text-center">
+                                    <div class="flex flex-col items-center gap-4">
+                                       
+                                        <p class="text-gray-500 text-lg">No products found. Create your first product.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Create Modal -->
+    <div id="createModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-[#0a2200]">New Product</h3>
+                <button onclick="closeModal('createModal')" class="text-[#43493d] hover:text-[#0a2200]">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form method="POST" action="{{ path('produit_create') }}" enctype="multipart/form-data" novalidate>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {% if produitCreateErrors._global is defined %}
+                        <div class="md:col-span-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            {{ produitCreateErrors._global|first }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Product Name *</label>
+                        <input type="text" name="nom" 
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.nom|default('') }}"
+                               placeholder="Example: Extra virgin olive oil">
+                        {% if produitCreateErrors.nom is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.nom|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Type *</label>
+                        <select name="type" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                            <option value="">Select a type</option>
+                            {% for typeOption in typeOptions %}
+                                <option value="{{ typeOption }}" {% if produitCreateOld.type|default('') == typeOption %}selected{% endif %}>{{ typeLabelMap[typeOption]|default(typeOption) }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if produitCreateErrors.type is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.type|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Category *</label>
+                        <select name="categorie_id" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                            <option value="">Select a category</option>
+                            {% for categorie in categories %}
+                                <option value="{{ categorie.id }}" {% if produitCreateOld.categorie_id|default('') == categorie.id %}selected{% endif %}>{{ categorie.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if produitCreateErrors.categorie is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.categorie|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Unit Price (DT) *</label>
+                        <input type="number" name="prix_unitaire" step="0.01" 
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.prix_unitaire|default('') }}"
+                               placeholder="0.00">
+                        {% if produitCreateErrors.prix_unitaire is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.prix_unitaire|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Quantity in Stock *</label>
+                        <input type="number" name="quantite_stock" 
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                               value="{{ produitCreateOld.quantite_stock|default('') }}"
+                               placeholder="0">
+                        {% if produitCreateErrors.quantite_stock is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.quantite_stock|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Quality</label>
+                        <select name="qualite" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                            <option value="">Select a quality</option>
+                            {% for qualiteOption in qualiteOptions %}
+                                <option value="{{ qualiteOption }}" {% if produitCreateOld.qualite|default('') == qualiteOption %}selected{% endif %}>{{ qualiteLabelMap[qualiteOption]|default(qualiteOption) }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if produitCreateErrors.qualite is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.qualite|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Production Date</label>
+                           <input type="date" name="date_production" 
+                               value="{{ produitCreateOld.date_production|default('') }}"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                        {% if produitCreateErrors.date_production is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.date_production|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Expiration Date</label>
+                           <input type="date" name="date_expiration" 
+                               value="{{ produitCreateOld.date_expiration|default('') }}"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                        {% if produitCreateErrors.date_expiration is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.date_expiration|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Status</label>
+                        <select name="statut" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                            <option value="Disponible" {% if produitCreateOld.statut|default('Disponible') == 'Disponible' %}selected{% endif %}>Available</option>
+                            <option value="Rupture" {% if produitCreateOld.statut|default('') == 'Rupture' %}selected{% endif %}>Out of Stock</option>
+                            <option value="Expiré" {% if produitCreateOld.statut|default('') == 'Expiré' %}selected{% endif %}>Expired</option>
+                        </select>
+                        {% if produitCreateErrors.statut is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.statut|first }}</p>
+                        {% endif %}
+                    </div>
+                    <!-- Image Upload -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-green-600">image</span>
+                                Product Image
+                            </span>
+                        </label>
+                        <div class="relative">
+                            <input type="file" name="image" accept="image/*" id="imageInput" class="sr-only">
+                            <div class="w-full rounded-lg border-2 border-green-200 bg-white px-4 py-3">
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <label for="imageInput" class="inline-flex cursor-pointer items-center rounded-full bg-green-100 px-6 py-2 text-sm font-semibold text-green-700 transition-colors hover:bg-green-200">
+                                        Choose file
+                                    </label>
+                                    <span id="imageInputFileName" class="text-[#1b1d0e]">No file selected</span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">PNG, JPG, JPEG up to 5MB</p>
+                            {% if produitCreateErrors.image is defined %}
+                                <p class="mt-2 text-sm text-red-600">{{ produitCreateErrors.image|first }}</p>
+                            {% endif %}
+                        </div>
+                        <div id="imagePreview" class="mt-4 hidden">
+                            <img src="" alt="Preview" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('createModal')" 
+                            class="flex-1 py-3 px-6 rounded-lg border-2 border-[#c3c9b9] text-[#1b1d0e] font-bold hover:bg-[#f5f5dc]">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 px-6 rounded-lg bg-[#0a2200] text-white font-bold hover:bg-[#173901]">
+                        Create
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-[#0a2200]">Edit Product</h3>
+                <button onclick="closeModal('editModal')" class="text-[#43493d] hover:text-[#0a2200]">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="editForm" method="POST" action="" enctype="multipart/form-data" novalidate>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {% if produitEditErrors._global is defined %}
+                        <div class="md:col-span-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            {{ produitEditErrors._global|first }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Product Name *</label>
+                        <input type="text" id="editNom" name="nom" 
+                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.nom is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.nom|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Type *</label>
+                        <select id="editType" name="type" 
+                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                            <option value="">Select a type</option>
+                            {% for typeOption in typeOptions %}
+                                <option value="{{ typeOption }}">{{ typeLabelMap[typeOption]|default(typeOption) }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if produitEditErrors.type is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.type|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Category *</label>
+                        <select id="editCategorieId" name="categorie_id" 
+                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                            <option value="">Select a category</option>
+                            {% for categorie in categories %}
+                                <option value="{{ categorie.id }}">{{ categorie.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if produitEditErrors.categorie is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.categorie|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Unit Price (DT) *</label>
+                        <input type="number" id="editPrix" name="prix_unitaire" step="0.01" 
+                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.prix_unitaire is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.prix_unitaire|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Quantity in Stock *</label>
+                        <input type="number" id="editQuantite" name="quantite_stock" 
+                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.quantite_stock is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.quantite_stock|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Quality</label>
+                        <select id="editQualite" name="qualite" 
+                                class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                            <option value="">Select a quality</option>
+                            {% for qualiteOption in qualiteOptions %}
+                                <option value="{{ qualiteOption }}">{{ qualiteLabelMap[qualiteOption]|default(qualiteOption) }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if produitEditErrors.qualite is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.qualite|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Production Date</label>
+                           <input type="date" id="editDateProduction" name="date_production" 
+                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.date_production is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.date_production|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Expiration Date</label>
+                           <input type="date" id="editDateExpiration" name="date_expiration" 
+                               class="w-full px-4 py-3 rounded-lg border border-[#c3c9b9] focus:border-[#0a2200] focus:ring-2 focus:ring-[#0a2200]/20">
+                        {% if produitEditErrors.date_expiration is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.date_expiration|first }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">Status</label>
+                        <select id="editStatut" name="statut" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all">
+                            <option value="Disponible">Available</option>
+                            <option value="Rupture">Out of Stock</option>
+                            <option value="Expiré">Expired</option>
+                        </select>
+                        {% if produitEditErrors.statut is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.statut|first }}</p>
+                        {% endif %}
+                    </div>
+                    <!-- Image Upload Edit -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-[#1b1d0e] mb-2">
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-green-600">image</span>
+                                Edit Image
+                            </span>
+                        </label>
+                        <div id="currentImageSection" class="mb-4 hidden">
+                            <p class="text-xs text-gray-600 mb-2">Current Image:</p>
+                            <img id="currentImagePreview" src="" alt="Current" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
+                        </div>
+                        <input type="file" name="image" accept="image/*" id="editImageInput" class="sr-only">
+                        <div class="w-full rounded-lg border-2 border-green-200 bg-white px-4 py-3">
+                            <div class="flex flex-wrap items-center gap-4">
+                                <label for="editImageInput" class="inline-flex cursor-pointer items-center rounded-full bg-green-100 px-6 py-2 text-sm font-semibold text-green-700 transition-colors hover:bg-green-200">
+                                    Choose file
+                                </label>
+                                <span id="editImageInputFileName" class="text-[#1b1d0e]">No file selected</span>
+                            </div>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">Leave empty to keep the current image, or select a new one to replace it</p>
+                        {% if produitEditErrors.image is defined %}
+                            <p class="mt-2 text-sm text-red-600">{{ produitEditErrors.image|first }}</p>
+                        {% endif %}
+                        <div id="editImagePreview" class="mt-4 hidden">
+                            <p class="text-xs text-gray-600 mb-2">New Image Preview:</p>
+                            <img src="" alt="Preview" class="max-w-xs rounded-lg shadow-md border-2 border-green-200">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('editModal')" 
+                            class="flex-1 py-3 px-6 rounded-lg border-2 border-[#c3c9b9] text-[#1b1d0e] font-bold hover:bg-[#f5f5dc]">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 px-6 rounded-lg bg-[#0a2200] text-white font-bold hover:bg-[#173901]">
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function buildProductCharts() {
+            const chartData = {{ product_chart_data|json_encode|raw }};
+
+            if (!chartData || !Array.isArray(chartData.top_value_names)) {
+                return;
+            }
+
+            const palette = {
+                green: '#2d5016',
+                emerald: '#16a34a',
+                lime: '#84cc16',
+                sand: '#b7c88a',
+                muted: '#6a7f5f',
+                red: '#dc2626',
+                orange: '#ea580c',
+                gray: '#64748b'
+            };
+
+            document.getElementById('avgValueCard').textContent = `{{ product_stats.average_value|number_format(2, '.', '') }} DT`;
+            document.getElementById('topCategoryCard').textContent = {{ product_stats.top_category|json_encode|raw }};
+            document.getElementById('topCategoryCount').textContent = `{{ product_stats.top_category_count }} product(s)`;
+            document.getElementById('availabilityRateCard').textContent = `{{ product_stats.availability_rate|number_format(1, '.', '') }}%`;
+            document.getElementById('statsLastUpdated').textContent = {{ product_chart_data.generated_at|json_encode|raw }};
+
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1300,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: { family: 'Inter', weight: 700 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#123b12',
+                        titleFont: { family: 'Inter', weight: 700 },
+                        bodyFont: { family: 'Open Sans' },
+                        padding: 12,
+                        cornerRadius: 10
+                    }
+                }
+            };
+
+            const stockValueCtx = document.getElementById('stockValueChart');
+            if (stockValueCtx) {
+                new Chart(stockValueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.top_value_names,
+                        datasets: [{
+                            label: 'Stock Value (DT)',
+                            data: chartData.top_value_values,
+                            borderRadius: 10,
+                            backgroundColor: [
+                                '#2d5016', '#1f6a2f', '#2a8546', '#34a853', '#5ec16f', '#84cc16', '#a3d977'
+                            ]
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            x: {
+                                ticks: { color: palette.muted, font: { family: 'Open Sans', weight: 600 } },
+                                grid: { display: false }
+                            },
+                            y: {
+                                ticks: {
+                                    color: palette.muted,
+                                    callback: (v) => `${v} DT`,
+                                    font: { family: 'Open Sans', weight: 600 }
+                                },
+                                grid: { color: 'rgba(106,127,95,0.15)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Available', 'Out of Stock', 'Expired', 'Other'],
+                        datasets: [{
+                            data: [
+                                chartData.status.available,
+                                chartData.status.out_of_stock,
+                                chartData.status.expired,
+                                chartData.status.other
+                            ],
+                            backgroundColor: [palette.emerald, palette.red, palette.orange, palette.gray],
+                            borderColor: '#ffffff',
+                            borderWidth: 3,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        cutout: '64%'
+                    }
+                });
+            }
+
+            const categoryCtx = document.getElementById('categoryStockChart');
+            if (categoryCtx) {
+                new Chart(categoryCtx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.category_labels,
+                        datasets: [{
+                            label: 'Total Stock by Category',
+                            data: chartData.category_stock_values,
+                            borderColor: palette.green,
+                            backgroundColor: 'rgba(45, 80, 22, 0.15)',
+                            pointBackgroundColor: palette.green,
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            tension: 0.35,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            x: {
+                                ticks: { color: palette.muted, font: { family: 'Open Sans', weight: 700 } },
+                                grid: { display: false }
+                            },
+                            y: {
+                                ticks: { color: palette.muted, font: { family: 'Open Sans', weight: 700 } },
+                                grid: { color: 'rgba(106,127,95,0.15)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        function openEditModal(id, produit) {
+            // Log to check the data structure
+            console.log('Product data:', produit);
+            console.log('produit.nom:', produit.nom);
+            
+            // Set all fields with proper null/undefined checking
+            if (produit.nom && produit.nom !== 'undefined') {
+                document.getElementById('editNom').value = produit.nom;
+            }
+            if (produit.type && produit.type !== 'undefined') {
+                document.getElementById('editType').value = produit.type;
+            }
+            if (produit.prix_unitaire) {
+                document.getElementById('editPrix').value = produit.prix_unitaire;
+            }
+            if (produit.quantite_stock !== undefined && produit.quantite_stock !== null) {
+                document.getElementById('editQuantite').value = produit.quantite_stock;
+            }
+            if (produit.qualite && produit.qualite !== 'undefined') {
+                document.getElementById('editQualite').value = produit.qualite;
+            }
+            
+            document.getElementById('editStatut').value = produit.statut || 'Disponible';
+            
+            if (produit.categorie && produit.categorie.id) {
+                document.getElementById('editCategorieId').value = produit.categorie.id;
+            }
+            
+            // Handle dates
+            if (produit.date_production && produit.date_production !== '1970-01-01') {
+                document.getElementById('editDateProduction').value = produit.date_production.substring(0, 10);
+            }
+            
+            if (produit.date_expiration && produit.date_expiration !== '1970-01-01') {
+                document.getElementById('editDateExpiration').value = produit.date_expiration.substring(0, 10);
+            }
+            
+            // Display current image if it exists
+            if (produit.image && produit.image !== 'undefined') {
+                const currentImageSection = document.getElementById('currentImageSection');
+                const currentImagePreview = document.getElementById('currentImagePreview');
+                currentImagePreview.src = '/uploads/produits/' + produit.image;
+                currentImageSection.classList.remove('hidden');
+            } else {
+                document.getElementById('currentImageSection').classList.add('hidden');
+            }
+            
+            // Clear new image preview
+            document.getElementById('editImagePreview').classList.add('hidden');
+            document.getElementById('editImageInput').value = '';
+            const editFileName = document.getElementById('editImageInputFileName');
+            if (editFileName) {
+                editFileName.textContent = 'No file selected';
+            }
+            
+            document.getElementById('editForm').action = '{{ path('produit_edit', { id: '__ID__' }) }}'.replace('__ID__', id);
+            openModal('editModal');
+        }
+        
+        const productFiltersForm = document.getElementById('productFiltersForm');
+        const productSearchInput = document.getElementById('searchInput');
+        const productCategoryFilter = document.getElementById('categoryFilter');
+        const productStatusFilter = document.getElementById('statusFilter');
+        const productSortSelect = document.getElementById('sortSelect');
+        let productFilterTimer = null;
+
+        if (productSearchInput && productFiltersForm) {
+            productSearchInput.addEventListener('input', function () {
+                clearTimeout(productFilterTimer);
+                productFilterTimer = setTimeout(function () {
+                    productFiltersForm.submit();
+                }, 280);
+            });
+        }
+
+        [productCategoryFilter, productStatusFilter, productSortSelect].forEach(function (element) {
+            if (!element || !productFiltersForm) {
+                return;
+            }
+            element.addEventListener('change', function () {
+                productFiltersForm.submit();
+            });
+        });
+
+        // Image Preview Functions
+        document.getElementById('imageInput')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const fileName = document.getElementById('imageInputFileName');
+            if (fileName) {
+                fileName.textContent = file ? file.name : 'No file selected';
+            }
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    const img = preview.querySelector('img');
+                    img.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview')?.classList.add('hidden');
+            }
+        });
+        
+        document.getElementById('editImageInput')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const fileName = document.getElementById('editImageInputFileName');
+            if (fileName) {
+                fileName.textContent = file ? file.name : 'No file selected';
+            }
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('editImagePreview');
+                    const img = preview.querySelector('img');
+                    img.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('editImagePreview')?.classList.add('hidden');
+            }
+        });
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        buildProductCharts();
+
+        {% if produitCreateErrors is not empty %}
+            openModal('createModal');
+        {% endif %}
+
+        {% if produitEditErrors is not empty and produitEditOld.id is defined %}
+            openEditModal({{ produitEditOld.id }}, {
+                nom: {{ produitEditOld.nom|default('')|json_encode|raw }},
+                type: {{ produitEditOld.type|default('')|json_encode|raw }},
+                prix_unitaire: {{ produitEditOld.prix_unitaire|default('')|json_encode|raw }},
+                quantite_stock: {{ produitEditOld.quantite_stock|default('')|json_encode|raw }},
+                qualite: {{ produitEditOld.qualite|default('')|json_encode|raw }},
+                statut: {{ produitEditOld.statut|default('Disponible')|json_encode|raw }},
+                image: {{ produitEditOld.image|default('')|json_encode|raw }},
+                categorie: {id: {{ produitEditOld.categorie_id|default('null') }}},
+                date_production: {{ produitEditOld.date_production|default('')|json_encode|raw }},
+                date_expiration: {{ produitEditOld.date_expiration|default('')|json_encode|raw }}
+            });
+        {% endif %}
+        
+    </script>
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>

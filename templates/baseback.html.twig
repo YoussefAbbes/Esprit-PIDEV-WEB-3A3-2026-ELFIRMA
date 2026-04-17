@@ -74,6 +74,29 @@
 <div class="ml-72">
     {% block body %}{% endblock %}
 </div>
+<body class="elf-has-sidebar min-h-screen">
+
+<!-- FIX COLLAPSE -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.remove("elf-sidebar-collapsed");
+});
+</script>
+
+<!-- ✅ SIDEBAR ROOT -->
+<aside class="fixed left-0 top-0 h-screen w-72 py-8">
+    <div class="px-8 mb-6">
+        <h1 class="text-3xl font-black text-[#0a2200] tracking-tight">ELFIRMA</h1>
+        <p class="text-sm text-[#5f6658]">Agricultural Management</p>
+    </div>
+    <nav></nav>
+</aside>
+
+<!-- ✅ NAVBAR SCRIPT -->
+{{ include('elfirma/_nav_routes.html.twig') }}
+
+<!-- ✅ CONTENT -->
+{% block body %}{% endblock %}
 
 </body>
 

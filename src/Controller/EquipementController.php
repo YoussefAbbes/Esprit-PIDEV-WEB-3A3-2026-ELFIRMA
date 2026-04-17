@@ -20,18 +20,32 @@ use App\Form\MaintenanceType;
 class EquipementController extends AbstractController
 {
     #[Route('/equipements', name: 'app_equipement_index')]
-    public function index(EquipementRepository $repo): Response
-    {
-        $form = $this->createForm(EquipementType::class, new Equipement());
-        $formMaintenance = $this->createForm(MaintenanceType::class, new Maintenance());
+public function index(
+    EquipementRepository $repo,
+    EntityManagerInterface $em
+): Response {
 
-        return $this->render('elfirma/equipement/equipements.html.twig', [
-            'equipements' => $repo->findAll(),
-            'form' => $form->createView(),
-            'formMaintenance' => $formMaintenance->createView(),
+    // Forms
+    $form = $this->createForm(EquipementType::class, new Equipement());
+    $formMaintenance = $this->createForm(MaintenanceType::class, new Maintenance());
 
-        ]);
+    // Récupération des équipements
+    $equipements = $repo->findAll();
+
+    // 🔥 recalcul automatique état
+    foreach ($equipements as $eq) {
+        $this->updateEquipementEtat($eq, $em);
     }
+
+    // sauvegarde en base
+    $em->flush();
+
+    return $this->render('elfirma/equipement/equipements.html.twig', [
+        'equipements' => $equipements,
+        'form' => $form->createView(),
+        'formMaintenance' => $formMaintenance->createView(),
+    ]);
+}
 
     #[Route('/equipements/new', name: 'app_equipement_new', methods: ['POST'])]
     public function new(
@@ -126,7 +140,6 @@ class EquipementController extends AbstractController
                 $equipement->setDescriptionEq($data['descriptionEq']);
             }
 
-            // Validation de l'entity
             $errors = $validator->validate($equipement);
 
             if (count($errors) > 0) {
@@ -142,7 +155,6 @@ class EquipementController extends AbstractController
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            // Pas d'erreurs, on persiste
             $em->flush();
 
             return new JsonResponse([
@@ -188,4 +200,129 @@ class EquipementController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    private function updateEquipementEtat(Equipement $equipement, EntityManagerInterface $em)
+    {
+        $maintenances = $equipement->getMaintenances();
+
+        $sixMonthsAgo = new \DateTime('-6 months');
+
+        $count6Months = 0;
+        $totalCost = 0;
+
+        foreach ($maintenances as $m) {
+            $totalCost += $m->getCout();
+
+            if ($m->getDateM() >= $sixMonthsAgo) {
+                $count6Months++;
+            }
+        }
+
+        $purchaseCost = $equipement->getCoutAchat();
+        if ($purchaseCost <= 0) {
+            $ratio = 0;
+        } else {
+            $ratio = ($totalCost / $purchaseCost) * 100;
+        }
+        $currentEtat = $equipement->getEtat()->value;
+        if (($count6Months > 3 || $ratio > 50) && $totalCost > 0) {
+
+            $equipement->setEtat(\App\Enum\EquipementEtat::from('panne'));
+            foreach ($maintenances as $m) {
+                if ($m->getTypeM() === 'Maintenance automatique' 
+                    && $m->getDateM() >= new \DateTime('-2 days')) {
+                    return; // déjà créée
+                }
+            }
+            $maintenance = new \App\Entity\Maintenance();
+
+            $maintenance->setEquipement($equipement);
+            $maintenance->setTypeM('Maintenance automatique');
+            $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
+            
+            // 📅 date proche (demain)
+            $maintenance->setDateM(new \DateTime('+1 day'));
+
+            $maintenance->setCout(200);
+
+            // ⚙️ statut
+            $maintenance->setStatut(\App\Enum\MaintenanceStatut::from('planifie'));
+
+            // 🔥 priorité élevée
+            $maintenance->setPriorite(\App\Enum\MaintenancePriorite::from('urgente'));
+
+            $technicien = $em->getRepository(\App\Entity\Utilisateur::class)
+            ->findOneBy(['role_u' => 'employee']);
+
+        if ($technicien) {
+            $maintenance->setTechnicien($technicien);
+        }
+
+            $em->persist($maintenance);
+
+            return;
+        }
+        if ($currentEtat === 'maintenance') {
+            return;
+        }
+
+        $equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
+        }
+
+        #[Route('/equipement/{id}/generate-image', name: 'generate_image', methods: ['POST'])]
+public function generateImage(Equipement $equipement): JsonResponse
+{
+    $description = $equipement->getDescriptionEq();
+
+    if (!$description) {
+        return new JsonResponse([
+            'success' => false,
+            'message' => 'Description vide'
+        ], 400);
+    }
+
+    $accountId = '1c9e8098b3c6cb26f06ef73dcc8d8846';
+    $apiToken = '81nlNeNoH1aS4SZ0K06jKtt8X9H2DnluC75DR_Jn';
+
+    $url = "https://api.cloudflare.com/client/v4/accounts/$accountId/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0";
+
+    $payload = json_encode([
+        'prompt' => $description
+    ]);
+
+    $ch = curl_init();
+
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => [
+            "Authorization: Bearer $apiToken",
+            "Content-Type: application/json"
+        ],
+        CURLOPT_TIMEOUT => 60
+    ]);
+
+    $response = curl_exec($ch);
+
+    if ($response === false) {
+        curl_close($ch);
+        return new JsonResponse([
+            'success' => false,
+            'message' => 'Erreur API'
+        ], 500);
+    }
+
+    curl_close($ch);
+
+    // 🔥 encoder image en base64 pour frontend
+    $base64 = base64_encode($response);
+
+    return new JsonResponse([
+        'success' => true,
+        'image' => 'data:image/png;base64,' . $base64
+    ]);
+}
+    
 }

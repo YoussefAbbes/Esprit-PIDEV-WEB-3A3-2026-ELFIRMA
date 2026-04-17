@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Maintenance;
 use App\Entity\Equipement;
+use App\Entity\Utilisateur;
 
 use App\Repository\MaintenanceRepository;
 use App\Repository\EquipementRepository;
@@ -28,7 +29,8 @@ class MaintenanceController extends AbstractController
     public function index(
         MaintenanceRepository $repo,
         EquipementRepository $equipementRepo,
-        Request $request
+        Request $request,
+        EntityManagerInterface $em
     ): Response {
 
         $equipementId = $request->query->get('equipement');
@@ -41,8 +43,12 @@ class MaintenanceController extends AbstractController
             $maintenances = $repo->findAll();
         }
 
+        $employees = $em->getRepository(Utilisateur::class)
+        ->findBy(['role_u' => 'employee']);
+
         return $this->render('elfirma/equipement/maintenances.html.twig', [
             'maintenances' => $maintenances,
+            'employees' => $employees   
         ]);
     }
 
@@ -61,40 +67,40 @@ class MaintenanceController extends AbstractController
 
             if ($formMaintenance->isSubmitted()) {
 
-                if ($formMaintenance->isValid()) {
+                $date = $maintenance->getDateM();
+                $isHoliday = $this->isHoliday($date);
 
-                    // ✅ validation supplémentaire (comme Equipement)
-                    $errors = $validator->validate($maintenance);
+                if ($isHoliday) {
+                    $formMaintenance->get('dateM')->addError(
+                        new \Symfony\Component\Form\FormError('❌ Cette date est un jour férié')
+                    );
+                }
 
-                    if (count($errors) > 0) {
-                        return $this->render('elfirma/equipement/equipements.html.twig', [
-                            'maintenances' => $repo->findAll(),
-                            'equipements' => $equipementRepo->findAll(),
-                            'form' => $form->createView(),
-                            'formMaintenance' => $formMaintenance->createView(),
-                            'show_modal' => true,
-                            'modal_errors' => true
-                        ]);
-                    }
+                // 🔥 BLOQUAGE CLAIR
+                if ($formMaintenance->isValid() && !$isHoliday) {
 
-                    // ✅ OK → persist
+                    $equipement = $maintenance->getEquipement();
+
                     $em->persist($maintenance);
+
+                    $this->updateEquipementEtat($equipement, $em);
+
                     $em->flush();
 
                     $this->addFlash('success', '✅ Maintenance ajoutée avec succès !');
 
                     return $this->redirectToRoute('app_equipement_index');
-                } else {
-                    // ❌ erreurs formulaire
-                    return $this->render('elfirma/equipement/equipements.html.twig', [
-                        'maintenances' => $repo->findAll(),
-                        'equipements' => $equipementRepo->findAll(),
-                        'form' => $form->createView(),
-                        'formMaintenance' => $formMaintenance->createView(),
-                        'show_modal' => true,
-                        'modal_errors' => true
-                    ]);
                 }
+
+                // ❌ sinon on reste sur le formulaire
+                return $this->render('elfirma/equipement/equipements.html.twig', [
+                    'maintenances' => $repo->findAll(),
+                    'equipements' => $equipementRepo->findAll(),
+                    'form' => $form->createView(),
+                    'formMaintenance' => $formMaintenance->createView(),
+                    'show_modal' => true,
+                    'modal_errors' => true
+                ]);
             }
 
             // GET request
@@ -184,6 +190,11 @@ class MaintenanceController extends AbstractController
             }
 
             // ✅ SAVE
+            $equipement = $maintenance->getEquipement();
+
+            // 🔥 recalcul état
+            $this->updateEquipementEtat($equipement, $em);
+
             $em->flush();
 
             return new JsonResponse([
@@ -219,9 +230,129 @@ class MaintenanceController extends AbstractController
             return new Response('Not found', 404);
         }
 
+        $equipement = $maintenance->getEquipement();
+
         $em->remove($maintenance);
+        $em->flush();
+
+        // 🔥 recalcul après suppression
+        $this->updateEquipementEtat($equipement, $em);
         $em->flush();
 
         return new Response('Deleted');
     }
+
+    private function updateEquipementEtat(Equipement $equipement, EntityManagerInterface $em)
+    {
+        $maintenances = $equipement->getMaintenances();
+
+        $sixMonthsAgo = new \DateTime('-6 months');
+
+        $count6Months = 0;
+        $totalCost = 0;
+
+        foreach ($maintenances as $m) {
+            $totalCost += $m->getCout();
+
+            if ($m->getDateM() >= $sixMonthsAgo) {
+                $count6Months++;
+            }
+        }
+
+        $purchaseCost = $equipement->getCoutAchat();
+        if ($purchaseCost <= 0) {
+            $ratio = 0;
+        } else {
+            $ratio = ($totalCost / $purchaseCost) * 100;
+        }
+        $currentEtat = $equipement->getEtat()->value;
+        if (($count6Months > 3 || $ratio > 50) && $totalCost > 0) {
+
+            $equipement->setEtat(\App\Enum\EquipementEtat::from('panne'));
+            foreach ($maintenances as $m) {
+                if ($m->getTypeM() === 'Maintenance automatique' 
+                    && $m->getDateM() >= new \DateTime('-2 days')) {
+                    return; // déjà créée
+                }
+            }
+            $maintenance = new \App\Entity\Maintenance();
+
+            $maintenance->setEquipement($equipement);
+            $maintenance->setTypeM('Maintenance automatique');
+            $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
+            
+            $date = new \DateTime('+1 day');
+            while ($this->isHoliday($date)) {
+                $date->modify('+1 day');
+            }
+            $maintenance->setDateM($date);
+
+            $maintenance->setCout(200);
+
+            // ⚙️ statut
+            $maintenance->setStatut(\App\Enum\MaintenanceStatut::from('planifie'));
+
+            // 🔥 priorité élevée
+            $maintenance->setPriorite(\App\Enum\MaintenancePriorite::from('urgente'));
+
+            $technicien = $em->getRepository(\App\Entity\Utilisateur::class)
+                ->findOneBy(['role_u' => 'employee']);
+
+            if ($technicien) {
+                $maintenance->setTechnicien($technicien);
+            }
+
+            $em->persist($maintenance);
+
+            return;
+        }
+        if ($currentEtat === 'maintenance') {
+            return;
+        }
+
+        $equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
+    
+    
+        }
+       private function isHoliday(\DateTime $date): bool
+        {
+            $apiKey = 'uUEzUqYq5jExcWlBWULmo5eSzFm6SBFyeSeHG9pt';
+
+            $query = http_build_query([
+                'country' => 'TN',
+                'date' => $date->format('Y-m-d') // 🔥 IMPORTANT
+            ]);
+
+            $url = "https://api.api-ninjas.com/v1/ispublicholiday?$query";
+
+            $ch = curl_init();
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-Api-Key: $apiKey",
+                    "Accept: application/json"
+                ],
+                CURLOPT_TIMEOUT => 5
+            ]);
+
+            $response = curl_exec($ch);
+
+            if ($response === false) {
+                curl_close($ch);
+                return false;
+            }
+
+            curl_close($ch);
+
+            $data = json_decode($response, true);
+
+            // 🔥 EXACTEMENT comme Java
+            if (isset($data['is_public_holiday']) && $data['is_public_holiday'] === true) {
+                return true;
+            }
+
+            return false;
+        }
 }
