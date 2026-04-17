@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ReclamationRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReclamationRepository::class)]
 #[ORM\Table(name: 'reclamation')]
@@ -20,6 +21,11 @@ class Reclamation
     }
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Title is required')]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: 'Title must not exceed 100 characters'
+    )]
     private ?string $titre_u = null;
 
     public function getTitreU(): ?string
@@ -34,6 +40,11 @@ class Reclamation
     }
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Please select a valid complaint type')]
+    #[Assert\Choice(
+        choices: ['Product Issue', 'Service Issue', 'Delivery Problem', 'Quality Concern', 'Other'],
+        message: 'Please select a valid complaint type'
+    )]
     private ?string $type_reclamation_u = null;
 
     public function getTypeReclamationU(): ?string
@@ -48,6 +59,11 @@ class Reclamation
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: 'Description is required')]
+    #[Assert\Length(
+        max: 500,
+        maxMessage: 'Description must not exceed 500 characters'
+    )]
     private ?string $description_u = null;
 
     public function getDescriptionU(): ?string

@@ -5,6 +5,9 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MaintenanceRepository;
 use App\Enum\MaintenancePriorite;
+use App\Enum\MaintenanceStatut;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Utilisateur;
 
 #[ORM\Entity(repositoryClass: MaintenanceRepository::class)]
 #[ORM\Table(name: 'maintenance')]
@@ -14,13 +17,15 @@ class Maintenance
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id_m = null;
-
     public function getIdM(): ?int
     {
         return $this->id_m;
     }
 
+    // ✅ TYPE
     #[ORM\Column(type: 'string', length: 50)]
+    #[Assert\NotBlank(message: "Le type est obligatoire")]
+    #[Assert\Length(min: 3, max: 50)]
     private ?string $type_m = null;
 
     public function getTypeM(): ?string
@@ -34,7 +39,9 @@ class Maintenance
         return $this;
     }
 
+    // ✅ DATE
     #[ORM\Column(type: 'date')]
+    #[Assert\NotNull(message: "La date est obligatoire")]
     private ?\DateTimeInterface $date_m = null;
 
     public function getDateM(): ?\DateTimeInterface
@@ -42,15 +49,17 @@ class Maintenance
         return $this->date_m;
     }
 
-    public function setDateM(\DateTimeInterface $date_m): self
+    public function setDateM(?\DateTimeInterface $date_m): self
     {
         $this->date_m = $date_m;
         return $this;
     }
 
+    // ✅ DESCRIPTION
     #[ORM\Column(type: 'string', length: 200)]
+    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\Length(min: 5, max: 200)]
     private ?string $description = null;
-
     public function getDescription(): ?string
     {
         return $this->description;
@@ -62,9 +71,11 @@ class Maintenance
         return $this;
     }
 
+    // ✅ COUT
     #[ORM\Column(type: 'float')]
+    #[Assert\NotNull(message: "Le coût est obligatoire")]
+    #[Assert\Positive(message: "Le coût doit être positif")]
     private ?float $cout = null;
-
     public function getCout(): ?float
     {
         return $this->cout;
@@ -76,23 +87,25 @@ class Maintenance
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 30)]
-    private ?string $statut = null;
-
-    public function getStatut(): ?string
+    // ✅ STATUT
+    #[ORM\Column(enumType: MaintenanceStatut::class, nullable: true)]
+    #[Assert\NotNull(message: "Le statut est obligatoire")]
+    private ?MaintenanceStatut $statut = null;
+    public function getStatut(): ?MaintenanceStatut
     {
         return $this->statut;
     }
 
-    public function setStatut(string $statut): self
+    public function setStatut(?MaintenanceStatut $statut): self
     {
         $this->statut = $statut;
         return $this;
     }
 
-    #[ORM\Column(enumType: MaintenancePriorite::class, length: 20, nullable: true)]
+    // ✅ PRIORITE
+    #[ORM\Column(enumType: MaintenancePriorite::class, nullable: true)]
+    #[Assert\NotNull(message: "La priorité est obligatoire")]
     private ?MaintenancePriorite $priorite = null;
-
     public function getPriorite(): ?MaintenancePriorite
     {
         return $this->priorite;
@@ -104,10 +117,11 @@ class Maintenance
         return $this;
     }
 
+    // ✅ EQUIPEMENT
     #[ORM\ManyToOne(targetEntity: Equipement::class, inversedBy: 'maintenances')]
     #[ORM\JoinColumn(name: 'id_equipement', referencedColumnName: 'id_eq')]
+    #[Assert\NotNull(message: "L'équipement est obligatoire")]
     private ?Equipement $equipement = null;
-
     public function getEquipement(): ?Equipement
     {
         return $this->equipement;
@@ -119,15 +133,16 @@ class Maintenance
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 100)]
-    private ?string $technicien = null;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: "technicien_id", referencedColumnName: "id_u", nullable: false)]
+    private ?Utilisateur $technicien = null;
 
-    public function getTechnicien(): ?string
+    public function getTechnicien(): ?Utilisateur
     {
         return $this->technicien;
     }
 
-    public function setTechnicien(string $technicien): self
+    public function setTechnicien(?Utilisateur $technicien): self
     {
         $this->technicien = $technicien;
         return $this;
