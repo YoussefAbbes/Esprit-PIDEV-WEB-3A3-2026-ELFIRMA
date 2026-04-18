@@ -288,6 +288,11 @@ function initVoiceCartAssistant() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const synth = window.speechSynthesis;
     const hasVoice = !!SpeechRecognition && !!synth;
+    let isListening = false;
+    let isRecognitionStarting = false;
+    let networkRetryCount = 0;
+    let manualStop = false;
+    let restartOnEnd = false;
 
     const voiceBtn = document.createElement('button');
     voiceBtn.type = 'button';
@@ -311,6 +316,43 @@ function initVoiceCartAssistant() {
     `;
     voiceBtn.innerHTML = '<span class="material-symbols-outlined">mic</span>';
     document.body.appendChild(voiceBtn);
+
+    const voiceStatus = document.createElement('div');
+    voiceStatus.id = 'voice-cart-status';
+    voiceStatus.style.cssText = `
+        position: fixed;
+        left: 20px;
+        bottom: 92px;
+        z-index: 1200;
+        max-width: 320px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: rgba(15,23,42,.9);
+        color: #fff;
+        font-size: 13px;
+        line-height: 1.35;
+        display: none;
+    `;
+    document.body.appendChild(voiceStatus);
+
+    function showVoiceStatus(message, isError = false, withSpeech = false) {
+        voiceStatus.textContent = message;
+        voiceStatus.style.display = 'block';
+        voiceStatus.style.background = isError ? 'rgba(185,28,28,.95)' : 'rgba(15,23,42,.9)';
+        if (withSpeech) {
+            speak(message);
+        }
+        setTimeout(() => {
+            voiceStatus.style.display = 'none';
+        }, 3200);
+    }
+
+    function openVoiceFallbackPrompt() {
+        const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande panier. Ex: lire panier');
+        if (typeof typed === 'string' && typed.trim() !== '') {
+            handleVoiceCommand(typed.trim());
+        }
+    }
 
     function speak(message) {
         if (!synth) return;
@@ -408,7 +450,7 @@ function initVoiceCartAssistant() {
 
             const data = await response.json();
             if (!response.ok || !data.ok) {
-                speak(data.speak || 'Erreur de traitement vocal.');
+                showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
                 return;
             }
 
@@ -417,7 +459,7 @@ function initVoiceCartAssistant() {
                 speak(data.speak);
             }
         } catch (_error) {
-            speak('Erreur reseau pendant la commande vocale.');
+            showVoiceStatus('Service vocal temporairement indisponible pendant la commande vocale.', true, true);
         }
     }
 
@@ -425,42 +467,150 @@ function initVoiceCartAssistant() {
         voiceBtn.style.opacity = '0.65';
         voiceBtn.title = 'Voice assistant not supported on this browser';
         voiceBtn.addEventListener('click', function () {
-            alert('Voice assistant is not supported by this browser.');
+            showVoiceStatus('La reconnaissance vocale n\'est pas supportee par ce navigateur.', true);
         });
         return;
     }
 
     const recognition = new SpeechRecognition();
     recognition.lang = 'fr-FR';
+    recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
+    function startRecognitionSafely(quiet = false) {
+        if (isListening || isRecognitionStarting) {
+            return;
+        }
+
+        try {
+            isRecognitionStarting = true;
+            recognition.start();
+            restartOnEnd = false;
+            voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            if (!quiet) {
+                showVoiceStatus('Je vous ecoute... dites votre commande panier.', false, false);
+            }
+        } catch (_error) {
+            isRecognitionStarting = false;
+            showVoiceStatus('Impossible de demarrer le micro.', true);
+        }
+    }
+
+    recognition.onstart = function () {
+        isRecognitionStarting = false;
+        isListening = true;
+    };
+
     recognition.onresult = function (event) {
-        const transcript = event.results?.[0]?.[0]?.transcript || '';
-        if (transcript) {
-            handleVoiceCommand(transcript);
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            if (!result.isFinal) {
+                continue;
+            }
+
+            const transcript = result?.[0]?.transcript || '';
+            if (transcript) {
+                networkRetryCount = 0;
+                manualStop = true;
+                restartOnEnd = false;
+                handleVoiceCommand(transcript);
+            }
         }
     };
 
-    recognition.onerror = function () {
-        alert('Voice recognition error. Please try again.');
+    recognition.onerror = function (event) {
+        const code = event?.error || 'unknown';
+        isRecognitionStarting = false;
+        isListening = false;
+
+        if (code === 'not-allowed' || code === 'service-not-allowed') {
+            restartOnEnd = false;
+            showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site.', true);
+            return;
+        }
+
+        if (code === 'audio-capture') {
+            restartOnEnd = false;
+            showVoiceStatus('Aucun micro detecte ou accessible.', true);
+            return;
+        }
+
+        if (code === 'network') {
+            if (networkRetryCount < 1) {
+                networkRetryCount++;
+                showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+                setTimeout(() => {
+                    startRecognitionSafely(true);
+                }, 550);
+
+                return;
+            }
+
+            restartOnEnd = false;
+            showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
+            openVoiceFallbackPrompt();
+            return;
+        }
+
+        if (code === 'no-speech') {
+            showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+            return;
+        }
+
+        if (code !== 'aborted') {
+            showVoiceStatus('Erreur vocale: ' + code, true);
+        }
     };
 
     recognition.onend = function () {
+        isRecognitionStarting = false;
+        isListening = false;
         voiceBtn.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
     };
 
-    voiceBtn.addEventListener('click', function () {
-        try {
-            recognition.start();
-            voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-            speak('Je vous ecoute.');
-        } catch (_error) {
-            alert('Voice assistant is already listening.');
+    async function ensureMicroPermission() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return true;
         }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach((t) => t.stop());
+
+            return true;
+        } catch (_error) {
+            showVoiceStatus('Micro non autorise. Activez l\'acces micro du navigateur.', true);
+
+            return false;
+        }
+    }
+
+    voiceBtn.addEventListener('click', async function () {
+        if (isListening || isRecognitionStarting) {
+            manualStop = true;
+            restartOnEnd = false;
+            isRecognitionStarting = false;
+            recognition.stop();
+            isListening = false;
+            showVoiceStatus('Ecoute arretee.', false, false);
+
+            return;
+        }
+
+        const allowed = await ensureMicroPermission();
+        if (!allowed) {
+            return;
+        }
+
+        networkRetryCount = 0;
+        manualStop = false;
+        restartOnEnd = false;
+        synth.cancel();
+        startRecognitionSafely();
     });
 
-    speak('Assistant vocal panier active. Dites aide pour les commandes.');
+    showVoiceStatus('Assistant vocal panier actif.', false, true);
 }
 
 document.addEventListener('DOMContentLoaded', function () {

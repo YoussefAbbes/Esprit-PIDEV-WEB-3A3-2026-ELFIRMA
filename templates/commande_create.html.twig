@@ -644,6 +644,9 @@
             const hasVoice = !!SpeechRecognition && !!synth;
             let isListening = false;
             let networkRetryCount = 0;
+            let isRecognitionStarting = false;
+            let restartOnEnd = false;
+            let manualStop = false;
 
             const fab = document.createElement('button');
             fab.type = 'button';
@@ -678,6 +681,13 @@
                 }, 3600);
             }
 
+            function openVoiceFallbackPrompt() {
+                const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande checkout. Ex: nom ahmed');
+                if (typeof typed === 'string' && typed.trim() !== '') {
+                    handleVoiceCommand(typed.trim());
+                }
+            }
+
             function speak(message) {
                 if (!synth) {
                     return;
@@ -706,6 +716,15 @@
             function readCheckoutSummary() {
                 const totalText = totalEl ? totalEl.textContent.trim() : 'total indisponible';
                 speak(`Recapitulatif. Nom ${nameInput?.value || 'non renseigne'}. Mode de paiement ${paymentSelect?.value || 'non renseigne'}. Total ${totalText}.`);
+            }
+
+            function getGeneratedPromoCodeFromUi() {
+                const generatedStrong = Array.from(document.querySelectorAll('p strong')).find((el) => {
+                    const txt = (el.textContent || '').trim();
+                    return txt.length >= 4 && /^[A-Z0-9-]+$/i.test(txt);
+                });
+
+                return generatedStrong ? String(generatedStrong.textContent || '').trim() : '';
             }
 
             function executeVoiceActions(actions) {
@@ -739,6 +758,19 @@
 
                     if (action.type === 'submit_checkout_action') {
                         submitAction(String(action.value || ''));
+                        return;
+                    }
+
+                    if (action.type === 'apply_generated_promo') {
+                        const generated = getGeneratedPromoCodeFromUi();
+                        if (promoInput && generated !== '') {
+                            promoInput.value = generated.toUpperCase();
+                            promoInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            submitAction('apply_promo');
+                            return;
+                        }
+
+                        showVoiceStatus('Aucun code promo genere trouve. Dites generer promo puis reutilisez cette commande.', true, true);
                         return;
                     }
 
@@ -805,30 +837,56 @@
             }
 
             const recognition = new SpeechRecognition();
-            recognition.lang = (document.documentElement.lang || navigator.language || 'fr-FR');
+            recognition.lang = 'fr-FR';
+            recognition.continuous = false;
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
 
-            function startRecognitionSafely() {
+            function startRecognitionSafely(quiet = false) {
+                if (isListening || isRecognitionStarting) {
+                    return;
+                }
+
                 try {
+                    isRecognitionStarting = true;
                     recognition.start();
-                    isListening = true;
+                    restartOnEnd = false;
                     fab.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-                    showVoiceStatus('Je vous ecoute... dites votre commande vocale.', false);
+                    if (!quiet) {
+                        // Ne pas parler au moment du start pour eviter de couper l'ecoute.
+                        showVoiceStatus('Je vous ecoute... dites votre commande vocale.', false, false);
+                    }
                 } catch (_error) {
+                    isRecognitionStarting = false;
                     showVoiceStatus('Impossible de demarrer le micro, reessayez.', true);
                 }
             }
 
+            recognition.onstart = function () {
+                isRecognitionStarting = false;
+                isListening = true;
+            };
+
             recognition.onresult = function (event) {
-                const transcript = event.results?.[0]?.[0]?.transcript || '';
-                if (transcript) {
-                    handleVoiceCommand(transcript);
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const result = event.results[i];
+                    if (!result.isFinal) {
+                        continue;
+                    }
+
+                    const transcript = result?.[0]?.transcript || '';
+                    if (transcript) {
+                        networkRetryCount = 0;
+                        manualStop = true;
+                        restartOnEnd = false;
+                        handleVoiceCommand(transcript);
+                    }
                 }
             };
 
             recognition.onerror = function (event) {
                 const code = event?.error || 'unknown';
+                isRecognitionStarting = false;
                 isListening = false;
 
                 if (code === 'not-allowed' || code === 'service-not-allowed') {
@@ -844,20 +902,22 @@
                 if (code === 'network') {
                     if (networkRetryCount < 1) {
                         networkRetryCount++;
-                        showVoiceStatus('Erreur reseau vocale. Reconnexion en cours...', true);
+                        showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
                         setTimeout(function () {
-                            startRecognitionSafely();
-                        }, 800);
+                            startRecognitionSafely(true);
+                        }, 550);
 
                         return;
                     }
 
-                    showVoiceStatus('Service vocal navigateur indisponible. Verifiez internet puis recliquez micro.', true);
+                    restartOnEnd = false;
+                    showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
+                    openVoiceFallbackPrompt();
                     return;
                 }
 
                 if (code === 'no-speech') {
-                    showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true);
+                    showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
                     return;
                 }
 
@@ -867,6 +927,7 @@
             };
 
             recognition.onend = function () {
+                isRecognitionStarting = false;
                 isListening = false;
                 fab.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
             };
@@ -889,10 +950,13 @@
             }
 
             fab.addEventListener('click', async function () {
-                if (isListening) {
+                if (isListening || isRecognitionStarting) {
+                    manualStop = true;
+                    restartOnEnd = false;
+                    isRecognitionStarting = false;
                     recognition.stop();
                     isListening = false;
-                    showVoiceStatus('Ecoute arretee.', false);
+                    showVoiceStatus('Ecoute arretee.', false, false);
 
                     return;
                 }
@@ -904,6 +968,9 @@
 
                 try {
                     networkRetryCount = 0;
+                    manualStop = false;
+                    restartOnEnd = false;
+                    synth.cancel();
                     startRecognitionSafely();
                 } catch (_error) {
                     showVoiceStatus('Impossible de demarrer le micro, reessayez.', true);

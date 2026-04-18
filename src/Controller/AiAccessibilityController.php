@@ -195,6 +195,10 @@ final class AiAccessibilityController extends AbstractController
             return $this->ok('Commandes disponibles. Nom suivi de votre nom. Adresse suivi de votre adresse. Paiement cash, paiement carte, paiement virement. Generer promo. Appliquer promo suivi du code. Augmenter ou diminuer nom du produit. Lire recap. Confirmer commande.');
         }
 
+        if ($this->containsAny($text, ['guide checkout', 'guide commande', 'etapes commande', 'que dois je remplir', 'quoi remplir'])) {
+            return $this->ok('Etapes checkout. Dites nom suivi du nom client. Puis adresse suivi de votre adresse. Puis paiement cash, carte ou virement. Ensuite dites generer promo. Puis dites utiliser ce code promo. Enfin dites confirmer commande.');
+        }
+
         if ($intent === 'cart_read' || $this->containsAny($text, ['lire panier'])) {
             $panier = $session->get('panier', []);
             $count = is_array($panier) ? array_sum($panier) : 0;
@@ -271,6 +275,12 @@ final class AiAccessibilityController extends AbstractController
         if ($intent === 'checkout_promo_generate' || $this->containsAny($text, ['generer promo'])) {
             return $this->ok('Generation du code promo en cours.', [
                 ['type' => 'submit_checkout_action', 'value' => 'generate_promo'],
+            ]);
+        }
+
+        if ($this->containsAny($text, ['utiliser ce code promo', 'appliquer ce code promo', 'utilise ce code promo', 'appliquer ce code', 'utilise ce code'])) {
+            return $this->ok('Application du code promo genere en cours.', [
+                ['type' => 'apply_generated_promo'],
             ]);
         }
 
