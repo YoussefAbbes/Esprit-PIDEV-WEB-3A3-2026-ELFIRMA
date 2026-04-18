@@ -33,36 +33,6 @@
       <p>Join EL FIRMA today</p>
     </div>
 
-    <form method="POST" action="{{ path('app_signup') }}" class="auth-form" id="signupForm">
-      <div class="form-group">
-        <label for="fullname">Full Name</label>
-        <input type="text" id="fullname" name="fullname" class="form-control" placeholder="John Doe" required>
-      </div>
-
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
-        <div class="password-strength">
-          <div class="password-strength-meter" id="strengthMeter"></div>
-        </div>
-        <small id="strengthText" style="color: #999;"></small>
-      </div>
-
-      <div class="form-group">
-        <label for="password_confirm">Confirm Password</label>
-        <input type="password" id="password_confirm" name="password_confirm" class="form-control" placeholder="••••••••" required>
-      </div>
-
-      <div class="form-check">
-        <input type="checkbox" id="agree" name="agree" class="form-check-input" required>
-        <label class="form-check-label" for="agree">
-          I agree to the <a href="#">Terms of Service</a>
-        </label>
     <!-- Store errors data -->
     <div id="errors-data" data-errors="{{ errors is defined ? errors|json_encode() : '{}' }}"></div>
 
@@ -144,66 +114,6 @@
     </div>
   </div>
 
-<<<<<<< HEAD
-<script>
-  // Password strength calculator
-  const passwordInput = document.getElementById('password');
-  const passwordConfirm = document.getElementById('password_confirm');
-  const strengthMeter = document.getElementById('strengthMeter');
-  const strengthText = document.getElementById('strengthText');
-
-  function calculatePasswordStrength(password) {
-    let strength = 0;
-
-    if (password.length >= 8) strength += 20;
-    if (password.length >= 12) strength += 20;
-    if (password.length >= 16) strength += 10;
-
-    if (/[a-z]/.test(password)) strength += 15;
-    if (/[A-Z]/.test(password)) strength += 15;
-    if (/\d/.test(password)) strength += 15;
-    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength += 15;
-
-    return Math.min(strength, 100);
-  }
-
-  passwordInput.addEventListener('input', function() {
-    const strength = calculatePasswordStrength(this.value);
-
-    if (strength < 40) {
-      strengthMeter.className = 'password-strength-meter weak';
-      strengthText.textContent = 'Weak password';
-      strengthText.style.color = '#dc3545';
-    } else if (strength < 70) {
-      strengthMeter.className = 'password-strength-meter medium';
-      strengthText.textContent = 'Medium strength';
-      strengthText.style.color = '#ffc107';
-    } else {
-      strengthMeter.className = 'password-strength-meter strong';
-      strengthText.textContent = '✓ Strong password';
-      strengthText.style.color = '#116530';
-    }
-
-    // Check match
-    if (passwordConfirm.value && this.value !== passwordConfirm.value) {
-      passwordConfirm.style.borderColor = '#dc3545';
-    } else if (passwordConfirm.value) {
-      passwordConfirm.style.borderColor = '#116530';
-    } else {
-      passwordConfirm.style.borderColor = '#e0e0e0';
-    }
-  });
-
-  passwordConfirm.addEventListener('input', function() {
-    if (passwordInput.value && this.value !== passwordInput.value) {
-      this.style.borderColor = '#dc3545';
-    } else if (this.value) {
-      this.style.borderColor = '#116530';
-    } else {
-      this.style.borderColor = '#e0e0e0';
-    }
-  });
-=======
   <!-- Errors data for JavaScript -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -413,7 +323,6 @@
       }
     });
   }
-
 
   // Smooth form focus animation
   const inputs = document.querySelectorAll('.form-control');

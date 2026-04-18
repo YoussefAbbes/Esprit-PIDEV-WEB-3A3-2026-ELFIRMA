@@ -33,6 +33,8 @@
       <p>Access your account</p>
     </div>
 
+    <!-- Store errors data -->
+    <div id="errors-data" data-errors="{{ (errors ?? {})|json_encode() }}"></div>
 
     {% if error is defined and error %}
       <div style="background-color: #ffebee; border: 1px solid #ef5350; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; color: #d32f2f; display: flex; gap: 0.75rem; align-items: flex-start;">
@@ -75,7 +77,6 @@
     </div>
   </div>
 
-<script>
 <style>
   .form-group {
     margin-bottom: 1.5rem;

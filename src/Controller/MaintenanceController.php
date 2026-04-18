@@ -242,6 +242,95 @@ class MaintenanceController extends AbstractController
         return new Response('Deleted');
     }
 
+#[Route('/employee/panel', name: 'employee_panel')]
+public function employeePanel(
+    MaintenanceRepository $repo,
+    EntityManagerInterface $em,
+    Request $request
+): Response {
+
+    $userId = $request->getSession()->get('user_id');
+
+    if (!$userId) {
+        return $this->redirectToRoute('app_login');
+    }
+
+    $user = $em->getRepository(Utilisateur::class)->find($userId);
+
+    // 🔒 sécurité
+    if ($user->getRoleU() !== 'employee') {
+        throw $this->createAccessDeniedException();
+    }
+
+    $maintenances = $repo->findBy([
+        'technicien' => $user
+    ]);
+
+    return $this->render('elfirma/employee/maintenancesE.html.twig', [
+        'maintenances' => $maintenances
+    ]);
+}
+
+#[Route('/maintenance/{id}/start', name: 'maintenance_start')]
+public function startMaintenance(
+    Maintenance $maintenance,
+    EntityManagerInterface $em,
+    Request $request
+): Response {
+
+    $userId = $request->getSession()->get('user_id');
+    $user = $em->getRepository(Utilisateur::class)->find($userId);
+
+    // 🔒 sécurité : vérifier que c'est SON intervention
+    if ($maintenance->getTechnicien() !== $user) {
+        throw $this->createAccessDeniedException();
+    }
+
+    // ❌ logique métier
+    if ($maintenance->getStatut()->value !== 'planifie') {
+        $this->addFlash('error', 'Impossible de démarrer cette maintenance');
+        return $this->redirectToRoute('employee_panel');
+    }
+
+    // ✅ update
+    $maintenance->setStatut(MaintenanceStatut::from('en_cours'));
+    $em->flush();
+
+    $this->addFlash('success', 'Maintenance démarrée');
+
+    return $this->redirectToRoute('employee_panel');
+}
+
+#[Route('/maintenance/{id}/finish', name: 'maintenance_finish')]
+public function finishMaintenance(
+    Maintenance $maintenance,
+    EntityManagerInterface $em,
+    Request $request
+): Response {
+
+    $userId = $request->getSession()->get('user_id');
+    $user = $em->getRepository(Utilisateur::class)->find($userId);
+
+    // 🔒 sécurité
+    if ($maintenance->getTechnicien() !== $user) {
+        throw $this->createAccessDeniedException();
+    }
+
+    // ❌ logique métier
+    if ($maintenance->getStatut()->value !== 'en_cours') {
+        $this->addFlash('error', 'Seules les maintenances en cours peuvent être terminées');
+        return $this->redirectToRoute('employee_panel');
+    }
+
+    // ✅ update
+    $maintenance->setStatut(MaintenanceStatut::from('termine'));
+    $em->flush();
+
+    $this->addFlash('success', 'Maintenance terminée');
+
+    return $this->redirectToRoute('employee_panel');
+}
+
     private function updateEquipementEtat(Equipement $equipement, EntityManagerInterface $em)
     {
         $maintenances = $equipement->getMaintenances();
@@ -355,4 +444,5 @@ class MaintenanceController extends AbstractController
 
             return false;
         }
+
 }

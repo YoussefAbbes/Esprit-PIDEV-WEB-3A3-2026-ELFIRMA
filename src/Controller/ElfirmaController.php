@@ -57,6 +57,10 @@ final class ElfirmaController extends AbstractController
             'folder' => 'r_clamations',
             'title' => 'Claims',
         ],
+        'employee_maintenances' => [
+            'folder' => 'employee/maintenancesE',
+            'title' => 'Mes Maintenances',
+        ],
     ];
 
     #[Route('/', name: 'app_home', methods: ['GET'])]
@@ -129,7 +133,7 @@ final class ElfirmaController extends AbstractController
         methods: ['GET'],
         priority: -100,
         requirements: [
-            'module' => 'tableau-de-bord|utilisateurs|parcelles-cultures|animaux-elevages|categories|produits|produits-commandes|equipements-maintenance|fournisseurs-contrats|reclamations',
+            'module' => 'tableau-de-bord|utilisateurs|parcelles-cultures|animaux-elevages|categories|produits|produits-commandes|equipements-maintenance|fournisseurs-contrats|reclamations|employee_maintenances',
         ]
     )]
     public function page(
@@ -145,6 +149,26 @@ final class ElfirmaController extends AbstractController
         }
 
         $moduleMeta = self::MODULES[$module];
+        if ($module === 'employee_maintenances') {
+
+            $session = $request->getSession();
+            $userId = $session->get('user_id');
+
+            if (!$userId) {
+                return $this->redirectToRoute('app_login');
+            }
+
+            $user = $em->getRepository(Utilisateur::class)->find($userId);
+
+            $maintenances = $em->getRepository(\App\Entity\Maintenance::class)
+                ->findBy(['technicien' => $user]);
+
+            return $this->render('elfirma/employee/maintenancesE.html.twig', [
+                'maintenances' => $maintenances,
+                'current_module' => $module,
+                'modules' => self::MODULES,
+            ]);
+        }
 
         if ($module === 'animaux-elevages') {
             $view = $request->query->getString('view', 'livestock');
@@ -166,6 +190,7 @@ final class ElfirmaController extends AbstractController
         if ($module === 'produits') {
             return $this->redirectToRoute('elfirma_products');
         }
+        
 
         return $this->render(sprintf('elfirma/%s.html.twig', $moduleMeta['folder']), [
             'module_meta' => $moduleMeta,
