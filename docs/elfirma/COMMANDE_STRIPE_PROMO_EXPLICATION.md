@@ -476,5 +476,251 @@ R: Date expires_at stockee en session et verifiee a chaque action.
     - modal displays actionable priority cards + clear stock state,
     - restock preserves current filters and selected weather region on redirect.
 
+  ## 15) Fiche Revision Rapide - Ce qui a ete fait (Stock Alert)
+  ### A) Besoin fonctionnel
+  - L'admin doit voir immediatement les produits en risque:
+    - stock faible,
+    - rupture,
+    - expiration.
+  - L'admin doit pouvoir ajouter une quantite sans quitter la page produits.
+
+  ### B) Ou est la logique (MVC)
+  - Controller (metier):
+    - calcul de la liste des alertes produit,
+    - calcul des statistiques globales (expired/non-expired/low/out),
+    - route POST de restock avec validation de la quantite.
+  - View (Twig):
+    - icone rouge flottante + badge du nombre d'alertes,
+    - modal moderne avec KPI + liste detaillee,
+    - mini formulaire "Add Qty" pour chaque produit en alerte.
+
+  ### C) Regles metier memoriser
+  - Seuil low stock: <= 20.
+  - Out of stock: quantite <= 0 (ou statut rupture).
+  - Expired: date expiration depassee (ou statut expired).
+  - Restock:
+    - quantite ajoutee doit etre un entier strictement positif,
+    - si produit expire => statut reste expire,
+    - sinon statut devient disponible si stock > 0, sinon rupture.
+
+  ### D) Ce que l'utilisateur admin voit
+  - Si alertes > 0:
+    - bouton rouge pulse en bas a droite,
+    - badge numerique du total d'alertes.
+  - Dans la modal:
+    - cartes KPI: total alertes, low stock, out of stock, expired,
+    - compteur non-expired,
+    - lignes produits avec niveau de severite,
+    - champ quantity_add + bouton Add Qty.
+
+  ### E) Validation technique deja faite
+  - Lint PHP du controller: OK.
+  - Lint Twig de la page produits admin: OK.
+  - Aucune erreur editor sur les fichiers modifies.
+
+  ### F) Mini demo (a dire a l'oral)
+  - "Je clique sur l'icone rouge d'alerte, j'ouvre le Stock Alert Center."
+  - "Je vois les KPIs et la liste des produits critiques."
+  - "Je saisis une quantite dans Add Qty et je valide."
+  - "Le stock est mis a jour cote serveur, le statut est recalcule selon les regles metier."
+  - "Je reviens sur la meme vue avec mes filtres conserves." 
+
+  ## 16) Accessibilite IA - Phase 1 MVP aveugles (assistant vocal)
+  ### A) Objectif
+  - Permettre a un utilisateur malvoyant/non-voyant de:
+    - rechercher des produits,
+    - ajouter au panier,
+    - gerer son panier,
+    - finaliser la commande,
+    uniquement via commandes vocales.
+
+  ### B) Perimetre implemente
+  - Catalogue (templates/pages/index.html.twig):
+    - bouton micro flottant,
+    - reconnaissance vocale + retour vocal,
+    - commandes pour chercher/lire/details/ajouter/panier.
+  - Panier (templates/panier_index.html.twig):
+    - bouton micro flottant,
+    - commandes pour lire panier, augmenter/diminuer/supprimer, vider panier, passer commande.
+  - Checkout (templates/commande_create.html.twig):
+    - bouton micro flottant,
+    - commandes pour remplir nom/adresse,
+    - choisir mode paiement,
+    - generer/appliquer promo,
+    - lire recap,
+    - confirmer commande.
+
+  ### C) Tech IA/Web utilisee
+  - Speech Recognition navigateur:
+    - `window.SpeechRecognition || window.webkitSpeechRecognition`.
+  - Speech Synthesis (lecture vocale):
+    - `window.speechSynthesis` + `SpeechSynthesisUtterance`.
+  - Strategie MVP:
+    - aucun service externe obligatoire,
+    - fallback message si navigateur non compatible.
+
+  ### D) Exemples commandes vocales
+  - Catalogue:
+    - "aide"
+    - "chercher huile"
+    - "lire produits"
+    - "details huile d'olive"
+    - "ajouter huile d'olive"
+    - "ouvrir panier"
+  - Panier:
+    - "lire panier"
+    - "augmenter huile"
+    - "diminuer tomate"
+    - "supprimer pomme"
+    - "vider panier"
+    - "passer commande"
+  - Checkout:
+    - "nom Ali Ben Salah"
+    - "adresse Rue de Tunis..."
+    - "paiement cash" / "paiement carte" / "paiement virement"
+    - "generer promo"
+    - "appliquer promo ABC123"
+    - "lire recap"
+    - "confirmer commande"
+
+  ### E) Points techniques importants
+  - Normalisation texte vocal:
+    - conversion en minuscules,
+    - suppression accents (NFD) pour detection robuste.
+  - UX:
+    - bouton micro devient rouge pendant l'ecoute,
+    - retour vocal apres chaque action,
+    - message d'erreur clair si commande inconnue.
+
+  ### F) Verification
+  - Lint Twig catalogue: OK.
+  - Lint Twig panier: OK.
+  - Lint Twig checkout: OK.
+
+  ### G) Limites connues (MVP)
+  - Precision vocale depend du navigateur et du bruit ambiant.
+  - Les commandes doivent rester relativement simples.
+  - Ce MVP est base navigateur (pas encore modele IA cloud personnalise).
+
+  ### H) Evolution prevue (Phase 2)
+  - Ajouter NLP plus avance (synonymes/contextes metier) avec API IA.
+  - Support multilingue FR/AR/EN en temps reel.
+  - Historique des commandes vocales + profils accessibilite.
+
+  ### I) Correction MVC appliquee (important)
+  - Suite a la contrainte "fonctions metier dans controller", le MVP vocal a ete refactorise:
+    - avant: interpretation des commandes vocales directement dans Twig,
+    - maintenant: interpretation centralisee dans un controller dedie API.
+
+  - Nouveau controller:
+    - `src/Controller/AiAccessibilityController.php`
+    - route: `POST /api/ai/voice-command`
+    - role:
+      - parser la phrase vocale,
+      - decider la commande metier selon le contexte (`catalog`, `cart`, `checkout`),
+      - retourner une reponse JSON standard (`speak` + `actions`).
+
+  - Cote Twig (vue):
+    - la vue capte le micro,
+    - envoie `context + transcript` au controller,
+    - execute uniquement les actions UI renvoyees (navigation, clic, update champ, etc.).
+
+  - Benefices:
+    - respect MVC,
+    - logique metier testable et centralisee,
+    - evolution plus simple vers un vrai moteur IA/NLP.
+
+  ## 17) Vrai modele IA entraine localement (sans API IA externe)
+  ### A) Ce qui a ete demande
+  - Contrairement a une simple API tierce, le projet doit contenir un modele IA reelement entraine.
+
+  ### B) Ce qui est implemente
+  - Modele IA local de classification d'intentions vocales:
+    - algorithme: Multinomial Naive Bayes (texte),
+    - entrainement local dans le projet,
+    - inference locale dans le backend Symfony.
+
+  - Fichiers IA ajoutes:
+    - `src/AI/IntentModel.php`:
+      - moteur mathematique du modele (train + predict),
+      - tokenisation + probabilites + score de confiance.
+    - `src/AI/VoiceIntentAi.php`:
+      - dataset d'entrainement,
+      - chargement/sauvegarde modele,
+      - prediction d'intention utilisee par le controller.
+    - `src/Command/TrainVoiceIntentModelCommand.php`:
+      - commande console pour entrainer explicitement le modele.
+
+  - Integration MVC:
+    - `src/Controller/AiAccessibilityController.php` consomme `VoiceIntentAi`.
+    - Le controller utilise la prediction IA (`intent`, `confidence`) pour decider les actions metier.
+    - Les vues restent des executeurs d'actions UI (pas de logique IA metier lourde).
+
+  ### C) Entrainement effectif realise
+  - Commande executee:
+    - `php bin/console app:ai:train-voice-intent`
+  - Resultat d'entrainement (session actuelle):
+    - Examples: 110
+    - Classes: 22
+    - Modele genere: `var/ai/voice_intent_model.json`
+
+  ### D) Pourquoi c'est une IA "codee et entrainee"
+  - Pas d'appel a OpenAI/Gemini/Azure AI pour classifier les intentions.
+  - Le modele est appris a partir d'un dataset local de phrases.
+  - Les poids/probabilites appris sont sauvegardes dans un artefact de modele local.
+  - La prediction en production est faite localement dans l'application.
+
+  ### D.1) Langage et modele utilises
+  - Langage principal: PHP (Symfony).
+  - Modele IA: Multinomial Naive Bayes (classification d'intentions texte).
+  - Capture/restitution vocale: Web Speech API navigateur (STT/TTS).
+  - Base metier: MySQL via Doctrine ORM.
+
+  ### D.2) Produits dynamiques depuis la base (pas un exemple fixe)
+  - Le mot "pomme" etait un exemple utilisateur, pas une valeur codee.
+  - Le systeme lit les produits `Disponible` depuis la BD et cherche la meilleure correspondance.
+  - Matching dynamique implemente:
+    - inclusion nom<->requete,
+    - overlap de tokens,
+    - similarite Levenshtein (tolerance aux variations de phrase).
+  - Si aucun match fiable:
+    - reponse vocale: "Produit non trouve dans la base de donnees."
+  - Si match trouve:
+    - ajout panier automatique,
+    - enchainement vers etapes de commande.
+
+  ### D.3) Persistance commande BD
+  - Le flux final de commande reste celui de `CommandeController`.
+  - Apres confirmation utilisateur, la commande est persistee en BD (table commande) et le stock produit est mis a jour.
+
+  ### D.4) Flow vocal complet checkout (100% a la voix)
+  - Depuis la commande, le client peut maintenant tout faire en vocal:
+    - remplir `nom_client`,
+    - remplir `adresse_livraison`,
+    - choisir le mode de paiement,
+    - generer et appliquer un code promo,
+    - augmenter/diminuer une quantite produit,
+    - confirmer la commande.
+
+  - Gestion quantite en vocal pendant checkout:
+    - la commande vocale (ex: "augmenter huile") met a jour le panier en session cote backend,
+    - la page est rechargee automatiquement pour rafraichir le recapitulatif,
+    - controles stock appliques (pas de depassement du stock disponible).
+
+  - Validation metier:
+    - produit non trouve -> message vocal explicite,
+    - stock insuffisant -> message vocal explicite,
+    - panier mis a jour -> recap recalculé avant confirmation finale.
+
+  ### E) Limites actuelles (honnetes pour soutenance)
+  - Dataset de taille MVP (110 exemples) : precision correcte mais perfectible.
+  - Classifieur textuel simple (Naive Bayes), pas reseau profond.
+  - Le composant STT/TTS navigateur reste base Web Speech API pour capter/lire la voix.
+
+  ### F) Pistes d'amelioration
+  - Augmenter le dataset (plus de formulations reelles utilisateurs).
+  - Ajouter evaluation offline (accuracy/F1 + matrice confusion).
+  - Version multilingue FR/AR/EN avec datasets separes.
+
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

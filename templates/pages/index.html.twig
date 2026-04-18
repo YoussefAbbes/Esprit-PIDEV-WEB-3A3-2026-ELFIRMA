@@ -950,6 +950,390 @@
         }
       }
 
+      function initVoiceCatalogAssistant() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const synth = window.speechSynthesis;
+        const hasVoice = !!SpeechRecognition && !!synth;
+        let isListening = false;
+        let networkRetryCount = 0;
+        let restartOnEnd = false;
+        let manualStop = false;
+        let resumeAfterSpeech = false;
+        let recognition = null;
+        let isRecognitionStarting = false;
+
+        const voiceBtn = document.createElement('button');
+        voiceBtn.type = 'button';
+        voiceBtn.id = 'voice-catalog-fab';
+        voiceBtn.style.cssText = `
+          position: fixed;
+          left: 20px;
+          bottom: 24px;
+          width: 58px;
+          height: 58px;
+          border-radius: 50%;
+          border: none;
+          background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+          color: #ffffff;
+          z-index: 1200;
+          box-shadow: 0 12px 24px rgba(15, 118, 110, 0.35);
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        `;
+        voiceBtn.innerHTML = '<span class="material-symbols-outlined">mic</span>';
+        voiceBtn.title = hasVoice ? 'Voice assistant for catalog' : 'Voice assistant not supported on this browser';
+        document.body.appendChild(voiceBtn);
+
+        const voiceStatus = document.createElement('div');
+        voiceStatus.id = 'voice-catalog-status';
+        voiceStatus.style.cssText = `
+          position: fixed;
+          left: 20px;
+          bottom: 92px;
+          z-index: 1200;
+          max-width: 320px;
+          padding: 8px 12px;
+          border-radius: 10px;
+          background: rgba(15, 23, 42, 0.9);
+          color: #fff;
+          font-size: 13px;
+          line-height: 1.35;
+          display: none;
+        `;
+        document.body.appendChild(voiceStatus);
+
+        function showVoiceStatus(message, isError = false, withSpeech = false) {
+          voiceStatus.textContent = message;
+          voiceStatus.style.background = isError ? 'rgba(185,28,28,.95)' : 'rgba(15,23,42,.9)';
+          voiceStatus.style.display = 'block';
+
+          if (withSpeech) {
+            speak(message);
+          }
+
+          setTimeout(() => {
+            voiceStatus.style.display = 'none';
+          }, 3200);
+        }
+
+        function openVoiceFallbackPrompt() {
+          const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande (ex: je veux acheter pomme).');
+          if (typeof typed === 'string' && typed.trim() !== '') {
+            handleVoiceCommand(typed.trim());
+          }
+        }
+
+        function speak(message) {
+          if (!synth) {
+            return;
+          }
+
+          if (isListening && recognition) {
+            resumeAfterSpeech = true;
+            manualStop = false;
+            try {
+              recognition.stop();
+            } catch (_error) {
+              // ignore
+            }
+          }
+
+          synth.cancel();
+          const utt = new SpeechSynthesisUtterance(message);
+          utt.lang = 'fr-FR';
+          utt.rate = 1;
+          utt.onend = function () {
+            if (resumeAfterSpeech && restartOnEnd && !manualStop) {
+              resumeAfterSpeech = false;
+              setTimeout(() => {
+                startRecognitionSafely(true);
+              }, 220);
+            }
+          };
+          synth.speak(utt);
+        }
+
+        function listVisibleProducts() {
+          const items = Array.from(document.querySelectorAll('.product-item'));
+          const visible = items.filter((item) => item.style.display !== 'none');
+          if (visible.length === 0) {
+            speak('Aucun produit visible actuellement.');
+            return;
+          }
+
+          const names = visible.slice(0, 6).map((item) => item.querySelector('h3')?.textContent?.trim()).filter(Boolean);
+          speak(`J'ai trouve ${visible.length} produits visibles. Exemples: ${names.join(', ')}.`);
+        }
+
+        function filterByVoiceQuery(query) {
+          const normalizeVoiceText = (value) => (value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+
+          const term = normalizeVoiceText(query);
+          const productItems = document.querySelectorAll('.product-item');
+          let count = 0;
+
+          productItems.forEach((item) => {
+            const name = normalizeVoiceText(item.querySelector('h3')?.textContent || '');
+            const match = term === '' || name.includes(term);
+            item.style.display = match ? 'block' : 'none';
+            if (match) {
+              count++;
+            }
+          });
+
+          const section = document.getElementById('products');
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+
+          speak(`${count} produits correspondent a ${query}.`);
+        }
+
+        async function executeVoiceActions(actions) {
+          if (!Array.isArray(actions)) {
+            return;
+          }
+
+          for (const action of actions) {
+            if (!action || typeof action !== 'object') {
+              continue;
+            }
+
+            if (action.type === 'read_visible_products') {
+              listVisibleProducts();
+              continue;
+            }
+
+            if (action.type === 'filter_products') {
+              filterByVoiceQuery(String(action.query || ''));
+              continue;
+            }
+
+            if (action.type === 'open_product_details') {
+              const productId = Number(action.product_id || 0);
+              if (productId > 0) {
+                openProductDetails(productId);
+              }
+              continue;
+            }
+
+            if (action.type === 'add_to_cart') {
+              const productId = Number(action.product_id || 0);
+              if (productId > 0) {
+                await addToCart(productId, 1);
+              }
+              continue;
+            }
+
+            if (action.type === 'add_to_cart_then_checkout') {
+              const productId = Number(action.product_id || 0);
+              if (productId > 0) {
+                await addToCart(productId, 1);
+                window.location.href = '{{ path('app_commande_create') }}';
+                break;
+              }
+              continue;
+            }
+
+            if (action.type === 'navigate') {
+              const url = String(action.url || '');
+              if (url !== '') {
+                window.location.href = url;
+              }
+            }
+          }
+        }
+
+        async function handleVoiceCommand(rawText) {
+          try {
+            const response = await fetch('{{ path('app_api_ai_voice_command') }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                context: 'catalog',
+                transcript: rawText,
+              }),
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+              showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+              return;
+            }
+
+            await executeVoiceActions(data.actions || []);
+            if (typeof data.speak === 'string' && data.speak !== '') {
+              speak(data.speak);
+            }
+          } catch (_error) {
+            showVoiceStatus('Service vocal temporairement indisponible pendant la commande vocale.', true, true);
+          }
+        }
+
+        if (!hasVoice) {
+          voiceBtn.style.opacity = '0.65';
+          voiceBtn.addEventListener('click', function () {
+            showVoiceStatus('La reconnaissance vocale n\'est pas supportee sur ce navigateur.', true);
+          });
+          return;
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        function startRecognitionSafely(quiet = false) {
+          if (isListening || isRecognitionStarting) {
+            return;
+          }
+
+          try {
+            isRecognitionStarting = true;
+            recognition.start();
+            restartOnEnd = false;
+            voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            if (!quiet) {
+              // Ne pas parler ici: la synthese coupe l'ecoute juste apres le start.
+              showVoiceStatus('Je vous ecoute... dites le nom du produit a chercher.', false, false);
+            }
+          } catch (_error) {
+            isRecognitionStarting = false;
+            showVoiceStatus('Impossible de demarrer le micro.', true);
+          }
+        }
+
+        recognition.onstart = function () {
+          isRecognitionStarting = false;
+          isListening = true;
+        };
+
+        recognition.onresult = function (event) {
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            if (!result.isFinal) {
+              continue;
+            }
+            const transcript = result?.[0]?.transcript || '';
+            if (transcript) {
+              networkRetryCount = 0;
+              manualStop = true;
+              restartOnEnd = false;
+              handleVoiceCommand(transcript);
+            }
+          }
+        };
+
+        recognition.onerror = function (event) {
+          const code = event?.error || 'unknown';
+          isRecognitionStarting = false;
+          isListening = false;
+
+          if (code === 'not-allowed' || code === 'service-not-allowed') {
+            restartOnEnd = false;
+            showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site.', true);
+            return;
+          }
+
+          if (code === 'audio-capture') {
+            restartOnEnd = false;
+            showVoiceStatus('Aucun micro detecte ou accessible.', true);
+            return;
+          }
+
+          if (code === 'network') {
+            if (networkRetryCount < 1) {
+              networkRetryCount++;
+              showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+              setTimeout(() => {
+                if (restartOnEnd && !manualStop) {
+                  startRecognitionSafely(true);
+                }
+              }, 500 + networkRetryCount * 350);
+
+              return;
+            }
+
+            restartOnEnd = false;
+            showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
+            openVoiceFallbackPrompt();
+            return;
+          }
+
+          if (code === 'no-speech') {
+            showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+            return;
+          }
+
+          if (code !== 'aborted') {
+            showVoiceStatus('Erreur vocale: ' + code, true);
+          }
+        };
+
+        recognition.onend = function () {
+          isRecognitionStarting = false;
+          isListening = false;
+          voiceBtn.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
+        };
+
+        async function ensureMicroPermission() {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return true;
+          }
+
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach((t) => t.stop());
+
+            return true;
+          } catch (_error) {
+            showVoiceStatus('Micro non autorise. Activez l\'acces micro du navigateur.', true);
+
+            return false;
+          }
+        }
+
+        voiceBtn.addEventListener('click', async function () {
+          if (isListening || isRecognitionStarting) {
+            manualStop = true;
+            restartOnEnd = false;
+            isRecognitionStarting = false;
+            recognition.stop();
+            isListening = false;
+            showVoiceStatus('Ecoute arretee.', false, false);
+
+            return;
+          }
+
+          const allowed = await ensureMicroPermission();
+          if (!allowed) {
+            return;
+          }
+
+          try {
+            networkRetryCount = 0;
+            manualStop = false;
+            restartOnEnd = false;
+            resumeAfterSpeech = false;
+            synth.cancel();
+            startRecognitionSafely();
+          } catch (_error) {
+            showVoiceStatus('Impossible de demarrer le micro.', true);
+          }
+        });
+
+        showVoiceStatus('Assistant vocal catalogue actif.', false, true);
+      }
+
       // Load cart item count on page load
       document.addEventListener('DOMContentLoaded', async function() {
         await loadExchangeRateForShop();
@@ -975,6 +1359,8 @@
         } catch (error) {
           console.error('Error loading cart count:', error);
         }
+
+        initVoiceCatalogAssistant();
 
         // Add events for category filters
         const categoryFilters = document.querySelectorAll('.category-filter');

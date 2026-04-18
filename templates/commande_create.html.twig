@@ -636,4 +636,281 @@
             });
         })();
     </script>
+
+    <script>
+        (function () {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const synth = window.speechSynthesis;
+            const hasVoice = !!SpeechRecognition && !!synth;
+            let isListening = false;
+            let networkRetryCount = 0;
+
+            const fab = document.createElement('button');
+            fab.type = 'button';
+            fab.id = 'voice-checkout-fab';
+            fab.style.cssText = 'position: fixed; left: 22px; bottom: 22px; z-index: 1100; width: 58px; height: 58px; border-radius: 50%; border: none; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: #fff; box-shadow: 0 12px 22px rgba(15,118,110,.35); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;';
+            fab.innerHTML = '<span class="material-symbols-outlined">mic</span>';
+            fab.title = hasVoice ? 'Voice assistant for checkout' : 'Voice assistant not supported on this browser';
+            document.body.appendChild(fab);
+
+            const form = document.getElementById('checkoutForm');
+            const nameInput = document.getElementById('nom_client');
+            const addressInput = document.getElementById('adresse_livraison');
+            const paymentSelect = document.getElementById('mode_paiement');
+            const promoInput = document.getElementById('promo_code');
+            const totalEl = Array.from(document.querySelectorAll('span')).find((el) => el.textContent.includes('DT') && el.style.fontSize === '24px');
+            const confirmBtn = document.getElementById('confirm-order-btn');
+
+            const voiceStatus = document.createElement('div');
+            voiceStatus.id = 'voice-checkout-status';
+            voiceStatus.style.cssText = 'position: fixed; left: 22px; bottom: 90px; z-index: 1100; max-width: 320px; padding: 8px 12px; border-radius: 10px; background: rgba(15,23,42,.9); color: #fff; font-size: 13px; line-height: 1.35; display: none;';
+            document.body.appendChild(voiceStatus);
+
+            function showVoiceStatus(message, isError, withSpeech = true) {
+                voiceStatus.textContent = message;
+                voiceStatus.style.display = 'block';
+                voiceStatus.style.background = isError ? 'rgba(185,28,28,.95)' : 'rgba(15,23,42,.9)';
+                if (withSpeech) {
+                    speak(message);
+                }
+                setTimeout(function () {
+                    voiceStatus.style.display = 'none';
+                }, 3600);
+            }
+
+            function speak(message) {
+                if (!synth) {
+                    return;
+                }
+                synth.cancel();
+                const utt = new SpeechSynthesisUtterance(message);
+                utt.lang = 'fr-FR';
+                utt.rate = 1;
+                synth.speak(utt);
+            }
+
+            function submitAction(action) {
+                if (!form) {
+                    return;
+                }
+                const temp = document.createElement('button');
+                temp.type = 'submit';
+                temp.name = 'checkout_action';
+                temp.value = action;
+                temp.style.display = 'none';
+                form.appendChild(temp);
+                temp.click();
+                form.removeChild(temp);
+            }
+
+            function readCheckoutSummary() {
+                const totalText = totalEl ? totalEl.textContent.trim() : 'total indisponible';
+                speak(`Recapitulatif. Nom ${nameInput?.value || 'non renseigne'}. Mode de paiement ${paymentSelect?.value || 'non renseigne'}. Total ${totalText}.`);
+            }
+
+            function executeVoiceActions(actions) {
+                if (!Array.isArray(actions)) {
+                    return;
+                }
+
+                actions.forEach((action) => {
+                    if (!action || typeof action !== 'object') {
+                        return;
+                    }
+
+                    if (action.type === 'set_field') {
+                        const fieldId = String(action.field_id || '');
+                        const value = String(action.value || '');
+                        const field = document.getElementById(fieldId);
+                        if (field) {
+                            field.value = value;
+                            field.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'set_payment_mode') {
+                        if (paymentSelect) {
+                            paymentSelect.value = String(action.value || 'Cash');
+                            paymentSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'submit_checkout_action') {
+                        submitAction(String(action.value || ''));
+                        return;
+                    }
+
+                    if (action.type === 'read_checkout_summary') {
+                        readCheckoutSummary();
+                        return;
+                    }
+
+                    if (action.type === 'click_confirm_order') {
+                        if (confirmBtn) {
+                            confirmBtn.click();
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'navigate') {
+                        const url = String(action.url || '');
+                        if (url !== '') {
+                            window.location.href = url;
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'reload_page') {
+                        window.location.reload();
+                    }
+                });
+            }
+
+            async function handleVoiceCommand(rawText) {
+                try {
+                    const response = await fetch('{{ path('app_api_ai_voice_command') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            context: 'checkout',
+                            transcript: rawText,
+                        }),
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok || !data.ok) {
+                        showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+                        return;
+                    }
+
+                    executeVoiceActions(data.actions || []);
+                    if (typeof data.speak === 'string' && data.speak !== '') {
+                        speak(data.speak);
+                    }
+                } catch (_error) {
+                    showVoiceStatus('Erreur reseau pendant la commande vocale.', true, true);
+                }
+            }
+
+            if (!hasVoice) {
+                fab.style.opacity = '0.65';
+                fab.addEventListener('click', function () {
+                    showVoiceStatus('La reconnaissance vocale n\'est pas supportee par ce navigateur.', true);
+                });
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = (document.documentElement.lang || navigator.language || 'fr-FR');
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            function startRecognitionSafely() {
+                try {
+                    recognition.start();
+                    isListening = true;
+                    fab.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                    showVoiceStatus('Je vous ecoute... dites votre commande vocale.', false);
+                } catch (_error) {
+                    showVoiceStatus('Impossible de demarrer le micro, reessayez.', true);
+                }
+            }
+
+            recognition.onresult = function (event) {
+                const transcript = event.results?.[0]?.[0]?.transcript || '';
+                if (transcript) {
+                    handleVoiceCommand(transcript);
+                }
+            };
+
+            recognition.onerror = function (event) {
+                const code = event?.error || 'unknown';
+                isListening = false;
+
+                if (code === 'not-allowed' || code === 'service-not-allowed') {
+                    showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site puis reessayez.', true);
+                    return;
+                }
+
+                if (code === 'audio-capture') {
+                    showVoiceStatus('Aucun micro detecte ou accessible.', true);
+                    return;
+                }
+
+                if (code === 'network') {
+                    if (networkRetryCount < 1) {
+                        networkRetryCount++;
+                        showVoiceStatus('Erreur reseau vocale. Reconnexion en cours...', true);
+                        setTimeout(function () {
+                            startRecognitionSafely();
+                        }, 800);
+
+                        return;
+                    }
+
+                    showVoiceStatus('Service vocal navigateur indisponible. Verifiez internet puis recliquez micro.', true);
+                    return;
+                }
+
+                if (code === 'no-speech') {
+                    showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true);
+                    return;
+                }
+
+                if (code !== 'aborted') {
+                    showVoiceStatus('Erreur vocale: ' + code + '. Veuillez reessayer.', true);
+                }
+            };
+
+            recognition.onend = function () {
+                isListening = false;
+                fab.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
+            };
+
+            async function ensureMicroPermission() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    return true;
+                }
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(function (t) { t.stop(); });
+
+                    return true;
+                } catch (_error) {
+                    showVoiceStatus('Micro non autorise. Activez l\'acces micro dans le navigateur.', true);
+
+                    return false;
+                }
+            }
+
+            fab.addEventListener('click', async function () {
+                if (isListening) {
+                    recognition.stop();
+                    isListening = false;
+                    showVoiceStatus('Ecoute arretee.', false);
+
+                    return;
+                }
+
+                const allowed = await ensureMicroPermission();
+                if (!allowed) {
+                    return;
+                }
+
+                try {
+                    networkRetryCount = 0;
+                    startRecognitionSafely();
+                } catch (_error) {
+                    showVoiceStatus('Impossible de demarrer le micro, reessayez.', true);
+                }
+            });
+
+            showVoiceStatus('Assistant vocal checkout actif.', false);
+        })();
+    </script>
 {% endblock %}

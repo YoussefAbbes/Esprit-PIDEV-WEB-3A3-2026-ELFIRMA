@@ -283,5 +283,188 @@ function calculateTotal() {
         }
     }
 }
+
+function initVoiceCartAssistant() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const synth = window.speechSynthesis;
+    const hasVoice = !!SpeechRecognition && !!synth;
+
+    const voiceBtn = document.createElement('button');
+    voiceBtn.type = 'button';
+    voiceBtn.id = 'voice-cart-fab';
+    voiceBtn.style.cssText = `
+        position: fixed;
+        left: 20px;
+        bottom: 24px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+        color: #ffffff;
+        z-index: 1200;
+        box-shadow: 0 12px 24px rgba(15, 118, 110, 0.35);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    voiceBtn.innerHTML = '<span class="material-symbols-outlined">mic</span>';
+    document.body.appendChild(voiceBtn);
+
+    function speak(message) {
+        if (!synth) return;
+        synth.cancel();
+        const utt = new SpeechSynthesisUtterance(message);
+        utt.lang = 'fr-FR';
+        utt.rate = 1;
+        synth.speak(utt);
+    }
+
+    function findRowByName(needle) {
+        const target = normalize(needle);
+        if (!target) return null;
+
+        const rows = Array.from(document.querySelectorAll('tr[data-product-id]'));
+        return rows.find((row) => {
+            const name = normalize(row.querySelector('h6')?.textContent || '');
+            return name.includes(target);
+        }) || null;
+    }
+
+    function readCartSummary() {
+        const rows = Array.from(document.querySelectorAll('tr[data-product-id]'));
+        if (rows.length === 0) {
+            speak('Votre panier est vide.');
+            return;
+        }
+
+        const names = rows.slice(0, 5).map((row) => row.querySelector('h6')?.textContent?.trim()).filter(Boolean);
+        const total = document.getElementById('cart-total')?.textContent?.trim() || '';
+        speak(`Votre panier contient ${rows.length} produits. ${names.join(', ')}. Total ${total}.`);
+    }
+
+    function executeVoiceActions(actions) {
+        if (!Array.isArray(actions)) {
+            return;
+        }
+
+        actions.forEach((action) => {
+            if (!action || typeof action !== 'object') {
+                return;
+            }
+
+            if (action.type === 'read_cart_summary') {
+                readCartSummary();
+                return;
+            }
+
+            if (action.type === 'update_cart_quantity_delta') {
+                const productId = Number(action.product_id || 0);
+                const delta = Number(action.delta || 0);
+                const row = document.querySelector(`tr[data-product-id="${productId}"]`);
+                if (!row) {
+                    return;
+                }
+                const currentQty = parseInt(row.querySelector('[id^="qty-"]')?.textContent || '0', 10);
+                updateQuantity(productId, Math.max(0, currentQty + delta));
+                return;
+            }
+
+            if (action.type === 'remove_from_cart') {
+                const productId = Number(action.product_id || 0);
+                if (productId > 0) {
+                    removeFromCart(productId);
+                }
+                return;
+            }
+
+            if (action.type === 'clear_cart') {
+                clearCart();
+                return;
+            }
+
+            if (action.type === 'navigate') {
+                const url = String(action.url || '');
+                if (url !== '') {
+                    window.location.href = url;
+                }
+            }
+        });
+    }
+
+    async function handleVoiceCommand(rawText) {
+        try {
+            const response = await fetch('{{ path('app_api_ai_voice_command') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    context: 'cart',
+                    transcript: rawText,
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                speak(data.speak || 'Erreur de traitement vocal.');
+                return;
+            }
+
+            executeVoiceActions(data.actions || []);
+            if (typeof data.speak === 'string' && data.speak !== '') {
+                speak(data.speak);
+            }
+        } catch (_error) {
+            speak('Erreur reseau pendant la commande vocale.');
+        }
+    }
+
+    if (!hasVoice) {
+        voiceBtn.style.opacity = '0.65';
+        voiceBtn.title = 'Voice assistant not supported on this browser';
+        voiceBtn.addEventListener('click', function () {
+            alert('Voice assistant is not supported by this browser.');
+        });
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function (event) {
+        const transcript = event.results?.[0]?.[0]?.transcript || '';
+        if (transcript) {
+            handleVoiceCommand(transcript);
+        }
+    };
+
+    recognition.onerror = function () {
+        alert('Voice recognition error. Please try again.');
+    };
+
+    recognition.onend = function () {
+        voiceBtn.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
+    };
+
+    voiceBtn.addEventListener('click', function () {
+        try {
+            recognition.start();
+            voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            speak('Je vous ecoute.');
+        } catch (_error) {
+            alert('Voice assistant is already listening.');
+        }
+    });
+
+    speak('Assistant vocal panier active. Dites aide pour les commandes.');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initVoiceCartAssistant();
+});
 </script>
 {% endblock %}
