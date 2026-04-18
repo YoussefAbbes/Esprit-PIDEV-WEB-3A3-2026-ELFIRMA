@@ -125,7 +125,7 @@ final class AiAccessibilityController extends AbstractController
         $intent = (string) ($prediction['intent'] ?? '');
 
         if ($intent === 'help' || $this->containsAny($text, ['aide', 'help'])) {
-            return $this->ok('Commandes disponibles. Lire panier. Augmenter nom du produit. Diminuer nom du produit. Supprimer nom du produit. Vider panier. Passer commande.');
+            return $this->ok('Commandes disponibles. Lire panier. Quantite suivi du nombre, ou quantite nom produit nombre. Augmenter ou diminuer quantite. Supprimer nom du produit. Vider panier. Passer commande.');
         }
 
         if ($intent === 'cart_read' || $this->containsAny($text, ['lire panier'])) {
@@ -134,9 +134,31 @@ final class AiAccessibilityController extends AbstractController
             ]);
         }
 
-        if ($intent === 'cart_increase' || str_starts_with($text, 'augmenter ')) {
-            $needle = trim($this->extractAfterKeyword($text, ['augmenter', 'plus', 'ajouter quantite', 'incremente']));
-            $product = $this->findProductInCartByName($needle, $em, $session);
+        $spokenQuantity = $this->extractSpokenInteger($text);
+        if ($this->containsAny($text, ['quantite']) && $spokenQuantity !== null) {
+            $quantity = max(0, $spokenQuantity);
+
+            $needleRaw = trim($this->extractAfterKeyword($text, ['quantite de', 'quantite du', 'quantite de la', 'quantite de l', 'quantite', 'mettre quantite', 'fixer quantite']));
+            $needle = $this->cleanCartNeedle($needleRaw);
+
+            $product = $needle !== ''
+                ? $this->findProductInCartByName($needle, $em, $session)
+                : $this->findSingleProductInCart($em, $session);
+
+            if (!$product instanceof Produit) {
+                return $this->ok('Precisez le nom du produit pour modifier la quantite. Exemple: quantite pomme 2.');
+            }
+
+            return $this->ok(sprintf('Quantite de %s reglee a %d.', (string) $product->getNom(), $quantity), [
+                ['type' => 'update_cart_quantity_set', 'product_id' => (int) $product->getIdProduit(), 'quantity' => $quantity],
+            ]);
+        }
+
+        if ($intent === 'cart_increase' || $this->containsAny($text, ['augmenter', 'augmente', 'plus', 'incremente'])) {
+            $needle = $this->cleanCartNeedle($this->extractAfterKeyword($text, ['augmenter', 'augmente', 'plus', 'ajouter quantite', 'incremente']));
+            $product = $needle !== ''
+                ? $this->findProductInCartByName($needle, $em, $session)
+                : $this->findSingleProductInCart($em, $session);
             if (!$product instanceof Produit) {
                 return $this->ok('Produit introuvable dans le panier.');
             }
@@ -146,9 +168,11 @@ final class AiAccessibilityController extends AbstractController
             ]);
         }
 
-        if ($intent === 'cart_decrease' || str_starts_with($text, 'diminuer ')) {
-            $needle = trim($this->extractAfterKeyword($text, ['diminuer', 'reduire', 'moins', 'decrementer']));
-            $product = $this->findProductInCartByName($needle, $em, $session);
+        if ($intent === 'cart_decrease' || $this->containsAny($text, ['diminuer', 'diminue', 'reduire', 'moins', 'decrementer'])) {
+            $needle = $this->cleanCartNeedle($this->extractAfterKeyword($text, ['diminuer', 'diminue', 'reduire', 'moins', 'decrementer']));
+            $product = $needle !== ''
+                ? $this->findProductInCartByName($needle, $em, $session)
+                : $this->findSingleProductInCart($em, $session);
             if (!$product instanceof Produit) {
                 return $this->ok('Produit introuvable dans le panier.');
             }
@@ -159,8 +183,10 @@ final class AiAccessibilityController extends AbstractController
         }
 
         if ($intent === 'cart_remove' || str_starts_with($text, 'supprimer ')) {
-            $needle = trim($this->extractAfterKeyword($text, ['supprimer', 'retirer', 'enlever']));
-            $product = $this->findProductInCartByName($needle, $em, $session);
+            $needle = $this->cleanCartNeedle($this->extractAfterKeyword($text, ['supprimer', 'retirer', 'enlever']));
+            $product = $needle !== ''
+                ? $this->findProductInCartByName($needle, $em, $session)
+                : $this->findSingleProductInCart($em, $session);
             if (!$product instanceof Produit) {
                 return $this->ok('Produit introuvable dans le panier.');
             }
@@ -170,13 +196,13 @@ final class AiAccessibilityController extends AbstractController
             ]);
         }
 
-        if ($intent === 'cart_clear' || $this->containsAny($text, ['vider panier'])) {
+        if ($intent === 'cart_clear' || $this->containsAny($text, ['vider panier', 'vider le panier', 'vider mon panier', 'panier vide'])) {
             return $this->ok('Demande de vidage du panier envoyee.', [
                 ['type' => 'clear_cart'],
             ]);
         }
 
-        if ($intent === 'cart_checkout' || $this->containsAny($text, ['passer commande', 'commander'])) {
+        if ($intent === 'cart_checkout' || $this->containsAny($text, ['passer commande', 'passer la commande', 'je passe commande', 'commander'])) {
             return $this->ok('Ouverture de la page commande.', [
                 ['type' => 'navigate', 'url' => $this->generateUrl('app_commande_create')],
             ]);
@@ -404,6 +430,67 @@ final class AiAccessibilityController extends AbstractController
             $name = $this->normalize((string) $product->getNom());
             if ($name !== '' && str_contains($name, $target)) {
                 return $product;
+            }
+        }
+
+        return null;
+    }
+
+    private function findSingleProductInCart(EntityManagerInterface $em, SessionInterface $session): ?Produit
+    {
+        $panier = $session->get('panier', []);
+        if (!is_array($panier) || count($panier) !== 1) {
+            return null;
+        }
+
+        $id = (int) array_key_first($panier);
+        if ($id <= 0) {
+            return null;
+        }
+
+        return $em->getRepository(Produit::class)->find($id);
+    }
+
+    private function cleanCartNeedle(string $needle): string
+    {
+        $value = $this->normalize($needle);
+        if ($value === '') {
+            return '';
+        }
+
+        $value = preg_replace('/\b(la|le|les|du|de|des|d|mon|ma|mes|produit|article|quantite|panier|a|au|aux)\b/u', ' ', $value) ?? $value;
+        $value = preg_replace('/\b\d{1,4}\b/u', ' ', $value) ?? $value;
+        $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+
+        return trim($value);
+    }
+
+    private function extractSpokenInteger(string $text): ?int
+    {
+        $normalized = $this->normalize($text);
+
+        if (preg_match('/\b(\d{1,4})\b/u', $normalized, $matches) === 1) {
+            return (int) ($matches[1] ?? 0);
+        }
+
+        $map = [
+            'zero' => 0,
+            'un' => 1,
+            'une' => 1,
+            'deux' => 2,
+            'trois' => 3,
+            'quatre' => 4,
+            'cinq' => 5,
+            'six' => 6,
+            'sept' => 7,
+            'huit' => 8,
+            'neuf' => 9,
+            'dix' => 10,
+        ];
+
+        foreach ($map as $word => $value) {
+            if (preg_match('/\b' . preg_quote($word, '/') . '\b/u', $normalized) === 1) {
+                return $value;
             }
         }
 

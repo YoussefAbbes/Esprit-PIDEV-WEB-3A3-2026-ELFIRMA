@@ -238,8 +238,8 @@ async function removeFromCart(productId) {
     }
 }
 
-async function clearCart() {
-    if (!confirm('Voulez-vous vraiment vider votre panier ?')) {
+async function clearCart(skipConfirm = false) {
+    if (!skipConfirm && !confirm('Voulez-vous vraiment vider votre panier ?')) {
         return;
     }
 
@@ -293,6 +293,7 @@ function initVoiceCartAssistant() {
     let networkRetryCount = 0;
     let manualStop = false;
     let restartOnEnd = false;
+    let textFallbackArmed = false;
 
     const voiceBtn = document.createElement('button');
     voiceBtn.type = 'button';
@@ -363,6 +364,138 @@ function initVoiceCartAssistant() {
         synth.speak(utt);
     }
 
+    function normalizeText(value) {
+        return (value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function extractSpokenNumber(text) {
+        const normalized = normalizeText(text);
+        const digitMatch = normalized.match(/\b(\d{1,4})\b/);
+        if (digitMatch) {
+            return Number(digitMatch[1]);
+        }
+
+        const wordMap = {
+            zero: 0,
+            un: 1,
+            une: 1,
+            deux: 2,
+            trois: 3,
+            quatre: 4,
+            cinq: 5,
+            six: 6,
+            sept: 7,
+            huit: 8,
+            neuf: 9,
+            dix: 10,
+        };
+
+        for (const [word, number] of Object.entries(wordMap)) {
+            if (new RegExp(`\\b${word}\\b`, 'i').test(normalized)) {
+                return number;
+            }
+        }
+
+        return null;
+    }
+
+    function findCartRowFromText(text) {
+        const rows = Array.from(document.querySelectorAll('tr[data-product-id]'));
+        if (rows.length === 0) {
+            return null;
+        }
+
+        if (rows.length === 1) {
+            return rows[0];
+        }
+
+        const normalized = normalizeText(text);
+        const matched = rows.find((row) => {
+            const name = normalizeText(row.querySelector('h6')?.textContent || '');
+            return name !== '' && normalized.includes(name);
+        });
+
+        return matched || rows[0];
+    }
+
+    function hasAnyToken(text, tokens) {
+        const normalized = normalizeText(text);
+        return tokens.some((token) => normalized.includes(token));
+    }
+
+    function tryExecuteLocalCartCommand(rawText) {
+        const text = normalizeText(rawText);
+        if (text === '') {
+            return false;
+        }
+
+        const wantsClearCart =
+            (hasAnyToken(text, ['vider', 'vide', 'supprimer tout', 'effacer']) && hasAnyToken(text, ['panier']))
+            || hasAnyToken(text, ['panier vide']);
+
+        if (wantsClearCart) {
+            clearCart(true);
+            showVoiceStatus('Panier vide.', false, true);
+            return true;
+        }
+
+        const wantsCheckout =
+            (hasAnyToken(text, ['passer', 'ouvre', 'ouvrir', 'aller']) && hasAnyToken(text, ['command', 'checkout']))
+            || hasAnyToken(text, ['passer la commande', 'passer commande', 'je passe commande', 'commander']);
+
+        if (wantsCheckout) {
+            window.location.href = '{{ path('app_commande_create') }}';
+            return true;
+        }
+
+        const wantsSetQty = hasAnyToken(text, ['quantite', 'mettre', 'fixer', 'regler', 'change']);
+        if (wantsSetQty) {
+            const qty = extractSpokenNumber(text);
+            const row = findCartRowFromText(text);
+            if (qty !== null && row) {
+                const productId = Number(row.dataset.productId || 0);
+                if (productId > 0) {
+                    updateQuantity(productId, Math.max(0, qty));
+                    showVoiceStatus(`Quantite mise a ${qty}.`, false, true);
+                    return true;
+                }
+            }
+        }
+
+        if (hasAnyToken(text, ['augment', 'augmente', 'plus', 'incremente', 'zid'])) {
+            const row = findCartRowFromText(text);
+            if (row) {
+                const productId = Number(row.dataset.productId || 0);
+                const currentQty = Number(row.querySelector('[id^="qty-"]')?.textContent || 0);
+                if (productId > 0) {
+                    updateQuantity(productId, Math.max(0, currentQty + 1));
+                    showVoiceStatus('Quantite augmentee.', false, true);
+                    return true;
+                }
+            }
+        }
+
+        if (hasAnyToken(text, ['diminu', 'diminue', 'reduire', 'moins', 'decremente', 'na9es', 'naqes'])) {
+            const row = findCartRowFromText(text);
+            if (row) {
+                const productId = Number(row.dataset.productId || 0);
+                const currentQty = Number(row.querySelector('[id^="qty-"]')?.textContent || 0);
+                if (productId > 0) {
+                    updateQuantity(productId, Math.max(0, currentQty - 1));
+                    showVoiceStatus('Quantite diminuee.', false, true);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     function findRowByName(needle) {
         const target = normalize(needle);
         if (!target) return null;
@@ -413,6 +546,15 @@ function initVoiceCartAssistant() {
                 return;
             }
 
+            if (action.type === 'update_cart_quantity_set') {
+                const productId = Number(action.product_id || 0);
+                const quantity = Math.max(0, Number(action.quantity || 0));
+                if (productId > 0) {
+                    updateQuantity(productId, quantity);
+                }
+                return;
+            }
+
             if (action.type === 'remove_from_cart') {
                 const productId = Number(action.product_id || 0);
                 if (productId > 0) {
@@ -422,7 +564,7 @@ function initVoiceCartAssistant() {
             }
 
             if (action.type === 'clear_cart') {
-                clearCart();
+                clearCart(true);
                 return;
             }
 
@@ -436,6 +578,10 @@ function initVoiceCartAssistant() {
     }
 
     async function handleVoiceCommand(rawText) {
+        if (tryExecuteLocalCartCommand(rawText)) {
+            return;
+        }
+
         try {
             const response = await fetch('{{ path('app_api_ai_voice_command') }}', {
                 method: 'POST',
@@ -512,6 +658,7 @@ function initVoiceCartAssistant() {
             const transcript = result?.[0]?.transcript || '';
             if (transcript) {
                 networkRetryCount = 0;
+                textFallbackArmed = false;
                 manualStop = true;
                 restartOnEnd = false;
                 handleVoiceCommand(transcript);
@@ -548,8 +695,8 @@ function initVoiceCartAssistant() {
             }
 
             restartOnEnd = false;
-            showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
-            openVoiceFallbackPrompt();
+            textFallbackArmed = true;
+            showVoiceStatus('Service vocal navigateur indisponible. Recliquez micro pour mode texte.', true, false);
             return;
         }
 
@@ -587,6 +734,13 @@ function initVoiceCartAssistant() {
     }
 
     voiceBtn.addEventListener('click', async function () {
+        if (textFallbackArmed) {
+            textFallbackArmed = false;
+            openVoiceFallbackPrompt();
+
+            return;
+        }
+
         if (isListening || isRecognitionStarting) {
             manualStop = true;
             restartOnEnd = false;
@@ -606,6 +760,7 @@ function initVoiceCartAssistant() {
         networkRetryCount = 0;
         manualStop = false;
         restartOnEnd = false;
+        textFallbackArmed = false;
         synth.cancel();
         startRecognitionSafely();
     });
