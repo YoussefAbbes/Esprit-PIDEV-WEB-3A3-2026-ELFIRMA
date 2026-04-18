@@ -590,6 +590,10 @@
                       <span class="material-symbols-outlined" style="font-size: 22px;">bolt</span>
                       Order
                     </button>
+                    <button onclick="generateProductVideo(${product.id})" style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; padding: 16px 20px; border-radius: 15px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 25px rgba(234, 88, 12, 0.35); transform: translateY(0);">
+                      <span class="material-symbols-outlined" style="font-size: 22px;">movie</span>
+                      Generate Video
+                    </button>
                   </div>
                 </div>
               </div>
@@ -856,6 +860,14 @@
           console.error('Error:', error);
           setQuickOrderInlineError('Error while placing order. Please try again.');
         }
+      }
+
+      function generateProductVideo(productId) {
+        if (!productId) {
+          return;
+        }
+
+        window.open(`/product/${productId}/generate-video`, '_blank');
       }
 
       // Category filter functions

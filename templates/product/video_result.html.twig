@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Video produit - {{ produit.nom }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div style="max-width: 980px; margin: 0 auto;">
+        <h2 style="font-weight: 800; color: #14532d; margin-bottom: 20px;">Video produit</h2>
+        <p style="font-size: 16px; color: #374151; margin-bottom: 22px;">
+            Produit: <strong>{{ produit.nom }}</strong>
+        </p>
+
+        {% if generator_ok and video_url %}
+            <div style="background: #ffffff; border: 1px solid #d1fae5; border-radius: 16px; padding: 18px; box-shadow: 0 12px 28px rgba(6, 78, 59, .12);">
+                <video controls preload="metadata" style="width: 100%; border-radius: 12px; background: #000;">
+                    <source src="{{ video_url }}" type="video/mp4">
+                    Votre navigateur ne supporte pas la lecture video.
+                </video>
+                <p style="margin: 12px 0 0 0; color: #065f46; font-weight: 600;">{{ generator_message }}</p>
+            </div>
+        {% else %}
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px; padding: 16px; color: #991b1b;">
+                <p style="margin: 0 0 8px 0; font-weight: 700;">Generation video echouee.</p>
+                <p style="margin: 0;">{{ generator_message ?: 'Erreur inconnue pendant la generation.' }}</p>
+            </div>
+
+            {% if generator_stdout %}
+                <details style="margin-top: 14px;">
+                    <summary style="cursor: pointer; color: #334155;">Voir la sortie technique</summary>
+                    <pre style="white-space: pre-wrap; background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 12px; margin-top: 8px;">{{ generator_stdout }}</pre>
+                </details>
+            {% endif %}
+        {% endif %}
+
+        <div style="margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{{ path('app_pages_home') }}#products" style="text-decoration: none; background: #166534; color: #fff; border-radius: 10px; padding: 10px 16px; font-weight: 700;">Retour catalogue</a>
+            <a href="{{ path('app_product_details', {id: produit.idProduit}) }}" style="text-decoration: none; background: #0f766e; color: #fff; border-radius: 10px; padding: 10px 16px; font-weight: 700;">Voir details produit</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

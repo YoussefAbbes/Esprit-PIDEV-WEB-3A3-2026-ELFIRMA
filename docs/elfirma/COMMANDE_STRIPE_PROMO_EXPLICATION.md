@@ -722,5 +722,114 @@ R: Date expires_at stockee en session et verifiee a chaque action.
   - Ajouter evaluation offline (accuracy/F1 + matrice confusion).
   - Version multilingue FR/AR/EN avec datasets separes.
 
+## 18) Generation video produit automatique (Symfony + Python)
+### A) Objectif
+- Ajouter un bouton "Generate Video" dans le detail produit du catalogue.
+- Generer automatiquement une video `.mp4` depuis les donnees BD du produit.
+- Afficher le resultat dans une vue Twig dediee.
+
+### B) Architecture MVC appliquee
+- Controller:
+  - `src/Controller/ProductController.php`
+  - route: `GET /product/{id}/generate-video`
+  - recupere le produit via Doctrine
+  - prepare les champs multimedia (nom, description, prix, qualite, dates)
+  - appelle le service de generation Python
+- Service:
+  - `src/Service/ProductVideoGeneratorService.php`
+  - construit le payload
+  - execute le script Python
+  - parse la reponse JSON
+  - retourne statut + URL video
+- View:
+  - `templates/product/video_result.html.twig`
+  - affiche la video si succes
+  - affiche la sortie technique si erreur
+
+### C) Integration front catalogue
+- Fichier: `templates/pages/index.html.twig`
+- Ajout bouton `Generate Video` dans la modal detail produit.
+- Action JS: ouverture de `/product/{id}/generate-video` dans un nouvel onglet.
+
+### D) Script Python de generation
+- Fichier: `scripts/generate_product_video.py`
+- Librairies utilisees:
+  - MoviePy
+  - gTTS
+  - Pillow
+- Pipeline:
+  - fond video depuis image produit
+  - overlays animes (titre + details)
+  - zoom progressif + fade-in
+  - audio TTS
+  - export `.mp4` dans `public/generated_videos`
+
+### E) Narration vocale (ordre demande)
+Le texte audio est construit cote controller dans cet ordre:
+1. nom du produit
+2. qualite
+3. date de production
+4. date d'expiration
+5. prix
+
+### F) Payload transmis Python
+Champs passes:
+- `id`
+- `name`
+- `description`
+- `price`
+- `quality`
+- `production_date`
+- `expiration_date`
+- `tts_text`
+- `image_path`
+- `project_dir`
+
+### G) Corrections majeures realisees (debug reel)
+1. **Erreur DI Symfony env fallback**
+- erreur: `Invalid env fallback in default:python:PYTHON_BIN`
+- correction: config service explicite dans `config/services.yaml` + cache clear.
+
+2. **MoviePy import incompatibilite v2**
+- erreur: `No module named moviepy.editor`
+- correction: import compatible v1/v2 (`moviepy` puis fallback `moviepy.editor`).
+
+3. **Payload JSON casse sous Windows (exec)**
+- erreur: `Invalid JSON payload`
+- correction: passage du payload via fichier temporaire (`--payload-file`) au lieu d'argument CLI brut.
+
+4. **File lock Windows sur voice.mp3 (WinError 32)**
+- correction: fermeture explicite de tous les clips + cleanup robuste avec retry.
+
+5. **API MoviePy v2 differente (set_duration absent)**
+- correction: wrappers compatibilite v1/v2 (`with_duration/set_duration`, `with_position/set_position`, `with_audio/set_audio`, `FadeIn`, `Resize`).
+
+6. **Timeout PHP 120s pendant generation**
+- correction:
+  - `set_time_limit(600)` autour de `exec`
+  - video rendue plus rapide (960x540, fps 20, preset ultrafast, duree borne).
+
+### H) Fichiers modifies pour ce module
+- `src/Controller/ProductController.php`
+- `src/Service/ProductVideoGeneratorService.php`
+- `scripts/generate_product_video.py`
+- `templates/pages/index.html.twig`
+- `templates/product/video_result.html.twig`
+- `config/services.yaml`
+
+### I) Commandes utiles de verification
+- PHP:
+  - `php -l src/Controller/ProductController.php`
+  - `php -l src/Service/ProductVideoGeneratorService.php`
+- Twig:
+  - `php bin/console lint:twig templates/product/video_result.html.twig templates/pages/index.html.twig`
+- Python:
+  - `python -m py_compile scripts/generate_product_video.py`
+
+### J) Resultat final
+- Depuis le catalogue, le bouton "Generate Video" declenche une video produit auto.
+- L'affichage est anime et plus moderne.
+- La narration suit l'ordre metier attendu pour la soutenance.
+
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

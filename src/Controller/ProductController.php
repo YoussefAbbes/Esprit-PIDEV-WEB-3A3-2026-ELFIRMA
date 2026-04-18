@@ -13,6 +13,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\Produit;
 use App\Entity\Commande;
 use App\Entity\Categorie;
+use App\Service\ProductVideoGeneratorService;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -505,6 +506,56 @@ final class ProductController extends AbstractController
         }
 
         return new JsonResponse($data);
+    }
+
+    #[Route('/product/{id}/generate-video', name: 'app_product_generate_video', methods: ['GET'])]
+    public function generateVideo(int $id, EntityManagerInterface $em, ProductVideoGeneratorService $videoGenerator): Response
+    {
+        $produit = $em->getRepository(Produit::class)->find($id);
+        if (!$produit instanceof Produit) {
+            throw $this->createNotFoundException('Product not found');
+        }
+
+        $quality = (string) ($produit->getQualite() ?? 'Standard');
+        $productionDate = $produit->getDateProduction()?->format('d/m/Y') ?? 'Non renseignee';
+        $expirationDate = $produit->getDateExpiration()?->format('d/m/Y') ?? 'Non renseignee';
+        $price = number_format((float) ($produit->getPrixUnitaire() ?? 0), 2, '.', '');
+
+        $description = sprintf(
+            '%s. Categorie %s. Stock disponible %d unite(s).',
+            (string) ($produit->getType() ?? 'Produit agricole'),
+            (string) ($produit->getCategorie()?->getNom() ?? 'non precisee'),
+            (int) ($produit->getQuantiteStock() ?? 0)
+        );
+
+        $ttsText = sprintf(
+            'Produit %s. Qualite %s. Date de production %s. Date d expiration %s. Prix %s dinars tunisiens.',
+            (string) ($produit->getNom() ?? 'Produit'),
+            $quality,
+            $productionDate,
+            $expirationDate,
+            $price
+        );
+
+        $result = $videoGenerator->generate([
+            'id' => (int) ($produit->getIdProduit() ?? 0),
+            'name' => (string) ($produit->getNom() ?? 'Produit'),
+            'description' => $description,
+            'price' => $price,
+            'quality' => $quality,
+            'production_date' => $productionDate,
+            'expiration_date' => $expirationDate,
+            'tts_text' => $ttsText,
+            'image' => (string) ($produit->getImage() ?? ''),
+        ]);
+
+        return $this->render('product/video_result.html.twig', [
+            'produit' => $produit,
+            'video_url' => $result['video_url'] ?? null,
+            'generator_message' => (string) ($result['message'] ?? ''),
+            'generator_ok' => (bool) ($result['ok'] ?? false),
+            'generator_stdout' => (string) ($result['stdout'] ?? ''),
+        ]);
     }
 //C’est une fonction utilitaire de conversion,pas la validation métier finale (la validation est surtout dans l’entité).
     private function parseDateValue(string $value): ?\DateTimeInterface
