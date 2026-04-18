@@ -33,17 +33,6 @@
       <p>Access your account</p>
     </div>
 
-    <form method="POST" action="{{ path('app_login') }}" class="auth-form">
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
-    <!-- Store errors data -->
-    <div id="errors-data" data-errors="{{ (errors ?? {})|json_encode() }}"></div>
 
     {% if error is defined and error %}
       <div style="background-color: #ffebee; border: 1px solid #ef5350; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; color: #d32f2f; display: flex; gap: 0.75rem; align-items: flex-start;">

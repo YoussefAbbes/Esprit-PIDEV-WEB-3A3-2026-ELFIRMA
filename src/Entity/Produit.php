@@ -11,10 +11,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 #[ORM\Table(name: 'produit')]
-
-
-#[ORM\Entity(repositoryClass: ProduitRepository::class)]
-#[ORM\Table(name: 'produit')]
 #[Assert\Expression(
     'this.getDateProduction() === null || this.getDateExpiration() === null || this.getDateExpiration() >= this.getDateProduction()',
     message: 'Expiration date must be on or after production date.'

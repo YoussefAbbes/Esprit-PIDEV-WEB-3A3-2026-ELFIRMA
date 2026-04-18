@@ -1,37 +1,18 @@
 <script>
 (function () {
+
     const navItems = [
         {
             label: "User Management",
             icon: "group",
-<<<<<<< HEAD
-            href: "{{ path('elfirma_page', { module: 'utilisateurs' }) }}"
-=======
             href: "{{ path('user_page') }}"
->>>>>>> livestock-parcel-product-integration
         },
         {
             label: "Field Management",
             icon: "agriculture",
-<<<<<<< HEAD
             href: "{{ path('elfirma_page', { module: 'parcelles-cultures' }) }}"
         },
-        {
-            label: "Livestock Management",
-            icon: "pets",
-            href: "{{ path('elfirma_page', { module: 'animaux-elevages' }) }}"
-=======
-            children: [
-                {
-                    label: "Parcels",
-                    href: "{{ path('parcelle_index') }}"
-                },
-                {
-                    label: "Crops",
-                    href: "{{ path('culture_index') }}"
-                }
-            ]
-        },
+
         {
             label: "Livestock & Animals Management",
             icon: "pets",
@@ -45,14 +26,12 @@
                     href: "{{ path('elfirma_animals') }}"
                 }
             ]
->>>>>>> livestock-parcel-product-integration
         },
+
         {
             label: "Product Management",
             icon: "shopping_basket",
-<<<<<<< HEAD
-            href: "{{ path('elfirma_page', { module: 'produits-commandes' }) }}"
-=======
+            href: "{{ path('elfirma_page', { module: 'produits-commandes' }) }}",
             children: [
                 {
                     label: "Products",
@@ -63,23 +42,18 @@
                     href: "{{ path('elfirma_categories') }}"
                 }
             ]
->>>>>>> livestock-parcel-product-integration
         },
+
         {
             label: "Equipment Management",
             icon: "handyman",
-<<<<<<< HEAD
-            href: "{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}"
-=======
             href: "{{ path('app_equipement_index') }}"
->>>>>>> livestock-parcel-product-integration
         },
+
         {
             label: "Contract Management",
             icon: "contract",
-<<<<<<< HEAD
-            href: "{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}"
-=======
+            href: "{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}",
             children: [
                 {
                     label: "Suppliers",
@@ -90,7 +64,6 @@
                     href: "{{ path('contrat_page') }}"
                 }
             ]
->>>>>>> livestock-parcel-product-integration
         }
     ];
 
@@ -123,9 +96,6 @@
         ["Maintenance", "Maintenance"],
         ["Récolte", "Harvest"],
         ["Sélectionnez", "Select"],
-<<<<<<< HEAD
-        ["Ouvrir le module dans Symfony", "Open module in Symfony"]
-=======
         ["Ouvrir le module dans Symfony", "Open module in Symfony"],
         ["Huile", "Oil"],
         ["Frais", "Fresh"],
@@ -138,52 +108,48 @@
         ["Disponible", "Available"],
         ["Rupture", "Out of Stock"],
         ["Expiré", "Expired"]
->>>>>>> livestock-parcel-product-integration
     ];
 
     const normalizePath = (value) => (value || "").replace(/\/$/, "") || "/";
     const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
-<<<<<<< HEAD
-=======
     const currentUrl = new URL(window.location.href);
 
+    // ✅ FIX SAFE URL + active logic
     const isHrefActive = (href) => {
-        const target = new URL(href, window.location.origin);
-        if (normalizePath(target.pathname) !== normalizePath(currentUrl.pathname)) {
+        try {
+            const target = new URL(href, window.location.origin);
+
+            if (normalizePath(target.pathname) !== normalizePath(currentUrl.pathname)) {
+                return false;
+            }
+
+            const targetView = target.searchParams.get("view");
+            const currentView = currentUrl.searchParams.get("view");
+
+            if (!targetView) return true;
+
+            if (targetView === "livestock" && !currentView) return true;
+
+            return targetView === currentView;
+        } catch (e) {
             return false;
         }
-
-        const targetView = target.searchParams.get("view");
-        const currentView = currentUrl.searchParams.get("view");
-
-        if (!targetView) {
-            return true;
-        }
-
-        // Default to livestock when no view query is specified.
-        if (targetView === "livestock" && !currentView) {
-            return true;
-        }
-
-        return targetView === currentView;
     };
 
     const mountDropdownStyles = () => {
-        if (document.getElementById("elf-side-dropdown-style")) {
-            return;
-        }
+        if (document.getElementById("elf-side-dropdown-style")) return;
 
         const style = document.createElement("style");
         style.id = "elf-side-dropdown-style";
         style.textContent = `
-            .elf-side-group {
-                width: 100%;
-            }
+            .elf-side-group { width: 100%; }
+
             .elf-side-link,
             .elf-side-link-group {
                 width: 100%;
                 text-align: left;
             }
+
             .elf-side-link-group {
                 border: 0;
                 background: transparent;
@@ -193,6 +159,7 @@
                 gap: 0.6rem;
                 padding-right: 1rem;
             }
+
             .elf-side-link-group .elf-side-link-main {
                 display: grid;
                 grid-template-columns: 1.55rem minmax(0, 1fr);
@@ -200,19 +167,7 @@
                 gap: 0.9rem;
                 min-width: 0;
             }
-            .elf-side-link > .elf-side-label,
-            .elf-side-link-group .elf-side-label {
-                display: block;
-                min-width: 0;
-                line-height: 1.28;
-                white-space: normal;
-                overflow-wrap: anywhere;
-                word-break: break-word;
-            }
-            .elf-side-link > .material-symbols-outlined,
-            .elf-side-link-group .material-symbols-outlined {
-                flex-shrink: 0;
-            }
+
             .elf-side-submenu {
                 display: none;
                 flex-direction: column;
@@ -220,38 +175,33 @@
                 margin: 0.25rem 0 0.3rem 1.2rem;
                 padding-right: 0.9rem;
             }
+
             .elf-side-submenu.is-open {
                 display: flex;
             }
+
             .elf-side-sublink {
-                color: var(--elf-on-surface-variant, #475240);
+                color: #475240;
                 text-decoration: none;
                 font-weight: 700;
                 padding: 0.55rem 0.9rem;
                 border-radius: 9999px;
-                line-height: 1.28;
-                white-space: pre-line;
-                overflow-wrap: anywhere;
-                word-break: break-word;
-                transition: background-color 0.2s ease, color 0.2s ease;
             }
+
             .elf-side-sublink:hover {
                 background: rgba(188, 197, 175, 0.34);
-                color: var(--elf-primary, #116530);
             }
+
             .elf-side-sublink.is-active {
-                background: linear-gradient(135deg, var(--elf-primary, #116530), var(--elf-primary-strong, #0c4a23));
-                color: #f8faef;
+                background: #116530;
+                color: white;
             }
         `;
-
         document.head.appendChild(style);
     };
 
     const mountMaterialSymbols = () => {
-        if (document.getElementById("elf-material-symbols-font")) {
-            return;
-        }
+        if (document.getElementById("elf-material-symbols-font")) return;
 
         const link = document.createElement("link");
         link.id = "elf-material-symbols-font";
@@ -259,233 +209,100 @@
         link.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,550,0,0";
         document.head.appendChild(link);
     };
->>>>>>> livestock-parcel-product-integration
 
     const translateValue = (value) => {
-        if (!value) {
-            return value;
-        }
+        if (!value) return value;
 
-        return englishReplacements.reduce((accumulator, replacement) => {
-            return accumulator.split(replacement[0]).join(replacement[1]);
+        return englishReplacements.reduce((acc, rep) => {
+            return acc.split(rep[0]).join(rep[1]);
         }, value);
     };
 
     const applyEnglishLocalization = () => {
         document.documentElement.lang = "en";
 
-        document.querySelectorAll("[placeholder]").forEach((element) => {
-            element.placeholder = translateValue(element.placeholder);
+        document.querySelectorAll("[placeholder]").forEach((el) => {
+            el.placeholder = translateValue(el.placeholder);
         });
 
-        const textWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        let textNode = textWalker.nextNode();
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        let node;
 
-        while (textNode) {
-            const parent = textNode.parentElement;
-
-            if (parent && !parent.closest("script, style")) {
-                const translated = translateValue(textNode.nodeValue);
-                if (translated !== textNode.nodeValue) {
-                    textNode.nodeValue = translated;
+        while ((node = walker.nextNode())) {
+            if (node.parentElement && !node.parentElement.closest("script, style")) {
+                const translated = translateValue(node.nodeValue);
+                if (translated !== node.nodeValue) {
+                    node.nodeValue = translated;
                 }
             }
-
-            textNode = textWalker.nextNode();
         }
     };
 
-    const syncToggleIcon = (button) => {
-        if (!button) {
-            return;
-        }
-
-        const icon = button.querySelector(".material-symbols-outlined");
-        if (!icon) {
-            return;
-        }
-
-        if (isMobile()) {
-            icon.textContent = document.body.classList.contains("elf-sidebar-open") ? "close" : "menu";
-            return;
-        }
-
-        icon.textContent = document.body.classList.contains("elf-sidebar-collapsed") ? "menu_open" : "menu";
-    };
-
-    const mountSidebarToggle = () => {
-        if (document.querySelector(".elf-sidebar-toggle")) {
-            return;
-        }
-
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.className = "elf-sidebar-toggle";
-        toggle.setAttribute("aria-label", "Show or hide sidebar");
-        toggle.innerHTML = '<span class="material-symbols-outlined">menu</span>';
-
-        const overlay = document.createElement("div");
-        overlay.className = "elf-sidebar-overlay";
-
-        const closeSidebar = () => {
-            document.body.classList.remove("elf-sidebar-open");
-            syncToggleIcon(toggle);
-        };
-
-        toggle.addEventListener("click", () => {
-            if (isMobile()) {
-                document.body.classList.toggle("elf-sidebar-open");
-                syncToggleIcon(toggle);
-                return;
-            }
-
-            document.body.classList.toggle("elf-sidebar-collapsed");
-            syncToggleIcon(toggle);
-        });
-
-        overlay.addEventListener("click", closeSidebar);
-
-        window.addEventListener("resize", () => {
-            if (!isMobile()) {
-                document.body.classList.remove("elf-sidebar-open");
-            }
-            syncToggleIcon(toggle);
-        });
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                closeSidebar();
-            }
-        });
-
-        document.body.appendChild(overlay);
-        document.body.appendChild(toggle);
-        syncToggleIcon(toggle);
-    };
+    const isSidebar = document.querySelector("aside, body > nav");
+    if (!isSidebar) return;
 
     const buildSideNavigation = (container) => {
-        container.classList.add("elf-side-links");
         container.innerHTML = "";
-
-<<<<<<< HEAD
-        const currentPath = normalizePath(window.location.pathname);
-
-        navItems.forEach((item) => {
-            const link = document.createElement("a");
-            const isActive = currentPath === normalizePath(item.href);
-            link.className = "elf-side-link" + (isActive ? " is-active" : "");
-            link.href = item.href;
-            link.innerHTML = '<span class="material-symbols-outlined">' + item.icon + '</span><span>' + item.label + "</span>";
-=======
         mountDropdownStyles();
 
         navItems.forEach((item) => {
-            if (Array.isArray(item.children) && item.children.length) {
+
+            if (item.children?.length) {
                 const group = document.createElement("div");
                 group.className = "elf-side-group";
 
-                const childActive = item.children.some((child) => isHrefActive(child.href));
+                const isActive = item.children.some(c => isHrefActive(c.href));
 
-                const groupButton = document.createElement("button");
-                groupButton.type = "button";
-                groupButton.className = "elf-side-link elf-side-link-group" + (childActive ? " is-active" : "");
-                groupButton.innerHTML =
-                    '<span class="elf-side-link-main"><span class="material-symbols-outlined">' + item.icon + '</span><span class="elf-side-label">' + item.label + '</span></span>' +
-                    '<span class="material-symbols-outlined">expand_more</span>';
+                const button = document.createElement("button");
+                button.className = "elf-side-link-group" + (isActive ? " is-active" : "");
+                button.innerHTML = `
+                    <span class="elf-side-link-main">
+                        <span class="material-symbols-outlined">${item.icon}</span>
+                        <span class="elf-side-label">${item.label}</span>
+                    </span>
+                    <span class="material-symbols-outlined">expand_more</span>
+                `;
 
-                const subMenu = document.createElement("div");
-                subMenu.className = "elf-side-submenu" + (childActive ? " is-open" : "");
+                const submenu = document.createElement("div");
+                submenu.className = "elf-side-submenu" + (isActive ? " is-open" : "");
 
-                item.children.forEach((child) => {
-                    const subLink = document.createElement("a");
-                    const isChildActive = isHrefActive(child.href);
-                    subLink.className = "elf-side-sublink" + (isChildActive ? " is-active" : "");
-                    subLink.href = child.href;
-                    subLink.textContent = child.label;
-                    subMenu.appendChild(subLink);
+                item.children.forEach(child => {
+                    const a = document.createElement("a");
+                    a.className = "elf-side-sublink" + (isHrefActive(child.href) ? " is-active" : "");
+                    a.href = child.href;
+                    a.textContent = child.label;
+                    submenu.appendChild(a);
                 });
 
-                groupButton.addEventListener("click", () => {
-                    subMenu.classList.toggle("is-open");
+                button.addEventListener("click", () => {
+                    document.querySelectorAll(".elf-side-submenu").forEach(m => {
+                        if (m !== submenu) m.classList.remove("is-open");
+                    });
+                    submenu.classList.toggle("is-open");
                 });
 
-                group.appendChild(groupButton);
-                group.appendChild(subMenu);
+                group.appendChild(button);
+                group.appendChild(submenu);
                 container.appendChild(group);
                 return;
             }
 
             const link = document.createElement("a");
-            const isActive = isHrefActive(item.href);
-            link.className = "elf-side-link" + (isActive ? " is-active" : "");
+            link.className = "elf-side-link" + (isHrefActive(item.href) ? " is-active" : "");
             link.href = item.href;
-            link.innerHTML = '<span class="material-symbols-outlined">' + item.icon + '</span><span class="elf-side-label">' + item.label + "</span>";
->>>>>>> livestock-parcel-product-integration
+            link.innerHTML = `
+                <span class="material-symbols-outlined">${item.icon}</span>
+                <span class="elf-side-label">${item.label}</span>
+            `;
             container.appendChild(link);
         });
     };
 
-<<<<<<< HEAD
-    const sideRoots = Array.from(document.querySelectorAll("aside, body > nav"));
-=======
-    const sideRoots = Array.from(document.querySelectorAll("aside, body > nav")).filter((root) => {
-        const tagName = root.tagName.toLowerCase();
-
-        if (tagName === "nav" && root.parentElement === document.body) {
-            return true;
-        }
-
-        if (tagName !== "aside") {
-            return false;
-        }
-
-        const className = root.className || "";
-        return className.includes("fixed") || className.includes("left-0");
-    });
->>>>>>> livestock-parcel-product-integration
-
-    if (!sideRoots.length) {
-        return;
-    }
-
-    document.body.classList.add("elf-has-sidebar");
-
-<<<<<<< HEAD
-=======
     mountMaterialSymbols();
->>>>>>> livestock-parcel-product-integration
     applyEnglishLocalization();
 
-    sideRoots.forEach((root) => {
-        root.querySelectorAll("button").forEach((button) => {
-            const label = (button.textContent || "").toLowerCase();
-            if (label.includes("nouvelle") || label.includes("new season")) {
-                button.remove();
-            }
-        });
+    const container = document.querySelector("aside nav, body > nav") || isSidebar;
+    buildSideNavigation(container);
 
-<<<<<<< HEAD
-        const possibleContainers = Array.from(root.querySelectorAll("nav, div")).filter((element) => {
-            return element.querySelectorAll(":scope > a").length >= 5;
-        });
-
-        if (!possibleContainers.length) {
-            return;
-        }
-
-        const bestContainer = possibleContainers.sort((a, b) => {
-            return b.querySelectorAll(":scope > a").length - a.querySelectorAll(":scope > a").length;
-        })[0];
-
-        buildSideNavigation(bestContainer);
-    });
-=======
-        const container = root.querySelector("nav") || root;
-        buildSideNavigation(container);
-            });
->>>>>>> livestock-parcel-product-integration
-
-    mountSidebarToggle();
 })();
 </script>
-
