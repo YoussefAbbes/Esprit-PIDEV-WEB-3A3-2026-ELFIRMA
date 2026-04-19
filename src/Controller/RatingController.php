@@ -360,6 +360,7 @@ class RatingController extends AbstractController
 
     /**
      * Censor custom blacklisted words by replacing each matched word with asterisks.
+     * sgvdcjgvsjd
      */
     private function censorCustomBadWords(string $text): string
     {

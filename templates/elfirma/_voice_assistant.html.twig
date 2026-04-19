@@ -1,0 +1,381 @@
+{# templates/elfirma/_voice_assistant.html.twig #}
+
+{# ── Styles ─────────────────────────────────────────────────────────────── #}
+<style>
+  #va-widget {
+    position: fixed;
+    bottom: 28px;
+    right: 100px; {# offset from existing FAB button #}
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    z-index: 9998;
+  }
+
+  #va-mic-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: #43682b;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(67,104,43,0.45);
+    transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  #va-mic-btn:hover  { background: #2c4f15; transform: scale(1.07); }
+  #va-mic-btn.active { background: #7c3aed; }
+
+  #va-mic-btn.listening {
+    background: #dc2626;
+    animation: va-pulse 1.3s infinite;
+  }
+  @keyframes va-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(220,38,38,.5); }
+    70%  { box-shadow: 0 0 0 16px rgba(220,38,38,0); }
+    100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+  }
+
+  #va-bubble {
+    display: none;
+    background: #1e1b4b;
+    color: #e0e7ff;
+    border-radius: 18px;
+    padding: 16px 20px;
+    width: 300px;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+  }
+  #va-widget.open #va-bubble { display: block; }
+
+  #va-status     { color: #a5b4fc; margin: 0 0 6px; font-size: 0.78rem; }
+  #va-transcript { color: #c7d2fe; margin: 5px 0; font-style: italic; min-height: 1.2em; }
+  #va-reply      { color: #fff; margin: 5px 0; font-weight: 600; }
+
+  #va-field-indicator {
+    font-size: 0.72rem;
+    color: #818cf8;
+    margin-top: 8px;
+    display: none;
+  }
+  #va-widget.open #va-field-indicator { display: block; }
+
+  /* progress dots */
+  #va-progress {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .va-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4c1d95;
+    transition: background 0.3s;
+  }
+  .va-dot.done    { background: #34d399; }
+  .va-dot.current { background: #f59e0b; }
+</style>
+
+{# ── HTML ────────────────────────────────────────────────────────────────── #}
+<div id="va-widget">
+  <div id="va-bubble">
+    <p id="va-status">Click the mic to start</p>
+    <p id="va-transcript"></p>
+    <p id="va-reply"></p>
+    <div id="va-field-indicator"></div>
+    <div id="va-progress"></div>
+  </div>
+
+  <button id="va-mic-btn" title="Voice Assistant — Create Supplier" aria-label="Voice Assistant">
+    {# microphone SVG icon #}
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="26" height="26">
+      <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/>
+      <path d="M19 10a1 1 0 0 0-2 0 5 5 0 0 1-10 0 1 1 0 0 0-2 0 7 7 0 0 0 6 6.93V19H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.07A7 7 0 0 0 19 10z"/>
+    </svg>
+  </button>
+</div>
+
+{# ── JavaScript ──────────────────────────────────────────────────────────── #}
+<script>
+(function () {
+  // ── Config ─────────────────────────────────────────────────────────────
+  const GREET_URL   = '{{ path("voice_assistant_greet") }}';
+  const PROCESS_URL = '{{ path("voice_assistant_process") }}';
+  const SAVE_URL    = '{{ path("elfirma_add_supplier") }}';  // existing route
+  const LANG        = 'en-US';
+
+  const FIELD_LABELS = {
+    type:        'Supplier Type',
+    description: 'Description',
+    adresse:     'Address',
+    tel:         'Phone Number',
+    email:       'Email Address',
+    statut:      'Status',
+  };
+  const ALL_FIELDS = Object.keys(FIELD_LABELS);
+
+  // ── State ───────────────────────────────────────────────────────────────
+  let recognition = null;
+  let isOpen      = false;
+  let isSpeaking  = false;
+  let currentField = null;
+
+  // ── DOM ─────────────────────────────────────────────────────────────────
+  const widget       = document.getElementById('va-widget');
+  const micBtn       = document.getElementById('va-mic-btn');
+  const statusEl     = document.getElementById('va-status');
+  const transcriptEl = document.getElementById('va-transcript');
+  const replyEl      = document.getElementById('va-reply');
+  const fieldEl      = document.getElementById('va-field-indicator');
+  const progressEl   = document.getElementById('va-progress');
+
+  // ── Progress dots ────────────────────────────────────────────────────────
+  function renderProgress(activeField) {
+    progressEl.innerHTML = '';
+    ALL_FIELDS.forEach(f => {
+      const dot = document.createElement('div');
+      dot.className = 'va-dot';
+      if (activeField === null) {
+        // idle — no highlights
+      } else {
+        const activeIdx  = ALL_FIELDS.indexOf(activeField);
+        const currentIdx = ALL_FIELDS.indexOf(f);
+        if (currentIdx < activeIdx)       dot.classList.add('done');
+        else if (currentIdx === activeIdx) dot.classList.add('current');
+      }
+      dot.title = FIELD_LABELS[f];
+      progressEl.appendChild(dot);
+    });
+  }
+
+  // ── Speech synthesis ─────────────────────────────────────────────────────
+  function speak(text, onEnd) {
+    window.speechSynthesis.cancel();
+    isSpeaking = true;
+    replyEl.textContent = text;
+
+    const utter   = new SpeechSynthesisUtterance(text);
+    utter.lang    = LANG;
+    utter.rate    = 1.0;
+    utter.pitch   = 1.05;
+
+    utter.onend = () => {
+      isSpeaking = false;
+      if (onEnd) onEnd();
+    };
+    // safety — some browsers never fire onend
+    utter.onerror = () => { isSpeaking = false; if (onEnd) onEnd(); };
+
+    window.speechSynthesis.speak(utter);
+  }
+
+  // ── Speech recognition ────────────────────────────────────────────────────
+  function startListening() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert('Speech recognition is not supported in this browser. Please use Chrome.');
+      return;
+    }
+
+    recognition = new SpeechRec();
+    recognition.lang            = LANG;
+    recognition.interimResults  = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      micBtn.classList.add('listening');
+      statusEl.textContent = '🎙 Listening...';
+      transcriptEl.textContent = '';
+    };
+
+    recognition.onresult = (e) => {
+      const spoken = e.results[0][0].transcript;
+      transcriptEl.textContent = 'You: ' + spoken;
+      sendToBackend(spoken);
+    };
+
+    recognition.onerror = (e) => {
+      statusEl.textContent = '⚠ Error: ' + e.error + '. Click mic to retry.';
+      micBtn.classList.remove('listening');
+    };
+
+    recognition.onend = () => {
+      micBtn.classList.remove('listening');
+    };
+
+    recognition.start();
+  }
+
+  // ── Backend ────────────────────────────────────────────────────────────────
+  async function sendToBackend(text) {
+    statusEl.textContent = '⏳ Processing…';
+    try {
+      const res  = await fetch(PROCESS_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      handleBackendResponse(data);
+    } catch {
+      speak('Sorry, a connection error occurred. Please try again.');
+      statusEl.textContent = 'Click the mic to retry';
+    }
+  }
+
+  function handleBackendResponse(data) {
+    statusEl.textContent = '';
+
+    if (data.status === 'collecting') {
+      currentField = data.field || null;
+      if (currentField) {
+        fieldEl.textContent = '📝 Now asking for: ' + FIELD_LABELS[currentField];
+        renderProgress(currentField);
+      }
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'confirming') {
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '✅ All fields collected — confirm to save';
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'offering') {
+      // Assistant is offering to do something — activate mic for yes/no response
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '';
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'deleting') {
+      // Asking for supplier name to delete
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '🗑️ Waiting for supplier name to delete';
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'deleting_confirm') {
+      // Asking for confirmation to delete
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '⚠️ Confirm deletion';
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'editing') {
+      // Asking for supplier name to edit
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '✏️ Waiting for supplier name to edit';
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'editing_field') {
+      // Asking for field to edit
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '✏️ Select field to edit';
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'editing_value') {
+      // Asking for new value for the field
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '✏️ Enter new value';
+      speak(data.reply, () => startListening());
+
+    } else if (data.status === 'save') {
+      // POST collected data to the existing elfirma_add_supplier route
+      saveSupplier(data.payload);
+
+    } else {
+      // idle / cancelled / error
+      currentField = null;
+      renderProgress(null);
+      fieldEl.textContent = '';
+      speak(data.reply, () => startListening());
+    }
+  }
+
+  // ── Save supplier via existing Symfony route ──────────────────────────────
+  async function saveSupplier(payload) {
+    statusEl.textContent = '💾 Saving…';
+
+    const formData = new FormData();
+    formData.append('type',        payload.type);
+    formData.append('description', payload.description);
+    formData.append('adresse',     payload.adresse);
+    formData.append('tel',         payload.tel);
+    formData.append('email',       payload.email);
+    formData.append('statut',      payload.statut);
+
+    try {
+      const res  = await fetch(SAVE_URL, { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        fieldEl.textContent = '';
+        renderProgress(null);
+        speak(
+          'Supplier saved successfully with ID ' + data.id + '. How can I help you next?',
+          () => {
+            statusEl.textContent = 'Click the mic to speak';
+            micBtn.classList.remove('active');
+            micBtn.dataset.active = 'false';
+            // Optionally reload the page to show the new supplier in the table
+            setTimeout(() => window.location.reload(), 2000);
+          }
+        );
+      } else {
+        // Read first validation error from backend
+        const firstError = data.errors
+          ? Object.values(data.errors)[0]
+          : 'Validation failed.';
+        speak('There was an error: ' + firstError + ' Please try again.');
+        statusEl.textContent = 'Click the mic to retry';
+        micBtn.classList.remove('active');
+        micBtn.dataset.active = 'false';
+      }
+    } catch {
+      speak('Could not save the supplier. Please check your connection.');
+      statusEl.textContent = 'Click the mic to retry';
+    }
+  }
+
+  // ── Greet & start ────────────────────────────────────────────────────────
+  async function greetAndListen() {
+    await fetch(GREET_URL, { method: 'POST' });
+    renderProgress(null);
+    speak('How can I help you?', () => startListening());
+  }
+
+  // ── Mic button ────────────────────────────────────────────────────────────
+  micBtn.dataset.active = 'false';
+
+  micBtn.addEventListener('click', () => {
+    if (micBtn.dataset.active === 'true') {
+      // Stop everything
+      if (recognition) recognition.abort();
+      window.speechSynthesis.cancel();
+      micBtn.dataset.active = 'false';
+      micBtn.classList.remove('active', 'listening');
+      widget.classList.remove('open');
+      isOpen = false;
+      statusEl.textContent = 'Click the mic to start';
+    } else {
+      micBtn.dataset.active = 'true';
+      micBtn.classList.add('active');
+      widget.classList.add('open');
+      isOpen = true;
+      greetAndListen();
+    }
+  });
+
+})();
+</script>
