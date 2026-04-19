@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\FournisseurRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FournisseurRepository::class)]
 #[ORM\Table(name: 'fournisseurs')]
@@ -22,6 +23,13 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Le type du fournisseur est obligatoire.')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Le type doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'Le type ne doit pas depasser {{ limit }} caracteres.'
+    )]
     private ?string $type_f = null;
 
     public function getTypeF(): ?string
@@ -36,6 +44,10 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'La description ne doit pas depasser {{ limit }} caracteres.'
+    )]
     private ?string $description_f = null;
 
     public function getDescriptionF(): ?string
@@ -50,6 +62,11 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Address is required')]
+    #[Assert\Regex(
+        pattern: '/[a-zA-Z]/',
+        message: 'Address must contain at least one letter (e.g., 123 marsa or marsa)'
+    )]
     private ?string $adresse_f = null;
 
     public function getAdresseF(): ?string
@@ -64,6 +81,11 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    #[Assert\NotBlank(message: 'Telephone is required')]
+    #[Assert\Regex(
+        pattern: '/^\d{8}$/',
+        message: 'Must be exactly 8 digits (only numbers)'
+    )]
     private ?string $tel_f = null;
 
     public function getTelF(): ?string
@@ -78,6 +100,11 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Email is required')]
+    #[Assert\Regex(
+        pattern: '/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
+        message: 'Email must be in this format: name@domain.com'
+    )]
     private ?string $email_f = null;
 
     public function getEmailF(): ?string
@@ -92,6 +119,11 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'string', length: 50, options: ['default' => 'Actif'])]
+    #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
+    #[Assert\Length(
+        max: 50,
+        maxMessage: 'Le statut ne doit pas depasser {{ limit }} caracteres.'
+    )]
     private ?string $statut_f = 'Actif';
 
     public function getStatutF(): ?string
@@ -111,10 +143,14 @@ class Fournisseur
     #[ORM\OneToMany(mappedBy: 'fournisseur', targetEntity: Meeting::class)]
     private Collection $meetings;
 
+    #[ORM\OneToMany(mappedBy: 'fournisseur', targetEntity: Rating::class)]
+    private Collection $ratings;
+
     public function __construct()
     {
         $this->contrats = new ArrayCollection();
         $this->meetings = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getContrats(): Collection
@@ -144,5 +180,48 @@ class Fournisseur
     public function getMeetings(): Collection
     {
         return $this->meetings;
+    }
+
+    public function addMeetings(Meeting $meeting): self
+    {
+        if (!$this->meetings->contains($meeting)) {
+            $this->meetings[] = $meeting;
+            $meeting->setFournisseur($this);
+        }
+        return $this;
+    }
+
+    public function removeMeetings(Meeting $meeting): self
+    {
+        if ($this->meetings->removeElement($meeting)) {
+            if ($meeting->getFournisseur() === $this) {
+                $meeting->setFournisseur(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(Rating $rating): self
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings[] = $rating;
+            $rating->setFournisseur($this);
+        }
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): self
+    {
+        if ($this->ratings->removeElement($rating)) {
+            if ($rating->getFournisseur() === $this) {
+                $rating->setFournisseur(null);
+            }
+        }
+        return $this;
     }
 }

@@ -10,6 +10,7 @@
         <li><a href="{{ path('app_pages_home') }}" class="{% if app.request.get('_route') == 'app_pages_home' %}active{% endif %}">Home</a></li>
         <li><a href="{{ path('app_about') }}" class="{% if app.request.get('_route') == 'app_about' %}active{% endif %}">About Us</a></li>
         <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
+        <li><a href="{{ path('suppliers_list') }}" class="{% if app.request.get('_route') == 'suppliers_list' %}active{% endif %}">Our Suppliers</a></li>
         <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
         <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Blog</a></li>
         <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
@@ -30,10 +31,42 @@
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
-        <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
+        {% if app.session.get('user_role') == 'admin' %}
+          <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
+        {% endif %}
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
+
+    {% if app.session.get('user_id') %}
+      {% set panier = app.session.get('panier', []) %}
+      {% set cartCount = 0 %}
+      {% for quantity in panier %}
+        {% set cartCount = cartCount + quantity %}
+      {% endfor %}
+      <div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+        <a href="{{ path('app_panier_index') }}" class="btn-cart" title="Mon panier" style="position: relative; display: flex; align-items: center; justify-content: center; min-width: 44px; height: 40px; padding: 0 12px; border-radius: 999px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);">
+          <i class="bi bi-cart3" style="font-size: 1.1rem;"></i>
+          <span style="margin-left: 6px; font-size: 0.85rem;">Panier</span>
+          {% if cartCount > 0 %}
+            <span id="cart-badge" style="position: absolute; top: -7px; right: -6px; background: #ef4444; color: white; border-radius: 999px; min-width: 20px; height: 20px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 2px solid white;">
+              {{ cartCount }}
+            </span>
+          {% endif %}
+        </a>
+        <span style="color: #116530; font-weight: 600;">{{ app.session.get('user_name') }}</span>
+        <a href="{{ path('elfirma_profile') }}" class="btn-profile" title="My Profile" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(17, 101, 48, 0.15);">
+          <i class="bi bi-person-fill" style="font-size: 1.3rem;"></i>
+        </a>
+        <a href="{{ path('app_logout') }}" class="btn-logout" title="Logout" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);">
+          <i class="bi bi-box-arrow-right" style="font-size: 1.3rem;"></i>
+        </a>
+      </div>
+    {% else %}
+      <a href="{{ path('app_login') }}" style="margin-left: auto; padding: 0.5rem 1rem; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+        Login
+      </a>
+    {% endif %}
 
   </div>
 </header>

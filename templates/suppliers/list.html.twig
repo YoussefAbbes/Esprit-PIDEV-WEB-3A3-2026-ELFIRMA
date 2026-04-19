@@ -1,0 +1,1215 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Our Suppliers - EL FIRMA{% endblock %}
+{% block meta_description %}Browse and rate our trusted suppliers{% endblock %}
+{% block meta_keywords %}suppliers, agriculture, ratings{% endblock %}
+{% block body_class %}suppliers-page{% endblock %}
+
+{% block body %}
+<!-- Notification Container -->
+<div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;"></div>
+
+<!-- Page Title -->
+<div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
+  <div class="container position-relative">
+    <h1>Our Suppliers</h1>
+    <p>Home / Suppliers</p>
+    <nav class="breadcrumbs">
+      <ol>
+        <li><a href="{{ path('app_home') }}">Home</a></li>
+        <li class="current">Suppliers</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- Suppliers Section -->
+<section id="suppliers" class="suppliers-section">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="section-title">Trusted Supplier Network</h2>
+      <p class="section-subtitle">Discover quality suppliers. Rate and review to help us maintain excellence</p>
+      <div class="header-divider"></div>
+    </div>
+
+    <div class="suppliers-grid" data-aos="fade-up" data-aos-delay="100">
+      {% if suppliers %}
+        {% for supplier in suppliers %}
+          <div class="supplier-card" data-supplier-id="{{ supplier.idF }}" onclick="openSupplierModal({{ supplier.idF }})">
+            <div class="card-content">
+              <!-- Top Section with Status Badge -->
+              <div class="card-top">
+                <span class="status-badge {% if supplier.statutF == 'Active' %}active{% elseif supplier.statutF == 'Inactive' %}inactive{% else %}suspended{% endif %}">
+                  {{ supplier.statutF }}
+                </span>
+              </div>
+
+              <!-- Main Content -->
+              <div class="card-main">
+                <h3 class="supplier-name">{{ supplier.typeF }}</h3>
+                <p class="supplier-description">{{ supplier.descriptionF|slice(0, 85) }}{% if supplier.descriptionF|length > 85 %}...{% endif %}</p>
+
+                <!-- Rating Display -->
+                <div class="supplier-rating" id="rating-{{ supplier.idF }}">
+                  <div class="stars-container">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-value">0.0</span>
+                  </div>
+                  <span class="rating-count">(0 reviews)</span>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="contact-info">
+                  <div class="info-item">
+                    <i class="bi bi-envelope"></i>
+                    <span>{{ supplier.emailF }}</span>
+                  </div>
+                  <div class="info-item">
+                    <i class="bi bi-telephone"></i>
+                    <span>{{ supplier.telF }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Button -->
+              <button class="view-btn" onclick="openSupplierModal({{ supplier.idF }})">
+                View & Rate <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="no-suppliers">
+          <p>No suppliers available at this moment.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Supplier Details Modal -->
+<div class="modal fade" id="supplierModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content modern-modal">
+      <div class="modal-header modern-header">
+        <h5 class="modal-title" id="supplierModalLabel">Supplier Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body modern-body">
+        <div id="supplier-details">
+          <div class="supplier-header">
+            <h2 id="modal-supplier-name" class="modal-supplier-title"></h2>
+            <span id="modal-supplier-status" class="status-badge"></span>
+          </div>
+
+          <div class="supplier-info-grid">
+            <div class="info-card">
+              <label>Email</label>
+              <p id="modal-supplier-email"></p>
+            </div>
+            <div class="info-card">
+              <label>Phone</label>
+              <p id="modal-supplier-phone"></p>
+            </div>
+            <div class="info-card full-width">
+              <label>Address</label>
+              <p id="modal-supplier-address"></p>
+            </div>
+          </div>
+
+          <div class="description-section">
+            <h4>About</h4>
+            <p id="modal-supplier-description"></p>
+          </div>
+
+          <div class="ratings-section">
+            <div class="ratings-header">
+              <h4>Customer Reviews</h4>
+              <div class="rating-stats">
+                <div class="stat-item">
+                  <span class="stat-value" id="modal-average-rating">0</span>
+                  <span class="stat-label">Rating</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value" id="modal-rating-count">0</span>
+                  <span class="stat-label">Reviews</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="average-rating-display">
+              <div class="stars-large" id="modal-rating-stars">★★★★★</div>
+            </div>
+
+            <!-- Ratings List -->
+            <div id="ratings-list" class="ratings-list">
+              <p class="loading-text">Loading reviews...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer modern-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="add-rating-btn" data-supplier-id="">
+          <i class="bi bi-star"></i> Add Review
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Rating Modal -->
+<div class="modal fade" id="addRatingModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content modern-modal">
+      <div class="modal-header modern-header">
+        <h5 class="modal-title">Share Your Experience</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body modern-body">
+        <form id="rating-form">
+          <div class="rating-input-group">
+            <label class="form-label">Your Rating</label>
+            <div class="star-rating-picker" id="rating-stars">
+              {% for i in 1..5 %}
+                <span class="star-picker" data-value="{{ i }}">★</span>
+              {% endfor %}
+            </div>
+            <input type="hidden" id="selected-stars" name="stars" value="5">
+            <small id="stars-error" class="error-text d-none">Please select a rating</small>
+          </div>
+
+          <div class="mb-4">
+            <label for="rating-comment" class="form-label">Your Review</label>
+            <textarea class="form-control modern-textarea" id="rating-comment" name="comment" rows="5" placeholder="Share your honest feedback about this supplier..." maxlength="1000"></textarea>
+            <div class="char-counter">
+              <span id="char-count">0</span> / 1000
+            </div>
+            <small id="comment-error" class="error-text d-none">Please add a review</small>
+          </div>
+
+          <input type="hidden" id="supplier-id-input" name="supplier_id" value="">
+          <input type="hidden" id="user-id-input" name="user_id" value="">
+        </form>
+      </div>
+      <div class="modal-footer modern-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="submit-rating-btn">
+          <i class="bi bi-check-circle"></i> Submit Review
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+:root {
+  --primary-color: #116530;
+  --primary-light: #15a34a;
+  --primary-dark: #0c4a23;
+  --accent-color: #f59e0b;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --bg-light: #f9fafb;
+  --border-color: #e5e7eb;
+  --text-dark: #1f2937;
+  --text-light: #6b7280;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.suppliers-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 15px;
+  letter-spacing: -0.5px;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+
+.header-divider {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+.suppliers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+.supplier-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transform: translateY(0);
+  position: relative;
+}
+
+.supplier-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.supplier-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-8px);
+}
+
+.supplier-card:hover::before {
+  transform: scaleX(1);
+}
+
+.card-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.status-badge.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.inactive {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-color);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-badge.suspended {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.card-main {
+  flex-grow: 1;
+  margin-bottom: 20px;
+}
+
+.supplier-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.supplier-description {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.supplier-rating {
+  background: linear-gradient(135deg, rgba(17, 101, 48, 0.05), rgba(245, 158, 11, 0.05));
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.stars-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.stars {
+  color: var(--accent-color);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.rating-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.rating-count {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.info-item i {
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.view-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.view-btn:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+  box-shadow: 0 4px 16px rgba(17, 101, 48, 0.3);
+  transform: translateY(-2px);
+}
+
+.view-btn i {
+  font-size: 1.1rem;
+}
+
+.modern-modal {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modern-header {
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: white;
+  padding: 20px 24px;
+}
+
+.modern-header .modal-title {
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.modern-header .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.7;
+}
+
+.modern-header .btn-close:hover {
+  opacity: 1;
+}
+
+.modern-body {
+  padding: 28px;
+  background: white;
+}
+
+.modern-footer {
+  border-top: 1px solid var(--border-color);
+  padding: 16px 24px;
+  background: var(--bg-light);
+}
+
+.supplier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.modal-supplier-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.supplier-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.info-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-card {
+  background: var(--bg-light);
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-color);
+}
+
+.info-card label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.info-card p {
+  margin: 0;
+  color: var(--text-dark);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.description-section {
+  margin-bottom: 28px;
+}
+
+.description-section h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.description-section p {
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+.ratings-section {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 2px solid var(--border-color);
+}
+
+.ratings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.ratings-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.rating-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.average-rating-display {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.stars-large {
+  font-size: 2rem;
+  color: var(--accent-color);
+  letter-spacing: 4px;
+  font-weight: 700;
+}
+
+.ratings-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.loading-text {
+  text-align: center;
+  color: var(--text-light);
+  padding: 20px;
+}
+
+.rating-item {
+  background: var(--bg-light);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--accent-color);
+}
+
+.rating-item:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateX(4px);
+}
+
+.rating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rating-stars {
+  color: var(--accent-color);
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+.rating-date {
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+
+.rating-text {
+  color: var(--text-dark);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.star-rating-picker {
+  display: flex;
+  gap: 15px;
+  font-size: 2.5rem;
+  margin: 15px 0;
+  justify-content: center;
+}
+
+.star-picker {
+  cursor: pointer;
+  color: #e0e0e0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.star-picker:hover,
+.star-picker.active {
+  color: var(--accent-color);
+  transform: scale(1.2);
+  filter: drop-shadow(0 4px 8px rgba(245, 158, 11, 0.3));
+}
+
+.rating-input-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.modern-textarea {
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: none;
+}
+
+.modern-textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(17, 101, 48, 0.1);
+  outline: none;
+}
+
+.char-counter {
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-top: 6px;
+}
+
+.error-text {
+  color: var(--danger-color);
+  font-size: 0.85rem;
+  margin-top: 6px;
+  display: block;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+  box-shadow: 0 4px 16px rgba(17, 101, 48, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: var(--bg-light);
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--border-color);
+  border-color: var(--text-light);
+}
+
+.no-suppliers {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-light);
+}
+
+.ratings-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ratings-list::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 3px;
+}
+
+.ratings-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.ratings-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-light);
+}
+
+@media (max-width: 768px) {
+  .suppliers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .supplier-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rating-stats {
+    gap: 15px;
+  }
+
+  .star-rating-picker {
+    gap: 10px;
+    font-size: 2rem;
+  }
+
+  .star-picker {
+    font-size: 1.8rem;
+  }
+}
+</style>
+
+<script>
+var currentSupplierId = null;
+var currentUserId = {{ userId is defined ? userId : 'null' }};
+var selectedStars = 5;
+var supplierModal = null;
+var addRatingModal = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  supplierModal = new bootstrap.Modal(document.getElementById('supplierModal'));
+  addRatingModal = new bootstrap.Modal(document.getElementById('addRatingModal'));
+
+  const supplierCards = document.querySelectorAll('.supplier-card');
+  supplierCards.forEach(card => {
+    const supplierId = card.dataset.supplierId;
+    loadSupplierRating(supplierId);
+  });
+
+  document.getElementById('rating-comment').addEventListener('input', function() {
+    document.getElementById('char-count').textContent = this.value.length;
+  });
+
+  document.getElementById('add-rating-btn').addEventListener('click', function() {
+    if (!currentUserId) {
+      alert('Please log in to submit a review');
+      return;
+    }
+    document.getElementById('supplier-id-input').value = currentSupplierId;
+    document.getElementById('user-id-input').value = currentUserId;
+    document.getElementById('selected-stars').value = 5;
+    document.getElementById('rating-comment').value = '';
+    document.getElementById('char-count').textContent = 0;
+    selectedStars = 5;
+    updateStarDisplay();
+    supplierModal.hide();
+    addRatingModal.show();
+  });
+
+  document.querySelectorAll('.star-picker').forEach(star => {
+    star.addEventListener('click', function() {
+      selectedStars = parseInt(this.dataset.value);
+      document.getElementById('selected-stars').value = selectedStars;
+      updateStarDisplay();
+    });
+
+    star.addEventListener('mouseover', function() {
+      const value = parseInt(this.dataset.value);
+      document.querySelectorAll('.star-picker').forEach((s, idx) => {
+        s.classList.toggle('active', idx < value);
+      });
+    });
+  });
+
+  document.getElementById('rating-stars').addEventListener('mouseleave', updateStarDisplay);
+
+  document.getElementById('submit-rating-btn').addEventListener('click', function() {
+    const supplierId = document.getElementById('supplier-id-input').value;
+    const userId = document.getElementById('user-id-input').value;
+    const stars = parseInt(document.getElementById('selected-stars').value);
+    const comment = document.getElementById('rating-comment').value.trim();
+
+    console.log('=== RATING SUBMISSION START ===');
+    console.log('Supplier ID:', supplierId);
+    console.log('User ID:', userId);
+    console.log('Stars:', stars);
+    console.log('Comment length:', comment.length);
+    console.log('Comment text:', comment);
+
+    let valid = true;
+    document.getElementById('stars-error').classList.add('d-none');
+    document.getElementById('comment-error').classList.add('d-none');
+
+    if (!stars || stars < 1 || stars > 5) {
+      console.error('VALIDATION FAILED: Invalid stars value');
+      document.getElementById('stars-error').classList.remove('d-none');
+      valid = false;
+    }
+
+    if (!comment) {
+      console.error('VALIDATION FAILED: Comment is empty');
+      document.getElementById('comment-error').classList.remove('d-none');
+      valid = false;
+    }
+
+    if (!valid) {
+      console.log('=== RATING SUBMISSION REJECTED (Client-side validation failed) ===');
+      return;
+    }
+
+    console.log('Client-side validation PASSED - Sending to server...');
+
+    const payload = {
+      supplier_id: supplierId,
+      user_id: userId,
+      stars: stars,
+      comment: comment
+    };
+    console.log('Payload being sent:', JSON.stringify(payload, null, 2));
+
+    fetch('/api/rating/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Array.from(response.headers.entries()));
+      return response.json();
+    })
+    .then(data => {
+      console.log('Server response received:', JSON.stringify(data, null, 2));
+
+      if (data.success) {
+        console.log('✓ SUCCESS - Review accepted by server');
+        console.log('Rating details:', data.rating);
+
+        if (data.hasProfanity) {
+          console.warn('⚠️ PROFANITY CENSORED - Comment was automatically censored');
+          alert('Your review has been submitted!\n\n⚠️ Note: Your comment contained inappropriate language and was automatically censored:\n\n"' + data.rating.comment + '"');
+        } else {
+          alert('Review submitted successfully! Thank you for your feedback.');
+        }
+
+        addRatingModal.hide();
+        loadSupplierDetails(currentSupplierId);
+        loadSupplierRating(currentSupplierId);
+      } else {
+        console.error('✗ FAILED - Server rejected submission');
+        console.error('Response data:', data);
+        
+        // Handle different error response formats
+        let errorMsg = '';
+        if (data.message) {
+          // Blocking message or other detailed message
+          errorMsg = data.message;
+        } else if (data.error) {
+          // Single error string
+          errorMsg = data.error;
+        } else if (data.errors) {
+          // Object with multiple errors
+          const errors = data.errors || {};
+          errorMsg = Object.values(errors).join('\n');
+        }
+        
+        if (data.blocked) {
+          // User is blocked - show special alert
+          alert('❌ Your Commenting Privileges Suspended\n\n' + errorMsg + '\n\nPlease try again after: ' + data.blocked_until);
+          console.warn('⚠️ USER BLOCKED - Remaining hours:', data.remaining_hours);
+        } else {
+          alert('Error: ' + (errorMsg || 'Unknown error occurred'));
+        }
+      }
+      console.log('=== RATING SUBMISSION END ===');
+    })
+    .catch(error => {
+      console.error('✗ FETCH ERROR - Request failed:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      alert('An error occurred while submitting your review');
+      console.log('=== RATING SUBMISSION END (Error) ===');
+    });
+  });
+});
+
+function openSupplierModal(supplierId) {
+  currentSupplierId = supplierId;
+  document.getElementById('add-rating-btn').setAttribute('data-supplier-id', supplierId);
+  loadSupplierDetails(supplierId);
+  supplierModal.show();
+}
+
+function loadSupplierRating(supplierId) {
+  console.log('📊 Loading supplier rating for ID:', supplierId);
+  fetch(`/api/supplier/${supplierId}/ratings`)
+    .then(response => {
+      console.log('  Response status:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        console.log('  ✓ Rating data received:', data);
+        const avgRating = data.averageRating;
+        const count = data.ratingCount;
+        const stars = generateStars(avgRating);
+        const ratingElement = document.getElementById(`rating-${supplierId}`);
+        ratingElement.querySelector('.stars').textContent = stars;
+        ratingElement.querySelector('.rating-value').textContent = avgRating;
+        ratingElement.querySelector('.rating-count').textContent = `(${count} ${count === 1 ? 'review' : 'reviews'})`;
+      }
+    })
+    .catch(error => {
+      console.error('  ✗ Error loading rating:', error);
+    });
+}
+
+function loadSupplierDetails(supplierId) {
+  console.log('📋 Loading supplier details for ID:', supplierId);
+  fetch(`/api/supplier/${supplierId}/ratings`)
+    .then(response => {
+      console.log('  Response status:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        console.log('  ✓ Supplier details received:', data);
+        const supplier = data.supplier;
+        const ratings = data.ratings;
+        const avgRating = data.averageRating;
+
+        document.getElementById('modal-supplier-name').textContent = supplier.type;
+        document.getElementById('modal-supplier-email').textContent = supplier.email;
+        document.getElementById('modal-supplier-phone').textContent = supplier.tel;
+        document.getElementById('modal-supplier-address').textContent = supplier.address;
+        document.getElementById('modal-supplier-status').textContent = supplier.status;
+        document.getElementById('modal-supplier-status').className = `status-badge ${supplier.status.toLowerCase()}`;
+        document.getElementById('modal-supplier-description').textContent = supplier.description;
+
+        document.getElementById('modal-average-rating').textContent = avgRating;
+        document.getElementById('modal-rating-stars').textContent = generateStars(avgRating);
+        document.getElementById('modal-rating-count').textContent = data.ratingCount;
+
+        const ratingsList = document.getElementById('ratings-list');
+        if (ratings.length > 0) {
+          console.log(`  Found ${ratings.length} existing ratings`);
+          ratingsList.innerHTML = ratings.map(rating => `
+            <div class="rating-item">
+              <div class="rating-header">
+                <span class="rating-stars">${generateStars(rating.stars)}</span>
+                <span class="rating-date">${rating.createdAt}</span>
+              </div>
+              <p class="rating-text">${escapeHtml(rating.comment)}</p>
+            </div>
+          `).join('');
+        } else {
+          console.log('  No existing ratings found');
+          ratingsList.innerHTML = '<p class="loading-text">No reviews yet. Be the first to share your experience!</p>';
+        }
+      }
+    })
+    .catch(error => {
+      console.error('  ✗ Error loading supplier details:', error);
+    });
+}
+
+function updateStarDisplay() {
+  document.querySelectorAll('.star-picker').forEach((s, idx) => {
+    s.classList.toggle('active', idx < selectedStars);
+  });
+}
+
+function generateStars(rating) {
+  let stars = '';
+  for (let i = 0; i < 5; i++) {
+    if (i < Math.floor(rating)) {
+      stars += '★';
+    } else if (i < rating) {
+      stars += '⯨';
+    } else {
+      stars += '☆';
+    }
+  }
+  return stars;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ===== NOTIFICATION SYSTEM =====
+async function fetchAndDisplayNotifications() {
+  try {
+    const userId = {{ userId ?? 'null' }};
+    
+    if (!userId) {
+      console.log('[Notifications] User ID not available, skipping notification fetch');
+      return;
+    }
+
+    const response = await fetch(`/api/user/${userId}/notifications`);
+    const data = await response.json();
+
+    if (data.success && data.notifications && data.notifications.length > 0) {
+      console.log('[Notifications] Found ' + data.notifications.length + ' unread notification(s)');
+      
+      data.notifications.forEach(notification => {
+        displayNotification(notification);
+      });
+    }
+  } catch (error) {
+    console.error('[Notifications] Error fetching notifications:', error);
+  }
+}
+
+function displayNotification(notification) {
+  const container = document.getElementById('notification-container');
+  
+  // Create notification element
+  const notifElement = document.createElement('div');
+  notifElement.style.cssText = `
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  `;
+  
+  const titleAndMessage = document.createElement('div');
+  titleAndMessage.style.flex = '1';
+  
+  const title = document.createElement('h4');
+  title.textContent = notification.title;
+  title.style.cssText = 'margin: 0 0 8px 0; font-weight: 600; font-size: 14px;';
+  
+  const message = document.createElement('p');
+  message.textContent = notification.message;
+  message.style.cssText = 'margin: 0; font-size: 13px; line-height: 1.4; opacity: 0.95;';
+  
+  titleAndMessage.appendChild(title);
+  titleAndMessage.appendChild(message);
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = `
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  `;
+  closeBtn.onmouseover = () => closeBtn.style.opacity = '1';
+  closeBtn.onmouseout = () => closeBtn.style.opacity = '0.7';
+  closeBtn.onclick = () => {
+    notifElement.style.animation = 'slideOutRight 0.3s ease-in forwards';
+    setTimeout(() => notifElement.remove(), 300);
+    // Mark as read
+    markNotificationAsRead(notification.id);
+  };
+  
+  notifElement.appendChild(titleAndMessage);
+  notifElement.appendChild(closeBtn);
+  container.appendChild(notifElement);
+  
+  // Auto-hide after 8 seconds
+  setTimeout(() => {
+    if (notifElement.parentNode) {
+      notifElement.style.animation = 'slideOutRight 0.3s ease-in forwards';
+      setTimeout(() => {
+        if (notifElement.parentNode) {
+          notifElement.remove();
+        }
+      }, 300);
+    }
+  }, 8000);
+}
+
+function markNotificationAsRead(notificationId) {
+  fetch(`/api/notification/${notificationId}/read`, { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('[Notifications] Notification marked as read: ' + notificationId);
+      }
+    })
+    .catch(error => console.error('[Notifications] Error marking as read:', error));
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideInRight {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOutRight {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);
+
+// Fetch notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('[Notifications] Page loaded, fetching notifications...');
+  fetchAndDisplayNotifications();
+  
+  // Poll for new notifications every 10 seconds
+  setInterval(fetchAndDisplayNotifications, 10000);
+});
+</script>
+{% endblock %}

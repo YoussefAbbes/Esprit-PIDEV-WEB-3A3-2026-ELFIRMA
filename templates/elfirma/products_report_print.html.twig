@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaire Produits - PDF</title>
+    <style>
+        :root {
+            --green-900: #204b1d;
+            --green-700: #2b6b2a;
+            --green-600: #1fa94b;
+            --teal-700: #167f77;
+            --bg: #f2f4f1;
+            --line: #d1d7cf;
+            --text: #233126;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 28px;
+        }
+
+        .report {
+            max-width: 1360px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #dbe2d7;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            padding: 26px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 3px solid var(--green-900);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand img {
+            width: 74px;
+            height: 74px;
+            object-fit: contain;
+            border: 1px solid #d7dfd2;
+            border-radius: 50%;
+            background: #fff;
+            padding: 6px;
+        }
+
+        .brand-title {
+            margin: 0;
+            font-weight: 700;
+            font-size: 30px;
+            letter-spacing: 0.3px;
+            color: var(--green-900);
+        }
+
+        .brand-sub {
+            margin: 2px 0 0;
+            font-size: 14px;
+            color: #5a665c;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #dde8d9;
+            color: var(--green-900);
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .title {
+            text-align: right;
+        }
+
+        .title h1 {
+            margin: 0;
+            color: var(--green-900);
+            font-size: 46px;
+            line-height: 1;
+            letter-spacing: 0.4px;
+        }
+
+        .title p {
+            margin: 8px 0 0;
+            color: #5d685f;
+            font-size: 20px;
+        }
+
+        .stats {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat {
+            border-radius: 12px;
+            color: #fff;
+            text-align: center;
+            padding: 16px 8px;
+        }
+
+        .stat .label {
+            text-transform: uppercase;
+            font-size: 12px;
+            opacity: 0.95;
+            letter-spacing: 0.5px;
+        }
+
+        .stat .value {
+            margin-top: 8px;
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.05;
+        }
+
+        .stat.dark { background: var(--green-900); }
+        .stat.green { background: var(--green-600); }
+        .stat.teal { background: var(--teal-700); }
+
+        .section-title {
+            margin: 26px 0 12px;
+            color: var(--green-900);
+            font-size: 42px;
+            font-weight: 600;
+            border-bottom: 3px solid var(--green-900);
+            padding-bottom: 6px;
+        }
+
+        .filters {
+            font-size: 14px;
+            color: #4d5b50;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: var(--green-900);
+            color: #fff;
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        tbody td {
+            border: 1px solid #d9dfd5;
+            padding: 9px 8px;
+            font-size: 13px;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f5f7f4;
+        }
+
+        .footer {
+            margin-top: 22px;
+            border-top: 1px solid var(--line);
+            text-align: center;
+            font-size: 12px;
+            color: #647066;
+            padding-top: 10px;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+            .report {
+                border: none;
+                box-shadow: none;
+                max-width: 100%;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report">
+        <div class="top">
+            <div>
+                <div class="brand">
+                    <img src="{{ absolute_url(asset('assets/img/logo.png')) }}" alt="Elfirma logo">
+                    <div>
+                        <p class="brand-title">ELFIRMA</p>
+                        <p class="brand-sub">Agricultural Management System</p>
+                    </div>
+                </div>
+                <span class="badge">ELFIRMA • PRODUCTS REPORT</span>
+            </div>
+
+            <div class="title">
+                <h1>Inventaire Produits</h1>
+                <p>Generated: {{ generated_at }}</p>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat dark">
+                <div class="label">Total Produits</div>
+                <div class="value">{{ stats.total_products }}</div>
+            </div>
+            <div class="stat green">
+                <div class="label">Total Stock</div>
+                <div class="value">{{ stats.total_stock }} unites</div>
+            </div>
+            <div class="stat teal">
+                <div class="label">Valeur Stock</div>
+                <div class="value">{{ stats.total_value|number_format(2, '.', ' ') }} DT</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Liste des produits</h2>
+        <div class="filters">
+            Recherche: {{ filters.q ?: 'N/A' }} |
+            Categorie: {{ filters.category ?: 'N/A' }} |
+            Statut: {{ filters.status ?: 'N/A' }} |
+            Tri: {{ filters.sort ?: 'N/A' }}
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Categorie</th>
+                    <th>Type</th>
+                    <th>Qualite</th>
+                    <th>Prix (DT)</th>
+                    <th>Stock</th>
+                    <th>Prod</th>
+                    <th>Exp</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produit in produits %}
+                    <tr>
+                        <td>{{ produit.nom ?: 'N/A' }}</td>
+                        <td>{{ produit.categorie ? produit.categorie.nom : 'N/A' }}</td>
+                        <td>{{ produit.type ?: 'N/A' }}</td>
+                        <td>{{ produit.qualite ?: 'N/A' }}</td>
+                        <td>{{ (produit.prixUnitaire ?: 0)|number_format(2, '.', '') }}</td>
+                        <td>{{ produit.quantiteStock ?: 0 }}</td>
+                        <td>{{ produit.dateProduction ? produit.dateProduction|date('d/m/Y') : 'N/A' }}</td>
+                        <td>{{ produit.dateExpiration ? produit.dateExpiration|date('d/m/Y') : 'N/A' }}</td>
+                        <td>{{ produit.statut ?: 'N/A' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9">Aucun produit trouve.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            &copy; Elfirma - Document exporte le {{ generated_at }}
+        </div>
+
+        <script>
+            window.print();
+        </script>
+    </div>
+</body>
+</html>

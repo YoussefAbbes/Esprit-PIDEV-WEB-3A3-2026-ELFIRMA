@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+  <title>Elfirma - Contract Management</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#f5f5dc",
+            "outline-variant": "#c3c9b9",
+            "surface-container-highest": "#e4e4cc",
+            "error": "#ba1a1a",
+            "on-surface": "#1b1d0e",
+            "on-surface-variant": "#43493d",
+            "on-secondary": "#ffffff",
+            "background": "#fbfbe2",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "surface-container": "#efefd7",
+            "surface-variant": "#e4e4cc",
+            "surface": "#fbfbe2",
+            "on-primary-container": "#7ca560",
+            "secondary-fixed": "#ffdbc9",
+            "primary": "#0a2200",
+            "secondary": "#934b19",
+            "primary-container": "#173901",
+            "surface": "#fbfbe2"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      font-family: 'Open Sans', sans-serif;
+    }
+    h1, h2, h3, .headline {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="h-screen w-72 fixed left-0 top-0 bg-surface-container-low text-primary flex flex-col py-8 pr-4 font-headline font-semibold z-40">
+  <div class="px-8 mb-8">
+    <h1 class="text-3xl font-black tracking-tighter text-primary">Elfirma</h1>
+    <p class="text-xs font-label text-on-surface-variant uppercase tracking-widest opacity-70">Farm Management</p>
+  </div>
+  <nav class="flex-grow space-y-1">
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span>Dashboard</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">group</span>
+      <span>Users</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">agriculture</span>
+      <span>Fields & Crops</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">pets</span>
+      <span>Livestock</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">shopping_basket</span>
+      <span>Products & Orders</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">handyman</span>
+      <span>Equipment & Maintenance</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 bg-primary text-surface rounded-r-full shadow-lg opacity-100 transition-opacity" href="#">
+      <span class="material-symbols-outlined">contract</span>
+      <span>Suppliers & Contract Management</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">report_problem</span>
+      <span>Claims</span>
+    </a>
+  </nav>
+  <div class="px-8 mt-auto pt-8 flex flex-col gap-2">
+    <button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform">
+      <span class="material-symbols-outlined">add</span>
+      <span>New Season</span>
+    </button>
+    <div class="pt-6 border-t border-outline-variant/20 flex flex-col gap-1">
+      <a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+        <span class="material-symbols-outlined">help</span>
+        <span class="text-sm">Help</span>
+      </a>
+      <a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-error transition-colors" href="#">
+        <span class="material-symbols-outlined">logout</span>
+        <span class="text-sm">Logout</span>
+      </a>
+    </div>
+  </div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-72 flex-grow min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- TopNavBar (Authority: JSON) -->
+<header class="sticky top-0 z-30 bg-surface/70 backdrop-blur-xl flex justify-between items-center w-full px-12 py-6 font-headline font-bold tracking-tight">
+  <div class="flex items-center gap-6 flex-grow">
+    <div class="relative w-96">
+      <input class="w-full bg-surface-container-low border-none rounded-full py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search contracts..." type="text"/>
+      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button class="p-3 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
+      <span class="material-symbols-outlined text-primary">notifications</span>
+    </button>
+    <button class="p-3 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
+      <span class="material-symbols-outlined text-primary">settings</span>
+    </button>
+    <div class="h-10 w-10 rounded-full bg-primary-container overflow-hidden">
+      <img alt="Admin Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATRPrH2ofAa1hmXCfNXooPqxZvn_uLQCZfMKfy9SjEItdcLRuf5M3lG9mfplqGk0IE61ON1TvFJT9xnMKCcRD9sEnE-qiMUDfajGCso6fnT6s8bVYqAAc3RPb8zVxVEGm86MAjM3NqmgTPFcZJtuOiDUL9Pl3Y-JCdwPaAEQoJCcqnEpw4l1EsB2ElUEPM-XJsbg_IHrqPMDrvbmFBqmzpjjDWGCR86rlu9W4TymkMCZ9-oe8cABzpZ5q6TfdJXJpksbWEVKXmv3ta"/>
+    </div>
+  </div>
+</header>
+
+  <!-- Page Content -->
+  <div class="px-12 py-8 space-y-12">
+    <!-- Hero Header & Actions -->
+    <div class="flex justify-between items-end">
+      <div>
+        <h2 class="text-5xl font-black text-primary tracking-tighter mb-2">Contract Management</h2>
+        <p class="text-on-surface-variant max-w-xl text-lg">Manage and track all your contracts effectively for the 2026 season.</p>
+      </div>
+      <div class="flex gap-4">
+        <button id="addContractBtn" class="px-8 py-4 rounded-full bg-primary text-surface font-bold shadow-xl hover:opacity-90 transition-all flex items-center gap-2">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+          Add Contract
+        </button>
+      </div>
+    </div>
+
+    <!-- Contracts Statistics Section -->
+    <div class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-6 lg:p-8 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)] mb-8">
+      <div class="pointer-events-none absolute -top-14 -right-14 h-52 w-52 rounded-full bg-[#9ac75f]/25 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-10 -left-10 h-44 w-44 rounded-full bg-[#2d5016]/15 blur-2xl"></div>
+
+      <div class="relative z-10 mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="inline-flex items-center gap-2 rounded-full border border-[#bad19a] bg-[#f9fde6] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#2d5016]">
+            <span class="material-symbols-outlined text-sm">analytics</span>
+            Contract Analytics
+          </p>
+          <h3 class="mt-3 text-2xl lg:text-3xl font-black tracking-tight text-[#0a2200]">Contracts Overview</h3>
+          <p class="mt-1 text-sm text-[#355025]">Key metrics and status distribution of your active contracts.</p>
+        </div>
+        <div class="hidden sm:flex gap-2 text-xs font-semibold uppercase tracking-wide text-[#4f6b38]">
+          <select id="contractSortSelect" class="px-4 py-2 bg-white border-2 border-[#bad19a] rounded-lg cursor-pointer hover:border-[#0a2200] transition-colors">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="status">By Status</option>
+            <option value="type">By Type</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Chart Container -->
+        <div class="rounded-2xl bg-white/95 border border-[#dce7cd] p-6 shadow-sm">
+          <h4 class="text-sm font-bold uppercase tracking-wide text-[#4f6b38] mb-4">Status Distribution</h4>
+          <div class="h-64 relative">
+            <canvas id="contractStatusChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="stats-appear rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Total Contracts</p>
+            <p class="mt-2 text-3xl font-black text-[#123b12]" id="totalContractCount">{{ contractStats.total }}</p>
+            <p class="mt-1 text-xs text-[#5e6f4f]">All contracts</p>
+          </div>
+          <div class="stats-appear delay-1 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Active</p>
+            <p class="mt-2 text-3xl font-black text-emerald-600" id="activeContractCount">{{ contractStats.active }}</p>
+            <p class="mt-1 text-xs text-[#5e6f4f]">Currently active</p>
+          </div>
+          <div class="stats-appear delay-2 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Pending</p>
+            <p class="mt-2 text-3xl font-black text-orange-600" id="pendingContractCount">{{ contractStats.pending }}</p>
+            <p class="mt-1 text-xs text-[#5e6f4f]">Awaiting approval</p>
+          </div>
+          <div class="stats-appear delay-3 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Expired</p>
+            <p class="mt-2 text-3xl font-black text-red-600" id="expiredContractCount">{{ contractStats.expired }}</p>
+            <p class="mt-1 text-xs text-[#5e6f4f]">Past expiration</p>
+          </div>
+        </div>
+      </div>
+
+      {% if contractStats.upcomingExpirations > 0 %}
+      <div class="relative z-10 rounded-lg bg-orange-50 border border-orange-200 p-4 flex items-center gap-3">
+        <span class="material-symbols-outlined text-orange-600 text-2xl">warning</span>
+        <div>
+          <p class="font-bold text-orange-700">{{ contractStats.upcomingExpirations }} Contract(s) expiring soon</p>
+          <p class="text-sm text-orange-600">Contracts will expire within the next 30 days</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Contracts Table -->
+    <section>
+      <div class="mb-8 flex items-center justify-between">
+        <h3 class="text-2xl font-bold text-primary flex items-center gap-3">
+          <span class="material-symbols-outlined text-secondary">description</span>
+          Active Contracts
+        </h3>
+        <select id="contractSortSelect" class="px-4 py-2 bg-surface-container-low border-2 border-surface-variant rounded-lg text-sm font-semibold text-on-surface cursor-pointer hover:border-primary transition-colors">
+          <option value="date-desc">Newest First</option>
+          <option value="date-asc">Oldest First</option>
+          <option value="status">By Status</option>
+          <option value="type">By Type</option>
+        </select>
+      </div>
+
+      <!-- Search Filter for Contracts -->
+      <div class="relative w-full mb-6">
+        <input id="contractSearchInput" class="w-full bg-surface-container-low border-2 border-surface-variant rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Search contracts by type, status, date..."/>
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+      </div>
+
+      <div class="rounded-2xl border border-outline-variant/20 overflow-hidden bg-surface shadow-lg">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant/20">
+              <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">Type</th>
+              <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">Start Date</th>
+              <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">End Date</th>
+              <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">Status</th>
+              <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">PDF</th>
+              <th class="px-6 py-4 text-center font-bold text-sm uppercase tracking-wider text-on-surface-variant">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            {% if contracts|length > 0 %}
+              {% for contract in contracts %}
+              <tr class="contract-row hover:bg-surface-container-low/50 transition-colors"
+                  data-contract-id="{{ contract.getIdContrat() }}"
+                  data-contract-type="{{ contract.getTypeCF()|default('N/A')|lower }}"
+                  data-contract-status="{{ contract.getStatutCF()|default('N/A') }}"
+                  data-contract-end-date="{% if contract.getDateFinF() %}{{ contract.getDateFinF()|date('Y-m-d') }}{% endif %}"
+                  data-contract-start-date="{% if contract.getDateDebutF() %}{{ contract.getDateDebutF()|date('Y-m-d') }}{% endif %}">
+                <td class="px-6 py-5 text-on-surface font-semibold text-sm">
+                  <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary">
+                    {{ contract.getTypeCF()|default('N/A') }}
+                  </span>
+                </td>
+                <td class="px-6 py-5 text-on-surface-variant text-sm">
+                  {% if contract.getDateDebutF() %}
+                    {{ contract.getDateDebutF()|date('d M, Y') }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                <td class="px-6 py-5 text-on-surface-variant text-sm">
+                  {% if contract.getDateFinF() %}
+                    {{ contract.getDateFinF()|date('d M, Y') }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                <td class="px-6 py-5">
+                  {% if contract.getStatutCF() == 'Active' %}
+                    <span class="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
+                      <span class="material-symbols-outlined text-lg">check_circle</span>
+                      Active
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-bold">
+                      <span class="material-symbols-outlined text-lg">cancel</span>
+                      Inactive
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-5 text-center">
+                  {% if contract.getPdfFile() %}
+                    <a href="{{ asset(contract.getPdfFile()) }}" target="_blank" class="text-primary font-bold hover:opacity-70 transition-opacity flex items-center justify-center gap-1">
+                      <span class="material-symbols-outlined">download</span>
+                      Download
+                    </a>
+                  {% else %}
+                    <span class="text-on-surface-variant">-</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-5 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <button class="edit-contract-btn p-2.5 hover:bg-primary/10 rounded-lg transition-all text-primary hover:shadow-md" data-contract-id="{{ contract.getIdContrat() }}" data-contract-type="{{ contract.getTypeCF() }}" data-contract-start="{{ contract.getDateDebutF()|date('Y-m-d') }}" data-contract-end="{{ contract.getDateFinF()|date('Y-m-d') }}" data-contract-status="{{ contract.getStatutCF() }}" type="button" title="Edit contract">
+                      <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="delete-contract-btn p-2.5 hover:bg-red-100 rounded-lg transition-all text-red-600 hover:shadow-md" data-contract-id="{{ contract.getIdContrat() }}" type="button" title="Delete contract">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center">
+                  <span class="material-symbols-outlined text-6xl text-primary/20 mb-4 block">assignment</span>
+                  <p class="text-on-surface-variant text-lg font-semibold">No contracts yet</p>
+                  <p class="text-on-surface-variant/60 mt-2">Add a new contract to get started.</p>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if contracts is defined %}
+      <div class="mt-6 flex justify-center">
+        {{ knp_pagination_render(contracts) }}
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="w-full py-6 mt-auto flex justify-between items-center px-12 border-t border-outline-variant/15 bg-surface text-primary font-body text-sm tracking-wide">
+    <span class="text-on-surface-variant">Elfirma © 2026</span>
+    <div class="flex gap-8">
+      <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Technical Support</a>
+      <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Legal Notice</a>
+      <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy</a>
+    </div>
+  </footer>
+</main>
+
+<!-- Add Contract Modal -->
+<div id="addContractModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Add New Contract</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Fill in the details to create a new contract</p>
+      </div>
+      <button id="closeContractModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="addContractForm" class="p-8 space-y-6">
+      <!-- Type -->
+      <div>
+        <label for="contractType" class="block font-semibold text-primary mb-2">Contract Type</label>
+        <div class="relative">
+          <select id="contractType" name="type" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2343682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="">Select type</option>
+            <option value="Annual">Annual</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="error-message-contract" id="typeError"></div>
+      </div>
+
+      <!-- Start Date -->
+      <div>
+        <label for="startDate" class="block font-semibold text-primary mb-2">Start Date</label>
+        <input type="date" id="startDate" name="startDate" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <div class="error-message-contract" id="startDateError"></div>
+      </div>
+
+      <!-- End Date -->
+      <div>
+        <label for="endDate" class="block font-semibold text-primary mb-2">End Date</label>
+        <input type="date" id="endDate" name="endDate" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <div class="error-message-contract" id="endDateError"></div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="contractStatus" class="block font-semibold text-primary mb-2">Status</label>
+        <div class="relative">
+          <select id="contractStatus" name="status" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2343682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="">Select status</option>
+            <option value="Active">✓ Active</option>
+            <option value="Inactive">✗ Inactive</option>
+          </select>
+        </div>
+        <div class="error-message-contract" id="statusError"></div>
+      </div>
+
+      <!-- PDF Upload Options -->
+      <div>
+        <label class="block font-semibold text-primary mb-3">Contract Document (Optional)</label>
+
+        <!-- Tabs for PDF and Image -->
+        <div class="flex gap-2 mb-4 border-b-2 border-outline-variant/20">
+          <button type="button" id="pdfTabBtn" class="px-4 py-2 border-b-2 border-primary text-primary font-semibold transition-colors tab-btn active-tab">
+            <span class="material-symbols-outlined text-sm inline mr-1">description</span>
+            Upload PDF
+          </button>
+          <button type="button" id="imageTabBtn" class="px-4 py-2 border-b-2 border-transparent text-on-surface-variant font-semibold hover:text-primary transition-colors tab-btn">
+            <span class="material-symbols-outlined text-sm inline mr-1">image</span>
+            Extract from Image
+          </button>
+        </div>
+
+        <!-- PDF Upload Tab -->
+        <div id="pdfTabContent" class="tab-content">
+          <input type="file" id="pdf" name="pdf" accept=".pdf" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+          <p class="text-xs text-on-surface-variant mt-1">PDF format only</p>
+          <div class="error-message-contract" id="pdfError"></div>
+        </div>
+
+        <!-- Image to Text Tab -->
+        <div id="imageTabContent" class="tab-content hidden">
+          <!-- Hidden File Input -->
+          <input type="file" id="contractImage" name="contract_image" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp" class="hidden">
+
+          <!-- Image Selection Area -->
+          <div id="imageSelectionArea" class="text-center p-8 border-2 border-dashed border-outline-variant/40 rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer" onclick="document.getElementById('contractImage').click()">
+            <span class="material-symbols-outlined text-5xl text-primary/40 block mb-3">image</span>
+            <p class="text-primary font-semibold mb-1">Click to select an image</p>
+            <p class="text-xs text-on-surface-variant">or drag and drop</p>
+            <p class="text-xs text-on-surface-variant/60 mt-2">JPG, PNG, GIF, BMP, WebP (max 5MB)</p>
+          </div>
+
+          <!-- Selected File Display -->
+          <div id="selectedFileInfo" class="hidden mt-4 p-3 bg-primary/10 border-2 border-primary/20 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">image</span>
+              <div class="text-left">
+                <p class="text-sm font-semibold text-primary" id="selectedFileName">No file selected</p>
+                <p class="text-xs text-on-surface-variant" id="selectedFileSize">-</p>
+              </div>
+            </div>
+            <button type="button" id="clearImageBtn" class="p-2 hover:bg-red-100 rounded-lg transition-colors text-red-600" onclick="clearSelectedImage(event)">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- Extract Button -->
+          <button type="button" id="extractImageBtn" class="w-full mt-3 px-4 py-3 bg-secondary text-surface font-semibold rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">image_search</span>
+            Extract Text from Image
+          </button>
+
+          <!-- Extracted Text Display -->
+          <div id="extractedTextContainer" class="hidden mt-4 p-4 bg-surface-container-low border-2 border-primary/20 rounded-xl">
+            <p class="text-xs font-semibold text-primary mb-2 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">check_circle</span>
+              Text Extracted Successfully
+            </p>
+            <div id="extractedTextDisplay" class="bg-white p-3 rounded-lg border border-outline-variant/20 max-h-32 overflow-y-auto text-sm text-on-surface"></div>
+            <input type="hidden" id="generatedPdfPath" name="generated_pdf_file" value="">
+            <input type="hidden" id="extractedTextInput" name="extracted_text" value="">
+          </div>
+
+          <!-- Processing Indicator -->
+          <div id="extractingIndicator" class="hidden mt-3 flex items-center gap-2 text-secondary">
+            <div class="w-4 h-4 border-2 border-secondary border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-sm">Extracting text from image...</span>
+          </div>
+        </div>
+
+        <div class="error-message-contract" id="documentError"></div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelContractBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-6 py-3 bg-primary text-surface font-semibold rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">add</span>
+          Create Contract
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Contract Modal -->
+<div id="editContractModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Edit Contract</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Update contract details</p>
+      </div>
+      <button id="closeEditContractModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="editContractForm" class="p-8 space-y-6">
+      <input type="hidden" id="editContractId" name="contract_id">
+
+      <!-- Type -->
+      <div>
+        <label for="editContractType" class="block font-semibold text-primary mb-2">Contract Type</label>
+        <div class="relative">
+          <select id="editContractType" name="type" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2343682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="">Select type</option>
+            <option value="Annual">Annual</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="error-message-contract" id="editTypeError"></div>
+      </div>
+
+      <!-- Start Date -->
+      <div>
+        <label for="editStartDate" class="block font-semibold text-primary mb-2">Start Date</label>
+        <input type="date" id="editStartDate" name="startDate" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <div class="error-message-contract" id="editStartDateError"></div>
+      </div>
+
+      <!-- End Date -->
+      <div>
+        <label for="editEndDate" class="block font-semibold text-primary mb-2">End Date</label>
+        <input type="date" id="editEndDate" name="endDate" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+        <div class="error-message-contract" id="editEndDateError"></div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="editContractStatus" class="block font-semibold text-primary mb-2">Status</label>
+        <div class="relative">
+          <select id="editContractStatus" name="status" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%2343682b%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em; padding-right: 2.5rem;">
+            <option value="">Select status</option>
+            <option value="Active">✓ Active</option>
+            <option value="Inactive">✗ Inactive</option>
+          </select>
+        </div>
+        <div class="error-message-contract" id="editStatusError"></div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelEditContractBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-6 py-3 bg-primary text-surface font-semibold rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">save</span>
+          Update Contract
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Contract Modal -->
+<div id="deleteContractModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] rounded-2xl shadow-2xl max-w-md w-full mx-4">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-8 border-b border-red-500/20 bg-red-50">
+      <div>
+        <h2 class="text-2xl font-black text-red-600 flex items-center gap-2">
+          <span class="material-symbols-outlined text-3xl">delete_forever</span>
+          Delete Contract
+        </h2>
+      </div>
+      <button id="closeDeleteContractModalBtn" class="p-2 rounded-full hover:bg-red-100/50 transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-8">
+      <div class="flex gap-4 mb-6 p-4 bg-red-50 rounded-2xl border-2 border-red-200">
+        <span class="material-symbols-outlined text-4xl text-red-600 flex-shrink-0">warning</span>
+        <div>
+          <p class="text-on-surface font-bold mb-2 text-lg">Are you sure?</p>
+          <p class="text-sm text-on-surface-variant">This action cannot be undone. The contract will be permanently deleted.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex gap-4 p-8 border-t border-red-500/20 bg-red-50/50">
+      <button type="button" id="cancelDeleteContractBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+        Cancel
+      </button>
+      <button type="button" id="confirmDeleteContractBtn" class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">delete</span>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .error-message-contract {
+    color: #ba1a1a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: none;
+  }
+
+  #contractType.error-field,
+  #startDate.error-field,
+  #endDate.error-field,
+  #contractStatus.error-field,
+  #editContractType.error-field,
+  #editStartDate.error-field,
+  #editEndDate.error-field,
+  #editContractStatus.error-field {
+    border-color: #ba1a1a !important;
+    background-color: rgba(186, 26, 26, 0.05);
+  }
+</style>
+
+<!-- Import _nav_routes.html.twig for sidebar -->
+{{ include('elfirma/_nav_routes.html.twig') }}
+
+<script>
+  // DOM Elements
+  const addContractModal = document.getElementById('addContractModal');
+  const editContractModal = document.getElementById('editContractModal');
+  const deleteContractModal = document.getElementById('deleteContractModal');
+  const addContractForm = document.getElementById('addContractForm');
+  const editContractForm = document.getElementById('editContractForm');
+  const closeContractModalBtn = document.getElementById('closeContractModalBtn');
+  const cancelContractBtn = document.getElementById('cancelContractBtn');
+  const closeEditContractModalBtn = document.getElementById('closeEditContractModalBtn');
+  const cancelEditContractBtn = document.getElementById('cancelEditContractBtn');
+  const closeDeleteContractModalBtn = document.getElementById('closeDeleteContractModalBtn');
+  const cancelDeleteContractBtn = document.getElementById('cancelDeleteContractBtn');
+  const confirmDeleteContractBtn = document.getElementById('confirmDeleteContractBtn');
+  const addContractBtn = document.getElementById('addContractBtn');
+
+  // Tab Management for PDF/Image
+  const pdfTabBtn = document.getElementById('pdfTabBtn');
+  const imageTabBtn = document.getElementById('imageTabBtn');
+  const pdfTabContent = document.getElementById('pdfTabContent');
+  const imageTabContent = document.getElementById('imageTabContent');
+  const extractImageBtn = document.getElementById('extractImageBtn');
+  const contractImage = document.getElementById('contractImage');
+  const extractingIndicator = document.getElementById('extractingIndicator');
+  const extractedTextContainer = document.getElementById('extractedTextContainer');
+  const extractedTextDisplay = document.getElementById('extractedTextDisplay');
+  const generatedPdfPath = document.getElementById('generatedPdfPath');
+  const extractedTextInput = document.getElementById('extractedTextInput');
+
+  // Tab switching
+  pdfTabBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    pdfTabBtn.classList.add('active-tab');
+    imageTabBtn.classList.remove('active-tab');
+    pdfTabContent.classList.remove('hidden');
+    imageTabContent.classList.add('hidden');
+    pdfTabBtn.style.borderBottomColor = '#0a2200';
+    imageTabBtn.style.borderBottomColor = 'transparent';
+    contractImage.value = '';
+    extractedTextContainer.classList.add('hidden');
+    extractingIndicator.classList.add('hidden');
+  });
+
+  imageTabBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    imageTabBtn.classList.add('active-tab');
+    pdfTabBtn.classList.remove('active-tab');
+    imageTabContent.classList.remove('hidden');
+    pdfTabContent.classList.add('hidden');
+    imageTabBtn.style.borderBottomColor = '#0a2200';
+    pdfTabBtn.style.borderBottomColor = 'transparent';
+    document.getElementById('pdf').value = '';
+  });
+
+  // Handle file selection
+  contractImage.addEventListener('change', async function(e) {
+    if (!this.files || !this.files[0]) {
+      return;
+    }
+
+    const file = this.files[0];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const selectedFileInfo = document.getElementById('selectedFileInfo');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const selectedFileSize = document.getElementById('selectedFileSize');
+
+    // Show selected file info
+    selectedFileName.textContent = file.name;
+    selectedFileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+    selectedFileInfo.classList.remove('hidden');
+
+    // Validate file size
+    if (file.size > maxSize) {
+      Swal.fire({
+        title: 'File Too Large',
+        text: 'Image file must be smaller than 5MB',
+        icon: 'error',
+        confirmButtonColor: '#0a2200'
+      });
+      contractImage.value = '';
+      selectedFileInfo.classList.add('hidden');
+      return;
+    }
+
+    // Auto-extract text
+    await extractTextFromImage(file);
+  });
+
+  // Drag and drop support
+  const imageSelectionArea = document.getElementById('imageSelectionArea');
+
+  imageSelectionArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    imageSelectionArea.style.backgroundColor = 'rgba(10, 34, 0, 0.05)';
+    imageSelectionArea.style.borderColor = '#0a2200';
+  });
+
+  imageSelectionArea.addEventListener('dragleave', () => {
+    imageSelectionArea.style.backgroundColor = 'transparent';
+    imageSelectionArea.style.borderColor = 'rgba(195, 201, 185, 0.4)';
+  });
+
+  imageSelectionArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    imageSelectionArea.style.backgroundColor = 'transparent';
+    imageSelectionArea.style.borderColor = 'rgba(195, 201, 185, 0.4)';
+
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      contractImage.files = files;
+      const changeEvent = new Event('change', { bubbles: true });
+      contractImage.dispatchEvent(changeEvent);
+    }
+  });
+
+  // Extract Image Function
+  async function extractTextFromImage(file) {
+    extractingIndicator.classList.remove('hidden');
+    extractedTextContainer.classList.add('hidden');
+
+    const formData = new FormData();
+    formData.append('image_file', file);
+    formData.append('supplier_name', 'Unknown Supplier');
+
+    try {
+      const response = await fetch('{{ path("elfirma_image_to_pdf") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      extractingIndicator.classList.add('hidden');
+
+      if (data.success) {
+        // Display extracted text
+        extractedTextDisplay.textContent = data.extracted_text;
+        generatedPdfPath.value = data.pdf_file;
+        extractedTextInput.value = data.extracted_text;
+        extractedTextContainer.classList.remove('hidden');
+
+        // Show success message
+        Swal.fire({
+          title: 'Success!',
+          text: 'Text extracted successfully from image',
+          icon: 'success',
+          confirmButtonColor: '#0a2200',
+          timer: 2000
+        });
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: data.error || 'Failed to extract text from image',
+          icon: 'error',
+          confirmButtonColor: '#0a2200'
+        });
+      }
+    } catch (error) {
+      extractingIndicator.classList.add('hidden');
+      console.error('Error:', error);
+
+      Swal.fire({
+        title: 'Error',
+        text: 'An error occurred while extracting text',
+        icon: 'error',
+        confirmButtonColor: '#0a2200'
+      });
+    }
+  }
+
+  // Manual extract button (in case user wants to re-extract)
+  extractImageBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    if (!contractImage.files || !contractImage.files[0]) {
+      Swal.fire({
+        title: 'No Image Selected',
+        text: 'Please select an image file first',
+        icon: 'warning',
+        confirmButtonColor: '#0a2200'
+      });
+      return;
+    }
+
+    const file = contractImage.files[0];
+    await extractTextFromImage(file);
+  });
+
+  // Clear image function
+  function clearSelectedImage(e) {
+    if (e) e.preventDefault();
+    contractImage.value = '';
+    document.getElementById('selectedFileInfo').classList.add('hidden');
+    extractedTextContainer.classList.add('hidden');
+    extractingIndicator.classList.add('hidden');
+  }
+
+  // Form fields
+  const startDateField = document.getElementById('startDate');
+  const endDateField = document.getElementById('endDate');
+  const contractTypeField = document.getElementById('contractType');
+  const contractStatusField = document.getElementById('contractStatus');
+
+  const editStartDateField = document.getElementById('editStartDate');
+  const editEndDateField = document.getElementById('editEndDate');
+  const editContractTypeField = document.getElementById('editContractType');
+  const editContractStatusField = document.getElementById('editContractStatus');
+
+  let currentEditingContractId = null;
+  let currentDeletingContractId = null;
+
+  // Validation Helper
+  function updateFieldValidation(fieldId, isValid, message = '') {
+    const field = document.getElementById(fieldId);
+    const errorEl = document.getElementById(fieldId + 'Error');
+
+    if (isValid) {
+      field.classList.remove('error-field');
+      if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.style.display = 'none';
+      }
+    } else {
+      field.classList.add('error-field');
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+      }
+    }
+  }
+
+  // Validation Functions for Contract
+  function validateDateDebut(value) {
+    if (value.trim() === '') {
+      return { valid: false, message: 'Start date is required' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateDateFin(value, dateDebutValue) {
+    if (value.trim() === '') {
+      return { valid: false, message: 'End date is required' };
+    }
+    if (dateDebutValue && value <= dateDebutValue) {
+      return { valid: false, message: 'End date must be after start date' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateContractType(value) {
+    if (value === '') {
+      return { valid: false, message: 'Please select a contract type' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  function validateContractStatus(value) {
+    if (value === '') {
+      return { valid: false, message: 'Please select a status' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  // Real-time validation for add form
+  startDateField.addEventListener('change', function() {
+    const validation = validateDateDebut(this.value);
+    updateFieldValidation('startDate', validation.valid, validation.message);
+    if (endDateField.value) {
+      const finValidation = validateDateFin(endDateField.value, this.value);
+      updateFieldValidation('endDate', finValidation.valid, finValidation.message);
+    }
+  });
+
+  endDateField.addEventListener('change', function() {
+    const validation = validateDateFin(this.value, startDateField.value);
+    updateFieldValidation('endDate', validation.valid, validation.message);
+  });
+
+  contractTypeField.addEventListener('change', function() {
+    const validation = validateContractType(this.value);
+    updateFieldValidation('contractType', validation.valid, validation.message);
+  });
+
+  contractStatusField.addEventListener('change', function() {
+    const validation = validateContractStatus(this.value);
+    updateFieldValidation('contractStatus', validation.valid, validation.message);
+  });
+
+  // Real-time validation for edit form
+  editStartDateField.addEventListener('change', function() {
+    const validation = validateDateDebut(this.value);
+    updateFieldValidation('editStartDate', validation.valid, validation.message);
+    if (editEndDateField.value) {
+      const finValidation = validateDateFin(editEndDateField.value, this.value);
+      updateFieldValidation('editEndDate', finValidation.valid, finValidation.message);
+    }
+  });
+
+  editEndDateField.addEventListener('change', function() {
+    const validation = validateDateFin(this.value, editStartDateField.value);
+    updateFieldValidation('editEndDate', validation.valid, validation.message);
+  });
+
+  editContractTypeField.addEventListener('change', function() {
+    const validation = validateContractType(this.value);
+    updateFieldValidation('editContractType', validation.valid, validation.message);
+  });
+
+  editContractStatusField.addEventListener('change', function() {
+    const validation = validateContractStatus(this.value);
+    updateFieldValidation('editContractStatus', validation.valid, validation.message);
+  });
+
+  // Add Contract Modal Management
+  addContractBtn.addEventListener('click', () => {
+    addContractForm.reset();
+    document.querySelectorAll('.error-message-contract').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+    document.querySelectorAll('.error-field').forEach(el => el.classList.remove('error-field'));
+    addContractModal.classList.remove('hidden');
+    // Reset to PDF tab
+    pdfTabBtn.click();
+  });
+
+  closeContractModalBtn.addEventListener('click', () => {
+    addContractModal.classList.add('hidden');
+    addContractForm.reset();
+  });
+
+  cancelContractBtn.addEventListener('click', () => {
+    addContractModal.classList.add('hidden');
+    addContractForm.reset();
+  });
+
+  addContractModal.addEventListener('click', (e) => {
+    if (e.target === addContractModal) {
+      addContractModal.classList.add('hidden');
+      addContractForm.reset();
+    }
+  });
+
+  // Add Contract Form Submission
+  addContractForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Clear errors first
+    document.querySelectorAll('#addContractForm .error-field').forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('[id$="Error"]').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+
+    // Validate before submission
+    let hasErrors = false;
+    const dateDebutValidation = validateDateDebut(startDateField.value);
+    const dateFinValidation = validateDateFin(endDateField.value, startDateField.value);
+    const typeValidation = validateContractType(contractTypeField.value);
+    const statusValidation = validateContractStatus(contractStatusField.value);
+
+    if (!dateDebutValidation.valid) {
+      updateFieldValidation('startDate', false, dateDebutValidation.message);
+      hasErrors = true;
+    }
+    if (!dateFinValidation.valid) {
+      updateFieldValidation('endDate', false, dateFinValidation.message);
+      hasErrors = true;
+    }
+    if (!typeValidation.valid) {
+      updateFieldValidation('contractType', false, typeValidation.message);
+      hasErrors = true;
+    }
+    if (!statusValidation.valid) {
+      updateFieldValidation('contractStatus', false, statusValidation.message);
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      return;
+    }
+
+    const formData = new FormData(addContractForm);
+
+    try {
+      const response = await fetch('{{ path("elfirma_create_contract") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Contract created successfully',
+          icon: 'success',
+          confirmButtonColor: '#0a2200'
+        }).then(() => location.reload());
+      } else {
+        if (data.errors) {
+          for (const [field, message] of Object.entries(data.errors)) {
+            const fieldMap = {
+              'type': 'contractType',
+              'startDate': 'startDate',
+              'endDate': 'endDate',
+              'status': 'contractStatus'
+            };
+            const inputId = fieldMap[field] || field;
+            const input = document.getElementById(inputId);
+            const errorEl = document.getElementById(inputId + 'Error');
+            if (input) input.classList.add('error-field');
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.style.display = 'block';
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire('Error', 'An error occurred', 'error');
+    }
+  });
+
+  // Edit Contract Modal Management
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.edit-contract-btn')) {
+      const btn = e.target.closest('.edit-contract-btn');
+      currentEditingContractId = btn.dataset.contractId;
+
+      document.getElementById('editContractId').value = btn.dataset.contractId;
+      editContractTypeField.value = btn.dataset.contractType;
+      editStartDateField.value = btn.dataset.contractStart;
+      editEndDateField.value = btn.dataset.contractEnd;
+      editContractStatusField.value = btn.dataset.contractStatus;
+
+      document.querySelectorAll('[id^="edit"][id$="Error"]').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('#editContractForm .error-field').forEach(el => {
+        el.classList.remove('error-field');
+      });
+
+      editContractModal.classList.remove('hidden');
+    }
+  });
+
+  closeEditContractModalBtn.addEventListener('click', function() {
+    editContractModal.classList.add('hidden');
+  });
+
+  cancelEditContractBtn.addEventListener('click', function() {
+    editContractModal.classList.add('hidden');
+  });
+
+  editContractModal.addEventListener('click', (e) => {
+    if (e.target === editContractModal) editContractModal.classList.add('hidden');
+  });
+
+  // Edit Contract Form Submission
+  editContractForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    document.querySelectorAll('[id^="edit"][id$="Error"]').forEach(el => {
+      el.textContent = '';
+      el.style.display = 'none';
+    });
+    document.querySelectorAll('#editContractForm .error-field').forEach(el => {
+      el.classList.remove('error-field');
+    });
+
+    // Validate before submission
+    let hasErrors = false;
+    const dateDebutValidation = validateDateDebut(editStartDateField.value);
+    const dateFinValidation = validateDateFin(editEndDateField.value, editStartDateField.value);
+    const typeValidation = validateContractType(editContractTypeField.value);
+    const statusValidation = validateContractStatus(editContractStatusField.value);
+
+    if (!dateDebutValidation.valid) {
+      updateFieldValidation('editStartDate', false, dateDebutValidation.message);
+      hasErrors = true;
+    }
+    if (!dateFinValidation.valid) {
+      updateFieldValidation('editEndDate', false, dateFinValidation.message);
+      hasErrors = true;
+    }
+    if (!typeValidation.valid) {
+      updateFieldValidation('editContractType', false, typeValidation.message);
+      hasErrors = true;
+    }
+    if (!statusValidation.valid) {
+      updateFieldValidation('editContractStatus', false, statusValidation.message);
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('contract_id', currentEditingContractId);
+    formData.append('type', editContractTypeField.value);
+    formData.append('startDate', editStartDateField.value);
+    formData.append('endDate', editEndDateField.value);
+    formData.append('status', editContractStatusField.value);
+
+    try {
+      const response = await fetch('{{ path("elfirma_update_contract_page") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Contract updated successfully',
+          icon: 'success',
+          confirmButtonColor: '#0a2200'
+        }).then(() => location.reload());
+      } else {
+        if (data.errors) {
+          for (const [field, message] of Object.entries(data.errors)) {
+            const fieldMap = {
+              'type': 'editContractType',
+              'startDate': 'editStartDate',
+              'endDate': 'editEndDate',
+              'status': 'editContractStatus'
+            };
+            const inputId = fieldMap[field] || 'edit' + field.charAt(0).toUpperCase() + field.slice(1);
+            const input = document.getElementById(inputId);
+            const errorEl = document.getElementById(inputId + 'Error');
+            if (input) input.classList.add('error-field');
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.style.display = 'block';
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire('Error', 'An error occurred', 'error');
+    }
+  });
+
+  // Delete Contract Modal Management
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.delete-contract-btn')) {
+      const btn = e.target.closest('.delete-contract-btn');
+      currentDeletingContractId = btn.dataset.contractId;
+      deleteContractModal.classList.remove('hidden');
+    }
+  });
+
+  closeDeleteContractModalBtn.addEventListener('click', () => deleteContractModal.classList.add('hidden'));
+  cancelDeleteContractBtn.addEventListener('click', () => deleteContractModal.classList.add('hidden'));
+  deleteContractModal.addEventListener('click', (e) => {
+    if (e.target === deleteContractModal) deleteContractModal.classList.add('hidden');
+  });
+
+  confirmDeleteContractBtn.addEventListener('click', async () => {
+    const formData = new FormData();
+    formData.append('contract_id', currentDeletingContractId);
+
+    try {
+      const response = await fetch('{{ path("elfirma_delete_contract_page") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Contract deleted successfully',
+          icon: 'success',
+          confirmButtonColor: '#0a2200'
+        }).then(() => location.reload());
+      } else {
+        Swal.fire('Error', 'Failed to delete contract', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire('Error', 'An error occurred', 'error');
+    }
+  });
+
+  // CONTRACT STATISTICS CHART
+  document.addEventListener('DOMContentLoaded', function() {
+    const activeCount = {{ contractStats.active ?? 0 }};
+    const pendingCount = {{ contractStats.pending ?? 0 }};
+    const expiredCount = {{ contractStats.expired ?? 0 }};
+    const totalCount = {{ contractStats.total ?? 0 }};
+
+    // Update stat card values
+    document.getElementById('totalContractCount').textContent = totalCount;
+    document.getElementById('activeContractCount').textContent = activeCount;
+    document.getElementById('pendingContractCount').textContent = pendingCount;
+    document.getElementById('expiredContractCount').textContent = expiredCount;
+
+    // Create Chart.js Doughnut Chart
+    const ctx = document.getElementById('contractStatusChart');
+    if (ctx) {
+      const chartData = {
+        labels: ['Active', 'Pending', 'Expired'],
+        datasets: [{
+          data: [activeCount, pendingCount, expiredCount],
+          backgroundColor: [
+            '#116530', // Active - primary green
+            '#ffb732', // Pending - warning orange
+            '#ba1a1a'  // Expired - error red
+          ],
+          borderColor: [
+            '#0a2200',
+            '#f57600',
+            '#8a1515'
+          ],
+          borderWidth: 2.5,
+          borderRadius: 10,
+          spacing: 3
+        }]
+      };
+
+      const chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: {
+                  family: "'Inter', sans-serif",
+                  size: 13,
+                  weight: '600'
+                },
+                color: '#43493d',
+                padding: 20,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(10, 34, 0, 0.9)',
+              titleFont: {
+                family: "'Inter', sans-serif",
+                size: 14,
+                weight: '700'
+              },
+              bodyFont: {
+                family: "'Open Sans', sans-serif",
+                size: 13
+              },
+              padding: 12,
+              titleColor: '#fbfbe2',
+              bodyColor: '#fbfbe2',
+              borderColor: 'rgba(210, 226, 201, 0.3)',
+              borderWidth: 1,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? Math.round((context.parsed / total) * 100) : 0;
+                  return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // CONTRACT SORT FUNCTIONALITY
+    const contractSortSelect = document.getElementById('contractSortSelect');
+    const contractTable = document.querySelector('table');
+
+    if (contractSortSelect && contractTable) {
+      contractSortSelect.addEventListener('change', function() {
+        const rows = Array.from(contractTable.querySelectorAll('tbody tr.contract-row'));
+        const sortValue = this.value;
+
+        rows.sort((a, b) => {
+          let comparison = 0;
+
+          if (sortValue === 'date-desc') {
+            const dateAStr = a.getAttribute('data-contract-end-date') || '9999-12-31';
+            const dateBStr = b.getAttribute('data-contract-end-date') || '9999-12-31';
+            comparison = dateBStr.localeCompare(dateAStr);
+          } else if (sortValue === 'date-asc') {
+            const dateAStr = a.getAttribute('data-contract-end-date') || '0000-01-01';
+            const dateBStr = b.getAttribute('data-contract-end-date') || '0000-01-01';
+            comparison = dateAStr.localeCompare(dateBStr);
+          } else if (sortValue === 'status') {
+            const statusOrder = { 'Active': 0, 'Pending': 1, 'Inactive': 2, 'Expired': 3 };
+            const statusA = a.getAttribute('data-contract-status') || 'Inactive';
+            const statusB = b.getAttribute('data-contract-status') || 'Inactive';
+            comparison = (statusOrder[statusA] || 999) - (statusOrder[statusB] || 999);
+          } else if (sortValue === 'type') {
+            const typeA = a.getAttribute('data-contract-type') || '';
+            const typeB = b.getAttribute('data-contract-type') || '';
+            comparison = typeA.localeCompare(typeB);
+          }
+
+          return comparison;
+        });
+
+        const tbody = contractTable.querySelector('tbody');
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    }
+
+    // CONTRACT SEARCH FUNCTIONALITY
+    const contractSearchInput = document.getElementById('contractSearchInput');
+
+    if (contractSearchInput && contractTable) {
+      contractSearchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        const rows = contractTable.querySelectorAll('tbody tr.contract-row');
+
+        rows.forEach(row => {
+          const type = (row.getAttribute('data-contract-type') || '').toLowerCase();
+          const status = (row.getAttribute('data-contract-status') || '').toLowerCase();
+          const startDate = (row.getAttribute('data-contract-start-date') || '').toLowerCase();
+          const endDate = (row.getAttribute('data-contract-end-date') || '').toLowerCase();
+
+          const matches = type.includes(searchTerm) ||
+                         status.includes(searchTerm) ||
+                         startDate.includes(searchTerm) ||
+                         endDate.includes(searchTerm) ||
+                         searchTerm === '';
+
+          row.style.display = matches ? '' : 'none';
+        });
+      });
+    }
+
+    // Add animation styles if not already present
+    if (!document.getElementById('sort-animation-styles')) {
+      const style = document.createElement('style');
+      style.id = 'sort-animation-styles';
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .contract-row {
+          animation: slideIn 0.3s ease-out;
+        }
+        @keyframes popUp {
+          0% {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .stats-appear {
+          animation: popUp 0.5s ease-out;
+        }
+        .stats-appear.delay-1 {
+          animation-delay: 0.1s;
+        }
+        .stats-appear.delay-2 {
+          animation-delay: 0.2s;
+        }
+        .stats-appear.delay-3 {
+          animation-delay: 0.3s;
+        }
+        .active-tab {
+          border-bottom-color: #0a2200 !important;
+          color: #0a2200 !important;
+        }
+        .tab-content {
+          transition: all 0.3s ease-in-out;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  });
+</script>
+
+{{ include('elfirma/_nav_routes.html.twig') }}
+
+</body>
+</html>

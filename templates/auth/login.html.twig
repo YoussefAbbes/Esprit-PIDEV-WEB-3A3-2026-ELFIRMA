@@ -33,15 +33,29 @@
       <p>Access your account</p>
     </div>
 
-    <form method="POST" action="{{ path('app_login') }}" class="auth-form">
+    <!-- Store errors data -->
+    <div id="errors-data" data-errors="{{ (errors ?? {})|json_encode() }}"></div>
+
+    {% if error is defined and error %}
+      <div style="background-color: #ffebee; border: 1px solid #ef5350; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; color: #d32f2f; display: flex; gap: 0.75rem; align-items: flex-start;">
+        <i class="bi bi-exclamation-circle" style="font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem;"></i>
+        <span>{{ error }}</span>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{{ path('app_login') }}" class="auth-form" id="loginForm">
+      <!-- Email -->
       <div class="form-group">
         <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required>
+        <input type="text" id="email" name="email" class="form-control" placeholder="you@example.com" value="{{ app.request.request.get('email', '') }}">
+        <small class="text-muted">Enter your registered email</small>
       </div>
 
+      <!-- Password -->
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
+        <small class="text-muted">Enter your password</small>
       </div>
 
       <div class="form-check">
@@ -63,7 +77,124 @@
     </div>
   </div>
 
+<style>
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    font-weight: 600;
+    color: #060606;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .form-control {
+    width: 100%;
+    border-radius: 6px;
+    border: 1.5px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  .form-control:focus {
+    border-color: #116530 !important;
+    box-shadow: 0 0 0 3px rgba(17, 101, 48, 0.1) !important;
+    outline: none;
+  }
+
+  .form-control.is-invalid {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2) !important;
+  }
+
+  .form-control.is-invalid:focus {
+    border: 2px solid #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.3) !important;
+  }
+
+  .error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    display: block;
+  }
+
+  small.text-muted {
+    font-size: 0.8rem;
+    display: block;
+    margin-top: 0.3rem;
+    color: #999;
+  }
+
+  .form-check {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-check-input {
+    margin-top: 0.3rem;
+  }
+</style>
+
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get errors from the data attribute
+    const errorsData = document.getElementById('errors-data');
+    let formErrors = {};
+
+    if (errorsData) {
+      const errorsJson = errorsData.getAttribute('data-errors');
+      if (errorsJson) {
+        try {
+          formErrors = JSON.parse(errorsJson);
+        } catch(e) {
+          console.error('Error parsing errors:', e);
+        }
+      }
+    }
+
+    // Only apply red styles if there are errors
+    if (Object.keys(formErrors).length > 0) {
+      console.log('Applying error styles for fields:', Object.keys(formErrors));
+
+      for (const [fieldName, errorMsg] of Object.entries(formErrors)) {
+        const field = document.getElementById(fieldName);
+        if (field) {
+          // Add red border
+          field.style.borderColor = '#dc3545';
+          field.style.borderWidth = '2px';
+          field.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.2)';
+
+          // Create error message element
+          const formGroup = field.parentElement;
+          let errorElement = formGroup.querySelector('.error-message');
+
+          if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.className = 'error-message';
+          }
+
+          errorElement.textContent = errorMsg;
+          errorElement.style.color = '#dc3545';
+          errorElement.style.fontSize = '0.875rem';
+          errorElement.style.marginTop = '0.5rem';
+          errorElement.style.marginBottom = '0.5rem';
+          errorElement.style.fontWeight = '500';
+          errorElement.style.display = 'block';
+
+          // Insert after field if not already there
+          if (!formGroup.querySelector('.error-message')) {
+            formGroup.insertBefore(errorElement, field.nextElementSibling);
+          }
+        }
+      }
+    }
+  });
+
   // Smooth form focus animation
   const inputs = document.querySelectorAll('.form-control');
   inputs.forEach(input => {

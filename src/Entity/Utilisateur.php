@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\UtilisateurRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateur')]
@@ -22,6 +23,11 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Last name is required')]
+    #[Assert\Length(
+        max: 10,
+        maxMessage: 'Last name must not exceed 10 characters'
+    )]
     private ?string $nom_u = null;
 
     public function getNomU(): ?string
@@ -36,6 +42,11 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'First name is required')]
+    #[Assert\Length(
+        max: 10,
+        maxMessage: 'First name must not exceed 10 characters'
+    )]
     private ?string $prenom_u = null;
 
     public function getPrenomU(): ?string
@@ -50,6 +61,8 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Email is required')]
+    #[Assert\Email(message: 'Email is not valid')]
     private ?string $email_u = null;
 
     public function getEmailU(): ?string
@@ -64,6 +77,13 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Password is required')]
+    #[Assert\Length(
+        min: 3,
+        max: 7,
+        minMessage: 'Password must be at least 3 characters',
+        maxMessage: 'Password must not exceed 7 characters'
+    )]
     private ?string $mot_de_passe_u = null;
 
     public function getMotDePasseU(): ?string
@@ -78,6 +98,11 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    #[Assert\NotBlank(message: 'Please select a valid role')]
+    #[Assert\Choice(
+        choices: ['employee', 'client'],
+        message: 'Please select a valid role'
+    )]
     private ?string $role_u = null;
 
     public function getRoleU(): ?string
@@ -91,8 +116,8 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true, options: ['default' => 'default.png'])]
-    private ?string $image_u = 'default.png';
+    #[ORM\Column(type: 'string', length: 255, nullable: true, options: ['default' => 'default.JPG'])]
+    private ?string $image_u = 'default.JPG';
 
     public function getImageU(): ?string
     {

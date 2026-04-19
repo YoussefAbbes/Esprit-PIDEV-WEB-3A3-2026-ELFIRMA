@@ -1,0 +1,55 @@
+{% if pageCount > 1 %}
+  <nav class="elf-pagination-wrap" aria-label="Table pagination">
+    <div class="elf-pagination-meta">
+      <span class="elf-pagination-meta__label">Page</span>
+      <strong class="elf-pagination-meta__current">{{ current }}</strong>
+      <span class="elf-pagination-meta__label">of {{ pageCount }}</span>
+    </div>
+
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item {{ previous is not defined ? 'disabled' }} d-none d-sm-inline-flex">
+        {% if previous is defined %}
+          <a class="page-link" href="{{ path(route, knp_pagination_query(query, first, options)) }}" aria-label="First page">&laquo;</a>
+        {% else %}
+          <span class="page-link" aria-hidden="true">&laquo;</span>
+        {% endif %}
+      </li>
+
+      <li class="page-item {{ previous is not defined ? 'disabled' }}">
+        {% if previous is defined %}
+          <a class="page-link" rel="prev" href="{{ path(route, knp_pagination_query(query, previous, options)) }}" aria-label="Previous page">Previous</a>
+        {% else %}
+          <span class="page-link" aria-hidden="true">Previous</span>
+        {% endif %}
+      </li>
+
+      {% for page in pagesInRange %}
+        {% if page != current %}
+          <li class="page-item">
+            <a class="page-link" href="{{ path(route, knp_pagination_query(query, page, options)) }}">{{ page }}</a>
+          </li>
+        {% else %}
+          <li class="page-item active" aria-current="page">
+            <span class="page-link">{{ page }}</span>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      <li class="page-item {{ next is not defined ? 'disabled' }}">
+        {% if next is defined %}
+          <a class="page-link" rel="next" href="{{ path(route, knp_pagination_query(query, next, options)) }}" aria-label="Next page">Next</a>
+        {% else %}
+          <span class="page-link" aria-hidden="true">Next</span>
+        {% endif %}
+      </li>
+
+      <li class="page-item {{ next is not defined ? 'disabled' }} d-none d-sm-inline-flex">
+        {% if next is defined %}
+          <a class="page-link" href="{{ path(route, knp_pagination_query(query, last, options)) }}" aria-label="Last page">&raquo;</a>
+        {% else %}
+          <span class="page-link" aria-hidden="true">&raquo;</span>
+        {% endif %}
+      </li>
+    </ul>
+  </nav>
+{% endif %}

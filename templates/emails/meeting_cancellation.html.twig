@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Cancelled</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #116530 0%, #1e3a0f 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { background-color: #f9f9f9; padding: 30px; border-left: 4px solid #D2691E; }
+        .content h2 { color: #116530; margin-top: 0; }
+        .meeting-details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 3px solid #D2691E; }
+        .detail-label { color: #666; font-weight: 600; }
+        .detail-value { color: #333; margin-bottom: 10px; }
+        .footer { background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+        .contact-info { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; }
+        .icon { font-size: 20px; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ 'Meeting Cancelled' }}</h1>
+        </div>
+
+        <div class="content">
+            <h2>{{ 'Hello ' ~ supplierName }}</h2>
+
+            <p>{{ 'We regret to inform you that the following meeting has been cancelled:' }}</p>
+
+            <div class="meeting-details">
+                <div class="detail-label">{{ 'Meeting Date & Time:' }}</div>
+                <div class="detail-value">
+                    📅 {{ meetingDateTime|date('F d, Y') }} at {{ meetingDateTime|date('H:i') }}
+                </div>
+
+                <div class="detail-label" style="margin-top: 15px;">{{ 'Reason:' }}</div>
+                <div class="detail-value">
+                    {{ 'This meeting has been cancelled by the El Firma team.' }}
+                </div>
+            </div>
+
+            <h3 style="color: #116530; margin-top: 25px;">{{ 'What to do next?' }}</h3>
+            <p>
+                {{ 'If you would like to reschedule this meeting or have any questions, please contact us at ' }}
+                <strong>{{ 'islem.souid@esprit.tn' }}</strong>
+                {{ ' or reply to this email.' }}
+            </p>
+
+            <div class="contact-info">
+                <p style="margin: 0; color: #666;">
+                    <strong>{{ 'El Firma Agriculture Team' }}</strong><br>
+                    {{ 'rue cheikh taieb sayala, La marsa, 2070 TUN' }}<br>
+                    {{ 'Email: ' }}<a href="mailto:elfirma@gmail.com" style="color: #116530; text-decoration: none;">elfirma@gmail.com</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                {{ 'This is an automated message. Please do not reply directly to this email.' }}<br>
+                {{ 'If you have any questions, please contact our support team.' }}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
