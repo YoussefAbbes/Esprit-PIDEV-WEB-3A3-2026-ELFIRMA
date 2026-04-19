@@ -331,6 +331,29 @@
 </div>
 </div>
 
+<hr class="my-10">
+
+<h2 class="text-xl font-bold mb-4">📊 Dashboard IA</h2>
+
+<div class="bg-white p-6 rounded-xl shadow flex justify-center">
+    <div class="w-[400px] h-[400px]">
+        {{ render_chart(chart) }}
+    </div>
+</div>
+<div class="mt-4 text-sm text-gray-600 space-y-1">
+    <p>🟢 <strong>Faible :</strong> équipement en bon état</p>
+    <p>🟠 <strong>Moyen :</strong> nécessite surveillance</p>
+    <p>🔴 <strong>Élevé :</strong> intervention urgente recommandée</p>
+</div>
+
+<h2 class="text-xl font-bold mt-10 mb-4">📈 Évolution des maintenances</h2>
+
+<div class="bg-white p-6 rounded-xl shadow flex justify-center">
+    <div class="w-[600px] h-[400px]">
+        {{ render_chart(chartMaint) }}
+    </div>
+</div>
+
 </div>
 </main>
 

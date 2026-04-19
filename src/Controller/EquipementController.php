@@ -16,35 +16,156 @@ use App\Enum\EquipementEtat;
 use App\Entity\Maintenance;
 use App\Form\MaintenanceType;
 use App\Service\AIPredictionService;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 
 class EquipementController extends AbstractController
 {
-    #[Route('/equipements', name: 'app_equipement_index')]
+#[Route('/equipements', name: 'app_equipement_index')]
 public function index(
     EquipementRepository $repo,
-    EntityManagerInterface $em
+    EntityManagerInterface $em,
+    AIPredictionService $ai,
+    ChartBuilderInterface $chartBuilder
 ): Response {
 
-    // Forms
     $form = $this->createForm(EquipementType::class, new Equipement());
     $formMaintenance = $this->createForm(MaintenanceType::class, new Maintenance());
 
-    // Récupération des équipements
     $equipements = $repo->findAll();
 
-    // 🔥 recalcul automatique état
+    // 🔄 Mise à jour état
     foreach ($equipements as $eq) {
         $this->updateEquipementEtat($eq, $em);
     }
-
-    // sauvegarde en base
     $em->flush();
 
+    // =========================
+    // 🤖 1. IA GLOBAL (RISQUES)
+    // =========================
+    $risques = [0 => 0, 1 => 0, 2 => 0];
+
+    foreach ($equipements as $eq) {
+
+        $nbMaintenances = count($eq->getMaintenances());
+
+        $totalCout = 0;
+        foreach ($eq->getMaintenances() as $m) {
+            $totalCout += $m->getCout();
+        }
+
+        $age = (new \DateTime())->diff($eq->getDateAchat())->y;
+
+        $etatMap = [
+            'bon' => 1,
+            'moyen' => 2,
+            'critique' => 3,
+            'disponible' => 1,
+            'maintenance' => 2,
+            'panne' => 3
+        ];
+
+        $etatString = strtolower($eq->getEtat()->value);
+        $etat = $etatMap[$etatString] ?? 1;
+
+        $payload = [
+            'etat' => $etat,
+            'age' => $age,
+            'cout' => $eq->getCoutAchat(),
+            'nb_maintenances' => $nbMaintenances,
+            'total_cout' => $totalCout
+        ];
+
+        try {
+            $result = $ai->predict($payload);
+            $risques[$result['risk_level']]++;
+        } catch (\Exception $e) {
+            // fallback si API down
+            $risques[0]++;
+        }
+    }
+
+    // =========================
+    // 📊 2. GRAPH RISQUES
+    // =========================
+    $chartRisk = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+
+    $chartRisk->setData([
+        'labels' => [
+            'Faible (Bon état)',
+            'Moyen (Surveillance)',
+            'Élevé (Critique)'
+        ],
+        'datasets' => [
+            [
+                'data' => [
+                    $risques[0],
+                    $risques[1],
+                    $risques[2]
+                ],
+                'backgroundColor' => [
+                    'rgba(34,197,94,0.7)',
+                    'rgba(251,191,36,0.7)',
+                    'rgba(239,68,68,0.7)'
+                ],
+                'borderWidth' => 1
+            ],
+        ],
+    ]);
+
+    $chartRisk->setOptions([
+        'responsive' => true,
+        'maintainAspectRatio' => false
+    ]);
+
+    // =========================
+    // 📈 3. GRAPH MAINTENANCES
+    // =========================
+    $months = array_fill(1, 12, 0);
+
+    foreach ($equipements as $eq) {
+        foreach ($eq->getMaintenances() as $m) {
+            $month = (int)$m->getDateM()->format('m');
+            $months[$month]++;
+        }
+    }
+
+    $labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+               'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+    $dataMaint = array_values($months);
+
+    $chartMaint = $chartBuilder->createChart(Chart::TYPE_LINE);
+
+    $chartMaint->setData([
+        'labels' => $labels,
+        'datasets' => [
+            [
+                'label' => 'Maintenances par mois',
+                'data' => $dataMaint,
+                'borderColor' => 'rgb(59,130,246)',
+                'backgroundColor' => 'rgba(59,130,246,0.2)',
+                'fill' => true,
+                'tension' => 0.4
+            ],
+        ],
+    ]);
+
+    $chartMaint->setOptions([
+        'responsive' => true,
+        'maintainAspectRatio' => false
+    ]);
+
+    // =========================
+    // 📤 RETURN
+    // =========================
     return $this->render('elfirma/equipement/equipements.html.twig', [
         'equipements' => $equipements,
         'form' => $form->createView(),
         'formMaintenance' => $formMaintenance->createView(),
+        'chart' => $chartRisk,
+        'chartMaint' => $chartMaint
     ]);
 }
 
@@ -72,7 +193,7 @@ public function index(
                         'form' => $form->createView(),
                         'formMaintenance' => $formMaintenance->createView(),
                         'show_modal' => true,
-                        'modal_errors' => true
+                        'modal_errors' => true,
                     ]);
                 }
 
@@ -89,7 +210,7 @@ public function index(
                     'form' => $form->createView(),
                     'formMaintenance' => $formMaintenance->createView(),
                     'show_modal' => true,
-                    'modal_errors' => true
+                    'modal_errors' => true,
                 ]);
             }
         }
@@ -100,7 +221,7 @@ public function index(
             'form' => $form->createView(),
             'formMaintenance' => $formMaintenance->createView(),
             'show_modal' => false,
-            'modal_errors' => false
+            'modal_errors' => false,
         ]);
     }
 
