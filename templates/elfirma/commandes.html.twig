@@ -173,9 +173,20 @@
             </section>
 
             <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100 overflow-x-auto">
+                <form id="bulk-delete-form" method="POST" action="{{ path('app_admin_commandes_bulk_delete') }}" class="mb-4 flex items-center justify-between gap-3" onsubmit="return confirm('Supprimer les commandes sélectionnées ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_delete_commandes') }}">
+                    <p id="bulk-selection-info" class="text-sm text-[#4b5563]">Aucune commande sélectionnée.</p>
+                    <button id="bulk-delete-btn" type="submit" disabled class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 transition-colors">
+                        Supprimer la sélection
+                    </button>
+                </form>
+
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="border-b border-[#d8e4c6] text-left text-[#3f4d31] text-sm uppercase tracking-wide">
+                            <th class="py-3 px-3 w-10">
+                                <input id="select-all-orders" type="checkbox" class="rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Sélectionner tout">
+                            </th>
                             <th class="py-3 px-3">ID</th>
                             <th class="py-3 px-3">Client</th>
                             <th class="py-3 px-3">Adresse</th>
@@ -191,6 +202,9 @@
                     <tbody>
                         {% for commande in commandes %}
                             <tr class="border-b border-[#edf3e2] hover:bg-[#f8fbeF]">
+                                <td class="py-3 px-3">
+                                    <input type="checkbox" name="order_ids[]" value="{{ commande.idCommande }}" form="bulk-delete-form" class="order-checkbox rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Sélectionner commande {{ commande.idCommande }}">
+                                </td>
                                 <td class="py-3 px-3 font-bold text-[#0a2200]">#{{ commande.idCommande }}</td>
                                 <td class="py-3 px-3">{{ commande.nomClient }}</td>
                                 <td class="py-3 px-3">{{ commande.adresseLivraison ?: '-' }}</td>
@@ -211,11 +225,17 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="10" class="py-10 text-center text-[#66755b]">No orders found.</td>
+                                <td colspan="11" class="py-10 text-center text-[#66755b]">No orders found.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
+                {% if commandes is defined and commandes|length > 0 %}
+                    <div class="mt-5 flex justify-center">
+                        {{ knp_pagination_render(commandes) }}
+                    </div>
+                {% endif %}
             </section>
         </div>
     </main>
@@ -505,6 +525,44 @@
             const hasCreateErrors = {{ createErrors is not empty ? 'true' : 'false' }};
             const editTarget = '{{ editOld.id|default('') }}';
             const hasEditErrors = {{ editErrors is not empty ? 'true' : 'false' }};
+
+            const selectAll = document.getElementById('select-all-orders');
+            const checkboxes = Array.from(document.querySelectorAll('.order-checkbox'));
+            const bulkBtn = document.getElementById('bulk-delete-btn');
+            const bulkInfo = document.getElementById('bulk-selection-info');
+
+            const updateBulkSelectionUi = () => {
+                if (!bulkBtn || !bulkInfo) {
+                    return;
+                }
+
+                const selectedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+                bulkBtn.disabled = selectedCount === 0;
+                bulkInfo.textContent = selectedCount === 0
+                    ? 'Aucune commande sélectionnée.'
+                    : `${selectedCount} commande(s) sélectionnée(s).`;
+
+                if (selectAll) {
+                    const hasAny = checkboxes.length > 0;
+                    selectAll.checked = hasAny && selectedCount === checkboxes.length;
+                    selectAll.indeterminate = selectedCount > 0 && selectedCount < checkboxes.length;
+                }
+            };
+
+            if (selectAll) {
+                selectAll.addEventListener('change', () => {
+                    checkboxes.forEach((checkbox) => {
+                        checkbox.checked = selectAll.checked;
+                    });
+                    updateBulkSelectionUi();
+                });
+            }
+
+            checkboxes.forEach((checkbox) => {
+                checkbox.addEventListener('change', updateBulkSelectionUi);
+            });
+
+            updateBulkSelectionUi();
 
             if (hasCreateErrors) {
                 openModal('createModal');

@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use App\Entity\Commande;
 use App\Entity\Produit;
 use App\Entity\Utilisateur;
@@ -1042,21 +1043,30 @@ final class CommandeController extends AbstractController
     }
 
     #[Route('/admin/commandes', name: 'app_admin_commandes', methods: ['GET'])]
-    public function adminIndex(Request $request, EntityManagerInterface $em): Response
+    public function adminIndex(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
         $q = trim((string) $request->query->get('q', ''));
         $statusFilter = trim((string) $request->query->get('status', ''));
         $paymentFilter = trim((string) $request->query->get('payment', ''));
         $sort = (string) $request->query->get('sort', 'date-desc');
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 10;
 
-        $commandes = $em->getRepository(Commande::class)->findAll();
-        $commandes = $this->filterAndSortCommandes($commandes, $q, $statusFilter, $paymentFilter, $sort);
+        $filteredCommandes = $em->getRepository(Commande::class)->findAll();
+        $filteredCommandes = $this->filterAndSortCommandes($filteredCommandes, $q, $statusFilter, $paymentFilter, $sort);
+
+        $commandes = $paginator->paginate(
+            $filteredCommandes,
+            $page,
+            $perPage,
+            ['pageParameterName' => 'page']
+        );
 
         $stats = [
-            'total' => count($commandes),
-            'pending' => count(array_filter($commandes, static fn (Commande $c): bool => $c->getStatutCommande() === 'En attente')),
-            'paid' => count(array_filter($commandes, static fn (Commande $c): bool => $c->getStatutPaiement() === 'Payé')),
-            'amount' => array_reduce($commandes, static fn (float $carry, Commande $c): float => $carry + (float) ($c->getPrixTotal() ?? 0), 0.0),
+            'total' => count($filteredCommandes),
+            'pending' => count(array_filter($filteredCommandes, static fn (Commande $c): bool => $c->getStatutCommande() === 'En attente')),
+            'paid' => count(array_filter($filteredCommandes, static fn (Commande $c): bool => $c->getStatutPaiement() === 'Payé')),
+            'amount' => array_reduce($filteredCommandes, static fn (float $carry, Commande $c): float => $carry + (float) ($c->getPrixTotal() ?? 0), 0.0),
         ];
 
         return $this->render('elfirma/commandes.html.twig', [
@@ -1145,6 +1155,46 @@ final class CommandeController extends AbstractController
             $this->addFlash('success', 'Commande supprimée avec succès.');
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Impossible de supprimer la commande pour le moment.');
+        }
+
+        return $this->redirectToRoute('app_admin_commandes');
+    }
+
+    #[Route('/admin/commandes/bulk-delete', name: 'app_admin_commandes_bulk_delete', methods: ['POST'])]
+    public function adminBulkDelete(Request $request, EntityManagerInterface $em): Response
+    {
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('bulk_delete_commandes', $token)) {
+            $this->addFlash('error', 'Jeton de sécurité invalide.');
+
+            return $this->redirectToRoute('app_admin_commandes');
+        }
+
+        $rawIds = $request->request->all('order_ids');
+        $ids = array_values(array_unique(array_filter(array_map(static fn ($id): int => (int) $id, $rawIds), static fn (int $id): bool => $id > 0)));
+
+        if ($ids === []) {
+            $this->addFlash('error', 'Aucune commande sélectionnée.');
+
+            return $this->redirectToRoute('app_admin_commandes');
+        }
+
+        $commandes = $em->getRepository(Commande::class)->findBy(['id_commande' => $ids]);
+        if ($commandes === []) {
+            $this->addFlash('error', 'Aucune commande valide trouvée.');
+
+            return $this->redirectToRoute('app_admin_commandes');
+        }
+
+        try {
+            foreach ($commandes as $commande) {
+                $em->remove($commande);
+            }
+
+            $em->flush();
+            $this->addFlash('success', sprintf('%d commande(s) supprimée(s) avec succès.', count($commandes)));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Impossible de supprimer les commandes sélectionnées pour le moment.');
         }
 
         return $this->redirectToRoute('app_admin_commandes');
