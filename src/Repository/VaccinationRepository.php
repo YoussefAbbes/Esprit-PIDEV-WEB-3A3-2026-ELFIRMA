@@ -154,6 +154,34 @@ class VaccinationRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return list<array{id_vaccination:int,id_animal:int,animal_type:string,vaccine_name:string,date_done:string,date_next:string,status:?string,interval_days:int|string}>
+     */
+    public function findEligibleForIntervalSmsAlerts(int $days = 2): array
+    {
+        $safeDays = max(0, $days);
+
+        return $this->connection()->fetchAllAssociative(
+            'SELECT v.id_vaccination,
+                    v.id_animal,
+                    COALESCE(a.type_animal, CONCAT("Animal #", v.id_animal)) AS animal_type,
+                    v.vaccine_name,
+                    v.date_done,
+                    v.date_next,
+                    v.status,
+                    DATEDIFF(v.date_next, v.date_done) AS interval_days
+             FROM vaccination v
+             LEFT JOIN animal a ON a.id_animal = v.id_animal
+             WHERE v.date_done IS NOT NULL
+               AND v.date_next IS NOT NULL
+               AND v.date_next >= CURDATE()
+               AND DATEDIFF(v.date_next, v.date_done) BETWEEN 0 AND :days
+             ORDER BY v.date_next ASC, v.id_vaccination ASC',
+            ['days' => $safeDays],
+            ['days' => ParameterType::INTEGER]
+        );
+    }
+
+    /**
      * @return list<array{id_vaccination:int,id_animal:int,animal_type:string,vaccine_name:string,date_next:string,status:?string}>
      */
     public function findUpcomingForSmsAlerts(int $days = 2): array

@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:vaccination:send-sms-alerts',
-    description: 'Send SMS alerts for upcoming vaccinations in the next 2 days.'
+    description: 'Send SMS alerts when date_done->date_next interval is within 2 days.'
 )]
 final class SendVaccinationSmsAlertsCommand extends Command
 {
@@ -30,9 +30,10 @@ final class SendVaccinationSmsAlertsCommand extends Command
 
     protected function configure(): void
     {
-        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Display upcoming alerts without sending SMS.');
+        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Display interval-eligible alerts without sending SMS.');
         $this->addOption('verify-key', null, InputOption::VALUE_NONE, 'Verify Twilio API key configuration and connectivity.');
         $this->addOption('send-test', null, InputOption::VALUE_NONE, 'Send one test SMS to TWILIO_TO_PHONE.');
+        $this->addOption('to', null, InputOption::VALUE_REQUIRED, 'Destination phone override for --send-test (E.164 or local format).');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -60,7 +61,11 @@ final class SendVaccinationSmsAlertsCommand extends Command
                 return Command::FAILURE;
             }
 
-            $sent = $this->twilioSmsService->sendToDefaultPhone('Test SMS Symfony: integration Twilio API key active.');
+            $overrideTo = trim((string) ($input->getOption('to') ?? ''));
+            $sent = $overrideTo !== ''
+                ? $this->twilioSmsService->sendSms($overrideTo, 'Test SMS Symfony: integration Twilio API key active.')
+                : $this->twilioSmsService->sendToDefaultPhone('Test SMS Symfony: integration Twilio API key active.');
+
             if (!$sent) {
                 $io->error($this->twilioSmsService->getLastError() ?? 'Test SMS failed to send.');
                 return Command::FAILURE;
@@ -71,22 +76,24 @@ final class SendVaccinationSmsAlertsCommand extends Command
         }
 
         if ((bool) $input->getOption('dry-run')) {
-            $upcoming = $this->vaccinationRepository->findUpcomingForSmsAlerts(2);
-            $io->success(sprintf('%d vaccination(s) will trigger SMS alerts.', count($upcoming)));
+            $eligible = $this->vaccinationRepository->findEligibleForIntervalSmsAlerts(2);
+            $io->success(sprintf('%d vaccination(s) will trigger SMS alerts.', count($eligible)));
 
-            if ($upcoming !== []) {
+            if ($eligible !== []) {
                 $rows = array_map(
                     static fn (array $item): array => [
                         (string) ($item['id_vaccination'] ?? ''),
                         (string) ($item['animal_type'] ?? ''),
                         (string) ($item['vaccine_name'] ?? ''),
+                        (string) ($item['date_done'] ?? ''),
                         (string) ($item['date_next'] ?? ''),
+                        (string) ($item['interval_days'] ?? ''),
                         (string) ($item['status'] ?? ''),
                     ],
-                    $upcoming
+                    $eligible
                 );
 
-                $io->table(['ID', 'Animal', 'Vaccine', 'Next Date', 'Status'], $rows);
+                $io->table(['ID', 'Animal', 'Vaccine', 'Done Date', 'Next Date', 'Interval (days)', 'Status'], $rows);
             }
 
             return Command::SUCCESS;

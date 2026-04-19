@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Repository\AnimalRepository;
 use App\Repository\LivestockRepository;
+use App\Service\LivestockCapacityEmailAlertService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,8 @@ final class AnimalController extends AbstractController
     public function create(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService
     ): Response
     {
         $formRedirect = [
@@ -42,6 +44,7 @@ final class AnimalController extends AbstractController
 
         $animalRepository->createAnimal($payload);
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
+        $capacityEmailAlertService->checkAndSendForLivestock($payload['id_elevage']);
 
         return $this->redirectToAnimalList();
     }
@@ -50,7 +53,8 @@ final class AnimalController extends AbstractController
     public function update(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService
     ): Response
     {
         $idAnimal = (int) $request->request->get('id_animal', 0);
@@ -92,8 +96,11 @@ final class AnimalController extends AbstractController
 
         $animalRepository->updateAnimal($idAnimal, $payload);
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
+        $capacityEmailAlertService->checkAndSendForLivestock($payload['id_elevage']);
+
         if ($previousElevageId !== $payload['id_elevage']) {
             $livestockRepository->syncAnimalCount($previousElevageId);
+            $capacityEmailAlertService->checkAndSendForLivestock($previousElevageId);
         }
 
         return $this->redirectToAnimalList();
@@ -103,7 +110,8 @@ final class AnimalController extends AbstractController
     public function delete(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService
     ): Response
     {
         if (!$this->isCsrfTokenValid('animal_delete', (string) $request->request->get('_token', ''))) {
@@ -120,6 +128,7 @@ final class AnimalController extends AbstractController
 
         if ($animalElevageId !== null && $animalElevageId > 0) {
             $livestockRepository->syncAnimalCount($animalElevageId);
+            $capacityEmailAlertService->checkAndSendForLivestock($animalElevageId);
         }
 
         return $this->redirectToAnimalList();

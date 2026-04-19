@@ -17,7 +17,6 @@ final class TwilioSmsService
         private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
         #[Autowire('%env(string:TWILIO_ACCOUNT_SID)%')] private readonly string $accountSid,
-        #[Autowire('%env(string:TWILIO_AUTH_TOKEN)%')] private readonly string $authToken,
         #[Autowire('%env(string:TWILIO_API_KEY_SID)%')] private readonly string $apiKeySid,
         #[Autowire('%env(string:TWILIO_API_KEY_SECRET)%')] private readonly string $apiKeySecret,
         #[Autowire('%env(string:TWILIO_FROM_PHONE)%')] private readonly string $fromPhone,
@@ -29,16 +28,16 @@ final class TwilioSmsService
     public function isConfigured(): bool
     {
         $accountSid = trim($this->accountSid);
-        $authToken = trim($this->authToken);
         $apiKeySid = trim($this->apiKeySid);
         $apiKeySecret = trim($this->apiKeySecret);
 
-        $hasLegacyPair = $accountSid !== '' && $authToken !== '';
+        $hasAccountSid = (bool) preg_match('/^AC[a-zA-Z0-9]{32}$/', $accountSid);
         $hasApiKeyPair = (bool) preg_match('/^SK[a-zA-Z0-9]{32}$/', $apiKeySid) && $apiKeySecret !== '';
 
-        return ($hasLegacyPair || $hasApiKeyPair)
-            && $this->fromPhone !== ''
-            && $this->defaultToPhone !== '';
+        return $hasAccountSid
+            && $hasApiKeyPair
+            && trim($this->fromPhone) !== ''
+            && trim($this->defaultToPhone) !== '';
     }
 
     public function verifyApiKey(): bool
@@ -107,6 +106,11 @@ final class TwilioSmsService
 
         $from = $this->normalizePhone($this->fromPhone);
         $to = $this->normalizePhone($toPhone);
+        if ($from === '' || $to === '') {
+            $this->lastError = 'Format numero invalide pour Twilio.';
+            return false;
+        }
+
         $accountSidCandidates = $this->resolveAccountSidCandidates($authUser, $authPassword);
 
         foreach ($accountSidCandidates as $accountSid) {
@@ -149,12 +153,6 @@ final class TwilioSmsService
             return [$apiKeySid, $apiKeySecret];
         }
 
-        $sid = trim($this->accountSid);
-        $token = trim($this->authToken);
-        if ($sid !== '' && $token !== '') {
-            return [$sid, $token];
-        }
-
         return null;
     }
 
@@ -163,19 +161,17 @@ final class TwilioSmsService
      */
     private function resolveAccountSidCandidates(string $authUser, string $authPassword): array
     {
-        $candidates = [];
-
         $configuredSid = trim($this->accountSid);
-        if ($configuredSid !== '') {
-            $candidates[] = $configuredSid;
+        if ((bool) preg_match('/^AC[a-zA-Z0-9]{32}$/', $configuredSid)) {
+            return [$configuredSid];
         }
 
         $resolved = $this->resolveAccountSid($authUser, $authPassword);
-        if ($resolved !== null && !in_array($resolved, $candidates, true)) {
-            $candidates[] = $resolved;
+        if ($resolved !== null) {
+            return [$resolved];
         }
 
-        return $candidates;
+        return [];
     }
 
     private function resolveAccountSid(string $authUser, string $authPassword): ?string

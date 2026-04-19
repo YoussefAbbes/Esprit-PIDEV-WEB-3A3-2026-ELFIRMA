@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\LivestockRepository;
+use App\Service\LivestockCapacityEmailAlertService;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +15,10 @@ use Symfony\Component\Routing\Attribute\Route;
 final class LivestockController extends AbstractController
 {
     #[Route('/elfirma/animaux-elevages/livestock/create', name: 'livestock_create', methods: ['POST'])]
-    public function create(Request $request, LivestockRepository $livestockRepository): Response
+    public function create(
+        Request $request,
+        LivestockRepository $livestockRepository
+    ): Response
     {
         $formRedirect = [
             'module' => 'animaux-elevages',
@@ -42,7 +46,11 @@ final class LivestockController extends AbstractController
     }
 
     #[Route('/elfirma/animaux-elevages/livestock/update', name: 'livestock_update', methods: ['POST'])]
-    public function update(Request $request, LivestockRepository $livestockRepository): Response
+    public function update(
+        Request $request,
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService
+    ): Response
     {
         $idElevage = (int) $request->request->get('id_elevage', 0);
         $formRedirect = [
@@ -77,12 +85,17 @@ final class LivestockController extends AbstractController
         $nombreAnimaux = $livestockRepository->countAnimalsForLivestock($idElevage);
 
         $livestockRepository->updateLivestock($idElevage, $payload, $nombreAnimaux);
+        $capacityEmailAlertService->checkAndSendForLivestock($idElevage);
 
         return $this->redirectToLivestockList();
     }
 
     #[Route('/elfirma/animaux-elevages/livestock/delete', name: 'livestock_delete', methods: ['POST'])]
-    public function delete(Request $request, LivestockRepository $livestockRepository): Response
+    public function delete(
+        Request $request,
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService
+    ): Response
     {
         if (!$this->isCsrfTokenValid('livestock_delete', (string) $request->request->get('_token', ''))) {
             $this->addFlash('error', 'Action refusée : session expirée, veuillez réessayer.');
@@ -107,6 +120,7 @@ final class LivestockController extends AbstractController
 
         try {
             $livestockRepository->deleteLivestock($idElevage);
+            $capacityEmailAlertService->clearAlertState($idElevage);
             $this->addFlash('success', 'Élevage supprimé avec succès.');
         } catch (ForeignKeyConstraintViolationException) {
             $this->addFlash('error', 'Suppression impossible : des animaux liés existent encore pour cet élevage.');
