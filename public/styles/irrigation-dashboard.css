@@ -1,0 +1,242 @@
+.irrigation-page {
+    background:
+        radial-gradient(circle at 12% 18%, rgba(37, 99, 235, 0.08), transparent 40%),
+        radial-gradient(circle at 85% 8%, rgba(16, 185, 129, 0.12), transparent 42%),
+        linear-gradient(180deg, #f8fbff 0%, #f5faf7 45%, #f6fbff 100%);
+}
+
+.irrigation-shell {
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 0.75rem 1.7rem rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+}
+
+.irrigation-hero {
+    background:
+        radial-gradient(circle at 90% 20%, rgba(255, 255, 255, 0.8), transparent 33%),
+        linear-gradient(130deg, #eaf3ff 0%, #e8f7ef 55%, #daf4ff 100%);
+    border: 1px solid #d6e5ef;
+    box-shadow: 0 0.7rem 1.5rem rgba(15, 23, 42, 0.07);
+}
+
+.irrigation-state-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.irrigation-state-item {
+    background: linear-gradient(180deg, #f9fcff 0%, #f4f9ff 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.9rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.irrigation-state-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.55rem 1rem rgba(15, 23, 42, 0.08);
+}
+
+.irrigation-state-label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 0.35rem;
+}
+
+.irrigation-state-value {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.irrigation-kpi-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.irrigation-kpi-card {
+    background: linear-gradient(145deg, #f8fbff, #ebf8f2);
+    border: 1px solid #dceadf;
+    border-radius: 0.8rem;
+    padding: 0.95rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.irrigation-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.55rem 1rem rgba(15, 23, 42, 0.1);
+}
+
+.irrigation-kpi-label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #4f6470;
+    margin-bottom: 0.3rem;
+}
+
+.irrigation-kpi-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.irrigation-notes-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.irrigation-note-item {
+    border-radius: 0.8rem;
+    border: 1px solid transparent;
+    padding: 0.65rem 0.7rem;
+    display: grid;
+    grid-template-columns: 1.4rem minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.irrigation-note-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.45rem 0.9rem rgba(15, 23, 42, 0.08);
+}
+
+.irrigation-note-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+    margin-top: 0.08rem;
+}
+
+.irrigation-note-title {
+    margin: 0;
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.irrigation-note-message {
+    margin: 0.2rem 0 0;
+    font-size: 0.76rem;
+    line-height: 1.35;
+}
+
+.irrigation-note-info {
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e3a8a;
+}
+
+.irrigation-note-success {
+    background-color: #ecfdf3;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.irrigation-note-warning {
+    background-color: #fffbeb;
+    border-color: #fcd34d;
+    color: #92400e;
+}
+
+.irrigation-note-danger {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.irrigation-command-grid {
+    gap: 0.65rem;
+}
+
+.irrigation-command-btn {
+    border: 0;
+    border-radius: 999px;
+    color: #ffffff;
+    padding: 0.6rem 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.irrigation-command-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: 0 0.65rem 1rem rgba(15, 23, 42, 0.14);
+}
+
+.irrigation-command-btn:active {
+    transform: translateY(0);
+}
+
+.irrigation-command-auto {
+    background: linear-gradient(120deg, #2563eb, #1d4ed8);
+}
+
+.irrigation-command-on {
+    background: linear-gradient(120deg, #16a34a, #15803d);
+}
+
+.irrigation-command-off {
+    background: linear-gradient(120deg, #dc2626, #b91c1c);
+}
+
+.irrigation-filter-input,
+.irrigation-filter-select {
+    border-radius: 0.65rem;
+    border: 1px solid #d7e1e8;
+    background: #f9fcff;
+}
+
+.irrigation-filter-input:focus,
+.irrigation-filter-select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 0.2rem rgba(96, 165, 250, 0.18);
+}
+
+.irrigation-filter-switch {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    padding-left: 0.35rem;
+    border: 1px solid #d7e1e8;
+    border-radius: 0.65rem;
+    background: #f9fcff;
+    min-height: 38px;
+}
+
+.irrigation-filter-switch .form-check-input {
+    margin-top: 0;
+    margin-right: 0.45rem;
+}
+
+.irrigation-filter-switch .form-check-label {
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.irrigation-events-table thead th {
+    white-space: nowrap;
+}
+
+.irrigation-events-table tbody td {
+    vertical-align: middle;
+}
+
+@media (max-width: 991.98px) {
+    .irrigation-state-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .irrigation-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}

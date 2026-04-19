@@ -143,6 +143,10 @@
                     <span class="material-symbols-outlined" style="font-size:18px;">map</span>
                     View on Map
                 </a>
+                <a href="{{ path('irrigation_index', {parcelle: parcelle.id}) }}" class="btn-show btn-show-map">
+                    <span class="material-symbols-outlined" style="font-size:18px;">water_drop</span>
+                    Irrigation
+                </a>
                 <a href="{{ path('parcelle_edit', {id: parcelle.id}) }}" class="btn-show btn-show-edit">
                     <span class="material-symbols-outlined" style="font-size:18px;">edit</span>
                     Edit
@@ -416,9 +420,9 @@
                         <p class="text-xs uppercase tracking-wide text-blue-700 font-bold">Confidence</p>
                         <p id="recommendationConfidence" class="text-2xl font-black text-blue-800 mt-1">-</p>
                     </div>
-                    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
-                        <p class="text-xs uppercase tracking-wide text-amber-700 font-bold">Inference Mode</p>
-                        <p id="inferenceModeLabel" class="text-xl font-black text-amber-800 mt-1">-</p>
+                    <div class="rounded-xl border border-orange-200 bg-orange-50 p-4">
+                        <p class="text-xs uppercase tracking-wide text-orange-700 font-bold">Best Alternative</p>
+                        <p id="inferenceModeLabel" class="text-2xl font-black text-orange-800 mt-1">-</p>
                     </div>
                 </div>
 
@@ -890,7 +894,9 @@
             function renderResult(data) {
                 const recommendedCrop = data && data.recommended_crop ? String(data.recommended_crop) : '-';
                 const confidence = data && typeof data.confidence === 'number' ? `${(data.confidence * 100).toFixed(2)}%` : 'N/A';
-                const inferenceMode = data && data.inference_mode ? String(data.inference_mode) : 'unknown';
+                const bestAlternative = data && Array.isArray(data.top_predictions) && data.top_predictions[1]
+                    ? String(data.top_predictions[1].crop).charAt(0).toUpperCase() + String(data.top_predictions[1].crop).slice(1)
+                    : 'N/A';
 
                 if (recommendedCropLabel) {
                     recommendedCropLabel.textContent = recommendedCrop;
@@ -899,7 +905,7 @@
                     confidenceLabel.textContent = confidence;
                 }
                 if (inferenceModeLabel) {
-                    inferenceModeLabel.textContent = inferenceMode.toUpperCase();
+                    inferenceModeLabel.textContent = bestAlternative;
                 }
 
                 renderTopPredictions(data.top_predictions || []);

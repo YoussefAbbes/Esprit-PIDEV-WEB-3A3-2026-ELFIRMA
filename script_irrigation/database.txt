@@ -1,0 +1,45 @@
+all already created :
+1) parcelle
+Parent table (already in your DB, used by FK).
+
+Typical minimum:
+
+id (PK, int)
+other business columns depending on your app (name/surface/location/owner/etc.)
+2) irrigation_command
+Queue of commands sent from web UI to Raspberry Pi.
+
+id (PK, int, auto increment)
+parcelle_id (FK → parcelle.id)
+command (ENUM or VARCHAR: AUTO, MANUAL_ON, MANUAL_OFF)
+status (ENUM/VARCHAR: usually PENDING, ACK)
+created_at (DATETIME)
+processed_at (DATETIME, nullable)
+Used by script:
+
+reads oldest PENDING command
+sets it to ACK when processed
+3) irrigation_state
+Latest state snapshot per parcelle.
+
+id (PK, int, auto increment) or unique parcelle_id strategy
+parcelle_id (FK → parcelle.id, usually UNIQUE for upsert per parcelle)
+mode (AUTO, MANUAL_ON, MANUAL_OFF)
+pump_running (TINYINT/BOOLEAN)
+soil_value (INT/TINYINT; from GPIO read)
+needs_water (TINYINT/BOOLEAN)
+updated_at (DATETIME)
+Used by script:
+
+INSERT ... ON DUPLICATE KEY UPDATE (so parcelle_id should be unique)
+4) irrigation_event
+History log (audit trail).
+
+id (PK, int, auto increment)
+parcelle_id (FK → parcelle.id)
+source (e.g. WEB, DEVICE, AUTO)
+event_type (e.g. MODE_CHANGED, PUMP_ON_AUTO, PUMP_OFF_MANUAL, etc.)
+message (TEXT/VARCHAR)
+soil_value (INT/TINYINT, nullable)
+needs_water (TINYINT/BOOLEAN, nullable)
+created_at (DATETIME)

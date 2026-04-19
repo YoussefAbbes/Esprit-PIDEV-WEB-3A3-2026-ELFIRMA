@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irrigation Dashboard</title>
+
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@400;600;700&family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="{{ asset('styles/irrigation-dashboard.css') }}" rel="stylesheet"/>
+</head>
+<body class="bg-light irrigation-page">
+    {{ include('elfirma/_sidebar.html.twig') }}
+
+    <main
+        class="min-vh-100 p-3 p-lg-4"
+        data-controller="irrigation-dashboard"
+        data-irrigation-dashboard-base-url-value="{{ path('irrigation_index') }}"
+        data-irrigation-dashboard-csrf-token-value="{{ csrf_token('irrigation_command') }}"
+        data-irrigation-dashboard-initial-state-value="{{ initialState|json_encode|e('html_attr') }}"
+        data-irrigation-dashboard-initial-events-value="{{ initialEvents|json_encode|e('html_attr') }}"
+        data-irrigation-dashboard-poll-interval-value="3000"
+    >
+        <div class="container-fluid">
+            <div class="irrigation-hero rounded-4 p-4 p-lg-5 mb-4">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                    <div>
+                        <h1 class="h3 mb-2">Irrigation Control Center</h1>
+                        <p class="text-secondary mb-0">
+                            Real-time monitoring with smart alerts, trends, and instant commands.
+                        </p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ path('parcelle_index') }}" class="btn btn-outline-secondary btn-sm">
+                            Back to Plots
+                        </a>
+                        {% if selectedParcelle %}
+                            <a href="{{ path('parcelle_show', {id: selectedParcelle.id}) }}" class="btn btn-outline-primary btn-sm">
+                                View Plot
+                            </a>
+                        {% endif %}
+                        <span class="badge text-bg-primary px-3 py-2">Live Monitor</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if parcelles is empty %}
+                <div class="alert alert-warning">
+                    No plot is available. Create a plot first to use the irrigation dashboard.
+                </div>
+            {% endif %}
+
+            <div class="card irrigation-shell rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-lg-7">
+                            <label for="irrigationParcelleSelect" class="form-label fw-semibold">Plot</label>
+                            <select
+                                id="irrigationParcelleSelect"
+                                class="form-select"
+                                data-irrigation-dashboard-target="parcelleSelect"
+                                data-action="change->irrigation-dashboard#changeParcelle"
+                                {% if parcelles is empty %}disabled{% endif %}
+                            >
+                                <option value="">Select a plot</option>
+                                {% for parcelle in parcelles %}
+                                    <option
+                                        value="{{ parcelle.id }}"
+                                        {{ selectedParcelle and selectedParcelle.id == parcelle.id ? 'selected' : '' }}
+                                    >
+                                        #{{ parcelle.id }} - {{ parcelle.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-5 text-lg-end">
+                            <span class="badge text-bg-light border text-secondary-emphasis">
+                                Auto refresh: 3s
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="alert d-none mt-3 mb-0" role="alert" data-irrigation-dashboard-target="alert"></div>
+                </div>
+            </div>
+
+            {% set modeClass = 'text-bg-secondary' %}
+            {% if initialState.mode == 'AUTO' %}
+                {% set modeClass = 'text-bg-primary' %}
+            {% elseif initialState.mode in ['MANUAL_ON', 'MANUAL_OFF'] %}
+                {% set modeClass = 'text-bg-dark' %}
+            {% endif %}
+
+            {% set pumpClass = initialState.pumpRunning ? 'text-bg-success' : 'text-bg-secondary' %}
+            {% set pumpText = initialState.pumpRunning ? 'ON' : 'OFF' %}
+
+            {% set needsClass = 'text-bg-secondary' %}
+            {% set needsText = 'UNKNOWN' %}
+            {% if initialState.needsWater is same as(true) %}
+                {% set needsClass = 'text-bg-warning' %}
+                {% set needsText = 'REQUIRED' %}
+            {% elseif initialState.needsWater is same as(false) %}
+                {% set needsClass = 'text-bg-success' %}
+                {% set needsText = 'NOT REQUIRED' %}
+            {% endif %}
+
+            {% set soilConditionClass = 'text-bg-secondary' %}
+            {% set soilConditionText = 'UNKNOWN' %}
+            {% if initialState.soilValue is not null %}
+                {% if initialState.soilValue == 0 %}
+                    {% set soilConditionClass = 'text-bg-warning' %}
+                    {% set soilConditionText = 'DRY' %}
+                {% elseif initialState.soilValue == 1 %}
+                    {% set soilConditionClass = 'text-bg-info' %}
+                    {% set soilConditionText = 'WET' %}
+                {% endif %}
+            {% elseif initialState.needsWater is same as(true) %}
+                {% set soilConditionClass = 'text-bg-warning' %}
+                {% set soilConditionText = 'DRY' %}
+            {% elseif initialState.needsWater is same as(false) %}
+                {% set soilConditionClass = 'text-bg-info' %}
+                {% set soilConditionText = 'WET' %}
+            {% endif %}
+
+            {% set totalEvents = initialEvents|length %}
+            {% set autoEvents = 0 %}
+            {% set dryEvents = 0 %}
+            {% set soilSum = 0 %}
+            {% set soilCount = 0 %}
+
+            {% for event in initialEvents %}
+                {% set sourceType = (event.source ?? '')|upper %}
+                {% set eventType = (event.eventType ?? '')|upper %}
+
+                {% if sourceType == 'AUTO' or 'AUTO' in eventType %}
+                    {% set autoEvents = autoEvents + 1 %}
+                {% endif %}
+
+                {% if event.needsWater is same as(true) %}
+                    {% set dryEvents = dryEvents + 1 %}
+                {% endif %}
+
+                {% if event.soilValue is not null %}
+                    {% set soilSum = soilSum + event.soilValue %}
+                    {% set soilCount = soilCount + 1 %}
+                {% endif %}
+            {% endfor %}
+
+            {% set dryRate = totalEvents > 0 ? ((dryEvents * 100 / totalEvents)|round(0, 'floor')) : 0 %}
+            {% set soilAverage = soilCount > 0 ? (soilSum / soilCount) : null %}
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-xl-5">
+                    <div class="card irrigation-shell rounded-4 h-100">
+                        <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <h2 class="h5 mb-0">Current State</h2>
+                            <span data-irrigation-dashboard-target="healthBadge" class="badge rounded-pill text-bg-secondary">ANALYZING</span>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <div class="irrigation-state-grid">
+                                <div class="irrigation-state-item">
+                                    <div class="irrigation-state-label">Mode</div>
+                                    <div class="irrigation-state-value">
+                                        <span data-irrigation-dashboard-target="modeBadge" class="badge rounded-pill {{ modeClass }}">
+                                            {{ initialState.mode ?? 'N/A' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="irrigation-state-item">
+                                    <div class="irrigation-state-label">Pump</div>
+                                    <div class="irrigation-state-value">
+                                        <span data-irrigation-dashboard-target="pumpBadge" class="badge rounded-pill {{ pumpClass }}">
+                                            {{ pumpText }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="irrigation-state-item">
+                                    <div class="irrigation-state-label">Soil Condition</div>
+                                    <div class="irrigation-state-value">
+                                        <span data-irrigation-dashboard-target="soilValue" class="badge rounded-pill {{ soilConditionClass }}">
+                                            {{ soilConditionText }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="irrigation-state-item">
+                                    <div class="irrigation-state-label">Water Demand</div>
+                                    <div class="irrigation-state-value">
+                                        <span data-irrigation-dashboard-target="needsWaterBadge" class="badge rounded-pill {{ needsClass }}">
+                                            {{ needsText }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-muted small">
+                                Last update:
+                                <span data-irrigation-dashboard-target="updatedAt">
+                                    {{ initialState.updatedAt ? initialState.updatedAt|date('d/m/Y H:i:s') : 'N/A' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-7">
+                    <div class="card irrigation-shell rounded-4 h-100">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h2 class="h5 mb-0">Commands</h2>
+                        </div>
+                        <div class="card-body px-4 pb-4 d-flex flex-column justify-content-between">
+                            <p class="text-secondary mb-4">
+                                Send a command to the Raspberry Pi. The command is queued with PENDING status and then processed by the irrigation script.
+                            </p>
+                            <div class="d-grid gap-2 d-md-flex irrigation-command-grid">
+                                <button
+                                    type="button"
+                                    class="btn irrigation-command-btn irrigation-command-auto"
+                                    data-command="AUTO"
+                                    data-action="click->irrigation-dashboard#sendCommand"
+                                    data-irrigation-dashboard-target="commandButton"
+                                    {% if selectedParcelle is null %}disabled{% endif %}
+                                >
+                                    Set AUTO
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn irrigation-command-btn irrigation-command-on"
+                                    data-command="MANUAL_ON"
+                                    data-action="click->irrigation-dashboard#sendCommand"
+                                    data-irrigation-dashboard-target="commandButton"
+                                    {% if selectedParcelle is null %}disabled{% endif %}
+                                >
+                                    Manual ON
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn irrigation-command-btn irrigation-command-off"
+                                    data-command="MANUAL_OFF"
+                                    data-action="click->irrigation-dashboard#sendCommand"
+                                    data-irrigation-dashboard-target="commandButton"
+                                    {% if selectedParcelle is null %}disabled{% endif %}
+                                >
+                                    Manual OFF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-xl-8">
+                    <div class="card irrigation-shell rounded-4 h-100">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h2 class="h5 mb-0">Smart Statistics</h2>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <div class="irrigation-kpi-grid">
+                                <article class="irrigation-kpi-card">
+                                    <div class="irrigation-kpi-label">Events (max 20)</div>
+                                    <div data-irrigation-dashboard-target="statEventsTotal" class="irrigation-kpi-value">{{ totalEvents }}</div>
+                                </article>
+                                <article class="irrigation-kpi-card">
+                                    <div class="irrigation-kpi-label">Actions AUTO</div>
+                                    <div data-irrigation-dashboard-target="statAutoActions" class="irrigation-kpi-value">{{ autoEvents }}</div>
+                                </article>
+                                <article class="irrigation-kpi-card">
+                                    <div class="irrigation-kpi-label">Dry Demand Rate</div>
+                                    <div data-irrigation-dashboard-target="statDryRate" class="irrigation-kpi-value">{{ dryRate }}%</div>
+                                </article>
+                                <article class="irrigation-kpi-card">
+                                    <div class="irrigation-kpi-label">Average Soil Sensor</div>
+                                    <div data-irrigation-dashboard-target="statSoilAverage" class="irrigation-kpi-value">{{ soilAverage is not null ? soilAverage|number_format(2, '.', '') : 'N/A' }}</div>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-4">
+                    <div class="card irrigation-shell rounded-4 h-100">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h2 class="h5 mb-0">Notifications & Alerts</h2>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <ul data-irrigation-dashboard-target="notificationsBody" class="irrigation-notes-list">
+                                {% if initialState.exists %}
+                                    <li class="irrigation-note-item irrigation-note-info">
+                                        <span class="material-symbols-outlined irrigation-note-icon">info</span>
+                                        <div class="irrigation-note-content">
+                                            <p class="irrigation-note-title">Initial analysis loaded</p>
+                                            <p class="irrigation-note-message">The alert engine is active and updates continuously.</p>
+                                        </div>
+                                    </li>
+                                {% else %}
+                                    <li class="irrigation-note-item irrigation-note-warning">
+                                        <span class="material-symbols-outlined irrigation-note-icon">warning</span>
+                                        <div class="irrigation-note-content">
+                                            <p class="irrigation-note-title">No active telemetry</p>
+                                            <p class="irrigation-note-message">Select a plot or wait for the next Raspberry Pi frame.</p>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card irrigation-shell rounded-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h2 class="h5 mb-0">Interactive Event History</h2>
+                </div>
+
+                <div class="card-body border-top px-4 py-3">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-12 col-lg-5">
+                            <input
+                                type="text"
+                                class="form-control irrigation-filter-input"
+                                placeholder="Search in type, message, source..."
+                                data-irrigation-dashboard-target="eventsSearch"
+                                data-action="input->irrigation-dashboard#changeEventsFilters"
+                            >
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <select
+                                class="form-select irrigation-filter-select"
+                                data-irrigation-dashboard-target="eventsSourceFilter"
+                                data-action="change->irrigation-dashboard#changeEventsFilters"
+                            >
+                                <option value="">All sources</option>
+                                <option value="AUTO">AUTO</option>
+                                <option value="WEB">WEB</option>
+                                <option value="DEVICE">DEVICE</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <div class="form-check form-switch irrigation-filter-switch">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="irrigationDryOnly"
+                                    data-irrigation-dashboard-target="eventsDryOnly"
+                                    data-action="change->irrigation-dashboard#changeEventsFilters"
+                                >
+                                <label class="form-check-label" for="irrigationDryOnly">
+                                    Dry events only
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-1 text-lg-end">
+                            <span class="badge text-bg-light border" data-irrigation-dashboard-target="eventsCountLabel">{{ totalEvents }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 irrigation-events-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Source</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Message</th>
+                                <th scope="col">Soil Condition</th>
+                                <th scope="col">Water Demand</th>
+                            </tr>
+                        </thead>
+                        <tbody data-irrigation-dashboard-target="eventsBody">
+                            {% if initialEvents is empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No recent events.</td>
+                                </tr>
+                            {% else %}
+                                {% for event in initialEvents %}
+                                    {% set rowSoilClass = 'text-bg-secondary' %}
+                                    {% set rowSoilText = 'UNKNOWN' %}
+                                    {% if event.soilValue is not null %}
+                                        {% if event.soilValue == 0 %}
+                                            {% set rowSoilClass = 'text-bg-warning' %}
+                                            {% set rowSoilText = 'DRY' %}
+                                        {% elseif event.soilValue == 1 %}
+                                            {% set rowSoilClass = 'text-bg-info' %}
+                                            {% set rowSoilText = 'WET' %}
+                                        {% endif %}
+                                    {% elseif event.needsWater is same as(true) %}
+                                        {% set rowSoilClass = 'text-bg-warning' %}
+                                        {% set rowSoilText = 'DRY' %}
+                                    {% elseif event.needsWater is same as(false) %}
+                                        {% set rowSoilClass = 'text-bg-info' %}
+                                        {% set rowSoilText = 'WET' %}
+                                    {% endif %}
+
+                                    <tr>
+                                        <td>{{ event.createdAt ? event.createdAt|date('d/m/Y H:i:s') : 'N/A' }}</td>
+                                        <td>{{ event.source ?? '-' }}</td>
+                                        <td>{{ event.eventType ?? '-' }}</td>
+                                        <td>{{ event.message ?? '-' }}</td>
+                                        <td>
+                                            <span class="badge rounded-pill {{ rowSoilClass }}">{{ rowSoilText }}</span>
+                                        </td>
+                                        <td>
+                                            {% if event.needsWater is same as(true) %}
+                                                <span class="badge rounded-pill text-bg-warning">REQUIRED</span>
+                                            {% elseif event.needsWater is same as(false) %}
+                                                <span class="badge rounded-pill text-bg-success">NOT REQUIRED</span>
+                                            {% else %}
+                                                <span class="badge rounded-pill text-bg-secondary">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{ importmap('app') }}
+    {{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>
