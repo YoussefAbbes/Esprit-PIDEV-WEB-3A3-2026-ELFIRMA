@@ -183,7 +183,7 @@ final class AiAccessibilityController extends AbstractController
             ]);
         }
 
-        if ($intent === 'checkout_confirm' || $gesture === 'thumb_up') {
+        if ($intent === 'checkout_confirm' || $gesture === 'double_open_palm') {
             return $this->ok('Confirmation de commande en cours.', [
                 ['type' => 'click_confirm_order'],
             ]);

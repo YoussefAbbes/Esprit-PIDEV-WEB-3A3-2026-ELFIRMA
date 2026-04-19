@@ -5,7 +5,7 @@ namespace App\AI;
 final class GestureIntentAi
 {
     private const MODEL_FILE = '/var/ai/gesture_intent_model.json';
-    private const MODEL_VERSION = 2;
+    private const MODEL_VERSION = 3;
 
     /** @var array<string,IntentModel> */
     private array $models = [];
@@ -93,7 +93,7 @@ final class GestureIntentAi
                 ['gesture' => 'wave', 'title' => 'Vague', 'description' => 'Passer au champ suivant'],
                 ['gesture' => 'open_palm', 'title' => 'Main ouverte', 'description' => 'Generer code promo'],
                 ['gesture' => 'fist', 'title' => 'Poing', 'description' => 'Appliquer code promo'],
-                ['gesture' => 'thumb_up', 'title' => 'Pouce haut', 'description' => 'Confirmer la commande'],
+                ['gesture' => 'double_open_palm', 'title' => '2 mains ouvertes', 'description' => 'Confirmer la commande'],
                 ['gesture' => 'victory', 'title' => 'V signe', 'description' => 'Lire le recapitulatif commande'],
             ],
             default => [],
@@ -162,7 +162,7 @@ final class GestureIntentAi
                 'checkout_focus_next' => ['wave', 'vague', 'champ suivant', 'suivant'],
                 'checkout_promo_generate' => ['open_palm', 'main ouverte', 'generer promo'],
                 'checkout_promo_apply' => ['fist', 'poing', 'appliquer promo'],
-                'checkout_confirm' => ['thumb_up', 'pouce haut', 'confirmer commande'],
+                'checkout_confirm' => ['double_open_palm', '2 mains ouvertes', 'deux mains ouvertes', 'confirmer commande'],
                 'checkout_read_summary' => ['victory', 'v signe', 'lire recap', 'total commande'],
             ],
         ];
