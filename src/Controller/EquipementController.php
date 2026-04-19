@@ -15,6 +15,7 @@ use App\Form\EquipementType;
 use App\Enum\EquipementEtat;
 use App\Entity\Maintenance;
 use App\Form\MaintenanceType;
+use App\Service\AIPredictionService;
 
 
 class EquipementController extends AbstractController
@@ -269,60 +270,100 @@ public function index(
         $equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
         }
 
-        #[Route('/equipement/{id}/generate-image', name: 'generate_image', methods: ['POST'])]
-public function generateImage(Equipement $equipement): JsonResponse
+
+       #[Route('/analyse/{id}', name: 'ai_analyse')]
+public function analyse($id, EquipementRepository $repo, AIPredictionService $ai)
 {
-    $description = $equipement->getDescriptionEq();
+    $equipement = $repo->find($id);
 
-    if (!$description) {
-        return new JsonResponse([
-            'success' => false,
-            'message' => 'Description vide'
-        ], 400);
+    $nbMaintenances = count($equipement->getMaintenances());
+
+    $totalCout = 0;
+    foreach ($equipement->getMaintenances() as $m) {
+        $totalCout += $m->getCout();
     }
 
-    $accountId = '1c9e8098b3c6cb26f06ef73dcc8d8846';
-    $apiToken = '81nlNeNoH1aS4SZ0K06jKtt8X9H2DnluC75DR_Jn';
+    $age = (new \DateTime())->diff($equipement->getDateAchat())->y;
 
-    $url = "https://api.cloudflare.com/client/v4/accounts/$accountId/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0";
+    $etatMap = [
+        'bon' => 1,
+        'moyen' => 2,
+        'critique' => 3
+    ];
 
-    $payload = json_encode([
-        'prompt' => $description
-    ]);
+    $payload = [
+        'etat' => $etatMap[strtolower($equipement->getEtat()->value)] ?? 1,
+        'age' => $age,
+        'cout' => $equipement->getCoutAchat(),
+        'nb_maintenances' => $nbMaintenances,
+        'total_cout' => $totalCout
+    ];
 
-    $ch = curl_init();
+    $result = $ai->predict($payload);
 
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $payload,
-        CURLOPT_HTTPHEADER => [
-            "Authorization: Bearer $apiToken",
-            "Content-Type: application/json"
-        ],
-        CURLOPT_TIMEOUT => 60
-    ]);
-
-    $response = curl_exec($ch);
-
-    if ($response === false) {
-        curl_close($ch);
-        return new JsonResponse([
-            'success' => false,
-            'message' => 'Erreur API'
-        ], 500);
-    }
-
-    curl_close($ch);
-
-    // 🔥 encoder image en base64 pour frontend
-    $base64 = base64_encode($response);
-
-    return new JsonResponse([
-        'success' => true,
-        'image' => 'data:image/png;base64,' . $base64
-    ]);
+    return $this->json([
+    'nom' => $equipement->getNomEq(),
+    'score' => $result['health_score'],
+    'risk' => $result['risk_level'],
+    'analysis' => $result['analysis'],
+    'recommendations' => $result['recommendations']
+]);
 }
+
+        #[Route('/equipement/{id}/generate-image', name: 'generate_image', methods: ['POST'])]
+        public function generateImage(Equipement $equipement): JsonResponse
+        {
+            $description = $equipement->getDescriptionEq();
+
+            if (!$description) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Description vide'
+                ], 400);
+            }
+
+            $accountId = '1c9e8098b3c6cb26f06ef73dcc8d8846';
+            $apiToken = '81nlNeNoH1aS4SZ0K06jKtt8X9H2DnluC75DR_Jn';
+
+            $url = "https://api.cloudflare.com/client/v4/accounts/$accountId/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0";
+
+            $payload = json_encode([
+                'prompt' => $description
+            ]);
+
+            $ch = curl_init();
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $payload,
+                CURLOPT_HTTPHEADER => [
+                    "Authorization: Bearer $apiToken",
+                    "Content-Type: application/json"
+                ],
+                CURLOPT_TIMEOUT => 60
+            ]);
+
+            $response = curl_exec($ch);
+
+            if ($response === false) {
+                curl_close($ch);
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Erreur API'
+                ], 500);
+            }
+
+            curl_close($ch);
+
+            // 🔥 encoder image en base64 pour frontend
+            $base64 = base64_encode($response);
+
+            return new JsonResponse([
+                'success' => true,
+                'image' => 'data:image/png;base64,' . $base64
+            ]);
+        }
     
 }

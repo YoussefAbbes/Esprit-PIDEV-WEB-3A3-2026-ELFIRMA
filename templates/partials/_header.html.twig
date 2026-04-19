@@ -38,7 +38,7 @@
           </li>
         {% elseif app.session.get('user_role') == 'employee' %}
           <li>
-            <a href="{{ path('elfirma_page', { module: 'employee_maintenances' }) }}">
+            <a href="{{ path('elfirma_page', { module: 'employee_maintenances' }) }}" class="nav-admin-link">
               Employee Panel
             </a>
           </li>
