@@ -73,6 +73,24 @@ def pick_font(size, bold=False):
     return ImageFont.load_default()
 
 
+def clamp_wrapped_text(value, width_chars, max_lines):
+    text = (value or "").strip()
+    if text == "":
+        return ""
+
+    lines = []
+    for raw_line in text.splitlines():
+        wrapped = textwrap.wrap(raw_line.strip(), width=width_chars) or [""]
+        lines.extend(wrapped)
+
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+        if lines[-1] != "":
+            lines[-1] = (lines[-1][: max(0, width_chars - 1)]).rstrip() + "..."
+
+    return "\n".join(lines)
+
+
 def create_background(image_path, width, height, output_path):
     if image_path and os.path.isfile(image_path):
         base = Image.open(image_path).convert("RGB")
@@ -93,8 +111,8 @@ def create_title_layer(width, height, name, quality, output_path):
     canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(canvas)
 
-    title_font = pick_font(84, bold=True)
-    quality_font = pick_font(42, bold=False)
+    title_font = pick_font(64, bold=True)
+    quality_font = pick_font(36, bold=False)
 
     panel_x = int(width * 0.06)
     panel_y = int(height * 0.08)
@@ -109,8 +127,23 @@ def create_title_layer(width, height, name, quality, output_path):
         width=5,
     )
 
-    draw.text((panel_x + 42, panel_y + 30), name, font=title_font, fill=(236, 254, 255, 255))
-    draw.text((panel_x + 44, panel_y + 150), f"Qualite: {quality}", font=quality_font, fill=(153, 246, 228, 255))
+    title_text = clamp_wrapped_text(name or "Produit", width_chars=24, max_lines=2)
+    title_text = title_text or "Produit"
+    draw.multiline_text(
+        (panel_x + 42, panel_y + 24),
+        title_text,
+        font=title_font,
+        fill=(236, 254, 255, 255),
+        spacing=8,
+    )
+
+    title_bbox = draw.multiline_textbbox((panel_x + 42, panel_y + 24), title_text, font=title_font, spacing=8)
+    quality_y = title_bbox[3] + 10
+    max_quality_y = panel_y + panel_h - 54
+    if quality_y > max_quality_y:
+        quality_y = max_quality_y
+
+    draw.text((panel_x + 44, quality_y), f"Qualite: {quality}", font=quality_font, fill=(153, 246, 228, 255))
 
     canvas.save(output_path, format="PNG")
 
@@ -119,9 +152,8 @@ def create_details_layer(width, height, description, production_date, expiration
     canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(canvas)
 
-    body_font = pick_font(40, bold=False)
-    meta_font = pick_font(38, bold=False)
-    price_font = pick_font(68, bold=True)
+    body_font = pick_font(30, bold=False)
+    meta_font = pick_font(28, bold=False)
 
     panel_x = int(width * 0.08)
     panel_y = int(height * 0.48)
@@ -136,17 +168,57 @@ def create_details_layer(width, height, description, production_date, expiration
         width=4,
     )
 
-    wrapped = textwrap.fill(description, width=54)
-    draw.text((panel_x + 40, panel_y + 34), wrapped, font=body_font, fill=(219, 234, 254, 255))
-    draw.text((panel_x + 40, panel_y + 150), f"Date production: {production_date}", font=meta_font, fill=(191, 219, 254, 255))
-    draw.text((panel_x + 40, panel_y + 208), f"Date expiration: {expiration_date}", font=meta_font, fill=(191, 219, 254, 255))
+    wrapped = clamp_wrapped_text(description or "Description non renseignee", width_chars=56, max_lines=3)
+    text_x = panel_x + 40
+    content_top = panel_y + 28
 
-    draw.text(
-        (panel_x + 40, panel_y + panel_h - 105),
-        f"Prix: {price} DT",
-        font=price_font,
-        fill=(110, 231, 183, 255),
-    )
+    prod_label = f"Date production: {production_date}"
+    exp_label = f"Date expiration: {expiration_date}"
+    price_label = f"Prix: {price} DT"
+
+    # Adapt price font to available width so it never spills over text blocks.
+    price_font_size = 54
+    price_font = pick_font(price_font_size, bold=True)
+    max_price_width = panel_w - 80
+    while price_font_size > 34:
+        pbox = draw.textbbox((0, 0), price_label, font=price_font)
+        if (pbox[2] - pbox[0]) <= max_price_width:
+            break
+        price_font_size -= 4
+        price_font = pick_font(price_font_size, bold=True)
+
+    pbox = draw.textbbox((0, 0), price_label, font=price_font)
+    price_h = pbox[3] - pbox[1]
+    price_y = panel_y + panel_h - 24 - price_h
+
+    # Ensure description + dates always fit above price by reducing desc lines when needed.
+    chosen_desc = wrapped
+    meta_gap = 40
+    mbox = draw.textbbox((0, 0), prod_label, font=meta_font)
+    meta_h = mbox[3] - mbox[1]
+
+    for desc_lines in (3, 2, 1):
+        candidate_desc = clamp_wrapped_text(description or "Description non renseignee", width_chars=56, max_lines=desc_lines)
+        dbox = draw.multiline_textbbox((text_x, content_top), candidate_desc, font=body_font, spacing=10)
+        desc_bottom = dbox[3]
+        meta_y_candidate = desc_bottom + 12
+        exp_bottom = meta_y_candidate + meta_h + meta_gap
+        if exp_bottom <= price_y - 16:
+            chosen_desc = candidate_desc
+            break
+
+    draw.multiline_text((text_x, content_top), chosen_desc, font=body_font, fill=(219, 234, 254, 255), spacing=10)
+    dbox = draw.multiline_textbbox((text_x, content_top), chosen_desc, font=body_font, spacing=10)
+    meta_y = dbox[3] + 12
+
+    max_meta_y = price_y - 16 - (meta_h * 2 + (meta_gap - meta_h))
+    if meta_y > max_meta_y:
+        meta_y = max(content_top + 34, max_meta_y)
+
+    draw.text((text_x, meta_y), prod_label, font=meta_font, fill=(191, 219, 254, 255))
+    draw.text((text_x, meta_y + meta_gap), exp_label, font=meta_font, fill=(191, 219, 254, 255))
+
+    draw.text((panel_x + 40, price_y), price_label, font=price_font, fill=(110, 231, 183, 255))
 
     canvas.save(output_path, format="PNG")
 

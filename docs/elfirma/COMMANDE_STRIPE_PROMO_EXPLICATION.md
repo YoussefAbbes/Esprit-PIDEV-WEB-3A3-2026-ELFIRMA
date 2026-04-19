@@ -722,7 +722,23 @@ R: Date expires_at stockee en session et verifiee a chaque action.
   - Ajouter evaluation offline (accuracy/F1 + matrice confusion).
   - Version multilingue FR/AR/EN avec datasets separes.
 
-## 18) Generation video produit automatique (Symfony + Python)
+
+### C) Integration front catalogue
+- Fichier: `templates/pages/index.html.twig`
+- Ajout bouton `Generate Video` dans la modal detail produit.
+- Action JS: ouverture de `/product/{id}/generate-video` dans un nouvel onglet.
+
+### D) Script Python de generation
+- Fichier: `scripts/generate_product_video.py`
+- Librairies utilisees:
+  - MoviePy
+  - gTTS
+  - Pillow
+- Pipeline:
+  - fond video depuis image produit
+  - overlays animes (titre + details)
+  - zoom progressif + fade-in
+  - audio TTS## 18) Generation video produit automatique (Symfony + Python)
 ### A) Objectif
 - Ajouter un bouton "Generate Video" dans le detail produit du catalogue.
 - Generer automatiquement une video `.mp4` depuis les donnees BD du produit.
@@ -746,22 +762,6 @@ R: Date expires_at stockee en session et verifiee a chaque action.
   - affiche la video si succes
   - affiche la sortie technique si erreur
 
-### C) Integration front catalogue
-- Fichier: `templates/pages/index.html.twig`
-- Ajout bouton `Generate Video` dans la modal detail produit.
-- Action JS: ouverture de `/product/{id}/generate-video` dans un nouvel onglet.
-
-### D) Script Python de generation
-- Fichier: `scripts/generate_product_video.py`
-- Librairies utilisees:
-  - MoviePy
-  - gTTS
-  - Pillow
-- Pipeline:
-  - fond video depuis image produit
-  - overlays animes (titre + details)
-  - zoom progressif + fade-in
-  - audio TTS
   - export `.mp4` dans `public/generated_videos`
 
 ### E) Narration vocale (ordre demande)

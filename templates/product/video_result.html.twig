@@ -2,39 +2,264 @@
 
 {% block title %}Video produit - {{ produit.nom }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --vr-bg-1: #f0fdf4;
+            --vr-bg-2: #ecfeff;
+            --vr-card: #ffffff;
+            --vr-ink: #052e2b;
+            --vr-soft: #475569;
+            --vr-brand: #0f766e;
+            --vr-brand-2: #166534;
+            --vr-border: #d1fae5;
+        }
+
+        .vr-page {
+            background:
+                radial-gradient(circle at 8% 10%, rgba(20, 184, 166, 0.16), transparent 38%),
+                radial-gradient(circle at 92% 6%, rgba(34, 197, 94, 0.14), transparent 40%),
+                linear-gradient(140deg, var(--vr-bg-1), var(--vr-bg-2));
+            border-radius: 24px;
+            padding: 24px;
+        }
+
+        .vr-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .vr-title {
+            margin: 0;
+            font-weight: 900;
+            color: var(--vr-ink);
+            letter-spacing: 0.2px;
+        }
+
+        .vr-sub {
+            margin: 8px 0 0;
+            color: var(--vr-soft);
+            font-weight: 600;
+        }
+
+        .vr-badge {
+            align-self: flex-start;
+            background: linear-gradient(135deg, #0d9488, #166534);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            border-radius: 999px;
+            padding: 8px 12px;
+            box-shadow: 0 10px 24px rgba(15, 118, 110, 0.22);
+        }
+
+        .vr-grid {
+            display: grid;
+            grid-template-columns: 1.45fr 0.9fr;
+            gap: 18px;
+        }
+
+        .vr-card {
+            background: var(--vr-card);
+            border: 1px solid var(--vr-border);
+            border-radius: 18px;
+            box-shadow: 0 14px 30px rgba(2, 44, 34, 0.08);
+        }
+
+        .vr-video-wrap {
+            padding: 14px;
+        }
+
+        .vr-video {
+            width: 100%;
+            border-radius: 14px;
+            background: #020617;
+            display: block;
+            aspect-ratio: 16 / 9;
+            object-fit: contain;
+        }
+
+        .vr-msg {
+            margin: 12px 2px 0;
+            color: #065f46;
+            font-weight: 700;
+        }
+
+        .vr-panel {
+            padding: 18px;
+        }
+
+        .vr-panel h5 {
+            margin: 0 0 14px;
+            color: var(--vr-ink);
+            font-weight: 800;
+        }
+
+        .vr-meta {
+            display: grid;
+            gap: 10px;
+        }
+
+        .vr-meta-item {
+            border: 1px solid #ccfbf1;
+            background: #f0fdfa;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .vr-meta-label {
+            display: block;
+            font-size: 12px;
+            color: #0f766e;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        .vr-meta-value {
+            display: block;
+            color: #0f172a;
+            font-weight: 700;
+            margin-top: 4px;
+            word-break: break-word;
+        }
+
+        .vr-actions {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .vr-btn {
+            text-decoration: none;
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .vr-btn.main { background: linear-gradient(135deg, #166534, #15803d); }
+        .vr-btn.alt { background: linear-gradient(135deg, #0f766e, #0d9488); }
+
+        .vr-error {
+            background: #fff;
+            border: 1px solid #fecaca;
+            border-left: 6px solid #dc2626;
+            border-radius: 14px;
+            padding: 14px;
+            color: #7f1d1d;
+        }
+
+        .vr-error strong { display: block; margin-bottom: 4px; }
+
+        .vr-tech {
+            margin-top: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        .vr-tech summary {
+            cursor: pointer;
+            padding: 10px 12px;
+            color: #334155;
+            font-weight: 700;
+        }
+
+        .vr-tech pre {
+            margin: 0;
+            padding: 12px;
+            border-radius: 0 0 12px 12px;
+            background: #0f172a;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 992px) {
+            .vr-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 576px) {
+            .vr-page { border-radius: 14px; padding: 14px; }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 <div class="container py-5">
-    <div style="max-width: 980px; margin: 0 auto;">
-        <h2 style="font-weight: 800; color: #14532d; margin-bottom: 20px;">Video produit</h2>
-        <p style="font-size: 16px; color: #374151; margin-bottom: 22px;">
-            Produit: <strong>{{ produit.nom }}</strong>
-        </p>
+    <div class="vr-page" style="max-width: 1120px; margin: 0 auto;">
+        <div class="vr-head">
+            <div>
+                <h2 class="vr-title">Video produit</h2>
+                <p class="vr-sub">Apercu genere pour <strong>{{ produit.nom }}</strong></p>
+            </div>
+            <div class="vr-badge">EL FIRMA MEDIA</div>
+        </div>
 
         {% if generator_ok and video_url %}
-            <div style="background: #ffffff; border: 1px solid #d1fae5; border-radius: 16px; padding: 18px; box-shadow: 0 12px 28px rgba(6, 78, 59, .12);">
-                <video controls preload="metadata" style="width: 100%; border-radius: 12px; background: #000;">
-                    <source src="{{ video_url }}" type="video/mp4">
-                    Votre navigateur ne supporte pas la lecture video.
-                </video>
-                <p style="margin: 12px 0 0 0; color: #065f46; font-weight: 600;">{{ generator_message }}</p>
+            <div class="vr-grid">
+                <div class="vr-card vr-video-wrap">
+                    <video class="vr-video" controls preload="metadata">
+                        <source src="{{ video_url }}" type="video/mp4">
+                        Votre navigateur ne supporte pas la lecture video.
+                    </video>
+                    <p class="vr-msg">{{ generator_message }}</p>
+                </div>
+
+                <aside class="vr-card vr-panel">
+                    <h5>Informations produit</h5>
+                    <div class="vr-meta">
+                        <div class="vr-meta-item">
+                            <span class="vr-meta-label">Nom</span>
+                            <span class="vr-meta-value">{{ produit.nom }}</span>
+                        </div>
+                        <div class="vr-meta-item">
+                            <span class="vr-meta-label">Qualite</span>
+                            <span class="vr-meta-value">{{ produit.qualite ?: 'Non renseignee' }}</span>
+                        </div>
+                        <div class="vr-meta-item">
+                            <span class="vr-meta-label">Prix</span>
+                            <span class="vr-meta-value">{{ produit.prixUnitaire|number_format(2, '.', ' ') }} DT</span>
+                        </div>
+                        <div class="vr-meta-item">
+                            <span class="vr-meta-label">Dates</span>
+                            <span class="vr-meta-value">
+                                Prod: {{ produit.dateProduction ? produit.dateProduction|date('d/m/Y') : 'N/A' }}<br>
+                                Exp: {{ produit.dateExpiration ? produit.dateExpiration|date('d/m/Y') : 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="vr-actions">
+                        <a class="vr-btn main" href="{{ path('app_pages_home') }}#products">Retour catalogue</a>
+                        <a class="vr-btn alt" href="{{ path('app_product_details', {id: produit.idProduit}) }}">Voir details produit</a>
+                    </div>
+                </aside>
             </div>
         {% else %}
-            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px; padding: 16px; color: #991b1b;">
-                <p style="margin: 0 0 8px 0; font-weight: 700;">Generation video echouee.</p>
-                <p style="margin: 0;">{{ generator_message ?: 'Erreur inconnue pendant la generation.' }}</p>
+            <div class="vr-error">
+                <strong>Generation video echouee.</strong>
+                <span>{{ generator_message ?: 'Erreur inconnue pendant la generation.' }}</span>
             </div>
 
             {% if generator_stdout %}
-                <details style="margin-top: 14px;">
-                    <summary style="cursor: pointer; color: #334155;">Voir la sortie technique</summary>
-                    <pre style="white-space: pre-wrap; background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 12px; margin-top: 8px;">{{ generator_stdout }}</pre>
+                <details class="vr-tech">
+                    <summary>Voir la sortie technique</summary>
+                    <pre>{{ generator_stdout }}</pre>
                 </details>
             {% endif %}
-        {% endif %}
 
-        <div style="margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="{{ path('app_pages_home') }}#products" style="text-decoration: none; background: #166534; color: #fff; border-radius: 10px; padding: 10px 16px; font-weight: 700;">Retour catalogue</a>
-            <a href="{{ path('app_product_details', {id: produit.idProduit}) }}" style="text-decoration: none; background: #0f766e; color: #fff; border-radius: 10px; padding: 10px 16px; font-weight: 700;">Voir details produit</a>
+            <div class="vr-actions" style="margin-top: 14px;">
+                <a class="vr-btn main" href="{{ path('app_pages_home') }}#products">Retour catalogue</a>
+                <a class="vr-btn alt" href="{{ path('app_product_details', {id: produit.idProduit}) }}">Voir details produit</a>
+            </div>
+        {% endif %}
         </div>
     </div>
 </div>
