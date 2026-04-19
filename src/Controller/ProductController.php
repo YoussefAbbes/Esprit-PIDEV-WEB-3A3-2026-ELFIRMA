@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Dompdf\Dompdf;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -102,7 +103,7 @@ final class ProductController extends AbstractController
         $produits = $this->filterAndSortProducts($produits, $q, $categoryFilter, $statusFilter, $sort);
         $stats = $this->buildProductStats($produits);
 
-        return $this->render('elfirma/products_report_print.html.twig', [
+        $html = $this->renderView('elfirma/products_report_print.html.twig', [
             'produits' => $produits,
             'stats' => $stats,
             'generated_at' => (new \DateTimeImmutable())->format('d/m/Y H:i:s'),
@@ -112,6 +113,18 @@ final class ProductController extends AbstractController
                 'status' => $statusFilter,
                 'sort' => $sort,
             ],
+        ]);
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $pdfContent = $dompdf->output();
+
+        return new Response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="produits.pdf"',
         ]);
     }
 
@@ -140,16 +153,7 @@ final class ProductController extends AbstractController
         $dateProduction = $this->parseDateValue($formData['date_production']);
         $dateExpiration = $this->parseDateValue($formData['date_expiration']);
 
-        $imageFilename = null;
         $imageFile = $request->files->get('image');
-        if ($imageFile instanceof UploadedFile) {
-            $imageFilename = $this->buildUploadFilename($imageFile, $slugger);
-            try {
-                $imageFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/produits', $imageFilename);
-            } catch (\Throwable $e) {
-                $errors['image'][] = 'Unable to upload product image.';
-            }
-        }
 
         $produit = new Produit();
         $produit->setNom($formData['nom']);
@@ -161,7 +165,9 @@ final class ProductController extends AbstractController
         $produit->setDateProduction($dateProduction);
         $produit->setDateExpiration($dateExpiration);
         $produit->setCategorie($categorie);
-        $produit->setImage($imageFilename);
+        if ($imageFile instanceof UploadedFile) {
+            $produit->setImageFile($imageFile);
+        }
 
         $this->appendEntityValidationErrors($errors, $validator->validate($produit));
 
@@ -274,13 +280,8 @@ final class ProductController extends AbstractController
 
         $imageFile = $request->files->get('image');
         if ($imageFile instanceof UploadedFile) {
-            $imageFilename = $this->buildUploadFilename($imageFile, $slugger);
-            try {
-                $imageFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/produits', $imageFilename);
-                $formData['image'] = $imageFilename;
-            } catch (\Throwable $e) {
-                $errors['image'][] = 'Unable to upload product image.';
-            }
+            $produit->setImageFile($imageFile);
+            $formData['image'] = $produit->getImage() ?? $formData['image'];
         }
 
         $produit->setNom($formData['nom']);
@@ -292,7 +293,9 @@ final class ProductController extends AbstractController
         $produit->setDateProduction($dateProduction);
         $produit->setDateExpiration($dateExpiration);
         $produit->setCategorie($categorie);
-        $produit->setImage($formData['image'] !== '' ? $formData['image'] : null);
+        if ($formData['image'] !== '') {
+            $produit->setImage($formData['image']);
+        }
 
         $this->appendEntityValidationErrors($errors, $validator->validate($produit));
 

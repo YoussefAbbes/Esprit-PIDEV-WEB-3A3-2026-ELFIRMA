@@ -831,5 +831,88 @@ Champs passes:
 - L'affichage est anime et plus moderne.
 - La narration suit l'ordre metier attendu pour la soutenance.
 
+## 19) Recommandation produits dans le panier (Collaborative Filtering)
+### A) Objectif fonctionnel
+- Quand le client ouvre son panier, afficher jusqu'a 5 produits recommandes.
+- Les recommandations sont basees sur l'historique de commandes reel en base.
+- Les produits deja presents dans le panier sont exclus.
+- Les produits non disponibles ou en rupture sont exclus.
+
+### B) Principe IA utilise (explication simple)
+- Type d'IA utilise pour cette fonctionnalite: collaborative filtering base sur co-achats.
+- Idee: "des clients qui ont achete A ont aussi achete B".
+- Ce n'est pas un modele deep learning ici, mais une intelligence statistique basee donnees historiques.
+- Le score de pertinence d'un produit recommande est base sur la frequence de co-achat avec les produits du panier courant.
+
+### C) Langages et technologies utilises
+- Backend principal: PHP 8 + Symfony 6.4.
+- Acces donnees: Doctrine ORM + Doctrine DBAL (requete SQL optimisee).
+- Base de donnees: MySQL.
+- Front: Twig + JavaScript (affichage bloc "Recommandes pour vous" + bouton Ajouter).
+- Architecture: MVC propre.
+
+### D) Fichiers concernes
+- Service metier IA:
+  - `src/Service/RecommendationService.php`
+- Controller panier:
+  - `src/Controller/PanierController.php`
+- Vue panier:
+  - `templates/panier_index.html.twig`
+
+### E) Pipeline technique exact
+1. Le client ouvre la page panier.
+2. Le controller lit la session panier (`product_id => quantite`).
+3. Le controller appelle `RecommendationService::getRecommendationsFromCart(...)`.
+4. Le service normalise les IDs produits du panier.
+5. Le service execute une requete SQL de co-achats sur la table `commande`:
+   - cherche les lignes de commande partageant le meme "contexte panier" (client/utilisateur + date + adresse + mode paiement),
+   - calcule combien de fois chaque produit externe au panier apparait avec les produits du panier.
+6. Le service trie par score de co-achat decroissant.
+7. Le service recharge les produits via Doctrine et applique les filtres metier:
+   - statut = `Disponible`,
+   - quantite_stock > 0.
+8. Le service retourne au maximum 5 produits.
+9. Twig affiche les cartes recommandations avec un bouton "Ajouter".
+
+### F) Formule de scoring (version soutenance)
+- Pour un produit candidat C:
+  - score(C) = nombre total de co-occurrences de C avec les produits du panier courant.
+- Tri final:
+  - score desc,
+  - puis id produit desc (stabilisation du tri).
+
+### G) Pourquoi cette approche est "IA" dans ce contexte
+- Le systeme apprend implicitement des comportements historiques d'achat (patterns collectifs).
+- Il adapte la suggestion au panier en cours (personnalisation contextuelle).
+- Il n'utilise pas de regle fixe du type "si produit X alors Y" codee en dur.
+- C'est une IA de recommandation statistique, sans API externe.
+
+### H) Contraintes respectees
+- Pas d'API externe pour recommander.
+- Logique metier isolee dans un Service Symfony.
+- Controller leger (orchestration MVC).
+- Requete basee base de donnees (Doctrine/SQL).
+
+### I) Correctifs techniques realises pendant integration
+- Injection de dependance du service recommendation corrigee (injection constructeur controller).
+- Correction DBAL sur le parametre `LIMIT` (gestion type compatible).
+- Correction SQL MySQL collation (suppression comparaison `CONCAT = CONCAT`, passage a comparaisons null-safe colonne par colonne).
+
+### J) Limites actuelles (honnetes pour soutenance)
+- La table `commande` est structuree en lignes produit, pas en en-tete + lignes avec id_commande_metier global.
+- Le regroupement de "meme panier historique" est reconstruit via des champs contexte (utilisateur, date, adresse, mode paiement).
+- Les recommandations sont robustes, mais peuvent etre encore ameliorees avec un schema commande plus normalise.
+
+### K) Evolutions proposees
+- Ajouter un vrai identifiant de panier/commande parent pour un regroupement parfait des co-achats.
+- Ajouter un score hybride:
+  - co-achat,
+  - popularite recente,
+  - affinite categorie.
+- Ajouter une table de cache des top co-achats pour accelerer les requetes sur grand volume.
+
+### L) Reponse courte type prof
+- "Pour les recommandations panier, j'ai implemente un collaborative filtering en PHP/Symfony avec SQL MySQL via Doctrine. Le moteur observe les produits souvent achetes ensemble dans l'historique des commandes, exclut les produits deja dans le panier, filtre disponibilite/stock, puis renvoie les 5 plus pertinents."
+
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

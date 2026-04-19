@@ -148,6 +148,31 @@
                     </div>
                 </div>
             </div>
+
+            {% if recommended_products is defined and recommended_products is not empty %}
+            <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px;">
+                <div style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); padding: 20px; color: white;">
+                    <h5 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        Recommandés pour vous
+                    </h5>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.9;">Basé sur les achats effectués ensemble.</p>
+                </div>
+                <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+                    {% for product in recommended_products|slice(0, 5) %}
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid #ecfeff; background: #f0fdfa; border-radius: 10px; padding: 10px;">
+                            <div style="min-width: 0;">
+                                <div style="font-weight: 700; color: #134e4a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.nom }}</div>
+                                <div style="font-size: 12px; color: #0f766e;">{{ product.prixUnitaire|number_format(2, '.', ' ') }} DT</div>
+                            </div>
+                            <button type="button" onclick="addRecommendedToCart({{ product.idProduit }})" style="background: #0d9488; color: white; border: none; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;">
+                                Ajouter
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -284,6 +309,33 @@ function calculateTotal() {
         if (totalEurEl) {
             totalEurEl.textContent = `~ ${(total * tndToEurRate).toFixed(2)} EUR`;
         }
+    }
+}
+
+async function addRecommendedToCart(productId) {
+    try {
+        const response = await fetch('/api/panier/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantite: 1
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            location.reload();
+            return;
+        }
+
+        alert(result.error || 'Impossible d\'ajouter ce produit');
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de l\'ajout au panier');
     }
 }
 

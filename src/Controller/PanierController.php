@@ -11,10 +11,15 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\Produit;
+use App\Service\RecommendationService;
 
 final class PanierController extends AbstractController
 {
     private const EXCHANGE_RATE_API_BASE = 'https://v6.exchangerate-api.com/v6';
+
+    public function __construct(private readonly RecommendationService $recommendationService)
+    {
+    }
 
     #[Route('/panier', name: 'app_panier_index', methods: ['GET'])]
     public function index(SessionInterface $session, EntityManagerInterface $em, HttpClientInterface $httpClient): Response
@@ -36,10 +41,13 @@ final class PanierController extends AbstractController
             }
         }
 
+        $recommendedProducts = $this->recommendationService->getRecommendationsFromCart(array_keys($panier));
+
         return $this->render('panier_index.html.twig', [
             'items' => $panierWithData,
             'total' => $total,
             'tnd_to_eur_rate' => $this->getTndToEurRate($httpClient),
+            'recommended_products' => $recommendedProducts,
         ]);
     }
 
