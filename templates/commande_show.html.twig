@@ -14,7 +14,7 @@
                             Commande #{{ commande.idCommande }}
                         </h2>
                         <div>
-                            {% set statusColor = commande.statutCommande == 'En attente' ? '#f59e0b' : (commande.statutCommande == 'Confirmée' ? '#3b82f6' : (commande.statutCommande == 'Livrée' ? '#10b981' : '#ef4444')) %}
+                            {% set statusColor = commande.statutCommande == 'En attente' ? '#f59e0b' : (commande.statutCommande == 'Confirmée' ? '#10b981' : (commande.statutCommande == 'Livrée' ? '#059669' : '#ef4444')) %}
                             <span style="background: {{ statusColor }}; color: white; padding: 8px 16px; border-radius: 25px; font-size: 14px; font-weight: 700;">
                                 {{ commande.statutCommande }}
                             </span>
@@ -147,6 +147,26 @@
                             <a href="{{ path('app_commandes_index') }}" style="background: #6b7280; color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600;">
                                 ← Retour aux commandes
                             </a>
+
+                            {% if commande.statutCommande == 'En attente' %}
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <form method="POST" action="{{ path('app_commande_update_status', {id: commande.idCommande}) }}" onsubmit="return confirm('Confirmer cette commande ?');" style="margin:0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('update_commande_status_' ~ commande.idCommande) }}">
+                                    <input type="hidden" name="statut_commande" value="Confirmée">
+                                    <button type="submit" style="border: none; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                                        Confirmer
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="{{ path('app_commande_update_status', {id: commande.idCommande}) }}" onsubmit="return confirm('Annuler cette commande ?');" style="margin:0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('update_commande_status_' ~ commande.idCommande) }}">
+                                    <input type="hidden" name="statut_commande" value="Annulée">
+                                    <button type="submit" style="border: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                                        Annuler
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
 
                             {% if commande.modePaiement == 'Carte bancaire' and commande.statutPaiement == 'Payé' %}
                             <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">

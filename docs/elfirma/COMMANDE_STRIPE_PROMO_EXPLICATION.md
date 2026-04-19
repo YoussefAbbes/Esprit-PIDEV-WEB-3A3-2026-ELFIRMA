@@ -914,5 +914,118 @@ Champs passes:
 ### L) Reponse courte type prof
 - "Pour les recommandations panier, j'ai implemente un collaborative filtering en PHP/Symfony avec SQL MySQL via Doctrine. Le moteur observe les produits souvent achetes ensemble dans l'historique des commandes, exclut les produits deja dans le panier, filtre disponibilite/stock, puis renvoie les 5 plus pertinents."
 
+## 20) Revision rapide - Dernieres evolutions (admin + IA gestes + video)
+### A) Bundle externe ajoute (demande prof)
+- Bundle installe via Composer:
+  - `knplabs/knp-paginator-bundle`
+- Activation Symfony:
+  - `config/bundles.php`
+- Usage reel dans le module Orders admin:
+  - pagination des commandes backoffice via KNP Paginator.
+
+### B) Orders admin: suppression multiple
+- Objectif:
+  - permettre a l'admin de selectionner plusieurs commandes puis supprimer en une action.
+- MVC applique:
+  - Controller: nouvelle route `POST /admin/commandes/bulk-delete`
+    - methode: `adminBulkDelete(...)`
+    - validation CSRF,
+    - validation IDs,
+    - suppression en lot + flash message.
+  - View: `templates/elfirma/commandes.html.twig`
+    - checkbox par ligne,
+    - checkbox "select all",
+    - bouton "Supprimer la selection",
+    - compteur dynamique des lignes cochees.
+
+### C) Orders admin: pagination avec bundle
+- Controller:
+  - injection `PaginatorInterface` dans `adminIndex(...)`.
+  - pagination sur 10 lignes/page.
+- View:
+  - rendu navigation avec `knp_pagination_render(commandes)`.
+- Benefice:
+  - page admin plus fluide quand le volume commandes augmente.
+
+### D) Checkout gestes: confirmation commande securisee
+- Changement metier:
+  - avant: confirmation par `pouce haut`.
+  - maintenant: confirmation uniquement par `2 mains ouvertes`.
+- Fichiers touches:
+  - `public/assets/js/gesture_assistant.js`:
+    - detection 2 mains activee (`maxNumHands: 2`),
+    - nouveau geste compose `double_open_palm`.
+  - `src/AI/GestureIntentAi.php`:
+    - mapping checkout_confirm => `double_open_palm`.
+  - `src/Controller/AiAccessibilityController.php`:
+    - validation serveur du geste checkout confirm.
+
+### E) Generation video produit: correction affichage overlays
+- Probleme corrige:
+  - le prix etait trop grand et recouvrait les dates.
+- Correctifs:
+  - taille de police du prix adaptative,
+  - positionnement vertical dynamique,
+  - limitation intelligente du texte description,
+  - marge garantie entre dates et prix.
+- Fichier:
+  - `scripts/generate_product_video.py`.
+
+### F) Mini pitch oral (30 secondes)
+- "J'ai ajoute un bundle Symfony externe (KnpPaginatorBundle) et je l'ai integre concretement dans la gestion admin des commandes avec pagination. J'ai aussi implemente la suppression multiple en MVC propre (route controller + checkboxes vue + CSRF). Cote accessibilite, la confirmation checkout par geste est maintenant plus sure: deux mains ouvertes au lieu du pouce haut. Enfin, j'ai corrige le rendu video produit pour eviter le chevauchement du prix avec les dates." 
+
+### G) Journal des changements (suite)
+- Etape 14: ajout suppression multiple commandes backoffice (select + bulk delete).
+- Etape 15: integration bundle externe `KnpPaginatorBundle` avec pagination Orders admin.
+- Etape 16: checkout gestes: confirmation commande par `double_open_palm`.
+- Etape 17: correction overlay video (prix/dates) pour un rendu lisible et moderne.
+
+## 21) Revision rapide - Statut commande client + affichage admin colore
+### A) Besoin fonctionnel
+- En front office client, apres creation d'une commande (`En attente`), permettre au client de choisir:
+  - `Confirmée`
+  - `Annulée`
+- En backoffice admin, afficher visuellement ces statuts avec couleur:
+  - `Confirmée` en vert
+  - `Annulée` en rouge
+
+### B) MVC applique
+- Controller:
+  - `src/Controller/CommandeController.php`
+  - nouvelle route: `POST /commande/{id}/status`
+  - methode: `updateStatus(...)`
+  - regles metier:
+    - CSRF obligatoire,
+    - verification que la commande appartient au client courant,
+    - changement autorise seulement si statut actuel = `En attente`,
+    - valeurs autorisees: `Confirmée`, `Annulée`.
+- View front:
+  - `templates/commande_show.html.twig`
+  - ajout boutons `Confirmer` et `Annuler` (POST securise).
+- View backoffice:
+  - `templates/elfirma/commandes.html.twig`
+  - statut commande affiche en badge colore.
+
+### C) Securite et controle d'acces
+- Protection CSRF sur le formulaire de changement statut.
+- Controle d'appartenance commande:
+  - priorite a `user_id` si la commande est liee a `Utilisateur`,
+  - fallback sur `user_name` vs `nom_client` si besoin.
+- Evite la modification d'une commande deja traitee (non `En attente`).
+
+### D) Effet visible pour l'admin
+- Dans la liste Orders admin:
+  - `Confirmée` => badge vert,
+  - `Annulée` => badge rouge,
+  - `En attente` => badge orange,
+  - autres statuts => gris.
+
+### E) Mini pitch oral (20 secondes)
+- "J'ai ajoute une action front client pour valider ou annuler une commande tant qu'elle est en attente, avec verification CSRF et controle d'appartenance commande. Ensuite j'ai adapte la vue admin Orders pour afficher les statuts en couleurs, ce qui permet d'identifier rapidement les commandes confirmees et annulees." 
+
+### F) Journal des changements (suite)
+- Etape 18: front client - ajout action de changement statut commande (`Confirmée` / `Annulée`).
+- Etape 19: backoffice orders - badges statut colores (vert/rouge/orange).
+
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

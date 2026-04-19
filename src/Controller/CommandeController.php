@@ -76,6 +76,55 @@ final class CommandeController extends AbstractController
         ]);
     }
 
+    #[Route('/commande/{id}/status', name: 'app_commande_update_status', methods: ['POST'])]
+    public function updateStatus(int $id, Request $request, EntityManagerInterface $em, SessionInterface $session): Response
+    {
+        $commande = $em->getRepository(Commande::class)->find($id);
+
+        if (!$commande) {
+            $this->addFlash('error', 'Commande introuvable.');
+
+            return $this->redirectToRoute('app_commandes_index');
+        }
+
+        if (!$this->isCsrfTokenValid('update_commande_status_' . $id, (string) $request->request->get('_token', ''))) {
+            $this->addFlash('error', 'Requete invalide (CSRF).');
+
+            return $this->redirectToRoute('app_commande_show', ['id' => $id]);
+        }
+
+        if (!$this->canManageFrontCommande($commande, $session)) {
+            $this->addFlash('error', 'Vous ne pouvez pas modifier cette commande.');
+
+            return $this->redirectToRoute('app_commandes_index');
+        }
+
+        if ($commande->getStatutCommande() !== 'En attente') {
+            $this->addFlash('error', 'Cette commande ne peut plus etre modifiee par le client.');
+
+            return $this->redirectToRoute('app_commande_show', ['id' => $id]);
+        }
+
+        $status = trim((string) $request->request->get('statut_commande', ''));
+        $allowed = ['Confirmée', 'Annulée'];
+
+        if (!in_array($status, $allowed, true)) {
+            $this->addFlash('error', 'Statut non autorise.');
+
+            return $this->redirectToRoute('app_commande_show', ['id' => $id]);
+        }
+
+        try {
+            $commande->setStatutCommande($status);
+            $em->flush();
+            $this->addFlash('success', sprintf('Commande %s avec succes.', $status === 'Confirmée' ? 'confirmée' : 'annulée'));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Impossible de modifier le statut de la commande pour le moment.');
+        }
+
+        return $this->redirectToRoute('app_commande_show', ['id' => $id]);
+    }
+
     #[Route('/commande/{id}/receipt', name: 'app_commande_receipt', methods: ['GET'])]
     public function receipt(int $id, EntityManagerInterface $em, HttpClientInterface $httpClient, SessionInterface $session): Response
     {
@@ -1277,6 +1326,19 @@ final class CommandeController extends AbstractController
             'produit' => 'produit_id',
             default => $field,
         };
+    }
+
+    private function canManageFrontCommande(Commande $commande, SessionInterface $session): bool
+    {
+        $sessionUserId = $session->get('user_id');
+        if (is_numeric($sessionUserId) && $commande->getUtilisateur() instanceof Utilisateur) {
+            return (int) $sessionUserId === (int) ($commande->getUtilisateur()?->getIdU() ?? 0);
+        }
+
+        $sessionUserName = mb_strtolower(trim((string) $session->get('user_name', '')));
+        $commandeName = mb_strtolower(trim((string) $commande->getNomClient()));
+
+        return $sessionUserName !== '' && $commandeName !== '' && $sessionUserName === $commandeName;
     }
 
     /**

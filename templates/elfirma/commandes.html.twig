@@ -211,7 +211,12 @@
                                 <td class="py-3 px-3">{{ commande.produit ? commande.produit.nom : '-' }}</td>
                                 <td class="py-3 px-3">{{ commande.quantite }}</td>
                                 <td class="py-3 px-3 font-semibold text-green-700">{{ commande.prixTotal }} DT</td>
-                                <td class="py-3 px-3">{{ commande.statutCommande }}</td>
+                                <td class="py-3 px-3">
+                                    {% set adminStatusColor = commande.statutCommande == 'Confirmée' ? 'bg-green-100 text-green-800' : (commande.statutCommande == 'Annulée' ? 'bg-red-100 text-red-800' : (commande.statutCommande == 'En attente' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700')) %}
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ adminStatusColor }}">
+                                        {{ commande.statutCommande }}
+                                    </span>
+                                </td>
                                 <td class="py-3 px-3">{{ commande.statutPaiement }}</td>
                                 <td class="py-3 px-3">{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y') : '-' }}</td>
                                 <td class="py-3 px-3">
