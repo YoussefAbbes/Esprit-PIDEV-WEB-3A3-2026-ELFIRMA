@@ -2026,6 +2026,96 @@
         </div>
       </div>
     </section><!-- /Call To Action Section -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="{{ asset('assets/js/gesture_assistant.js') }}?v=2"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (!window.GestureAssistant) {
+          return;
+        }
+
+        function getVisibleProductIdByGesture(gesture) {
+          const visibleItems = Array.from(document.querySelectorAll('.product-item')).filter((item) => item.style.display !== 'none');
+          if (visibleItems.length === 0) {
+            return 0;
+          }
+
+          const gestureIndexMap = {
+            point: 0,
+            index: 0,
+            one_finger: 0,
+            two_fingers: 1,
+            victory: 1,
+            three_fingers: 2,
+            four_fingers: 3,
+            five_fingers: 4,
+          };
+
+          const targetIndex = gestureIndexMap[gesture] ?? 0;
+          const target = visibleItems[targetIndex] || visibleItems[0];
+          const buttonWithId = target.querySelector('[data-product-id]');
+          const id = Number(buttonWithId?.dataset?.productId || 0);
+          if (id > 0) {
+            return id;
+          }
+
+          const productKeys = Object.keys(productsData || {});
+          return Number(productKeys[targetIndex] || productKeys[0] || 0);
+        }
+
+        window.GestureAssistant.create({
+          id: 'catalog',
+          autoSpeak: true,
+          onGesture: async function (gesture) {
+            const productId = getVisibleProductIdByGesture(gesture);
+
+            try {
+              const response = await fetch('{{ path('app_api_ai_gesture_command') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ context: 'catalog', gesture: gesture, product_id: productId })
+              });
+
+              const data = await response.json();
+              if (!response.ok || !data.ok) {
+                return data.speak || 'Commande gestes non reconnue.';
+              }
+
+              const actions = Array.isArray(data.actions) ? data.actions : [];
+              for (const action of actions) {
+                if (!action || typeof action !== 'object') continue;
+
+                if (action.type === 'read_visible_products') {
+                  const count = Array.from(document.querySelectorAll('.product-item')).filter((item) => item.style.display !== 'none').length;
+                  return count > 0 ? `Il y a ${count} produits visibles.` : 'Aucun produit visible.';
+                }
+
+                if (action.type === 'open_product_details') {
+                  openProductDetails(Number(action.product_id || 0));
+                }
+
+                if (action.type === 'add_to_cart') {
+                  await addToCart(Number(action.product_id || 0), 1);
+                }
+
+                if (action.type === 'navigate') {
+                  const url = String(action.url || '');
+                  if (url !== '') {
+                    window.location.href = url;
+                  }
+                }
+              }
+
+              return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+            } catch (_error) {
+              return 'Service gestes temporairement indisponible.';
+            }
+          }
+        });
+      });
+    </script>
 {% endblock %}
 
 

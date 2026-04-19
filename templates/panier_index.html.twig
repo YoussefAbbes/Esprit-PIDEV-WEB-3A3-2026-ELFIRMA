@@ -153,6 +153,9 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="{{ asset('assets/js/gesture_assistant.js') }}?v=2"></script>
 <script>
 const tndToEurRate = {{ tnd_to_eur_rate is not null ? tnd_to_eur_rate|number_format(6, '.', '') : 'null' }};
 
@@ -770,6 +773,78 @@ function initVoiceCartAssistant() {
 
 document.addEventListener('DOMContentLoaded', function () {
     initVoiceCartAssistant();
+
+    if (window.GestureAssistant) {
+        window.GestureAssistant.create({
+            id: 'cart',
+            autoSpeak: true,
+            onGesture: async function (gesture) {
+                const row = document.querySelector('tr[data-product-id]');
+                const productId = Number(row?.dataset?.productId || 0);
+
+                // Debug log for gesture received in cart context
+                try { console.log('[Gesture][cart] detected gesture:', gesture); } catch (_e) {}
+
+                // Action locale immédiate: si poing (main fermée) vide le panier
+                if (gesture === 'fist' || gesture === 'poing') {
+                    // clearCart est défini dans ce template et gère l'UI et l'appel serveur
+                    try {
+                        clearCart(true);
+                        // On notifie l'utilisateur immédiatement
+                        return 'Panier vidé.';
+                    } catch (_e) {
+                        // si erreur locale, on continue et laisse le serveur gérer
+                    }
+                }
+
+                try {
+                    const response = await fetch('{{ path('app_api_ai_gesture_command') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ context: 'cart', gesture: gesture, product_id: productId })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok || !data.ok) {
+                        return data.speak || 'Commande gestes non reconnue.';
+                    }
+
+                    const actions = Array.isArray(data.actions) ? data.actions : [];
+                    for (const action of actions) {
+                        if (!action || typeof action !== 'object') continue;
+
+                        if (action.type === 'read_cart_summary') {
+                            const total = document.getElementById('cart-total')?.textContent?.trim() || '0 DT';
+                            return `Total actuel ${total}.`;
+                        }
+
+                        if (action.type === 'update_cart_quantity_delta') {
+                            const id = Number(action.product_id || 0);
+                            const rowItem = document.querySelector(`tr[data-product-id="${id}"]`);
+                            if (!rowItem) continue;
+                            const currentQty = Number(rowItem.querySelector('[id^="qty-"]')?.textContent || 0);
+                            updateQuantity(id, Math.max(0, currentQty + Number(action.delta || 0)));
+                        }
+
+                        if (action.type === 'clear_cart') {
+                            clearCart(true);
+                        }
+
+                        if (action.type === 'navigate') {
+                            const url = String(action.url || '');
+                            if (url !== '') {
+                                window.location.href = url;
+                            }
+                        }
+                    }
+
+                    return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+                } catch (_error) {
+                    return 'Service gestes temporairement indisponible.';
+                }
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

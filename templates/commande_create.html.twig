@@ -348,6 +348,9 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="{{ asset('assets/js/gesture_assistant.js') }}?v=2"></script>
     <script>
         (function () {
             const modeSelect = document.getElementById('mode_paiement');
@@ -979,5 +982,73 @@
 
             showVoiceStatus('Assistant vocal checkout actif.', false);
         })();
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!window.GestureAssistant) {
+                return;
+            }
+
+            const focusOrder = ['nom_client', 'adresse_livraison', 'mode_paiement', 'promo_code'];
+
+            window.GestureAssistant.create({
+                id: 'checkout',
+                autoSpeak: true,
+                onGesture: async function (gesture) {
+                    try {
+                        const response = await fetch('{{ path('app_api_ai_gesture_command') }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ context: 'checkout', gesture: gesture })
+                        });
+
+                        const data = await response.json();
+                        if (!response.ok || !data.ok) {
+                            return data.speak || 'Commande gestes non reconnue.';
+                        }
+
+                        const actions = Array.isArray(data.actions) ? data.actions : [];
+                        for (const action of actions) {
+                            if (!action || typeof action !== 'object') continue;
+
+                            if (action.type === 'focus_next_checkout_field') {
+                                const activeId = document.activeElement?.id || '';
+                                const currentIndex = focusOrder.indexOf(activeId);
+                                const nextIndex = (currentIndex + 1) % focusOrder.length;
+                                const nextField = document.getElementById(focusOrder[nextIndex]);
+                                if (nextField) {
+                                    nextField.focus();
+                                }
+                            }
+
+                            if (action.type === 'submit_checkout_action') {
+                                const value = String(action.value || '');
+                                const btn = document.querySelector(`button[name="checkout_action"][value="${value}"]`);
+                                if (btn) {
+                                    btn.click();
+                                }
+                            }
+
+                            if (action.type === 'click_confirm_order') {
+                                const confirmBtn = document.getElementById('confirm-order-btn');
+                                if (confirmBtn) {
+                                    confirmBtn.click();
+                                }
+                            }
+
+                            if (action.type === 'read_checkout_summary') {
+                                const totalEl = Array.from(document.querySelectorAll('span')).find((el) => (el.textContent || '').includes('DT') && el.style.fontSize === '24px');
+                                const total = totalEl ? totalEl.textContent.trim() : 'indisponible';
+                                return `Recap commande. Total ${total}.`;
+                            }
+                        }
+
+                        return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+                    } catch (_error) {
+                        return 'Service gestes temporairement indisponible.';
+                    }
+                }
+            });
+        });
     </script>
 {% endblock %}

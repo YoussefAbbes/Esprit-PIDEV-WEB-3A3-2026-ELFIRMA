@@ -24,6 +24,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\AI\GestureIntentAi:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Service\ProductVideoGeneratorService:
         arguments:
             $projectDir: '%kernel.project_dir%'

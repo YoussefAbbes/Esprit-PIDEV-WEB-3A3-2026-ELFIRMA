@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\AI\GestureIntentAi;
 use App\AI\VoiceIntentAi;
 use App\Entity\Produit;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +14,10 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class AiAccessibilityController extends AbstractController
 {
-    public function __construct(private readonly VoiceIntentAi $voiceIntentAi)
+    public function __construct(
+        private readonly VoiceIntentAi $voiceIntentAi,
+        private readonly GestureIntentAi $gestureIntentAi,
+    )
     {
     }
 
@@ -38,6 +42,160 @@ final class AiAccessibilityController extends AbstractController
             'checkout' => $this->handleCheckoutCommand($transcript, $em, $session),
             default => new JsonResponse(['ok' => false, 'speak' => 'Unsupported voice context.'], 400),
         };
+    }
+
+    #[Route('/api/ai/gesture-command', name: 'app_api_ai_gesture_command', methods: ['POST'])]
+    public function gestureCommand(Request $request, EntityManagerInterface $em, SessionInterface $session): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        if (!is_array($payload)) {
+            return new JsonResponse(['ok' => false, 'speak' => 'Invalid gesture payload.'], 400);
+        }
+
+        $context = $this->normalize((string) ($payload['context'] ?? ''));
+        $gesture = $this->normalize((string) ($payload['gesture'] ?? ''));
+        $productId = (int) ($payload['product_id'] ?? 0);
+
+        if ($context === '' || $gesture === '') {
+            return new JsonResponse(['ok' => false, 'speak' => 'Missing gesture context or command.'], 400);
+        }
+
+        $prediction = $this->gestureIntentAi->predict($context, $gesture);
+        $intent = (string) ($prediction['intent'] ?? '');
+
+        return match ($context) {
+            'catalog' => $this->handleCatalogGesture($intent, $gesture, $productId, $em),
+            'cart' => $this->handleCartGesture($intent, $gesture, $productId, $session),
+            'checkout' => $this->handleCheckoutGesture($intent, $gesture),
+            default => new JsonResponse(['ok' => false, 'speak' => 'Unsupported gesture context.'], 400),
+        };
+    }
+
+    #[Route('/api/ai/gesture-help', name: 'app_api_ai_gesture_help', methods: ['GET'])]
+    public function gestureHelp(Request $request): JsonResponse
+    {
+        $context = $this->normalize((string) $request->query->get('context', ''));
+        if ($context === '') {
+            return new JsonResponse(['ok' => false, 'speak' => 'Missing gesture context.'], 400);
+        }
+
+        return new JsonResponse([
+            'ok' => true,
+            'context' => $context,
+            'items' => $this->gestureIntentAi->gestureGuide($context),
+        ]);
+    }
+
+    private function handleCatalogGesture(string $intent, string $gesture, int $productId, EntityManagerInterface $em): JsonResponse
+    {
+        if ($intent === 'catalog_read_products') {
+            return $this->ok('Lecture des produits visibles.', [
+                ['type' => 'read_visible_products'],
+            ]);
+        }
+
+        if ($intent === 'catalog_open_cart' || $gesture === 'open_palm') {
+            return $this->ok('Ouverture du panier.', [
+                ['type' => 'navigate', 'url' => $this->generateUrl('app_panier_index')],
+            ]);
+        }
+
+        if ($productId <= 0) {
+            return $this->ok('Aucun produit cible detecte.');
+        }
+
+        $product = $em->getRepository(Produit::class)->find($productId);
+        if (!$product instanceof Produit) {
+            return $this->ok('Produit introuvable.');
+        }
+
+        if (str_starts_with($intent, 'catalog_details_') || in_array($gesture, ['point', 'index', 'one_finger', 'two_fingers', 'three_fingers', 'four_fingers', 'five_fingers', 'victory'], true)) {
+            return $this->ok(sprintf('Details ouverts pour %s.', (string) $product->getNom()), [
+                ['type' => 'open_product_details', 'product_id' => (int) $product->getIdProduit()],
+            ]);
+        }
+
+        if ($intent === 'catalog_add' || $gesture === 'thumb_up') {
+            return $this->ok(sprintf('%s ajoute au panier.', (string) $product->getNom()), [
+                ['type' => 'add_to_cart', 'product_id' => (int) $product->getIdProduit()],
+            ]);
+        }
+
+        return $this->ok('Geste catalogue non reconnu.');
+    }
+
+    private function handleCartGesture(string $intent, string $gesture, int $productId, SessionInterface $session): JsonResponse
+    {
+        if ($intent === 'cart_clear' || $gesture === 'fist') {
+            return $this->ok('Demande de vidage du panier envoyee.', [
+                ['type' => 'clear_cart'],
+            ]);
+        }
+
+        if ($intent === 'cart_checkout' || $gesture === 'open_palm') {
+            return $this->ok('Ouverture de la commande.', [
+                ['type' => 'navigate', 'url' => $this->generateUrl('app_commande_create')],
+            ]);
+        }
+
+        if ($intent === 'cart_read' || $gesture === 'victory') {
+            return $this->ok('Lecture du recapitulatif panier.', [
+                ['type' => 'read_cart_summary'],
+            ]);
+        }
+
+        if ($productId <= 0) {
+            return $this->ok('Aucun produit cible detecte dans le panier.');
+        }
+
+        if ($intent === 'cart_increase' || $gesture === 'thumb_up') {
+            return $this->ok('Quantite augmentee.', [
+                ['type' => 'update_cart_quantity_delta', 'product_id' => $productId, 'delta' => 1],
+            ]);
+        }
+
+        if ($intent === 'cart_decrease' || $gesture === 'thumb_down') {
+            return $this->ok('Quantite diminuee.', [
+                ['type' => 'update_cart_quantity_delta', 'product_id' => $productId, 'delta' => -1],
+            ]);
+        }
+
+        return $this->ok('Geste panier non reconnu.');
+    }
+
+    private function handleCheckoutGesture(string $intent, string $gesture): JsonResponse
+    {
+        if ($intent === 'checkout_focus_next' || $gesture === 'point') {
+            return $this->ok('Selection du champ suivant.', [
+                ['type' => 'focus_next_checkout_field'],
+            ]);
+        }
+
+        if ($intent === 'checkout_promo_generate' || $gesture === 'open_palm') {
+            return $this->ok('Generation du code promo en cours.', [
+                ['type' => 'submit_checkout_action', 'value' => 'generate_promo'],
+            ]);
+        }
+
+        if ($intent === 'checkout_promo_apply' || $gesture === 'fist') {
+            return $this->ok('Application du code promo en cours.', [
+                ['type' => 'submit_checkout_action', 'value' => 'apply_promo'],
+            ]);
+        }
+
+        if ($intent === 'checkout_confirm' || $gesture === 'thumb_up') {
+            return $this->ok('Confirmation de commande en cours.', [
+                ['type' => 'click_confirm_order'],
+            ]);
+        }
+
+        if ($intent === 'checkout_read_summary' || $gesture === 'victory') {
+            return $this->ok('Lecture du recapitulatif commande.', [
+                ['type' => 'read_checkout_summary'],
+            ]);
+        }
+
+        return $this->ok('Geste checkout non reconnu.');
     }
 
     private function handleCatalogCommand(string $transcript, EntityManagerInterface $em): JsonResponse
