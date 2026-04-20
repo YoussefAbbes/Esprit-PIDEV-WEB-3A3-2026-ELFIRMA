@@ -327,6 +327,16 @@ final class FournisseurController extends AbstractController
                 ]);
             }
 
+            // Delete related meetings first
+            foreach ($fournisseur->getMeetings() as $meeting) {
+                $entityManager->remove($meeting);
+            }
+
+            // Delete related ratings
+            foreach ($fournisseur->getRatings() as $rating) {
+                $entityManager->remove($rating);
+            }
+
             // Delete the supplier
             $entityManager->remove($fournisseur);
             $entityManager->flush();

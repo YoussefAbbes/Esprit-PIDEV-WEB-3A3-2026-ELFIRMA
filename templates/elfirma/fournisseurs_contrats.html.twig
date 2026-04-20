@@ -1836,24 +1836,28 @@ Contracts
     const formData = new FormData();
     formData.append('supplier_id', currentDeletingSupplierId);
 
+    console.log('Deleting supplier ID:', currentDeletingSupplierId);
+
     try {
       const response = await fetch('{{ path("elfirma_delete_supplier") }}', {
         method: 'POST',
         body: formData
       });
 
+      console.log('Delete response status:', response.status);
       const data = await response.json();
+      console.log('Delete response data:', data);
 
       if (data.success) {
         alert('Supplier deleted successfully!');
         deleteConfirmModal.classList.add('hidden');
         window.location.reload();
       } else {
-        alert('Error deleting supplier');
+        alert('Error deleting supplier: ' + (data.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('An error occurred while deleting the supplier');
+      alert('An error occurred while deleting the supplier: ' + error.message);
     }
   });
 
