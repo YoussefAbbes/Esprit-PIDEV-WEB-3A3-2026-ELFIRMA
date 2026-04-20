@@ -91,6 +91,11 @@
             </svg>
             GitHub
           </a>
+
+          <button type="button" class="login-item face" id="faceLoginTrigger">
+            <i class="bi bi-person-bounding-box"></i>
+            Face Recognition
+          </button>
         </div>
       </div>
 
@@ -105,6 +110,26 @@
 
     <div class="auth-footer">
       <p><a href="{{ path('app_signup') }}">Create a new account</a></p>
+    </div>
+  </div>
+
+  <div class="face-modal" id="loginFaceModal" aria-hidden="true">
+    <div class="face-modal-backdrop"></div>
+    <div class="face-modal-card" role="dialog" aria-modal="true" aria-labelledby="loginFaceTitle">
+      <div class="face-modal-head">
+        <h3 id="loginFaceTitle">Sign In With Face Recognition</h3>
+        <button type="button" class="face-close-btn" id="loginFaceClose" aria-label="Close">&times;</button>
+      </div>
+      <p class="face-helper-text">Live camera is running. Align your face inside the frame.</p>
+      <div class="face-stage">
+        <video id="loginFaceVideo" autoplay playsinline muted></video>
+        <canvas id="loginFaceOverlay"></canvas>
+      </div>
+      <div class="face-status" id="loginFaceStatus">Starting camera...</div>
+      <div class="face-progress-row">
+        <span id="loginFaceIdentity">Waiting for detection</span>
+        <span id="loginFaceCountdown">25s</span>
+      </div>
     </div>
   </div>
 
@@ -294,6 +319,19 @@
     background: rgba(51, 51, 51, 0.08);
   }
 
+  .login-item.face {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.96rem;
+  }
+
+  .login-item.face:hover {
+    background: rgba(17, 101, 48, 0.09);
+  }
+
   .btn-auth {
     width: 100%;
     border: none;
@@ -338,6 +376,251 @@
 
   .auth-footer a:hover {
     text-decoration: underline;
+  }
+
+  .face-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+  }
+
+  .face-modal.active {
+    display: flex;
+  }
+
+  .face-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 16, 14, 0.72);
+    backdrop-filter: blur(4px);
+  }
+
+  .face-modal-card {
+    position: relative;
+    width: min(92vw, 600px);
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid rgba(17, 101, 48, 0.22);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
+    padding: 1rem;
+    z-index: 1;
+  }
+
+  .face-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .face-modal-head h3 {
+    margin: 0;
+    color: #183b2a;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .face-close-btn {
+    border: none;
+    background: transparent;
+    color: #52606d;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .face-helper-text {
+    margin: 0.3rem 0 0.8rem;
+    color: #617080;
+    font-size: 0.9rem;
+  }
+
+  .face-stage {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #111;
+    aspect-ratio: 16 / 10;
+  }
+
+  .face-stage video,
+  .face-stage canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .face-status {
+    margin-top: 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #183b2a;
+  }
+
+  #loginFaceIdentity {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #22c55e;
+    letter-spacing: 0.5px;
+  }
+
+  .face-progress-row {
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #4a5562;
+    font-size: 0.86rem;
+  }
+
+  /* Welcome Animation Styles */
+  .welcome-popup {
+    background: linear-gradient(135deg, #0f766e 0%, #116530 100%) !important;
+    border-radius: 25px !important;
+    box-shadow: 0 25px 80px rgba(15, 118, 110, 0.4), 0 0 40px rgba(16, 185, 129, 0.2) !important;
+  }
+
+  .welcome-popup .swal2-html-container {
+    padding: 0 !important;
+    height: auto !important;
+  }
+
+  .welcome-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 4rem 3rem;
+    color: white;
+  }
+
+  .welcome-animation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    animation: slideInDown 0.6s ease-out;
+  }
+
+  .welcome-checkmark {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #10b981;
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    animation: checkAnimation 0.6s ease-out;
+  }
+
+  .welcome-text {
+    font-size: 2.8rem;
+    font-weight: 300;
+    letter-spacing: 3px;
+    animation: fadeInScale 0.8s ease-out 0.1s both;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    animation: slideInUp 0.8s ease-out 0.3s both;
+  }
+
+  .user-name {
+    font-size: 2.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .user-lastname {
+    font-size: 2.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.9;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .elfirma-badge {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-top: 0.8rem;
+    border: 2px solid rgba(16, 185, 129, 0.5);
+    animation: slideInUp 0.8s ease-out 0.5s both, badge-pulse 2s ease-in-out 1.3s infinite;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    color: #a7f3d0;
+  }
+
+  @keyframes checkAnimation {
+    0% {
+      opacity: 0;
+      transform: scale(0) rotate(-45deg);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  @keyframes slideInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(25px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+    50% {
+      transform: scale(1.08);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+    }
   }
 </style>
 
@@ -427,6 +710,26 @@
 
   const loginDropdown = document.querySelector('.login-dropdown');
   const loginToggle = document.getElementById('loginToggle');
+  const faceTrigger = document.getElementById('faceLoginTrigger');
+  const faceModal = document.getElementById('loginFaceModal');
+  const faceClose = document.getElementById('loginFaceClose');
+  const faceVideo = document.getElementById('loginFaceVideo');
+  const faceOverlay = document.getElementById('loginFaceOverlay');
+  const faceStatus = document.getElementById('loginFaceStatus');
+  const faceIdentity = document.getElementById('loginFaceIdentity');
+  const faceCountdownEl = document.getElementById('loginFaceCountdown');
+  const faceCtx = faceOverlay ? faceOverlay.getContext('2d') : null;
+
+  let faceStream = null;
+  let faceTimer = null;
+  let faceStartedAt = 0;
+  let recognizedHits = 0;
+  let recognizedUserId = null;
+  let lastRecognizedUserId = null;
+  let isLoggingIn = false; // Flag pour éviter appels multiples
+
+  const faceTimeoutMs = 25000; // 25s timeout for proper detection
+  const requiredConsecutiveHits = 2; // 2 hits for stable recognition
 
   if (loginDropdown && loginToggle) {
     loginToggle.addEventListener('click', function(event) {
@@ -444,6 +747,245 @@
       if (event.key === 'Escape') {
         loginDropdown.classList.remove('open');
       }
+    });
+  }
+
+  const stopFaceLoginCamera = () => {
+    if (faceTimer) {
+      clearInterval(faceTimer);
+      faceTimer = null;
+    }
+    if (faceStream) {
+      faceStream.getTracks().forEach(track => track.stop());
+      faceStream = null;
+    }
+  };
+
+  const closeFaceModal = () => {
+    stopFaceLoginCamera();
+    if (faceModal) {
+      faceModal.classList.remove('active');
+      faceModal.setAttribute('aria-hidden', 'true');
+    }
+    recognizedHits = 0;
+    recognizedUserId = null;
+  };
+
+  const drawFaceBox = (bbox, color, label) => {
+    if (!faceCtx || !faceOverlay || !faceVideo) return;
+
+    faceOverlay.width = faceVideo.videoWidth || faceOverlay.clientWidth;
+    faceOverlay.height = faceVideo.videoHeight || faceOverlay.clientHeight;
+    faceCtx.clearRect(0, 0, faceOverlay.width, faceOverlay.height);
+
+    if (!bbox) return;
+
+    // Cadre plus gras et visible
+    faceCtx.strokeStyle = color;
+    faceCtx.lineWidth = 8; // Augmenté de 3 à 8 pour cadre bien visible
+    faceCtx.strokeRect(bbox.x, bbox.y, bbox.w, bbox.h);
+
+    // Texte du nom beaucoup plus gros et gras
+    faceCtx.fillStyle = color;
+    faceCtx.font = 'bold 36px Arial'; // Augmenté de 16px à 36px, plus gras
+    faceCtx.fillText(label, bbox.x, Math.max(36, bbox.y - 12));
+  };
+
+  const grabFrame = () => {
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = faceVideo.videoWidth;
+    tmpCanvas.height = faceVideo.videoHeight;
+    const tmpCtx = tmpCanvas.getContext('2d');
+    tmpCtx.drawImage(faceVideo, 0, 0, tmpCanvas.width, tmpCanvas.height);
+    return tmpCanvas.toDataURL('image/jpeg', 0.76);
+  };
+
+  const updateFaceCountdown = () => {
+    const elapsed = Date.now() - faceStartedAt;
+    const left = Math.max(0, Math.ceil((faceTimeoutMs - elapsed) / 1000));
+    if (faceCountdownEl) faceCountdownEl.textContent = `${left}s`;
+
+    if (elapsed >= faceTimeoutMs) {
+      closeFaceModal();
+      Swal.fire({
+        icon: 'info',
+        title: 'Face detection timed out',
+        text: 'Please use email and password to sign in.',
+        confirmButtonColor: '#116530'
+      });
+    }
+  };
+
+  const loginByRecognizedFace = async (userId, firstName = '', lastName = '') => {
+    // Close the face modal first
+    closeFaceModal();
+
+    // Show welcome animation
+    const userName = `${firstName} ${lastName}`.trim() || 'User';
+
+    Swal.fire({
+      html: `
+        <div class="welcome-container">
+          <div class="welcome-animation">
+            <div class="welcome-checkmark">✓</div>
+            <div class="welcome-text">Welcome</div>
+            <div class="user-info">
+              <div class="user-name">${firstName}</div>
+              <div class="user-lastname">${lastName}</div>
+            </div>
+            <div class="elfirma-badge">⭐ EL FIRMA ⭐</div>
+          </div>
+        </div>
+      `,
+      icon: null,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      customClass: {
+        popup: 'welcome-popup'
+      },
+      timer: 5000,
+      timerProgressBar: false,
+      didOpen: async () => {
+        // Animation de checkmark
+        const checkmark = document.querySelector('.welcome-checkmark');
+        if (checkmark) {
+          checkmark.style.animation = 'checkAnimation 0.6s ease-out';
+        }
+
+        // Start the login process IMMEDIATELY (during the sweet display)
+        try {
+          const res = await fetch('{{ path('app_face_id_login') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+          });
+
+          const data = await res.json();
+          if (data.ok && data.redirect) {
+            // Redirect happens during sweet display, no wait after
+            setTimeout(() => {
+              window.location.href = data.redirect;
+            }, 1000); // Small delay to show sweet nicely
+          }
+        } catch (err) {
+          console.error('Login failed:', err);
+        }
+      }
+    });
+  };
+
+  const startFaceLogin = async () => {
+    if (!faceModal || !faceVideo || !faceOverlay) return;
+
+    // Reset login flag
+    isLoggingIn = false;
+
+    try {
+      faceStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 960 }, height: { ideal: 540 } },
+        audio: false
+      });
+      faceVideo.srcObject = faceStream;
+      await faceVideo.play();
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Camera access denied',
+        text: 'Please continue with your email and password.',
+        confirmButtonColor: '#116530'
+      });
+      return;
+    }
+
+    faceStartedAt = Date.now();
+    recognizedHits = 0;
+    recognizedUserId = null;
+    faceModal.classList.add('active');
+    faceModal.setAttribute('aria-hidden', 'false');
+    if (faceStatus) faceStatus.textContent = 'Detecting face...';
+    if (faceIdentity) faceIdentity.textContent = 'Waiting for detection';
+
+    faceTimer = setInterval(async () => {
+      if (!faceVideo || faceVideo.readyState < 2) return;
+
+      updateFaceCountdown();
+
+      try {
+        const image = grabFrame();
+        const response = await fetch('{{ path('app_face_id_recognize') }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image })
+        });
+        const data = await response.json();
+
+        if (!data.ok) {
+          drawFaceBox(null, '#ef4444', '');
+          if (faceStatus) faceStatus.textContent = 'Face service unavailable';
+          if (faceIdentity) faceIdentity.textContent = 'Try classic login';
+          recognizedHits = 0;
+          recognizedUserId = null;
+          return;
+        }
+
+        if (!data.faceFound) {
+          drawFaceBox(null, '#f59e0b', '');
+          if (faceStatus) faceStatus.textContent = 'No face detected';
+          if (faceIdentity) faceIdentity.textContent = 'Position your face in frame';
+          recognizedHits = 0;
+          recognizedUserId = null;
+          return;
+        }
+
+        if (data.recognized && data.match) {
+          drawFaceBox(data.bbox, '#22c55e', data.match.fullName || 'Recognized');
+          if (faceStatus) faceStatus.textContent = 'User recognized';
+          if (faceIdentity) {
+            faceIdentity.textContent = `${data.match.firstName || ''} ${data.match.lastName || ''}`.trim();
+          }
+
+          // Check if this is the same user as last frame
+          if (lastRecognizedUserId === data.match.userId) {
+            recognizedHits += 1;
+          } else {
+            // Different user recognized, reset counter
+            recognizedHits = 1;
+            lastRecognizedUserId = data.match.userId;
+          }
+
+          // Require 2 consecutive frames with same user for confirmation
+          if (recognizedHits >= requiredConsecutiveHits && !isLoggingIn) {
+            isLoggingIn = true; // Marquer que le login est en cours
+            closeFaceModal();
+            await loginByRecognizedFace(data.match.userId, data.match.firstName, data.match.lastName);
+          }
+          return;
+        }
+
+        // No match found
+        drawFaceBox(data.bbox, '#ef4444', 'Unknown user');
+        if (faceStatus) faceStatus.textContent = 'Face not recognized';
+        if (faceIdentity) faceIdentity.textContent = 'Unknown user';
+        recognizedHits = 0;
+        lastRecognizedUserId = null;
+      } catch (err) {
+        recognizedHits = 0;
+        recognizedUserId = null;
+      }
+    }, 240);
+  };
+
+  if (faceTrigger) {
+    faceTrigger.addEventListener('click', async function() {
+      loginDropdown?.classList.remove('open');
+      await startFaceLogin();
+    });
+  }
+
+  if (faceClose) {
+    faceClose.addEventListener('click', function() {
+      closeFaceModal();
     });
   }
 </script>

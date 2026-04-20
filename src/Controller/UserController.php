@@ -44,7 +44,11 @@ public function page(EntityManagerInterface $entityManager): Response
         // =========================
         // QR CODE GENERATION
         // =========================
+<<<<<<< HEAD
        $profileUrl = 'http://192.168.43.3:8000/elfirma/user/' . $user->getIdU() . '/profile';
+=======
+       $profileUrl = 'http://192.168.1.29:8000/elfirma/user/' . $user->getIdU() . '/profile';
+>>>>>>> c014114 (add Face ID authentication for user signup/login)
 
         $user->qrCode = $this->generateQrCode($profileUrl);
     }
