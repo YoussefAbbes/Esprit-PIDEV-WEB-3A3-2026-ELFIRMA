@@ -40,15 +40,18 @@ class IrrigationEventRepository extends ServiceEntityRepository
     /**
      * @return list<IrrigationEvent>
      */
-    public function findLatestByParcelle(Parcelle $parcelle, int $limit = 20): array
+    public function findLatestByParcelle(Parcelle $parcelle, ?int $limit = null): array
     {
-        return $this->createQueryBuilder("event")
+        $queryBuilder = $this->createQueryBuilder("event")
             ->andWhere("event.parcelle = :parcelle")
             ->setParameter("parcelle", $parcelle)
             ->orderBy("event.createdAt", "DESC")
-            ->addOrderBy("event.id", "DESC")
-            ->setMaxResults(max(1, $limit))
-            ->getQuery()
-            ->getResult();
+            ->addOrderBy("event.id", "DESC");
+
+        if ($limit !== null && $limit > 0) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

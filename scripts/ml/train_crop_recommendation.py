@@ -39,7 +39,6 @@ def _evaluate(model: Any, x_data: pd.DataFrame, y_data: pd.Series) -> Dict[str, 
         "macro_f1": _as_float(f1_score(y_data, predictions, average="macro")),
     }
 
-
 def _safe_model_name(model: Any) -> str:
     return model.__class__.__name__
 

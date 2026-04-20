@@ -137,7 +137,7 @@ final class IrrigationController extends AbstractController
 
         return $this->json([
             "success" => true,
-            "events" => $irrigationService->getRecentEventsPayload($parcelle, 20),
+            "events" => $irrigationService->getRecentEventsPayload($parcelle),
         ]);
     }
 

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\CultureRepository;
+use App\Repository\FournisseurRepository;
 use App\Repository\ParcelleRepository;
+use App\Repository\ProduitRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -103,6 +105,8 @@ final class ChatbotController extends AbstractController
         Request $request,
         ParcelleRepository $parcelleRepository,
         CultureRepository $cultureRepository,
+        ProduitRepository $produitRepository,
+        FournisseurRepository $fournisseurRepository,
     ): JsonResponse {
         /* 1. Parse incoming messages -------------------------------- */
         $body = json_decode($request->getContent(), true) ?? [];
@@ -115,7 +119,14 @@ final class ChatbotController extends AbstractController
         /* 2. Build compact system prompt with live DB data ---------- */
         $parcelles = $parcelleRepository->findAllWithCultures();
         $cultures = $cultureRepository->findAllWithParcelle();
-        $systemPrompt = $this->buildSystemPrompt($parcelles, $cultures);
+        $produits = $produitRepository->findAll();
+        $fournisseurs = $fournisseurRepository->findAll();
+        $systemPrompt = $this->buildSystemPrompt(
+            $parcelles,
+            $cultures,
+            $produits,
+            $fournisseurs,
+        );
 
         $messages = array_merge(
             [["role" => "system", "content" => $systemPrompt]],
@@ -240,6 +251,8 @@ final class ChatbotController extends AbstractController
     private function buildSystemPrompt(
         array $parcelles,
         array $cultures,
+        array $produits,
+        array $fournisseurs,
     ): string {
         $now = new \DateTime();
         $dateStr = $now->format("Y-m-d");
@@ -288,14 +301,49 @@ final class ChatbotController extends AbstractController
             $cultureLines = "(none)\n";
         }
 
+        /* ── Produits (one line each) ── */
+        $productLines = "";
+        foreach ($produits as $p) {
+            $productLines .= sprintf(
+                "PR:%s|%s|stock:%s|status:%s|price:%s\n",
+                $p->getNom() ?? "?",
+                $p->getType() ?? "?",
+                $p->getQuantiteStock() ?? "?",
+                $p->getStatut() ?? "?",
+                $p->getPrixUnitaire() ?? "?",
+            );
+        }
+        if ($productLines === "") {
+            $productLines = "(none)\n";
+        }
+
+        /* ── Fournisseurs (one line each) ── */
+        $supplierLines = "";
+        foreach ($fournisseurs as $f) {
+            $supplierLines .= sprintf(
+                "FO:%s|%s|%s|%s\n",
+                $f->getTypeF() ?? "?",
+                $f->getStatutF() ?? "?",
+                $f->getAdresseF() ?? "?",
+                $f->getEmailF() ?? "?",
+            );
+        }
+        if ($supplierLines === "") {
+            $supplierLines = "(none)\n";
+        }
+
         $np = count($parcelles);
         $nc = count($cultures);
+        $npr = count($produits);
+        $nf = count($fournisseurs);
 
         return "You are EL FIRMA Assistant, an agricultural AI. Today: {$dateStr}. " .
-            "DB: {$np} parcels, {$nc} crops. " .
+            "DB: {$np} parcels, {$nc} crops, {$npr} products, {$nf} suppliers. " .
             "Keep reasoning to 1-2 sentences, then answer directly.\n" .
             "PARCELS:\n{$parcelLines}" .
             "CROPS:\n{$cultureLines}" .
+            "PRODUCTS:\n{$productLines}" .
+            "SUPPLIERS:\n{$supplierLines}" .
             "STRICT RULES — follow every rule on every response:\n" .
             "1. ALWAYS respond in English only, regardless of the language the user writes in.\n" .
             "2. NEVER use Spanish, French, Arabic, or any other language.\n" .

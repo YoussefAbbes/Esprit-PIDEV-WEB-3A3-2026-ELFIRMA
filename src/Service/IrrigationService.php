@@ -17,8 +17,6 @@ final class IrrigationService
     public const COMMAND_MANUAL_ON = "MANUAL_ON";
     public const COMMAND_MANUAL_OFF = "MANUAL_OFF";
 
-    private const MAX_EVENTS = 20;
-
     /**
      * @var list<string>
      */
@@ -105,11 +103,11 @@ final class IrrigationService
     /**
      * @return list<array<string,mixed>>
      */
-    public function getRecentEventsPayload(Parcelle $parcelle, int $limit = self::MAX_EVENTS): array
+    public function getRecentEventsPayload(Parcelle $parcelle, ?int $limit = null): array
     {
         $events = $this->irrigationEventRepository->findLatestByParcelle(
             $parcelle,
-            min(max(1, $limit), self::MAX_EVENTS),
+            $limit !== null && $limit > 0 ? $limit : null,
         );
 
         return array_map(
