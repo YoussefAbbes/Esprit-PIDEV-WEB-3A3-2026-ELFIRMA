@@ -334,44 +334,6 @@
             margin-bottom: 0.75rem;
         }
 
-        .studio-controls {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
-            gap: 0.6rem;
-            align-items: end;
-            margin-bottom: 0.78rem;
-            padding: 0.58rem;
-            border: 1px solid #d6e2f8;
-            border-radius: 0.9rem;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 246, 255, 0.96) 100%);
-            position: relative;
-            z-index: 2;
-        }
-
-        .studio-control {
-            display: grid;
-            gap: 0.26rem;
-        }
-
-        .studio-control > span {
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            color: #1f3d75;
-            text-transform: uppercase;
-        }
-
-        .studio-control input[type='range'] {
-            width: 100%;
-            accent-color: #2b6cb0;
-        }
-
-        .studio-control strong {
-            font-size: 11px;
-            color: #1e3a8a;
-            font-weight: 800;
-        }
-
         .viewer-button {
             border: 1px solid #cadad0;
             border-radius: 999px;
@@ -402,39 +364,6 @@
             transform: none;
         }
 
-        .balance-row {
-            margin-top: 0.72rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.45rem;
-        }
-
-        .balance-pill {
-            display: inline-flex;
-            align-items: center;
-            border: 1px solid #cde5d3;
-            border-radius: 999px;
-            padding: 0.32rem 0.7rem;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.03em;
-            background: #f2fbf4;
-            color: #14532d;
-        }
-
-        .balance-pill.is-low {
-            border-color: #fecaca;
-            background: #fff1f2;
-            color: #9f1239;
-        }
-
-        .balance-pill.is-unknown {
-            border-color: #cbd5e1;
-            background: #f8fafc;
-            color: #334155;
-        }
-
         .viewer-empty {
             border: 1px dashed #bfccd8;
             border-radius: 0.88rem;
@@ -446,7 +375,7 @@
             font-weight: 600;
         }
 
-        #viewer {
+        model-viewer {
             position: relative;
             z-index: 2;
             width: 100%;
@@ -457,13 +386,6 @@
             border-radius: 0.9rem;
         }
 
-        #viewer canvas {
-            display: block;
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 0.9rem;
-        }
-
         .status-pill {
             border: 1px solid #cde6d5;
             background: #f3fbf6;
@@ -471,22 +393,10 @@
             box-shadow: 0 8px 15px rgba(20, 83, 45, 0.08);
         }
 
-        .status-pill.is-error {
+        .status-pill.error {
             border-color: #fecaca;
             background: #fff1f2;
             color: #991b1b;
-        }
-
-        #preview-image {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            max-height: 240px;
-            object-fit: contain;
-            border: 1px solid #d6e0ea;
-            border-radius: 0.9rem;
-            background: #f8fbff;
-            padding: 9px;
         }
 
         #prompt-box {
@@ -586,7 +496,7 @@
                 line-height: 1.2;
             }
 
-            #viewer {
+            model-viewer {
                 min-height: 290px;
                 height: 44vh;
             }
@@ -633,8 +543,8 @@
             <header class="mb-4 relative z-[2]">
                 <p class="eyebrow">ELFIRMA 3D STUDIO</p>
                 <h2 class="page-title text-2xl md:text-4xl font-extrabold mt-2 text-emerald-900">Conception 3D Habitat</h2>
-                <p class="hero-lead text-sm md:text-base mt-2">Le livestock represente l emplacement de vie des animaux (etable, ecurie, bergerie, poulailler...). Selectionne un livestock puis clique sur Generer pour creer un rendu 3D plus immersif et realiste de cet habitat.</p>
-            </header>
+                    <p class="hero-lead text-sm md:text-base mt-2">Le livestock represente l emplacement de vie des animaux (etable, ecurie, bergerie, poulailler...). Selectionne un livestock puis clique sur Generer pour creer un rendu 3D plus immersif et realiste de cet habitat.</p>
+                </header>
 
             <div class="hero-metrics">
                 <article class="hero-metric">
@@ -646,14 +556,14 @@
                     <span class="value">Habitat agricole</span>
                 </article>
                 <article class="hero-metric">
-                    <span class="label">Moteur 3D</span>
-                    <span class="value {% if is_tripo_configured %}is-ok{% else %}is-ko{% endif %}">{% if is_tripo_configured %}Tripo3D API{% else %}Tripo3D non configure{% endif %}</span>
+                    <span class="label">Etat API 3D</span>
+                    <span class="value {% if is_3d_configured %}is-ok{% else %}is-ko{% endif %}">{% if is_3d_configured %}Active{% else %}Inactive{% endif %}</span>
                 </article>
             </div>
 
-            {% if not is_tripo_configured %}
+            {% if not is_3d_configured %}
                 <div class="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-                    La cle API Tripo3D est absente. Ajoute `TRIPO3D_API_KEY` dans `.env`.
+                    Configuration API 3D manquante. Verifiez les variables TRIPO3D_* dans le fichier .env.
                 </div>
             {% endif %}
 
@@ -661,41 +571,6 @@
                 <section class="panel-card p-4 md:p-5">
                     <h3 class="panel-title text-xl font-black text-slate-800">Livestock disponibles</h3>
                     <p class="mt-1 text-sm text-slate-600">Aucun upload requis: generation automatique de l habitat depuis type, etat, capacite et production.</p>
-
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label for="texture_resolution" class="block text-sm font-bold text-slate-700 mb-1">Texture</label>
-                            <select id="texture_resolution" name="texture_resolution" class="field-control w-full px-3 py-2.5">
-                                <option value="2048" selected>2048 (ultra detail recommande)</option>
-                                <option value="1024">1024 (equilibre)</option>
-                                <option value="512">512</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="remesh" class="block text-sm font-bold text-slate-700 mb-1">Remesh</label>
-                            <select id="remesh" name="remesh" class="field-control w-full px-3 py-2.5">
-                                <option value="none" selected>none (fidelite max recommande)</option>
-                                <option value="triangle">triangle</option>
-                                <option value="quad">quad</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <label for="render_mode" class="block text-sm font-bold text-slate-700 mb-1">Mode rendu 3D</label>
-                        <select id="render_mode" name="render_mode" class="field-control w-full px-3 py-2.5">
-                            <option value="signature" selected>Signature (ultra premium)</option>
-                            <option value="cinematic">Cinematique (extraordinaire)</option>
-                            <option value="ultra">Ultra detail (realisme max)</option>
-                            <option value="balanced">Equilibre</option>
-                            <option value="eco">Eco (plus rapide)</option>
-                        </select>
-                    </div>
-
-                    <div class="balance-row">
-                        <button type="button" id="check-balance-btn" class="viewer-button">Tripo3D API</button>
-                        <span id="balance-pill" class="balance-pill is-unknown hidden">{% if is_tripo_configured %}Connecte{% else %}Cle manquante{% endif %}</span>
-                    </div>
 
                     {% if livestock_list is empty %}
                         <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
@@ -742,8 +617,6 @@
                         </a>
                     </div>
 
-                    <div id="selected-livestock" class="mb-3 text-sm font-semibold">Aucun livestock selectionne.</div>
-
                     <div class="viewer-toolbar" id="viewer-toolbar">
                         <button type="button" class="viewer-button js-viewer-preset" data-preset="hero" disabled>Hero</button>
                         <button type="button" class="viewer-button js-viewer-preset" data-preset="detail" disabled>Detail</button>
@@ -754,28 +627,12 @@
                         <button type="button" class="viewer-button" id="viewer-fullscreen" disabled>Plein ecran</button>
                     </div>
 
-                    <div class="studio-controls" id="studio-controls">
-                        <label class="studio-control" for="viewer-exposure-range">
-                            <span>Exposition studio</span>
-                            <input id="viewer-exposure-range" type="range" min="0.8" max="1.35" step="0.01" value="1.18" disabled>
-                            <strong id="viewer-exposure-value">1.18</strong>
-                        </label>
-                        <label class="studio-control" for="viewer-shadow-range">
-                            <span>Intensite ombres</span>
-                            <input id="viewer-shadow-range" type="range" min="0.6" max="1.8" step="0.01" value="1.58" disabled>
-                            <strong id="viewer-shadow-value">1.58</strong>
-                        </label>
-                        <button type="button" class="viewer-button" id="viewer-reset-lighting" disabled>Auto Studio</button>
-                    </div>
-
                     <div class="viewer-stage mb-3" id="viewer-stage">
                         <div id="viewer-loading" class="viewer-loading hidden">Generation 3D en cours...</div>
 
                         <div id="viewer-empty" class="viewer-empty">
                             Le modele d habitat apparaitra ici apres generation.
                         </div>
-
-                        <img id="preview-image" class="hidden mb-3" alt="Preview image generated from livestock data">
 
                         <model-viewer
                             id="viewer"
@@ -794,12 +651,13 @@
                             field-of-view="26deg"
                             min-field-of-view="10deg"
                             max-field-of-view="46deg"
-                            shadow-intensity="1.25"
+                            shadow-intensity="1.58"
                             shadow-softness="0.9"
-                            exposure="1.1"
+                            exposure="1.18"
                             tone-mapping="aces"
                             environment-image="neutral"
                             disable-pan
+                            ar
                         ></model-viewer>
                     </div>
 
@@ -815,34 +673,26 @@
 (function () {
     const endpoint = "{{ path('api_livestock_3d_generate') }}";
     const csrfToken = "{{ csrf_token('livestock_3d_generate') }}";
-    const isConfigured = {{ is_tripo_configured ? 'true' : 'false' }};
-    const textureSelect = document.getElementById('texture_resolution');
-    const remeshSelect = document.getElementById('remesh');
-    const renderModeSelect = document.getElementById('render_mode');
-    const checkBalanceButton = document.getElementById('check-balance-btn');
-    const balancePill = document.getElementById('balance-pill');
+    const canGenerate3D = {{ is_3d_configured ? 'true' : 'false' }};
     const generateButtons = Array.from(document.querySelectorAll('.js-generate-3d'));
     const livestockCards = Array.from(document.querySelectorAll('.livestock-item[data-livestock-id]'));
     const status = document.getElementById('status');
-    const selectedLivestock = document.getElementById('selected-livestock');
     const viewerStage = document.getElementById('viewer-stage');
     const viewer = document.getElementById('viewer');
     const viewerPresetButtons = Array.from(document.querySelectorAll('.js-viewer-preset'));
     const viewerResetButton = document.getElementById('viewer-reset');
     const viewerFullscreenButton = document.getElementById('viewer-fullscreen');
-    const viewerExposureRange = document.getElementById('viewer-exposure-range');
-    const viewerShadowRange = document.getElementById('viewer-shadow-range');
-    const viewerExposureValue = document.getElementById('viewer-exposure-value');
-    const viewerShadowValue = document.getElementById('viewer-shadow-value');
-    const viewerResetLightingButton = document.getElementById('viewer-reset-lighting');
-    const previewImage = document.getElementById('preview-image');
     const viewerLoading = document.getElementById('viewer-loading');
     const viewerEmpty = document.getElementById('viewer-empty');
     const meta = document.getElementById('meta');
     const promptBox = document.getElementById('prompt-box');
     const downloadLink = document.getElementById('download-link');
 
-    if (!textureSelect || !remeshSelect || !renderModeSelect || !checkBalanceButton || !balancePill || !status || !selectedLivestock || !viewerStage || !viewer || !viewerResetButton || !viewerFullscreenButton || !viewerExposureRange || !viewerShadowRange || !viewerExposureValue || !viewerShadowValue || !viewerResetLightingButton || !previewImage || !viewerLoading || !viewerEmpty || !meta || !promptBox || !downloadLink) {
+    if (!status || !viewerStage || !viewer || !viewerResetButton || !viewerFullscreenButton || !viewerLoading || !viewerEmpty || !meta || !promptBox || !downloadLink) {
+        return;
+    }
+
+    if (generateButtons.length === 0) {
         return;
     }
 
@@ -854,12 +704,40 @@
         top: '0deg 14deg 185%'
     };
 
+    let activeRequestController = null;
+    let requestSequence = 0;
     let activePreset = 'hero';
+
+    const getDefaultPresetForMode = () => 'hero';
+
+    const resetResultPanel = () => {
+        viewer.removeAttribute('src');
+        viewer.classList.add('hidden');
+
+        viewerLoading.classList.add('hidden');
+        viewerLoading.textContent = 'Generation 3D en cours...';
+
+        viewerEmpty.textContent = 'Le modele d habitat apparaitra ici apres generation.';
+        viewerEmpty.classList.remove('hidden');
+
+        downloadLink.removeAttribute('href');
+        downloadLink.classList.add('hidden');
+
+        meta.textContent = '';
+        meta.classList.add('hidden');
+
+        promptBox.textContent = '';
+        promptBox.classList.add('hidden');
+
+        setViewerToolsEnabled(false);
+    };
 
     const showStatus = (message, isError) => {
         status.textContent = message;
-        status.classList.remove('hidden', 'is-error', 'is-success');
-        status.classList.add(isError ? 'is-error' : 'is-success');
+        status.classList.remove('hidden', 'error');
+        if (isError) {
+            status.classList.add('error');
+        }
     };
 
     const setViewerToolsEnabled = (enabled) => {
@@ -868,121 +746,55 @@
         });
         viewerResetButton.disabled = !enabled;
         viewerFullscreenButton.disabled = !enabled;
-        viewerExposureRange.disabled = !enabled;
-        viewerShadowRange.disabled = !enabled;
-        viewerResetLightingButton.disabled = !enabled;
     };
 
-    const setButtonsLoading = (loading, activeButton) => {
-        generateButtons.forEach((button) => {
-            const isActive = button === activeButton;
-            button.disabled = loading;
-            if (loading && isActive) {
-                button.textContent = 'Generation...';
-                button.classList.add('is-generating');
-            } else {
-                button.textContent = 'Generer habitat 3D';
-                button.classList.remove('is-generating');
-            }
-        });
-    };
-
-    const setActiveLivestock = (livestockId) => {
-        livestockCards.forEach((card) => {
-            card.classList.toggle('is-active', String(card.getAttribute('data-livestock-id')) === String(livestockId));
-        });
-    };
-
-    const setActivePreset = (preset) => {
-        activePreset = cameraPresets[preset] ? preset : 'hero';
+    const setActivePreset = (presetName) => {
+        activePreset = presetName;
         viewerPresetButtons.forEach((button) => {
-            button.classList.toggle('is-active', String(button.getAttribute('data-preset') || '') === activePreset);
+            button.classList.toggle('is-active', String(button.getAttribute('data-preset')) === presetName);
         });
     };
 
-    const applyCameraPreset = (preset) => {
-        setActivePreset(preset);
-        viewer.setAttribute('camera-orbit', cameraPresets[activePreset] || cameraPresets.hero);
-    };
-
-    const applyRenderMode = (mode) => {
-        const normalized = String(mode || 'signature').toLowerCase();
-        let exposure = 1.10;
-        let shadow = 1.25;
-        let stageClass = 'is-signature';
-
-        if (normalized === 'cinematic') {
-            exposure = 1.06;
-            shadow = 1.45;
-            stageClass = 'is-cinematic';
-        } else if (normalized === 'ultra') {
-            exposure = 1.15;
-            shadow = 1.35;
-            stageClass = 'is-signature';
-        } else if (normalized === 'balanced') {
-            exposure = 1.02;
-            shadow = 1.10;
-            stageClass = '';
-        } else if (normalized === 'eco') {
-            exposure = 0.96;
-            shadow = 0.92;
-            stageClass = '';
+    const applyCameraPreset = (presetName) => {
+        const orbit = cameraPresets[presetName];
+        if (!orbit) {
+            return;
         }
 
-        viewer.setAttribute('exposure', exposure.toFixed(2));
-        viewer.setAttribute('shadow-intensity', shadow.toFixed(2));
-        viewerExposureRange.value = exposure.toFixed(2);
-        viewerShadowRange.value = shadow.toFixed(2);
-        viewerExposureValue.textContent = exposure.toFixed(2);
-        viewerShadowValue.textContent = shadow.toFixed(2);
-        viewerStage.classList.remove('is-cinematic', 'is-signature');
-        if (stageClass !== '') {
-            viewerStage.classList.add(stageClass);
-        }
+        viewer.setAttribute('camera-orbit', orbit);
+        setActivePreset(presetName);
     };
 
-    const resetResultPanel = () => {
-        viewer.classList.add('hidden');
-        viewer.removeAttribute('src');
-        viewerLoading.classList.add('hidden');
-        viewerEmpty.textContent = 'Le modele d habitat apparaitra ici apres generation.';
-        viewerEmpty.classList.remove('hidden');
-        previewImage.classList.add('hidden');
-        previewImage.removeAttribute('src');
-        downloadLink.classList.add('hidden');
-        downloadLink.removeAttribute('href');
-        meta.classList.add('hidden');
-        promptBox.classList.add('hidden');
-        setViewerToolsEnabled(false);
+    const applyRenderMode = () => {
+        viewerStage.classList.remove('is-cinematic');
+        viewerStage.classList.add('is-signature');
+        viewer.setAttribute('auto-rotate', '');
+        viewer.setAttribute('auto-rotate-delay', '700');
+        viewer.setAttribute('rotation-per-second', '10deg');
+        viewer.setAttribute('shadow-softness', '1');
+        viewer.setAttribute('field-of-view', '24deg');
+        viewer.setAttribute('tone-mapping', 'aces');
+        viewer.setAttribute('environment-image', 'neutral');
+        viewer.setAttribute('interaction-prompt', 'auto');
     };
 
-    const formatBytes = (bytes) => {
-        if (!Number.isFinite(bytes) || bytes <= 0) {
-            return '0 B';
-        }
-
-        const units = ['B', 'KB', 'MB', 'GB'];
-        const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-        const value = bytes / Math.pow(1024, exponent);
-        return value.toFixed(exponent === 0 ? 0 : 2) + ' ' + units[exponent];
-    };
+    applyRenderMode();
+    setViewerToolsEnabled(false);
 
     viewer.addEventListener('load', () => {
         viewerLoading.classList.add('hidden');
-        viewer.classList.remove('hidden');
-        viewerEmpty.classList.add('hidden');
         setViewerToolsEnabled(true);
         applyCameraPreset(activePreset);
-        showStatus('Modele Tripo3D charge avec succes.', false);
+        showStatus('Habitat 3D pret.', false);
     });
 
     viewer.addEventListener('error', () => {
         viewerLoading.classList.add('hidden');
-        viewer.classList.add('hidden');
-        viewerEmpty.textContent = 'Le modele a ete genere, mais son affichage a echoue.';
-        viewerEmpty.classList.remove('hidden');
         setViewerToolsEnabled(false);
-        showStatus('Echec d affichage du modele GLB.', true);
+        viewer.classList.add('hidden');
+        viewerEmpty.textContent = 'Le modele a ete genere, mais son affichage a echoue. Reessaie la generation.';
+        viewerEmpty.classList.remove('hidden');
+        showStatus('Echec d affichage 3D dans le viewer.', true);
     });
 
     viewerPresetButtons.forEach((button) => {
@@ -991,7 +803,7 @@
                 return;
             }
 
-            applyCameraPreset(String(button.getAttribute('data-preset') || 'hero'));
+            applyCameraPreset(String(button.getAttribute('data-preset') || 'isometric'));
         });
     });
 
@@ -999,123 +811,171 @@
         if (viewerResetButton.disabled) {
             return;
         }
-        applyCameraPreset('hero');
+
+        applyCameraPreset(getDefaultPresetForMode());
+        if (typeof viewer.jumpCameraToGoal === 'function') {
+            viewer.jumpCameraToGoal();
+        }
     });
 
     viewerFullscreenButton.addEventListener('click', async () => {
         if (viewerFullscreenButton.disabled) {
             return;
         }
+
         try {
             if (document.fullscreenElement) {
                 await document.exitFullscreen();
-            } else if (typeof viewerStage.requestFullscreen === 'function') {
+                return;
+            }
+
+            if (typeof viewerStage.requestFullscreen === 'function') {
                 await viewerStage.requestFullscreen();
             }
         } catch (error) {
-            showStatus('Impossible d ouvrir le plein ecran.', true);
+            showStatus('Impossible d ouvrir le plein ecran sur ce navigateur.', true);
         }
     });
 
-    viewerExposureRange.addEventListener('input', () => {
-        const exposure = Number(viewerExposureRange.value || '1.10');
-        viewer.setAttribute('exposure', exposure.toFixed(2));
-        viewerExposureValue.textContent = exposure.toFixed(2);
-    });
+    if (!canGenerate3D) {
+        generateButtons.forEach((button) => {
+            button.disabled = true;
+        });
+        showStatus('Configuration API 3D manquante. Contacte l administrateur.', true);
+        return;
+    }
 
-    viewerShadowRange.addEventListener('input', () => {
-        const shadow = Number(viewerShadowRange.value || '1.25');
-        viewer.setAttribute('shadow-intensity', shadow.toFixed(2));
-        viewerShadowValue.textContent = shadow.toFixed(2);
-    });
+    const setButtonsLoading = (loading, activeButton) => {
+        generateButtons.forEach((button) => {
+            const isActive = button === activeButton;
+            button.disabled = loading;
+            if (loading && isActive) {
+                button.textContent = 'Generation...';
+                button.classList.add('is-generating');
+            } else if (!loading) {
+                button.textContent = 'Generer habitat 3D';
+                button.classList.remove('is-generating');
+            } else {
+                button.classList.remove('is-generating');
+            }
+        });
+    };
 
-    viewerResetLightingButton.addEventListener('click', () => {
-        if (viewerResetLightingButton.disabled) {
-            return;
-        }
-        applyRenderMode(renderModeSelect.value);
-    });
-
-    renderModeSelect.addEventListener('change', () => {
-        applyRenderMode(renderModeSelect.value);
-    });
+    const setActiveLivestock = (livestockId) => {
+        livestockCards.forEach((card) => {
+            if (String(card.getAttribute('data-livestock-id')) === String(livestockId)) {
+                card.classList.add('is-active');
+            } else {
+                card.classList.remove('is-active');
+            }
+        });
+    };
 
     const requestGeneration = async (button) => {
         const livestockId = String(button.getAttribute('data-livestock-id') || '');
-        const livestockLabel = String(button.getAttribute('data-livestock-label') || ('Livestock #' + livestockId));
-
-        if (!isConfigured) {
-            showStatus('Cle API Tripo3D manquante.', true);
-            return;
-        }
 
         if (livestockId === '' || livestockId === '0') {
             showStatus('Livestock invalide.', true);
             return;
         }
 
+        if (activeRequestController) {
+            activeRequestController.abort();
+        }
+
+        const requestController = new AbortController();
+        activeRequestController = requestController;
+        requestSequence += 1;
+        const currentRequest = requestSequence;
+
         setButtonsLoading(true, button);
         setActiveLivestock(livestockId);
         resetResultPanel();
-        applyRenderMode(renderModeSelect.value);
-        selectedLivestock.textContent = 'Habitat en cours de generation: ' + livestockLabel;
-        viewerLoading.textContent = 'Generation Tripo3D en cours...';
+        applyRenderMode();
+        showStatus('Generation de l habitat 3D en cours...', false);
+        viewerLoading.textContent = 'Generation 3D en cours...';
         viewerLoading.classList.remove('hidden');
 
         try {
             const payload = new FormData();
             payload.append('_token', csrfToken);
             payload.append('livestock_id', livestockId);
-            payload.append('render_mode', String(renderModeSelect.value || 'signature'));
-            payload.append('texture_resolution', String(textureSelect.value || '2048'));
-            payload.append('remesh', String(remeshSelect.value || 'none'));
 
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: payload
+                body: payload,
+                signal: requestController.signal,
             });
 
-            const data = await response.json().catch(() => null);
+            if (currentRequest !== requestSequence) {
+                return;
+            }
+
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                data = null;
+            }
+
             if (!response.ok || !data || !data.ok) {
-                throw new Error(data && data.message ? data.message : 'La generation Tripo3D a echoue.');
+                const message = data && data.message ? data.message : 'La generation 3D a echoue.';
+                viewerEmpty.textContent = 'Generation impossible: ' + message;
+                showStatus(message, true);
+                return;
             }
 
-            if (String(data.preview_url || '') !== '') {
-                previewImage.src = String(data.preview_url);
-                previewImage.classList.remove('hidden');
+            const modelUrl = String(data.model_url || '');
+            if (modelUrl === '') {
+                viewerEmpty.textContent = 'Generation incomplete: aucune URL du modele n a ete retournee.';
+                showStatus('Generation terminee, mais aucune URL de modele d habitat n a ete retournee.', true);
+                return;
             }
 
-            viewer.src = String(data.model_url || '');
+            viewer.src = modelUrl + '?v=' + Date.now();
+            applyCameraPreset(activePreset);
+            viewerLoading.textContent = 'Modele cree. Chargement visuel...';
             viewer.classList.remove('hidden');
             viewerEmpty.classList.add('hidden');
 
-            downloadLink.href = String(data.model_url || '#');
-            downloadLink.setAttribute('download', String(data.file_name || 'livestock.glb'));
+            downloadLink.href = modelUrl;
+            downloadLink.setAttribute('download', String(data.file_name || 'livestock-model.glb'));
             downloadLink.classList.remove('hidden');
 
-            selectedLivestock.textContent = 'Habitat livestock: ' + livestockLabel;
             meta.textContent =
                 'Fichier: ' + String(data.file_name || '-') +
-                ' | Taille: ' + formatBytes(Number(data.file_size_bytes || 0)) +
-                ' | Type habitat: ' + String(data.livestock_type || '-') +
-                ' | Mode: ' + String(data.render_mode || renderModeSelect.value || 'signature');
+                ' | Taille: ' + String(data.file_size_bytes || 0) +
+                ' | Type habitat: ' + String(data.livestock_type || '-');
             meta.classList.remove('hidden');
 
-            if (String(data.prompt || '') !== '') {
-                promptBox.textContent = String(data.prompt);
+            const prompt = String(data.prompt || '');
+            if (prompt !== '') {
+                promptBox.textContent = prompt;
                 promptBox.classList.remove('hidden');
             }
+
+            showStatus('Habitat 3D genere avec succes.', false);
         } catch (error) {
-            viewerLoading.classList.add('hidden');
-            viewer.classList.add('hidden');
-            viewerEmpty.textContent = error instanceof Error ? error.message : 'Erreur inconnue pendant la generation.';
-            viewerEmpty.classList.remove('hidden');
-            showStatus(error instanceof Error ? error.message : 'Erreur de generation.', true);
+            if (error && error.name === 'AbortError') {
+                return;
+            }
+
+            viewerEmpty.textContent = 'Erreur reseau. Verifie la connexion et reessaie la generation.';
+            showStatus('Erreur reseau pendant la generation de l habitat 3D.', true);
         } finally {
-            setButtonsLoading(false, button);
+            if (activeRequestController === requestController) {
+                activeRequestController = null;
+            }
+
+            if (currentRequest === requestSequence) {
+                if (!viewer.getAttribute('src')) {
+                    viewerLoading.classList.add('hidden');
+                }
+                setButtonsLoading(false, button);
+            }
         }
     };
 
@@ -1124,14 +984,6 @@
             requestGeneration(button);
         });
     });
-
-    checkBalanceButton.disabled = true;
-    balancePill.classList.remove('hidden');
-    balancePill.textContent = isConfigured ? 'Connecte' : 'Cle manquante';
-    balancePill.classList.toggle('is-unknown', !isConfigured);
-    showStatus(isConfigured ? 'Tripo3D pret. Choisis un livestock puis clique sur Generer habitat 3D.' : 'Cle API Tripo3D manquante. Ajoute-la dans .env.', !isConfigured);
-    applyRenderMode(renderModeSelect.value);
-    resetResultPanel();
 })();
 </script>
 
