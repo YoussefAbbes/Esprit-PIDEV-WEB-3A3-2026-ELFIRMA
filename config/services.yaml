@@ -31,5 +31,12 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Service\Tripo3DGenerationService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $apiKey: '%env(string:TRIPO3D_API_KEY)%'
+            $apiBaseUrl: '%env(string:TRIPO3D_API_BASE_URL)%'
+            $timeoutSeconds: '%env(int:TRIPO3D_TIMEOUT)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class Tripo3DGenerationService
@@ -13,17 +12,17 @@ final class Tripo3DGenerationService
     private ?string $lastError = null;
 
     public function __construct(
-        private readonly HttpClientInterface $httpClient,
-        private readonly LoggerInterface $logger,
-        #[Autowire('%kernel.project_dir%')] private readonly string $projectDir,
-        #[Autowire('%env(string:TRIPO3D_API_KEY)%')] private readonly string $apiKey,
-        #[Autowire('%env(string:TRIPO3D_API_BASE_URL)%')] private readonly string $apiBaseUrl,
-        #[Autowire('%env(int:TRIPO3D_TIMEOUT)%')] private readonly int $timeoutSeconds
+        private HttpClientInterface $httpClient,
+        private LoggerInterface $logger,
+        private string $projectDir,
+        private string $apiKey,
+        private string $apiBaseUrl,
+        private int $timeoutSeconds
     ) {}
 
     public function isConfigured(): bool
     {
-        return trim($this->apiKey) !== '';
+        return trim($this->apiKey) !== '' && trim($this->apiBaseUrl) !== '';
     }
 
     public function getLastError(): ?string
@@ -31,243 +30,361 @@ final class Tripo3DGenerationService
         return $this->lastError;
     }
 
-    /**
-     * 🚀 ENTRY POINT
-     */
     public function generateFromLivestock(array $livestock): ?array
     {
         $this->lastError = null;
 
         if (!$this->isConfigured()) {
-            $this->lastError = 'Clé API Tripo3D manquante.';
+            $this->lastError = 'Configuration Tripo3D manquante.';
             return null;
         }
 
-        // 1er essai
-        $taskId = $this->createTextToModelTask($livestock, false);
+        $prompt = $this->buildPrompt($livestock);
+        $apiKey = trim($this->apiKey);
+        $apiBaseUrl = rtrim(trim($this->apiBaseUrl), '/');
 
-        // fallback si échec
-        if ($taskId === null) {
-            $this->logger->warning('Fallback prompt activated');
-            $taskId = $this->createTextToModelTask($livestock, true);
+        // Tripo task processing can take longer than default PHP 30s.
+        $requestedExecutionTime = max(90, $this->timeoutSeconds + 30);
+        if (function_exists('set_time_limit')) {
+            @set_time_limit($requestedExecutionTime);
         }
+        @ini_set('max_execution_time', (string) $requestedExecutionTime);
 
-        if ($taskId === null) {
+        if ($apiBaseUrl === '') {
+            $this->lastError = 'URL API Tripo3D invalide.';
             return null;
         }
-
-        $taskPayload = $this->waitForTaskCompletion($taskId);
-
-        if ($taskPayload === null) {
-            return null;
-        }
-
-        // 🔥 DEBUG (optionnel)
-        $this->logger->info('TRIPO RESPONSE', $taskPayload);
-
-        // 🚨 FIX PRINCIPAL ICI
-        $modelUrl = $this->extract($taskPayload, [
-            ['data', 'result', 'pbr_model', 'url'],
-            ['data', 'result', 'model', 'url'],
-            ['data', 'output', 'pbr_model', 'url'],
-            ['data', 'output', 'model', 'url'],
-            ['data', 'output', 'model_url'],
-            ['data', 'result', 'model_url'],
-            ['data', 'mesh_url'],
-            ['data', 'model_url'],
-            ['data', 'files', 0, 'url'],
-        ]);
-
-        $previewUrl = $this->extract($taskPayload, [
-            ['data', 'thumbnail'],
-            ['data', 'preview_url'],
-            ['preview_url'],
-        ]);
-
-        // 🚨 FIX ERROR ORIGINAL
-        if (!$modelUrl) {
-
-            $this->logger->warning('Model missing → retry simplified prompt');
-
-            // fallback ultime
-            $retryTask = $this->createTextToModelTask($livestock, true);
-
-            if ($retryTask) {
-                $taskPayload = $this->waitForTaskCompletion($retryTask);
-
-                $modelUrl = $this->extract($taskPayload, [
-                    ['data', 'model_url'],
-                    ['data', 'output', 'model_url'],
-                    ['data', 'result', 'model_url'],
-                ]);
-            }
-
-            if (!$modelUrl) {
-                $this->lastError = 'Aucun modèle GLB retourné par Tripo3D.';
-                return null;
-            }
-        }
-
-        return $this->storeGeneratedAssets($modelUrl, $previewUrl);
-    }
-
-    /**
-     * 🧠 PROMPT ENGINE
-     */
-    private function createTextToModelTask(array $livestock, bool $fallback = false): ?string
-    {
-        $type = strtolower($livestock['type_elevage'] ?? '');
-
-        $prompt = $fallback
-            ? "simple 3D farm {$type} with animals and barn"
-            : $this->buildPrompt($type);
 
         try {
-            $response = $this->httpClient->request('POST', $this->buildApiUrl('/v2/openapi/task'), [
-                'headers' => $this->buildHeaders(),
-                'json' => [
-                    'type' => 'text_to_model',
-                    'prompt' => $prompt
-                ],
-                'timeout' => 60
-            ]);
+            $response = $this->httpClient->request(
+                'POST',
+                $apiBaseUrl.'/v2/openapi/task',
+                [
+                    'headers' => [
+                        'authorization' => 'Bearer '.$apiKey,
+                        'content-type' => 'application/json',
+                        'accept' => 'application/json',
+                    ],
+                    'json' => [
+                        'type' => 'text_to_model',
+                        'prompt' => $prompt,
+                    ],
+                    'timeout' => 35,
+                    'max_duration' => 35,
+                ]
+            );
 
-            $data = $response->toArray(false);
+            $createStatusCode = $response->getStatusCode();
+            $createPayload = $response->getContent(false);
 
-            return $data['data']['task_id'] ?? null;
+            if ($createStatusCode < 200 || $createStatusCode >= 300) {
+                $this->lastError = $this->buildHttpErrorMessage('creation de la tache', $createStatusCode, $createPayload);
 
-        } catch (\Throwable $e) {
-            $this->lastError = $e->getMessage();
-            return null;
-        }
-    }
+                $this->logger->error('Tripo task creation rejected.', [
+                    'status_code' => $createStatusCode,
+                    'response' => $createPayload,
+                ]);
 
-    /**
-     * 🧠 PROMPTS SIMPLIFIÉS
-     */
-    private function buildPrompt(string $type): string
-    {
-        return match (true) {
+                return null;
+            }
 
-            str_contains($type, 'mouton') =>
-                "3D sheep farm, barn, sheep inside and outside",
+            $data = $this->decodeJson($createPayload);
+            $taskId = $this->extractTaskId($data);
 
-            str_contains($type, 'bovin') =>
-                "3D cattle farm, cows, barn",
+            if (!$taskId) {
+                $this->lastError = $this->buildHttpErrorMessage(
+                    'creation de la tache',
+                    $createStatusCode,
+                    $createPayload,
+                    'Identifiant de tache introuvable dans la reponse Tripo3D.'
+                );
 
-            str_contains($type, 'poule') =>
-                "3D poultry farm, chickens, coop",
+                $this->logger->error('Tripo task id missing after successful creation response.', [
+                    'response' => $createPayload,
+                ]);
 
-            default =>
-                "3D farm animals barn"
-        };
-    }
+                return null;
+            }
 
-    /**
-     * ⏳ POLLING OPTIMISÉ
-     */
-    private function waitForTaskCompletion(string $taskId): ?array
-    {
-        $end = time() + 180;
+            $start = time();
 
-        while (time() < $end) {
+            while (time() - $start < $this->timeoutSeconds) {
 
-            try {
-                $response = $this->httpClient->request(
+                sleep(2);
+
+                $res = $this->httpClient->request(
                     'GET',
-                    $this->buildApiUrl('/v2/openapi/task/' . $taskId),
+                    $apiBaseUrl.'/v2/openapi/task/'.$taskId,
                     [
-                        'headers' => $this->buildHeaders(),
-                        'timeout' => 30
+                        'headers' => [
+                            'authorization' => 'Bearer '.$apiKey,
+                            'accept' => 'application/json',
+                        ],
+                        'timeout' => 20,
+                        'max_duration' => 20,
                     ]
                 );
 
-                $data = $response->toArray(false);
-                $status = strtolower($data['data']['status'] ?? '');
+                $pollStatusCode = $res->getStatusCode();
+                $pollPayload = $res->getContent(false);
 
-                if (in_array($status, ['success','completed','finished','succeeded'])) {
-                    return $data;
-                }
+                if ($pollStatusCode < 200 || $pollStatusCode >= 300) {
+                    $this->lastError = $this->buildHttpErrorMessage('verification de la tache', $pollStatusCode, $pollPayload);
 
-                if (in_array($status, ['failed','error','cancelled'])) {
+                    $this->logger->error('Tripo task polling rejected.', [
+                        'task_id' => $taskId,
+                        'status_code' => $pollStatusCode,
+                        'response' => $pollPayload,
+                    ]);
+
                     return null;
                 }
 
-                usleep(2000000); // 2 sec
+                $data = $this->decodeJson($pollPayload);
+                $status = strtolower((string) ($data['data']['status'] ?? $data['status'] ?? ''));
 
-            } catch (\Throwable $e) {
-                return null;
+                if (in_array($status, ['created', 'queued', 'pending', 'running', 'processing', 'in_progress'], true)) {
+                    continue;
+                }
+
+                if (in_array($status, ['success', 'completed', 'succeeded'], true)) {
+
+                    $modelUrl = $this->extractUrlFromCandidates([
+                        $data['data']['result']['pbr_model'] ?? null,
+                        $data['data']['result']['model'] ?? null,
+                        $data['data']['output']['pbr_model'] ?? null,
+                        $data['data']['output']['model'] ?? null,
+                        $data['data']['output']['glb'] ?? null,
+                        $data['data']['model_url'] ?? null,
+                        $data['model_url'] ?? null,
+                    ]);
+
+                    $previewUrl = $this->extractUrlFromCandidates([
+                        $data['data']['result']['rendered_image'] ?? null,
+                        $data['data']['output']['rendered_image'] ?? null,
+                        $data['data']['output']['generated_image'] ?? null,
+                        $data['data']['thumbnail'] ?? null,
+                        $data['thumbnail'] ?? null,
+                    ]);
+
+                    if (!is_string($modelUrl) || trim($modelUrl) === '') {
+                        $this->lastError = 'Generation Tripo3D terminee, mais aucune URL modele n a ete retournee.';
+
+                        $this->logger->error('Tripo task succeeded without model URL.', [
+                            'task_id' => $taskId,
+                            'response' => $pollPayload,
+                        ]);
+
+                        return null;
+                    }
+
+                    return $this->download($modelUrl, $livestock, $prompt, $previewUrl);
+                }
+
+                if (in_array($status, ['failed', 'error', 'cancelled', 'canceled'], true)) {
+                    $apiMessage = $this->extractApiMessage($data, $pollPayload);
+                    $this->lastError = $apiMessage !== ''
+                        ? 'Generation Tripo3D echouee: '.$apiMessage
+                        : 'Generation Tripo3D echouee.';
+
+                    $this->logger->error('Tripo task finished with failure status.', [
+                        'task_id' => $taskId,
+                        'status' => $status,
+                        'response' => $pollPayload,
+                    ]);
+
+                    return null;
+                }
+
+                $this->logger->warning('Tripo task returned unknown status during polling.', [
+                    'task_id' => $taskId,
+                    'status' => $status,
+                    'response' => $pollPayload,
+                ]);
             }
-        }
 
-        return null;
+            $this->lastError = 'Delai depasse pendant la generation Tripo3D. Reessaie dans quelques instants.';
+            return null;
+
+        } catch (\Throwable $e) {
+            $this->lastError = 'Erreur Tripo3D: '.$e->getMessage();
+
+            $this->logger->error('Tripo generation exception.', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
-    /**
-     * 💾 SAVE FILE
-     */
-    private function storeGeneratedAssets(string $modelUrl, ?string $previewUrl): ?array
+    private function download(string $url, array $livestock, string $prompt, ?string $previewUrl = null): array
     {
-        $dir = $this->projectDir . '/public/uploads/tripo-3d';
+        $dir = $this->projectDir.'/public/uploads/tripo-3d';
 
         if (!is_dir($dir)) {
             mkdir($dir, 0775, true);
         }
 
-        $fileName = 'farm-' . time() . '.glb';
-        $filePath = $dir . '/' . $fileName;
+        $livestockId = (int) ($livestock['id_elevage'] ?? 0);
+        $fileName = sprintf('livestock-%d-%d.glb', max(0, $livestockId), time());
+        $path = $dir.'/'.$fileName;
 
-        try {
-            $content = $this->httpClient->request('GET', $modelUrl)->getContent(false);
+        $downloadResponse = $this->httpClient->request('GET', $url, [
+            'timeout' => 60,
+            'max_duration' => 60,
+        ]);
 
-            if (!$content) {
-                $this->lastError = 'Empty GLB file';
-                return null;
-            }
+        $downloadStatusCode = $downloadResponse->getStatusCode();
+        $content = $downloadResponse->getContent(false);
 
-            file_put_contents($filePath, $content);
+        if ($downloadStatusCode < 200 || $downloadStatusCode >= 300) {
+            throw new \RuntimeException(
+                $this->buildHttpErrorMessage('telechargement du modele', $downloadStatusCode, $content)
+            );
+        }
 
-        } catch (\Throwable $e) {
-            $this->lastError = $e->getMessage();
-            return null;
+        if ($content === '') {
+            throw new \RuntimeException('Le modele Tripo3D telecharge est vide.');
+        }
+
+        $writtenBytes = @file_put_contents($path, $content);
+
+        if ($writtenBytes === false) {
+            throw new \RuntimeException('Unable to store generated Tripo3D model.');
         }
 
         return [
-            'model_url' => '/uploads/tripo-3d/' . $fileName,
-            'preview_url' => $previewUrl
+            'model_url' => '/uploads/tripo-3d/'.$fileName,
+            'preview_url' => $previewUrl,
+            'file_name' => $fileName,
+            'file_size_bytes' => (int) $writtenBytes,
+            'prompt' => $prompt,
         ];
     }
 
-    private function buildHeaders(): array
+    private function extractUrlFromCandidates(array $candidates): ?string
     {
-        return [
-            'Authorization' => 'Bearer ' . trim($this->apiKey),
-            'Content-Type' => 'application/json'
-        ];
-    }
-
-    private function buildApiUrl(string $path): string
-    {
-        return rtrim($this->apiBaseUrl, '/') . '/' . ltrim($path, '/');
-    }
-
-    private function extract(array $payload, array $paths): ?string
-    {
-        foreach ($paths as $path) {
-            $value = $payload;
-
-            foreach ($path as $key) {
-                if (!isset($value[$key])) {
-                    continue 2;
-                }
-                $value = $value[$key];
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && trim($candidate) !== '') {
+                return trim($candidate);
             }
 
-            if (is_string($value)) {
-                return $value;
+            if (is_array($candidate)) {
+                if (isset($candidate['url']) && is_string($candidate['url']) && trim($candidate['url']) !== '') {
+                    return trim($candidate['url']);
+                }
+
+                if (isset($candidate[0]) && is_string($candidate[0]) && trim($candidate[0]) !== '') {
+                    return trim($candidate[0]);
+                }
             }
         }
 
         return null;
+    }
+
+    private function decodeJson(string $payload): array
+    {
+        $trimmed = trim($payload);
+        if ($trimmed === '') {
+            return [];
+        }
+
+        try {
+            $decoded = json_decode($trimmed, true, 512, JSON_THROW_ON_ERROR);
+            return is_array($decoded) ? $decoded : [];
+        } catch (\JsonException) {
+            return [];
+        }
+    }
+
+    private function extractTaskId(array $data): ?string
+    {
+        $taskId = $data['data']['task_id'] ?? $data['data']['id'] ?? $data['task_id'] ?? $data['id'] ?? null;
+
+        if (!is_string($taskId)) {
+            return null;
+        }
+
+        $taskId = trim($taskId);
+        return $taskId !== '' ? $taskId : null;
+    }
+
+    private function extractApiMessage(array $data, string $rawPayload = ''): string
+    {
+        $candidates = [
+            $data['message'] ?? null,
+            $data['msg'] ?? null,
+            $data['error_message'] ?? null,
+            $data['error']['message'] ?? null,
+            $data['error'] ?? null,
+            $data['data']['message'] ?? null,
+            $data['data']['error_message'] ?? null,
+            $data['data']['error']['message'] ?? null,
+            $data['data']['error'] ?? null,
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && trim($candidate) !== '') {
+                return trim($candidate);
+            }
+
+            if (is_array($candidate) && isset($candidate[0]) && is_string($candidate[0]) && trim($candidate[0]) !== '') {
+                return trim($candidate[0]);
+            }
+        }
+
+        $rawPayload = trim($rawPayload);
+        if ($rawPayload !== '') {
+            return substr($rawPayload, 0, 260);
+        }
+
+        return '';
+    }
+
+    private function buildHttpErrorMessage(string $step, int $statusCode, string $rawPayload, string $fallback = ''): string
+    {
+        $apiMessage = $this->extractApiMessage($this->decodeJson($rawPayload), $rawPayload);
+
+        if ($statusCode === 401 || $statusCode === 403) {
+            $base = 'Acces Tripo3D refuse (HTTP '.$statusCode.'). Verifie la cle API et les permissions OpenAPI du compte.';
+            if ($apiMessage !== '') {
+                return $base.' Detail: '.$apiMessage;
+            }
+
+            return $base;
+        }
+
+        if ($apiMessage !== '') {
+            return 'Erreur Tripo3D pendant '.$step.' (HTTP '.$statusCode.'): '.$apiMessage;
+        }
+
+        if ($fallback !== '') {
+            return 'Erreur Tripo3D pendant '.$step.' (HTTP '.$statusCode.'): '.$fallback;
+        }
+
+        return 'Erreur Tripo3D pendant '.$step.' (HTTP '.$statusCode.').';
+    }
+
+    private function buildPrompt(array $livestock): string
+    {
+        $type = trim((string) ($livestock['type_elevage'] ?? 'livestock'));
+        $state = trim((string) ($livestock['etat_elevage'] ?? 'normal'));
+        $production = trim((string) ($livestock['production'] ?? 'farm production'));
+        $capacity = (int) ($livestock['capacite'] ?? 0);
+        $animals = (int) ($livestock['nombre_animaux'] ?? 0);
+
+        if ($type === '') {
+            $type = 'livestock';
+        }
+
+        return sprintf(
+            'Ultra realistic 3D livestock habitat for %s. State %s, production %s, capacity %d, animals %d. One coherent barn structure on flat terrain, realistic materials, no floating fragments, no text, no watermark.',
+            strtolower($type),
+            $state !== '' ? $state : 'normal',
+            $production !== '' ? $production : 'farm production',
+            max(0, $capacity),
+            max(0, $animals)
+        );
     }
 }
