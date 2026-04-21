@@ -15,10 +15,15 @@ use Symfony\Component\Routing\Attribute\Route;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
+<<<<<<< HEAD
+=======
+use App\Controller\AdminTwoFactorController;
+>>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
 
 final class UserController extends AbstractController
 {
     #[Route('/elfirma/utilisateurs', name: 'user_page', methods: ['GET'], priority: 10)]
+<<<<<<< HEAD
 public function page(EntityManagerInterface $entityManager): Response
 {
     $utilisateurRepo = $entityManager->getRepository(Utilisateur::class);
@@ -29,6 +34,27 @@ public function page(EntityManagerInterface $entityManager): Response
     $clientCount = 0;
     $adminCount = 0;
 
+=======
+public function page(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $session = $request->getSession();
+    if ($session->get('user_role') !== 'admin') {
+        $session->invalidate();
+        return $this->redirectToRoute('app_login');
+    }
+
+    if (!AdminTwoFactorController::hasValidAdminTwoFactor($request)) {
+        return $this->redirectToRoute('app_admin_panel_2fa');
+    }
+    $utilisateurRepo = $entityManager->getRepository(Utilisateur::class);
+    $allUsers = $utilisateurRepo->findAll();
+
+    $totalUsers = count($allUsers);
+    $employeeCount = 0;
+    $clientCount = 0;
+    $adminCount = 0;
+
+>>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
     foreach ($allUsers as $user) {
 
         $role = $user->getRoleU();
@@ -45,10 +71,14 @@ public function page(EntityManagerInterface $entityManager): Response
         // QR CODE GENERATION
         // =========================
 <<<<<<< HEAD
+<<<<<<< HEAD
        $profileUrl = 'http://192.168.43.3:8000/elfirma/user/' . $user->getIdU() . '/profile';
 =======
        $profileUrl = 'http://192.168.1.29:8000/elfirma/user/' . $user->getIdU() . '/profile';
 >>>>>>> c014114 (add Face ID authentication for user signup/login)
+=======
+       $profileUrl = 'http://192.168.1.29:8000/elfirma/user/' . $user->getIdU() . '/profile';
+>>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
 
         $user->qrCode = $this->generateQrCode($profileUrl);
     }

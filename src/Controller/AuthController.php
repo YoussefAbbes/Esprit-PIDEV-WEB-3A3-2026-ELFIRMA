@@ -15,10 +15,15 @@ use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 use App\Service\FaceIdClient;
 use App\Service\FaceEncodingStore;
 >>>>>>> c014114 (add Face ID authentication for user signup/login)
+=======
+use App\Service\FaceIdClient;
+use App\Service\FaceEncodingStore;
+>>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
 
 final class AuthController extends AbstractController
 {
@@ -119,8 +124,11 @@ final class AuthController extends AbstractController
 
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
 
     #[Route('/verify-captcha', name: 'app_verify_captcha', methods: ['GET', 'POST'])]
 public function verifyCaptcha(Request $request): Response
