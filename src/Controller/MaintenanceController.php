@@ -393,6 +393,30 @@ public function finishMaintenance(
     return $this->redirectToRoute('employee_panel');
 }
 
+#[Route('/maintenance/pdf', name: 'maintenance_pdf')]
+public function exportPdf(MaintenanceRepository $repo)
+{
+    $maintenances = $repo->findAll();
+
+    $html = $this->renderView('pdf/maintenance.html.twig', [
+        'maintenances' => $maintenances
+    ]);
+
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response(
+        $dompdf->stream("rapport_maintenances.pdf", [
+            "Attachment" => true
+        ]),
+        200,
+        ['Content-Type' => 'application/pdf']
+    );
+}
+
 private function updateEquipementEtat(Equipement $equipement, EntityManagerInterface $em, MailerInterface $mailer) 
 {
     $maintenances = $equipement->getMaintenances();
