@@ -4,6 +4,8 @@ import numpy as np
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from analytics import SupplierAnalyticsAI
+from typing import List
 
 # ── Load trained model artifacts ──────────────────────────────────────────────
 with open("model/rf_model.pkl", "rb") as f:
@@ -128,7 +130,49 @@ def health():
         "model":  "Random Forest",
         "classes": list(label_encoder.classes_)
     }
+analytics_ai = SupplierAnalyticsAI()
 
+# ── Analytics request model ───────────────────────────────────────────────────
+class RatingItem(BaseModel):
+    stars:      int
+    comment:    str = ""
+    created_at: str = ""
+
+class SupplierRatings(BaseModel):
+    supplier_id:   int
+    supplier_name: str
+    ratings:       List[RatingItem]
+
+class AnalyticsRequest(BaseModel):
+    suppliers: List[SupplierRatings]
+
+# ── Analytics endpoint ────────────────────────────────────────────────────────
+@app.post("/analyze")
+def analyze(request: AnalyticsRequest):
+    results = []
+    for supplier in request.suppliers:
+        data = {
+            'supplier_id':   supplier.supplier_id,
+            'supplier_name': supplier.supplier_name,
+            'ratings': [
+                {
+                    'stars':      r.stars,
+                    'comment':    r.comment,
+                    'created_at': r.created_at,
+                }
+                for r in supplier.ratings
+            ]
+        }
+        result = analytics_ai.analyze_supplier(data)
+        results.append(result)
+
+    # Sort by avg_stars ascending (worst first) for priority review
+    results.sort(key=lambda x: x['avg_stars'])
+
+    return {
+        'total_suppliers_analyzed': len(results),
+        'results': results
+    }
 # ── Run directly ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
