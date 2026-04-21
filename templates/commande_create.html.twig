@@ -4,6 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         .stripe-zone { display: none; margin-top: 12px; border-radius: 14px; border: 1px solid #d1fae5; background: linear-gradient(145deg, #ecfdf5 0%, #f0fdf4 55%, #dcfce7 100%); padding: 18px; }
         .stripe-zone.active { display: block; animation: fadeInStripe 260ms ease-out; }
@@ -31,6 +32,11 @@
         .assist-input { border-top: 1px solid #ccfbf1; padding: 10px; background: #fff; display: flex; gap: 8px; }
         .assist-input input { flex: 1; border: 1px solid #99f6e4; border-radius: 8px; padding: 9px 10px; font-size: 14px; }
         .assist-input button { border: none; background: #0f766e; color: #fff; border-radius: 8px; padding: 9px 12px; font-weight: 700; }
+        .delivery-map-box { margin-top: 10px; border: 2px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; }
+        .delivery-map-head { padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid #e5e7eb; }
+        .delivery-map-head button { border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; border-radius: 7px; font-size: 12px; padding: 5px 8px; font-weight: 700; }
+        #delivery-map { height: 240px; width: 100%; }
+        #delivery-map-status { font-size: 12px; color: #6b7280; }
         @keyframes fadeInStripe { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 {% endblock %}
@@ -80,6 +86,14 @@
                                 <label for="adresse_livraison" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Adresse de livraison *</label>
                                 <textarea id="adresse_livraison" name="adresse_livraison" rows="2"
                                           style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;">{{ oldInput.adresse_livraison|default('') }}</textarea>
+                                <div class="delivery-map-box">
+                                    <div class="delivery-map-head">
+                                        <span style="font-size: 12px; font-weight: 700; color: #1f2937;">Choisir sur la carte (clic pour remplir l'adresse)</span>
+                                        <button id="use-current-location" type="button">Ma position</button>
+                                    </div>
+                                    <div id="delivery-map"></div>
+                                    <div id="delivery-map-status" style="padding: 8px 10px;">Astuce: vous pouvez ecrire manuellement ou cliquer sur la carte.</div>
+                                </div>
                                 {% if formErrors.adresse_livraison is defined %}
                                     {% for err in formErrors.adresse_livraison %}
                                         <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
@@ -348,9 +362,110 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="{{ asset('assets/js/gesture_assistant.js') }}?v=3"></script>
+    <script>
+        (function () {
+            const addressInput = document.getElementById('adresse_livraison');
+            const mapEl = document.getElementById('delivery-map');
+            const statusEl = document.getElementById('delivery-map-status');
+            const myLocationBtn = document.getElementById('use-current-location');
+
+            if (!addressInput || !mapEl || typeof L === 'undefined') {
+                if (statusEl) {
+                    statusEl.textContent = 'Carte indisponible. Vous pouvez saisir l\'adresse manuellement.';
+                }
+                return;
+            }
+
+            const defaultCenter = [36.8065, 10.1815];
+            const map = L.map('delivery-map', { zoomControl: true }).setView(defaultCenter, 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            let marker = null;
+
+            function setStatus(message, isError) {
+                if (!statusEl) return;
+                statusEl.textContent = message;
+                statusEl.style.color = isError ? '#b91c1c' : '#6b7280';
+            }
+
+            function placeMarker(lat, lng) {
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                    return;
+                }
+                marker = L.marker([lat, lng]).addTo(map);
+            }
+
+            async function reverseGeocode(lat, lng) {
+                setStatus('Recherche de l\'adresse...', false);
+                try {
+                    const response = await fetch('{{ path('app_api_commande_reverse_geocode') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ lat: lat, lng: lng })
+                    });
+
+                    const data = await response.json();
+                    const address = (response.ok && data && data.ok && data.address)
+                        ? String(data.address).trim()
+                        : '';
+
+                    if (address !== '') {
+                        addressInput.value = address;
+                        addressInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        setStatus('Adresse remplie automatiquement depuis la carte.', false);
+                    } else {
+                        addressInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                        setStatus('Adresse exacte non trouvee, coordonnees remplies.', false);
+                    }
+                } catch (_error) {
+                    addressInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    setStatus('Impossible de recuperer l\'adresse exacte. Coordonnees remplies.', true);
+                }
+            }
+
+            map.on('click', function (event) {
+                const lat = event.latlng.lat;
+                const lng = event.latlng.lng;
+                placeMarker(lat, lng);
+                reverseGeocode(lat, lng);
+            });
+
+            if (myLocationBtn) {
+                myLocationBtn.addEventListener('click', function () {
+                    if (!navigator.geolocation) {
+                        setStatus('Geolocalisation non supportee par ce navigateur.', true);
+                        return;
+                    }
+
+                    setStatus('Detection de votre position...', false);
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        map.setView([lat, lng], 16);
+                        placeMarker(lat, lng);
+                        reverseGeocode(lat, lng);
+                    }, function () {
+                        setStatus('Impossible d\'obtenir votre position.', true);
+                    }, { enableHighAccuracy: true, timeout: 8000 });
+                });
+            }
+
+            setTimeout(function () {
+                map.invalidateSize();
+            }, 120);
+        })();
+    </script>
     <script>
         (function () {
             const modeSelect = document.getElementById('mode_paiement');

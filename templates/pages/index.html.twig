@@ -306,17 +306,6 @@
             </div>
           </div>
         {% else %}
-          <div id="image-similar-products-panel" style="display:none; margin-bottom: 24px; background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%); border-radius: 18px; padding: 18px; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.25); border: 2px solid #334155;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
-              <h4 style="margin:0; color:#e2e8f0; font-size:18px; font-weight:800; display:inline-flex; align-items:center; gap:8px;">
-                <span class="material-symbols-outlined" style="font-size:22px; color:#22d3ee;">frame_inspect</span>
-                Produits similaires trouves
-              </h4>
-              <span id="image-similar-products-engine" style="background:#111827; color:#93c5fd; border:1px solid #374151; border-radius:999px; padding:5px 10px; font-size:12px; font-weight:700;"></span>
-            </div>
-            <div id="image-similar-products-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
-          </div>
-
           <div class="row g-4" id="products-grid">
             {% for produit in produits %}
             <div class="col-lg-3 col-md-4 col-sm-6 product-item" data-category="{{ produit.categorie ? produit.categorie.id : 0 }}" data-product-id="{{ produit.idProduit }}" data-aos="fade-up" data-aos-delay="100">
@@ -915,8 +904,6 @@
       function resetImageSearchState() {
         window.imageSearchProductIds = null;
         window.imageSearchRanking = null;
-        window.imageSearchMode = null;
-        window.imageSearchResults = [];
 
         const input = document.getElementById('image-search-input');
         if (input) {
@@ -929,7 +916,6 @@
         }
 
         setImageSearchStatus('');
-        renderImageSimilarPanel([], '');
 
         const activeCategoryBtn = document.querySelector('.category-filter[style*="2d5016"]') || document.querySelector('.category-filter.active');
         const categoryId = activeCategoryBtn?.dataset?.category || 'all';
@@ -947,50 +933,6 @@
         const activeCategoryBtn = document.querySelector('.category-filter[style*="2d5016"]') || document.querySelector('.category-filter.active');
         const categoryId = activeCategoryBtn?.dataset?.category || 'all';
         filterByCategory(categoryId, activeCategoryBtn || null);
-      }
-
-      function renderImageSimilarPanel(results, mode) {
-        const panel = document.getElementById('image-similar-products-panel');
-        const list = document.getElementById('image-similar-products-list');
-        const engine = document.getElementById('image-similar-products-engine');
-        if (!panel || !list || !engine) return;
-
-        const rows = Array.isArray(results) ? results.slice(0, 8) : [];
-        if (rows.length === 0) {
-          panel.style.display = 'none';
-          list.innerHTML = '';
-          engine.textContent = '';
-          return;
-        }
-
-        const modeLabelMap = {
-          clip: 'Deep AI (CLIP)',
-          color_signature: 'Visual Signature',
-          filename_fallback: 'Fallback',
-        };
-
-        engine.textContent = modeLabelMap[mode] || 'Visual Search';
-        list.innerHTML = '';
-
-        rows.forEach((row) => {
-          const id = Number(row.id || 0);
-          const name = String(row.name || 'Product');
-          const similarity = Math.max(0, Math.min(1, Number(row.similarity || 0)));
-          const percent = Math.round(similarity * 100);
-
-          const item = document.createElement('button');
-          item.type = 'button';
-          item.style.cssText = 'border:1px solid #475569; background:rgba(15,23,42,0.75); color:#e2e8f0; border-radius:12px; padding:10px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; font-weight:700;';
-          item.innerHTML = `<span style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; padding:4px 8px; border-radius:999px; background:linear-gradient(135deg,#0ea5e9 0%,#22d3ee 100%); color:#082f49; font-size:12px; font-weight:900;">${percent}%</span><span>${name}</span>`;
-          item.addEventListener('click', () => {
-            if (id > 0) {
-              openProductDetails(id);
-            }
-          });
-          list.appendChild(item);
-        });
-
-        panel.style.display = 'block';
       }
 
       // Category filter functions
@@ -1563,21 +1505,11 @@
               }
 
               applyImageSearchResults(result.product_ids || []);
-              window.imageSearchMode = String(result.mode || '');
-              window.imageSearchResults = Array.isArray(result.results) ? result.results : [];
-              renderImageSimilarPanel(window.imageSearchResults, window.imageSearchMode);
 
               const count = Number(result.count || 0);
               if (count > 0) {
-                const modeLabelMap = {
-                  clip: 'Deep AI (CLIP)',
-                  color_signature: 'Visual Signature',
-                  filename_fallback: 'Fallback',
-                };
-                const modeLabel = modeLabelMap[String(result.mode || '')] || 'Visual Search';
-                setImageSearchStatus(`${count} similar product(s) found via ${modeLabel}.`, 'success');
+                setImageSearchStatus(`${count} similar product(s) found.`, 'success');
               } else {
-                renderImageSimilarPanel([], '');
                 setImageSearchStatus('No similar product found. Try another image.', 'error');
               }
             } catch (error) {

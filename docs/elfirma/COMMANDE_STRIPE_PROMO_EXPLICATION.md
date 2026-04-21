@@ -1127,5 +1127,104 @@ Champs passes:
 - Etape 25: masquage message technique fallback cote front.
 - Etape 26: affichage score client pour admin sur toutes les commandes.
 
+## 23) Recherche produits par image (fast + CLIP + fallback)
+### A) Objectif fonctionnel
+- Permettre au client de televerser une image dans le catalogue et retrouver des produits visuellement similaires.
+- Afficher un resultat rapide par defaut, avec un mode plus avance (CLIP) en option.
+
+### B) MVC applique
+- Controller API:
+  - `src/Controller/ProductImageSearchController.php`
+  - route: `POST /api/products/search-image`
+  - valide fichier image (type + taille), lance moteur de similarite, renvoie JSON.
+- View front:
+  - `templates/pages/index.html.twig`
+  - ajout du bloc UI recherche image + etat + affichage resultats similaires.
+- Script IA deep (optionnel):
+  - `scripts/recommender/image_clip_search.py`
+  - extraction embeddings CLIP + comparaison cosinus.
+
+### C) Moteurs de recherche implementes
+- Mode `fast` (par defaut):
+  - signature couleur (histogramme RGB compacte),
+  - score par similarite cosinus,
+  - performant pour usage front en temps reel.
+- Mode `clip` (premium/deep):
+  - embeddings visuels via modele `openai/clip-vit-base-patch32`,
+  - meilleur matching semantique visuel,
+  - plus couteux en temps CPU/GPU.
+- Fallback `filename`:
+  - si moteur image indisponible (GD/Imagick absent),
+  - tentative de match par tokens du nom de fichier.
+
+### D) Performance et robustesse
+- Cache signatures/embeddings pour eviter de recalculer a chaque requete.
+- Limitation taille image upload (5MB) pour stabilite serveur.
+- Reponse API toujours exploitable meme en mode degrade.
+
+### E) Fichiers touches
+- `src/Controller/ProductImageSearchController.php`
+- `scripts/recommender/image_clip_search.py`
+- `templates/pages/index.html.twig`
+
+## 24) Checkout: adresse manuelle OU selection carte (auto-remplissage)
+### A) Besoin fonctionnel
+- L'utilisateur peut:
+  - soit saisir manuellement son adresse de livraison,
+  - soit cliquer sur une carte pour remplir automatiquement le champ adresse.
+
+### B) Implementation front
+- Fichier:
+  - `templates/commande_create.html.twig`
+- Ajouts UI:
+  - bloc carte sous `adresse_livraison`,
+  - bouton `Ma position`,
+  - zone statut utilisateur (recherche, succes, erreur).
+
+### C) Tech utilisee
+- Carte:
+  - Leaflet + tuiles OpenStreetMap.
+- Reverse geocoding:
+  - API Symfony interne `POST /api/commande/reverse-geocode`.
+  - L'appel Nominatim (OSM) est execute cote controller (pas dans Twig).
+- Geolocalisation:
+  - `navigator.geolocation` pour centrer automatiquement sur la position client.
+
+### C.1) Respect MVC strict (important soutenance)
+- Controller:
+  - `src/Controller/CommandeController.php`
+  - nouvelle action `reverseGeocode(...)` avec route `app_api_commande_reverse_geocode`.
+  - role: valider `lat/lng`, appeler Nominatim via `HttpClientInterface`, renvoyer JSON propre.
+- View:
+  - `templates/commande_create.html.twig`
+  - role: afficher la carte, capter le clic, appeler l'API Symfony interne, remplir le champ adresse.
+- Conclusion:
+  - la logique geocoding est bien dans le controller,
+  - la vue ne contient que de la logique UI.
+
+### C.2) Reponse prof (2 phrases, prete a dire)
+- "J'ai refactorise cette fonctionnalite en MVC strict: la vue capture seulement le clic carte et envoie lat/lng a une route Symfony interne."
+- "Le controller fait la validation, appelle le service externe de geocoding et renvoie un JSON propre, donc la logique metier n'est plus dans Twig."
+
+### D) Comportement exact
+- Clic sur la carte:
+  - place un marqueur,
+  - recupere l'adresse (`display_name`),
+  - injecte le texte dans `#adresse_livraison`.
+- Si geocoding indisponible:
+  - fallback sur coordonnees `lat,lng` dans le champ,
+  - message d'erreur non bloquant.
+- La saisie manuelle reste pleinement fonctionnelle (aucune regression UX).
+
+### E) Validation
+- Lint Twig execute:
+  - `php bin/console lint:twig templates/commande_create.html.twig` => OK.
+
+### F) Journal des changements (suite)
+- Etape 27: ajout recherche produits par image (API Symfony + mode fast + fallback filename).
+- Etape 28: ajout mode deep CLIP + cache embeddings pour resultats similaires premium.
+- Etape 29: ajout carte checkout avec clic + reverse geocoding + bouton Ma position.
+- Etape 30: refactor MVC strict du geocoding (appel externe deplace du Twig vers `CommandeController` via endpoint interne).
+
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.

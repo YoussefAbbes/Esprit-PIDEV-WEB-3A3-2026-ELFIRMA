@@ -950,6 +950,77 @@ final class CommandeController extends AbstractController
         ]);
     }
 
+    #[Route('/api/commande/reverse-geocode', name: 'app_api_commande_reverse_geocode', methods: ['POST'])]
+    public function reverseGeocode(Request $request, HttpClientInterface $httpClient): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+        if (!is_array($payload)) {
+            return new JsonResponse([
+                'ok' => false,
+                'message' => 'Format invalide.',
+            ], 400);
+        }
+
+        $lat = (float) ($payload['lat'] ?? 0.0);
+        $lng = (float) ($payload['lng'] ?? 0.0);
+
+        if ($lat < -90.0 || $lat > 90.0 || $lng < -180.0 || $lng > 180.0) {
+            return new JsonResponse([
+                'ok' => false,
+                'message' => 'Coordonnees invalides.',
+            ], 422);
+        }
+
+        try {
+            $response = $httpClient->request('GET', 'https://nominatim.openstreetmap.org/reverse', [
+                'query' => [
+                    'format' => 'jsonv2',
+                    'lat' => $lat,
+                    'lon' => $lng,
+                    'accept-language' => 'fr',
+                ],
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'User-Agent' => 'ELFIRMA-Checkout/1.0 (Symfony)',
+                ],
+                'timeout' => 8,
+            ]);
+
+            $status = $response->getStatusCode();
+            $data = $response->toArray(false);
+            $address = is_array($data) ? trim((string) ($data['display_name'] ?? '')) : '';
+
+            if ($status >= 400 || $address === '') {
+                return new JsonResponse([
+                    'ok' => false,
+                    'message' => 'Adresse introuvable.',
+                    'coordinates' => [
+                        'lat' => round($lat, 6),
+                        'lng' => round($lng, 6),
+                    ],
+                ], 404);
+            }
+
+            return new JsonResponse([
+                'ok' => true,
+                'address' => $address,
+                'coordinates' => [
+                    'lat' => round($lat, 6),
+                    'lng' => round($lng, 6),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'ok' => false,
+                'message' => 'Service geocoding indisponible.',
+                'coordinates' => [
+                    'lat' => round($lat, 6),
+                    'lng' => round($lng, 6),
+                ],
+            ], 502);
+        }
+    }
+
     #[Route('/api/commande/client-score', name: 'app_api_commande_client_score', methods: ['GET'])]
     public function clientScore(SessionInterface $session, EntityManagerInterface $em, ClientScoringService $clientScoringService): JsonResponse
     {
