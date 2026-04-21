@@ -16,16 +16,30 @@ use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 use App\Controller\AdminTwoFactorController;
 >>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
+=======
+use App\Controller\AdminTwoFactorController;
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
 
 final class UserController extends AbstractController
 {
     #[Route('/elfirma/utilisateurs', name: 'user_page', methods: ['GET'], priority: 10)]
 <<<<<<< HEAD
+<<<<<<< HEAD
 public function page(EntityManagerInterface $entityManager): Response
 {
+=======
+public function page(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $session = $request->getSession();
+if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasValidAdminTwoFactor($request)) {
+    $session->invalidate();
+    return $this->redirectToRoute('app_login');
+}
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
     $utilisateurRepo = $entityManager->getRepository(Utilisateur::class);
     $allUsers = $utilisateurRepo->findAll();
 
@@ -34,6 +48,7 @@ public function page(EntityManagerInterface $entityManager): Response
     $clientCount = 0;
     $adminCount = 0;
 
+<<<<<<< HEAD
 =======
 public function page(Request $request, EntityManagerInterface $entityManager): Response
 {
@@ -55,6 +70,8 @@ public function page(Request $request, EntityManagerInterface $entityManager): R
     $adminCount = 0;
 
 >>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
+=======
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
     foreach ($allUsers as $user) {
 
         $role = $user->getRoleU();
@@ -72,6 +89,7 @@ public function page(Request $request, EntityManagerInterface $entityManager): R
         // =========================
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
        $profileUrl = 'http://192.168.43.3:8000/elfirma/user/' . $user->getIdU() . '/profile';
 =======
        $profileUrl = 'http://192.168.1.29:8000/elfirma/user/' . $user->getIdU() . '/profile';
@@ -79,6 +97,9 @@ public function page(Request $request, EntityManagerInterface $entityManager): R
 =======
        $profileUrl = 'http://192.168.1.29:8000/elfirma/user/' . $user->getIdU() . '/profile';
 >>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
+=======
+       $profileUrl = 'http://192.168.1.29:8000/elfirma/user/' . $user->getIdU() . '/profile';
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
 
         $user->qrCode = $this->generateQrCode($profileUrl);
     }

@@ -81,8 +81,23 @@
       <!-- Password -->
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••" maxlength="7">
-        <small class="text-muted">Between 3 and 7 characters</small>
+        <div class="password-input-wrap">
+          <input type="password" id="password" name="password" class="form-control password-input" placeholder="••••••" maxlength="7">
+          <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Show or hide password" title="Show or hide password">
+            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+          </button>
+        </div>
+        <div class="password-tools-panel">
+          <div class="password-policy-note">
+            <i class="bi bi-shield-check"></i>
+            <span>Use 3 to 7 characters</span>
+          </div>
+          <button type="button" class="password-suggest-btn" id="suggestPasswordBtn">
+            <i class="bi bi-magic"></i>
+            <span>Generate secure suggestion</span>
+          </button>
+        </div>
+        <small class="text-muted password-suggest-status" id="suggestPasswordStatus"></small>
       </div>
 
       <!-- Confirm Password -->
@@ -276,6 +291,125 @@
 
   .form-group {
     margin-bottom: 1.5rem;
+  }
+
+  .password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .password-input-wrap .password-input {
+    padding-right: 3rem;
+  }
+
+  .password-tools-panel {
+    margin-top: 0.7rem;
+    background: #f7fbf8;
+    border: 1px solid #dcebe1;
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .password-policy-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #2f5843;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .password-policy-note i {
+    color: #116530;
+  }
+
+  .password-toggle-btn {
+    position: absolute;
+    right: 0.7rem;
+    border: none;
+    background: transparent;
+    color: #5f6b66;
+    cursor: pointer;
+    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem;
+  }
+
+  .password-toggle-btn:hover {
+    color: #116530;
+  }
+
+  .password-toggle-btn:focus-visible {
+    outline: 2px solid rgba(17, 101, 48, 0.35);
+    border-radius: 6px;
+  }
+
+  .password-suggest-btn {
+    border: 1px solid #116530;
+    background: linear-gradient(135deg, #116530 0%, #0d4c23 100%);
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    box-shadow: 0 4px 10px rgba(17, 101, 48, 0.2);
+    white-space: nowrap;
+  }
+
+  .password-suggest-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(17, 101, 48, 0.28);
+  }
+
+  .password-suggest-btn:active {
+    transform: translateY(0);
+  }
+
+  .password-suggest-btn:focus-visible {
+    outline: 3px solid rgba(17, 101, 48, 0.2);
+    outline-offset: 2px;
+  }
+
+  .password-suggest-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .password-suggest-status {
+    margin-top: 0.45rem;
+    min-height: 1rem;
+    color: #4d5a54;
+  }
+
+  @media (max-width: 640px) {
+    .password-tools-panel {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .password-policy-note {
+      justify-content: center;
+    }
+
+    .password-suggest-btn {
+      justify-content: center;
+      width: 100%;
+    }
   }
 
   .form-group label {
@@ -486,6 +620,15 @@
   });
 
   const signupForm = document.getElementById('signupForm');
+<<<<<<< HEAD
+=======
+  const passwordField = document.getElementById('password');
+  const confirmPasswordField = document.getElementById('confirm_password');
+  const suggestPasswordBtn = document.getElementById('suggestPasswordBtn');
+  const suggestPasswordStatus = document.getElementById('suggestPasswordStatus');
+  const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+  const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
   const faceInput = document.getElementById('face_embeddings_json');
   const faceModal = document.getElementById('signupFaceModal');
   const faceClose = document.getElementById('signupFaceClose');
@@ -523,6 +666,58 @@
     return true;
   };
 
+<<<<<<< HEAD
+=======
+  if (togglePasswordBtn && passwordField && togglePasswordIcon) {
+    togglePasswordBtn.addEventListener('click', function() {
+      const isHidden = passwordField.type === 'password';
+      passwordField.type = isHidden ? 'text' : 'password';
+      togglePasswordIcon.classList.toggle('bi-eye', !isHidden);
+      togglePasswordIcon.classList.toggle('bi-eye-slash', isHidden);
+    });
+  }
+
+  if (suggestPasswordBtn && passwordField) {
+    suggestPasswordBtn.addEventListener('click', async function() {
+      suggestPasswordBtn.disabled = true;
+      if (suggestPasswordStatus) {
+        suggestPasswordStatus.textContent = 'Generating password...';
+      }
+
+      try {
+        const response = await fetch('{{ path('app_api_password_suggest') }}', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success && typeof data.password === 'string' && data.password.length <= 7) {
+          passwordField.value = data.password;
+          if (confirmPasswordField) {
+            confirmPasswordField.value = data.password;
+          }
+
+          if (suggestPasswordStatus) {
+            const source = data.source === 'external_api' ? 'external API' : 'local fallback';
+            suggestPasswordStatus.textContent = `Suggested password inserted (${source}).`;
+          }
+        } else if (suggestPasswordStatus) {
+          suggestPasswordStatus.textContent = 'Could not generate a valid password.';
+        }
+      } catch (error) {
+        if (suggestPasswordStatus) {
+          suggestPasswordStatus.textContent = 'API unavailable. Please try again.';
+        }
+      } finally {
+        suggestPasswordBtn.disabled = false;
+      }
+    });
+  }
+
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
   const stopEnrollmentCamera = () => {
     if (frameTimer) {
       clearInterval(frameTimer);

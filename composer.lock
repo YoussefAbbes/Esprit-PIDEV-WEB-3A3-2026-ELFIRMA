@@ -5,10 +5,14 @@
         "This file is @generated automatically"
     ],
 <<<<<<< HEAD
+<<<<<<< HEAD
     "content-hash": "50143530ee041e902e8152590fb9db95",
 =======
     "content-hash": "da0d2f597034699491b2a3d02deab626",
 >>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
+=======
+    "content-hash": "da0d2f597034699491b2a3d02deab626",
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
     "packages": [
         {
             "name": "bacon/bacon-qr-code",

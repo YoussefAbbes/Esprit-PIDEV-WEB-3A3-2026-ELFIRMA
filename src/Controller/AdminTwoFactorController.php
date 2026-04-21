@@ -27,7 +27,11 @@ final class AdminTwoFactorController extends AbstractController
         }
 
         if ($this->isAdminTwoFactorValid($request)) {
+<<<<<<< HEAD
             return $this->redirectToRoute('user_page');
+=======
+            return $this->redirectToRoute('elfirma_page', ['module' => 'utilisateurs']);
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
         }
 
         return $this->redirectToRoute('app_admin_panel_2fa');
@@ -50,6 +54,7 @@ final class AdminTwoFactorController extends AbstractController
             $verified = $twoFactorService->verifyCode($userId, $code);
 
             if (!$verified) {
+<<<<<<< HEAD
                 $pendingSecret = (string) $session->get('admin_2fa_pending_secret', '');
                 if ($pendingSecret !== '') {
                     $verified = $twoFactorService->verifyCodeWithSecret($pendingSecret, $code);
@@ -57,12 +62,15 @@ final class AdminTwoFactorController extends AbstractController
             }
 
             if (!$verified) {
+=======
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
                 return $this->forceLogout($request, 'invalid_code');
             }
 
             $session->set('admin_2fa_verified', true);
             $session->set('admin_2fa_verified_at', time());
             $session->set('admin_2fa_user_id', $userId);
+<<<<<<< HEAD
             $session->remove('admin_2fa_pending_secret');
 
             return $this->redirectToRoute('user_page');
@@ -71,6 +79,12 @@ final class AdminTwoFactorController extends AbstractController
         $secret = $twoFactorService->getOrCreateSecretForUser($userId);
         $session->set('admin_2fa_pending_secret', $secret);
 
+=======
+
+            return $this->redirectToRoute('elfirma_page', ['module' => 'utilisateurs']);
+        }
+
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
         $provisioningUri = $twoFactorService->getProvisioningUri($userId, $userEmail);
 
         $qrCode = new QrCode(
@@ -95,8 +109,12 @@ final class AdminTwoFactorController extends AbstractController
             return false;
         }
 
+<<<<<<< HEAD
         $admin2faVerified = $session->get('admin_2fa_verified');
         if (!in_array($admin2faVerified, [true, 1, '1'], true)) {
+=======
+        if ($session->get('admin_2fa_verified') !== true) {
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
             return false;
         }
 
@@ -120,6 +138,7 @@ final class AdminTwoFactorController extends AbstractController
         return self::hasValidAdminTwoFactor($request);
     }
 
+<<<<<<< HEAD
     private function forceLogout(Request $request, ?string $twoFaError = null): Response
     {
         $request->getSession()->invalidate();
@@ -131,4 +150,21 @@ final class AdminTwoFactorController extends AbstractController
 
         return $this->redirectToRoute('app_login', $params);
     }
+=======
+private function forceLogout(Request $request, ?string $twoFaError = null): Response
+{
+    $session = $request->getSession();
+
+    // Hard cleanup of session
+    $session->clear();
+    $session->invalidate();
+
+    $params = [];
+    if ($twoFaError !== null && $twoFaError !== '') {
+        $params['twofa_error'] = $twoFaError;
+    }
+
+    return $this->redirectToRoute('app_login', $params);
+}
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
 }

@@ -30,7 +30,11 @@
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
+<<<<<<< HEAD
        {% if app.session.get('user_role') == 'admin' %}
+=======
+        {% if app.session.get('user_role') == 'admin' %}
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
   <li><a href="{{ path('app_admin_panel_entry') }}" class="nav-admin-link">Admin Panel</a></li>
 {% endif %}
       </ul>

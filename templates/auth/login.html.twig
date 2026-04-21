@@ -1001,6 +1001,7 @@
     });
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 
@@ -1017,4 +1018,49 @@ if (twoFaError === 'invalid_code' && typeof Swal !== 'undefined') {
 }
 >>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
 </script>
+=======
+
+
+  
+</script>
+
+<script>
+  (function () {
+    const showTwoFaErrorAlert = function () {
+      const params = new URLSearchParams(window.location.search);
+      const twoFaError = params.get('twofa_error');
+
+      if (twoFaError !== 'invalid_code') {
+        return;
+      }
+
+      const title = 'Two-Factor Verification Failed';
+      const message = 'Sorry, for security reasons, the code you entered is incorrect or has expired. You have been signed out. Please sign in again.';
+
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: 'error',
+          title: title,
+          text: message,
+          confirmButtonColor: '#116530',
+          confirmButtonText: 'Back to Sign In'
+        }).then(function () {
+          // Remove query string so alert does not reappear on refresh
+          window.history.replaceState({}, document.title, window.location.pathname);
+        });
+      } else {
+        // Fallback if SweetAlert is not loaded
+        alert(message);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', showTwoFaErrorAlert, { once: true });
+    } else {
+      showTwoFaErrorAlert();
+    }
+  })();
+</script>
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
 {% endblock %}

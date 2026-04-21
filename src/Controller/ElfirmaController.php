@@ -155,6 +155,14 @@ final class ElfirmaController extends AbstractController
             }
         }
 
+        if ($module === 'utilisateurs') {
+    $session = $request->getSession();
+    if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasValidAdminTwoFactor($request)) {
+        $session->invalidate();
+        return $this->redirectToRoute('app_login');
+    }
+}
+
         $moduleMeta = self::MODULES[$module];
 
         if ($module === 'animaux-elevages') {

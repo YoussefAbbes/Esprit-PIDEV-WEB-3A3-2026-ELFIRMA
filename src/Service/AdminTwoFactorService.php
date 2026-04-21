@@ -33,6 +33,7 @@ final class AdminTwoFactorService
             return false;
         }
 
+<<<<<<< HEAD
         return $this->verifyCodeWithSecret($secret, $code);
     }
 
@@ -42,6 +43,8 @@ final class AdminTwoFactorService
             return false;
         }
 
+=======
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
         $cleanCode = preg_replace('/\s+/', '', trim($code));
         if ($cleanCode === '' || !preg_match('/^\d{6}$/', $cleanCode)) {
             return false;
@@ -51,11 +54,14 @@ final class AdminTwoFactorService
         return $totp->verify($cleanCode, null, 1);
     }
 
+<<<<<<< HEAD
     public function getOrCreateSecretForUser(int $userId): string
     {
         return $this->getOrCreateSecret($userId);
     }
 
+=======
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
     private function getOrCreateSecret(int $userId): string
     {
         $existing = $this->getStoredSecret($userId);

@@ -16,6 +16,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 use App\Service\FaceIdClient;
 use App\Service\FaceEncodingStore;
@@ -24,6 +25,10 @@ use App\Service\FaceEncodingStore;
 use App\Service\FaceIdClient;
 use App\Service\FaceEncodingStore;
 >>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
+=======
+use App\Service\FaceIdClient;
+use App\Service\FaceEncodingStore;
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
 
 final class AuthController extends AbstractController
 {
@@ -125,10 +130,13 @@ final class AuthController extends AbstractController
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
 =======
 >>>>>>> d2661cd (add a 2FA authentification for the admin pannel button)
+=======
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
 
     #[Route('/verify-captcha', name: 'app_verify_captcha', methods: ['GET', 'POST'])]
 public function verifyCaptcha(Request $request): Response
