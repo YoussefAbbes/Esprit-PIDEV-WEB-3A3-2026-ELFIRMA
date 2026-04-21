@@ -265,6 +265,22 @@
                 <span class="material-symbols-outlined" style="font-size: 28px; color: #16a34a;">filter_alt</span>
                 Filter by category
               </h5>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; padding: 14px; background: linear-gradient(135deg, #ecfeff 0%, #f0fdf4 100%); border: 2px solid #ccfbf1; border-radius: 14px;">
+                <label for="image-search-input" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; border: none; padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">image_search</span>
+                  Choose image
+                </label>
+                <input id="image-search-input" type="file" accept="image/*" style="display: none;">
+                <button id="image-search-btn" type="button" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">auto_awesome</span>
+                  Search by image
+                </button>
+                <button id="image-search-reset-btn" type="button" style="background: #e5e7eb; color: #1f2937; border: 2px solid #d1d5db; padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                  Reset
+                </button>
+                <span id="image-search-file-name" style="font-size: 13px; color: #0f172a; font-weight: 600;"></span>
+              </div>
+              <div id="image-search-status" style="display: none; margin-bottom: 20px; font-size: 14px; font-weight: 700;"></div>
               <div class="category-filters" style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="category-filter active" data-category="all" style="background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); color: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(45, 80, 22, 0.2); font-size: 15px;">
                   ✓ All products
@@ -290,9 +306,20 @@
             </div>
           </div>
         {% else %}
+          <div id="image-similar-products-panel" style="display:none; margin-bottom: 24px; background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%); border-radius: 18px; padding: 18px; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.25); border: 2px solid #334155;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+              <h4 style="margin:0; color:#e2e8f0; font-size:18px; font-weight:800; display:inline-flex; align-items:center; gap:8px;">
+                <span class="material-symbols-outlined" style="font-size:22px; color:#22d3ee;">frame_inspect</span>
+                Produits similaires trouves
+              </h4>
+              <span id="image-similar-products-engine" style="background:#111827; color:#93c5fd; border:1px solid #374151; border-radius:999px; padding:5px 10px; font-size:12px; font-weight:700;"></span>
+            </div>
+            <div id="image-similar-products-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+          </div>
+
           <div class="row g-4" id="products-grid">
             {% for produit in produits %}
-            <div class="col-lg-3 col-md-4 col-sm-6 product-item" data-category="{{ produit.categorie ? produit.categorie.id : 0 }}" data-aos="fade-up" data-aos-delay="100">
+            <div class="col-lg-3 col-md-4 col-sm-6 product-item" data-category="{{ produit.categorie ? produit.categorie.id : 0 }}" data-product-id="{{ produit.idProduit }}" data-aos="fade-up" data-aos-delay="100">
               <div class="product-card" style="border: 2px solid #e8f5e8; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 10px 30px rgba(45, 80, 22, 0.12); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; backdrop-filter: blur(10px); height: 100%;" onclick="openProductDetails({{ produit.idProduit }})">
                 
                 <!-- Organic certification badge -->
@@ -870,23 +897,146 @@
         window.open(`/product/${productId}/generate-video`, '_blank');
       }
 
+      function setImageSearchStatus(message, type = 'info') {
+        const statusEl = document.getElementById('image-search-status');
+        if (!statusEl) return;
+
+        const colors = {
+          info: '#0f172a',
+          success: '#166534',
+          error: '#b91c1c',
+        };
+
+        statusEl.textContent = message;
+        statusEl.style.color = colors[type] || colors.info;
+        statusEl.style.display = message ? 'block' : 'none';
+      }
+
+      function resetImageSearchState() {
+        window.imageSearchProductIds = null;
+        window.imageSearchRanking = null;
+        window.imageSearchMode = null;
+        window.imageSearchResults = [];
+
+        const input = document.getElementById('image-search-input');
+        if (input) {
+          input.value = '';
+        }
+
+        const fileName = document.getElementById('image-search-file-name');
+        if (fileName) {
+          fileName.textContent = '';
+        }
+
+        setImageSearchStatus('');
+        renderImageSimilarPanel([], '');
+
+        const activeCategoryBtn = document.querySelector('.category-filter[style*="2d5016"]') || document.querySelector('.category-filter.active');
+        const categoryId = activeCategoryBtn?.dataset?.category || 'all';
+        filterByCategory(categoryId, activeCategoryBtn || null);
+      }
+
+      function applyImageSearchResults(productIds) {
+        const normalizedIds = Array.isArray(productIds)
+          ? productIds.map((id) => String(id)).filter((id) => id !== '0' && id !== '')
+          : [];
+
+        window.imageSearchProductIds = new Set(normalizedIds);
+        window.imageSearchRanking = new Map(normalizedIds.map((id, index) => [id, index]));
+
+        const activeCategoryBtn = document.querySelector('.category-filter[style*="2d5016"]') || document.querySelector('.category-filter.active');
+        const categoryId = activeCategoryBtn?.dataset?.category || 'all';
+        filterByCategory(categoryId, activeCategoryBtn || null);
+      }
+
+      function renderImageSimilarPanel(results, mode) {
+        const panel = document.getElementById('image-similar-products-panel');
+        const list = document.getElementById('image-similar-products-list');
+        const engine = document.getElementById('image-similar-products-engine');
+        if (!panel || !list || !engine) return;
+
+        const rows = Array.isArray(results) ? results.slice(0, 8) : [];
+        if (rows.length === 0) {
+          panel.style.display = 'none';
+          list.innerHTML = '';
+          engine.textContent = '';
+          return;
+        }
+
+        const modeLabelMap = {
+          clip: 'Deep AI (CLIP)',
+          color_signature: 'Visual Signature',
+          filename_fallback: 'Fallback',
+        };
+
+        engine.textContent = modeLabelMap[mode] || 'Visual Search';
+        list.innerHTML = '';
+
+        rows.forEach((row) => {
+          const id = Number(row.id || 0);
+          const name = String(row.name || 'Product');
+          const similarity = Math.max(0, Math.min(1, Number(row.similarity || 0)));
+          const percent = Math.round(similarity * 100);
+
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.style.cssText = 'border:1px solid #475569; background:rgba(15,23,42,0.75); color:#e2e8f0; border-radius:12px; padding:10px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; font-weight:700;';
+          item.innerHTML = `<span style="display:inline-flex; align-items:center; justify-content:center; min-width:44px; padding:4px 8px; border-radius:999px; background:linear-gradient(135deg,#0ea5e9 0%,#22d3ee 100%); color:#082f49; font-size:12px; font-weight:900;">${percent}%</span><span>${name}</span>`;
+          item.addEventListener('click', () => {
+            if (id > 0) {
+              openProductDetails(id);
+            }
+          });
+          list.appendChild(item);
+        });
+
+        panel.style.display = 'block';
+      }
+
       // Category filter functions
-      function filterByCategory(categoryId) {
+      function filterByCategory(categoryId, clickedButton = null) {
         const productItems = document.querySelectorAll('.product-item');
         const categoryButtons = document.querySelectorAll('.category-filter');
+        const productsGrid = document.getElementById('products-grid');
+        const imageSet = window.imageSearchProductIds instanceof Set ? window.imageSearchProductIds : null;
+        const ranking = window.imageSearchRanking instanceof Map ? window.imageSearchRanking : null;
 
         // Update buttons
         categoryButtons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        if (clickedButton) {
+          clickedButton.classList.add('active');
+        } else {
+          const matched = Array.from(categoryButtons).find((btn) => btn.dataset.category === categoryId);
+          if (matched) {
+            matched.classList.add('active');
+          }
+        }
+
+        const visibleItems = [];
 
         // Filter products
         productItems.forEach(item => {
-          if (categoryId === 'all' || item.dataset.category === categoryId) {
+          const matchesCategory = categoryId === 'all' || item.dataset.category === categoryId;
+          const productId = String(item.dataset.productId || '');
+          const matchesImage = imageSet === null ? true : imageSet.has(productId);
+
+          if (matchesCategory && matchesImage) {
             item.style.display = 'block';
+            visibleItems.push(item);
           } else {
             item.style.display = 'none';
           }
         });
+
+        if (productsGrid && ranking) {
+          visibleItems
+            .sort((a, b) => {
+              const aRank = ranking.has(String(a.dataset.productId || '')) ? ranking.get(String(a.dataset.productId || '')) : 999999;
+              const bRank = ranking.has(String(b.dataset.productId || '')) ? ranking.get(String(b.dataset.productId || '')) : 999999;
+              return aRank - bRank;
+            })
+            .forEach((item) => productsGrid.appendChild(item));
+        }
       }
 
       // Show notification function
@@ -1374,11 +1524,82 @@
 
         initVoiceCatalogAssistant();
 
+        const imageSearchInput = document.getElementById('image-search-input');
+        const imageSearchButton = document.getElementById('image-search-btn');
+        const imageSearchResetButton = document.getElementById('image-search-reset-btn');
+        const imageSearchFileName = document.getElementById('image-search-file-name');
+
+        if (imageSearchInput && imageSearchFileName) {
+          imageSearchInput.addEventListener('change', function() {
+            const file = this.files && this.files[0] ? this.files[0] : null;
+            imageSearchFileName.textContent = file ? `Selected: ${file.name}` : '';
+          });
+        }
+
+        if (imageSearchButton && imageSearchInput) {
+          imageSearchButton.addEventListener('click', async function() {
+            const file = imageSearchInput.files && imageSearchInput.files[0] ? imageSearchInput.files[0] : null;
+            if (!file) {
+              setImageSearchStatus('Please choose an image first.', 'error');
+              return;
+            }
+
+            setImageSearchStatus('Analyzing image and finding similar products...', 'info');
+            imageSearchButton.disabled = true;
+
+            try {
+              const formData = new FormData();
+              formData.append('image', file);
+
+              const response = await fetch('{{ path('app_api_product_image_search') }}', {
+                method: 'POST',
+                body: formData,
+              });
+
+              const result = await response.json();
+              if (!response.ok || !result.ok) {
+                setImageSearchStatus(result.message || 'Image search failed.', 'error');
+                return;
+              }
+
+              applyImageSearchResults(result.product_ids || []);
+              window.imageSearchMode = String(result.mode || '');
+              window.imageSearchResults = Array.isArray(result.results) ? result.results : [];
+              renderImageSimilarPanel(window.imageSearchResults, window.imageSearchMode);
+
+              const count = Number(result.count || 0);
+              if (count > 0) {
+                const modeLabelMap = {
+                  clip: 'Deep AI (CLIP)',
+                  color_signature: 'Visual Signature',
+                  filename_fallback: 'Fallback',
+                };
+                const modeLabel = modeLabelMap[String(result.mode || '')] || 'Visual Search';
+                setImageSearchStatus(`${count} similar product(s) found via ${modeLabel}.`, 'success');
+              } else {
+                renderImageSimilarPanel([], '');
+                setImageSearchStatus('No similar product found. Try another image.', 'error');
+              }
+            } catch (error) {
+              console.error('Image search error:', error);
+              setImageSearchStatus('Image search unavailable right now.', 'error');
+            } finally {
+              imageSearchButton.disabled = false;
+            }
+          });
+        }
+
+        if (imageSearchResetButton) {
+          imageSearchResetButton.addEventListener('click', function() {
+            resetImageSearchState();
+          });
+        }
+
         // Add events for category filters
         const categoryFilters = document.querySelectorAll('.category-filter');
         categoryFilters.forEach(filter => {
           filter.addEventListener('click', function() {
-            filterByCategory(this.dataset.category);
+            filterByCategory(this.dataset.category, this);
           });
         });
       });
