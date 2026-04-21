@@ -1861,6 +1861,127 @@ Contracts
     }
   });
 
+  function normalizeSupplierText(value) {
+    return (value || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ');
+  }
+
+  function findSupplierRowFromCommand(commandText) {
+    const normalizedCommand = normalizeSupplierText(commandText);
+    if (!normalizedCommand) {
+      return null;
+    }
+
+    const rows = Array.from(document.querySelectorAll('#supplierTableBody .supplier-row'));
+    let bestMatchRow = null;
+    let bestMatchLength = 0;
+
+    rows.forEach((row) => {
+      const supplierName = normalizeSupplierText(
+        row.dataset.supplierType || row.querySelector('td')?.textContent || ''
+      );
+
+      if (!supplierName) {
+        return;
+      }
+
+      if (normalizedCommand.includes(supplierName) && supplierName.length > bestMatchLength) {
+        bestMatchRow = row;
+        bestMatchLength = supplierName.length;
+      }
+    });
+
+    return bestMatchRow;
+  }
+
+  function openSupplierEditModalFromChat(commandText) {
+    const matchedRow = findSupplierRowFromCommand(commandText);
+
+    if (!matchedRow) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Supplier not found',
+        text: 'Please mention the exact supplier name to open the edit form.',
+        confirmButtonColor: '#116530'
+      });
+      return false;
+    }
+
+    const editButton = matchedRow.querySelector('.edit-supplier-btn');
+    if (!editButton) {
+      return false;
+    }
+
+    editButton.click();
+    return true;
+  }
+
+  async function deleteSupplierFromChat(commandText) {
+    const matchedRow = findSupplierRowFromCommand(commandText);
+
+    if (!matchedRow) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Supplier not found',
+        text: 'Please mention the exact supplier name to delete it.',
+        confirmButtonColor: '#116530'
+      });
+      return false;
+    }
+
+    const supplierId = matchedRow.dataset.supplierId;
+    if (!supplierId) {
+      return false;
+    }
+
+    const formData = new FormData();
+    formData.append('supplier_id', supplierId);
+
+    try {
+      const response = await fetch('{{ path("elfirma_delete_supplier") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Deleted',
+          text: 'Supplier deleted successfully.',
+          confirmButtonColor: '#116530'
+        });
+        window.location.reload();
+        return true;
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Delete failed',
+        text: data.message || 'Unable to delete supplier.',
+        confirmButtonColor: '#116530'
+      });
+      return false;
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Delete failed',
+        text: 'An error occurred while deleting the supplier.',
+        confirmButtonColor: '#116530'
+      });
+      return false;
+    }
+  }
+
+  window.chatbotSupplierActions = {
+    openEditModalFromCommand: openSupplierEditModalFromChat,
+    deleteSupplierFromCommand: deleteSupplierFromChat,
+  };
+
   // Contract Form Functionality
   const contractModal = document.getElementById('contractModal');
   const addContractForm = document.getElementById('addContractForm');
@@ -3429,6 +3550,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </button>
 {{ include('elfirma/_nav_routes.html.twig') }}
 {{ include('elfirma/_voice_assistant.html.twig') }}
+{{ include('elfirma/_chatbot.html.twig') }}
 
 
 </body></html>

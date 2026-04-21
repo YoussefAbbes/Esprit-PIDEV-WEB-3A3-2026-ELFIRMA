@@ -1,0 +1,149 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": [
+        "hello", "hi", "hey", "good morning", "good afternoon",
+        "good evening", "hi there", "hello there", "greetings",
+        "howdy", "salut", "bonjour", "yo", "what's up", "whats up"
+      ],
+      "responses": [
+        "Hello! How can I help you today?",
+        "Hi there! What can I do for you?",
+        "Hey! I'm here to help you manage suppliers."
+      ]
+    },
+    {
+      "tag": "how_are_you",
+      "patterns": [
+        "how are you", "how are you doing", "how is it going",
+        "how do you do", "are you okay", "how have you been",
+        "how is everything", "you okay", "how are things",
+        "comment vas tu", "ca va", "tu vas bien"
+      ],
+      "responses": [
+        "I'm doing well, thanks for asking! Would you like to manage some suppliers today?",
+        "All good! Ready to help you with supplier management.",
+        "Doing great! What can I help you with?"
+      ]
+    },
+    {
+      "tag": "farewell",
+      "patterns": [
+        "bye", "goodbye", "see you", "see you later", "take care",
+        "farewell", "good night", "au revoir", "à bientôt", "ciao",
+        "talk later", "have a good day", "have a nice day"
+      ],
+      "responses": [
+        "Goodbye! Have a great day!",
+        "See you later! Take care.",
+        "Bye! Come back if you need anything."
+      ]
+    },
+    {
+      "tag": "create_supplier",
+      "patterns": [
+        "create new supplier", "add a supplier", "add new supplier",
+        "I want to add a supplier", "create a supplier",
+        "register a new supplier", "new supplier",
+        "I need to create a supplier", "let me add a new supplier",
+        "insert new supplier", "create vendor", "add vendor",
+        "I would like to add a new supplier", "can you create a supplier",
+        "please add a supplier", "make a new supplier",
+        "ajouter fournisseur", "créer un fournisseur",
+        "register vendor", "I want to register a supplier"
+      ],
+      "responses": [
+        "Sure! Let's create a new supplier. I'll open the form for you.",
+        "Of course! Opening the supplier creation form now.",
+        "Let's add a new supplier! The form is ready for you."
+      ]
+    },
+    {
+      "tag": "edit_supplier",
+      "patterns": [
+        "edit supplier", "update supplier", "modify supplier",
+        "change supplier details", "I want to edit a supplier",
+        "I want to update a supplier", "edit supplier SOTUVER",
+        "update supplier SOTUVER", "modifier fournisseur",
+        "mettre a jour fournisseur"
+      ],
+      "responses": [
+        "Sure! Tell me which supplier you want to edit.",
+        "Okay, I can help you edit a supplier. Please give me the supplier name.",
+        "Edit request received. Please provide the exact supplier name."
+      ]
+    },
+    {
+      "tag": "delete_supplier",
+      "patterns": [
+        "delete supplier", "remove supplier", "supprimer fournisseur",
+        "I want to delete a supplier", "delete supplier SOTUVER",
+        "remove supplier SOTUVER", "erase supplier",
+        "please delete this supplier", "can you delete a supplier",
+        "drop supplier"
+      ],
+      "responses": [
+        "Sure. Tell me which supplier you want to delete.",
+        "Delete request received. Please provide the exact supplier name.",
+        "Okay, I can delete a supplier. Which one should I remove?"
+      ]
+    },
+    {
+      "tag": "list_suppliers",
+      "patterns": [
+        "show me all suppliers", "list suppliers", "view suppliers",
+        "show suppliers", "get all suppliers", "display suppliers",
+        "how many suppliers", "who are my suppliers",
+        "show me the suppliers", "list all suppliers",
+        "afficher les fournisseurs", "voir les fournisseurs"
+      ],
+      "responses": [
+        "Here are your suppliers! Check the table on this page.",
+        "You can see all suppliers in the table below.",
+        "All your suppliers are listed in the suppliers table on this page."
+      ]
+    },
+    {
+      "tag": "supplier_stats",
+      "patterns": [
+        "show statistics", "show stats", "supplier statistics",
+        "how many active suppliers", "how many inactive suppliers",
+        "supplier count", "show me stats", "give me the stats",
+        "total suppliers", "supplier overview", "analytics"
+      ],
+      "responses": [
+        "You can see supplier statistics in the analytics section above.",
+        "Check the Suppliers Overview section for detailed stats.",
+        "The statistics section shows active, inactive, and suspended supplier counts."
+      ]
+    },
+    {
+      "tag": "help",
+      "patterns": [
+        "help", "help me", "what can you do", "what are your features",
+        "what do you do", "how can you help", "capabilities",
+        "what can I do here", "show me what you can do",
+        "aide", "comment tu peux m'aider"
+      ],
+      "responses": [
+        "I can help you: create suppliers, view supplier lists, check statistics, and answer questions about this platform.",
+        "Here's what I can do: add new suppliers, show supplier stats, and guide you through the platform.",
+        "I'm your supplier management assistant! I can create suppliers, show stats, and much more."
+      ]
+    },
+    {
+      "tag": "unknown",
+      "patterns": [
+        "what is the weather", "tell me a joke", "what time is it",
+        "who are you", "what is your name", "random stuff",
+        "blah blah", "something else entirely"
+      ],
+      "responses": [
+        "I'm not sure I understand. I can help you manage suppliers — try asking me to create or list suppliers.",
+        "Hmm, I didn't catch that. Try saying: create new supplier, or: show me suppliers.",
+        "I specialize in supplier management. How can I help you with that?"
+      ]
+    }
+  ]
+}
