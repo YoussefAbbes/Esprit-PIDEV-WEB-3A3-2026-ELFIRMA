@@ -4,6 +4,57 @@
 
 {% block body %}
 
+<style>
+#calendar {
+    max-width: 900px;
+    margin: 30px auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* HEADER */
+.fc-toolbar-title {
+    font-size: 20px !important;
+    font-weight: bold !important;
+    color: #166534 !important;
+}
+
+/* boutons */
+.fc-button {
+    background: #16a34a !important;
+    border: none !important;
+    border-radius: 8px !important;
+}
+
+.fc-button:hover {
+    background: #15803d !important;
+}
+
+.fc-button-active {
+    background: #14532d !important;
+}
+
+/* jours */
+.fc-col-header-cell {
+    background: #f0fdf4 !important;
+    color: #166534 !important;
+}
+
+/* aujourd’hui */
+.fc-day-today {
+    background: #dcfce7 !important;
+}
+
+/* événements */
+.fc-event {
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 3px !important;
+    font-size: 12px !important;
+}
+</style>
+
 <div class="ml-72 p-10 min-h-screen bg-gradient-to-br from-green-50 via-white to-gray-100">
 
 <div class="flex justify-end mb-4">
@@ -219,9 +270,16 @@
 
     </div>
 
+    <div class="w-full flex justify-center">
+    <div id="calendar" class="bg-white rounded-2xl p-6 shadow-lg w-full max-w-4xl"></div>
 </div>
 
-<!-- JS -->
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
 <script>
 
 function applyMaintenanceFilters() {
@@ -304,12 +362,58 @@ function calculateMaintenanceStats() {
     document.getElementById('stat-m-6months').textContent = count6Months;
 }
 
-document.getElementById('searchMaintenance').addEventListener('input', applyMaintenanceFilters);
-document.getElementById('filterPriorite').addEventListener('change', applyMaintenanceFilters);
-document.getElementById('sortMaintenance').addEventListener('change', applyMaintenanceFilters);
 
-document.addEventListener('DOMContentLoaded', calculateMaintenanceStats);
+// ✅ UN SEUL DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function () {
+
+    calculateMaintenanceStats();
+
+    document.getElementById('searchMaintenance').addEventListener('input', applyMaintenanceFilters);
+    document.getElementById('filterPriorite').addEventListener('change', applyMaintenanceFilters);
+    document.getElementById('sortMaintenance').addEventListener('change', applyMaintenanceFilters);
+
+    let calendarEl = document.getElementById('calendar');
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'fr',
+
+    headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+
+    buttonText: {
+        today: "Aujourd'hui",
+        month: "Mois",
+        week: "Semaine",
+        day: "Jour"
+    },
+
+    height: "auto",
+
+        events: [
+            {% set first = true %}
+            {% for m in maintenances %}
+                {% if m.dateM %}
+                    {% if not first %},{% endif %}
+                    {
+                        title: "{{ m.typeM|e('js') }}",
+                        start: "{{ m.dateM|date('Y-m-d') }}",
+                        color: "{% if m.statut.value == 'planifie' %}#facc15{% elseif m.statut.value == 'en_cours' %}#3b82f6{% elseif m.statut.value == 'termine' %}#22c55e{% else %}#9ca3af{% endif %}"
+                    }
+                    {% set first = false %}
+                {% endif %}
+            {% endfor %}
+            ]
+            });
+
+    calendar.render();
+
+});
 
 </script>
+
 
 {% endblock %}

@@ -318,6 +318,21 @@ public function employeePanel(
     ]);
 }
 
+#[Route('/api/maintenances', name: 'api_maintenances')]
+public function api(MaintenanceRepository $repo): JsonResponse
+{
+    $events = [];
+
+    foreach ($repo->findAll() as $m) {
+        $events[] = [
+            'title' => $m->getTypeM(),
+            'start' => $m->getDateM()->format('Y-m-d'),
+        ];
+    }
+
+    return new JsonResponse($events);
+}
+
 #[Route('/maintenance/{id}/start', name: 'maintenance_start')]
 public function startMaintenance(
     Maintenance $maintenance,
@@ -400,80 +415,101 @@ private function updateEquipementEtat(Equipement $equipement, EntityManagerInter
 
     $currentEtat = $equipement->getEtat()->value;
 
+    error_log("🔍 DEBUG: count6Months=$count6Months, ratio=$ratio, totalCost=$totalCost");
+
     // 🔥 CONDITION CRITIQUE
     if (($count6Months > 3 || $ratio > 50) && $totalCost > 0) {
-    $equipement->setEtat(\App\Enum\EquipementEtat::from('panne'));
+        error_log("✅ CONDITION MET - Creating automatic maintenance");
+        
+        $equipement->setEtat(\App\Enum\EquipementEtat::from('panne'));
 
-    $alreadyExists = false;
-    foreach ($maintenances as $m) {
-        if (
-            $m->getTypeM() === 'Maintenance automatique' &&
-            $m->getDateM() >= new \DateTime('-2 days')
-        ) {
-            $alreadyExists = true;
-            break;
+        $alreadyExists = false;
+        foreach ($maintenances as $m) {
+            if (
+                $m->getTypeM() === 'Maintenance automatique' &&
+                $m->getDateM() >= new \DateTime('-2 days')
+            ) {
+                $alreadyExists = true;
+                break;
+            }
         }
-    }
 
-    // ✅ Skip if already exists
-    if ($alreadyExists) {
+        // ✅ Skip if already exists
+        if ($alreadyExists) {
+            error_log("⚠️ Maintenance automatique already exists in last 2 days");
+            return;
+        }
+
+        // 🆕 Create maintenance
+        $maintenance = new \App\Entity\Maintenance();
+        $maintenance->setEquipement($equipement);
+        $maintenance->setTypeM('Maintenance automatique');
+        $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
+
+        $date = new \DateTime('+1 day');
+        while ($this->isHoliday($date)) {
+            $date->modify('+1 day');
+        }
+        $maintenance->setDateM($date);
+        $maintenance->setCout(200);
+        $maintenance->setStatut(\App\Enum\MaintenanceStatut::from('planifie'));
+        $maintenance->setPriorite(\App\Enum\MaintenancePriorite::from('urgente'));
+
+        // 👨‍🔧 Get technician
+        $technicien = $em->getRepository(\App\Entity\Utilisateur::class)
+            ->findOneBy(['role_u' => 'employee']);
+
+        if (!$technicien) {
+            error_log('❌ No technician found');
+            return;
+        }
+
+        if (!$technicien->getEmailU()) {
+            error_log('❌ Technician has no email');
+            return;
+        }
+
+        // ✅ PERSIST MAINTENANCE FIRST
+        $maintenance->setTechnicien($technicien);
+        $em->persist($maintenance);
+        $em->flush(); // 🔥 CRUCIAL - Save to DB first
+
+        error_log('✅ Maintenance saved to database');
+
+        // 📬 SEND EMAIL AFTER DB SAVE
+        try {
+            error_log('📧 Sending email to: ' . $technicien->getEmailU());
+
+            $email = (new TemplatedEmail())
+                ->from('fethizouabi190@gmail.com')
+                ->to($technicien->getEmailU())
+                ->subject('⚠️ Maintenance critique - ' . $equipement->getNomEq())
+                ->htmlTemplate('emails/maintenance_alert.html.twig')
+                ->context([
+                    'user' => $technicien->getNomU(),
+                    'equipement' => $equipement->getNomEq(),
+                    'description' => $maintenance->getDescription(),
+                    'date' => $maintenance->getDateM()?->format('d/m/Y')
+                ]);
+
+            $mailer->send($email);
+            error_log('✅ EMAIL SENT SUCCESSFULLY');
+
+        } catch (\Exception $e) {
+            error_log('❌ Email error: ' . $e->getMessage());
+        }
+
         return;
     }
 
-    // 🆕 Create maintenance
-    $maintenance = new \App\Entity\Maintenance();
-    $maintenance->setEquipement($equipement);
-    $maintenance->setTypeM('Maintenance automatique');
-    $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
+    error_log("❌ CONDITION NOT MET - No alert needed");
 
-    $date = new \DateTime('+1 day');
-    while ($this->isHoliday($date)) {
-        $date->modify('+1 day');
-    }
-    $maintenance->setDateM($date);
-    $maintenance->setCout(200);
-    $maintenance->setStatut(\App\Enum\MaintenanceStatut::from('planifie'));
-    $maintenance->setPriorite(\App\Enum\MaintenancePriorite::from('urgente'));
-
-    // 👨‍🔧 Get technician
-    $technicien = $em->getRepository(\App\Entity\Utilisateur::class)
-        ->findOneBy(['role_u' => 'employee']);
-
-    if (!$technicien || !$technicien->getEmailU()) {
-        // Log error, don't halt
-        error_log('No technician found or technician has no email');
+    // 🟢 Reset to available if no issues
+    if ($currentEtat === 'maintenance') {
         return;
     }
 
-    // 📬 Send email
-    try {
-        $email = (new TemplatedEmail())
-            ->from('fethizouabi190@gmail.com')
-            ->to($technicien->getEmailU())
-            ->subject('⚠ Maintenance critique')
-            ->htmlTemplate('emails/maintenance_alert.html.twig')
-            ->context([
-                'user' => $technicien->getNomU(),
-                'equipement' => $equipement->getNomEq()
-            ]);
-
-        $mailer->send($email);
-    } catch (\Exception $e) {
-        error_log('Email error: ' . $e->getMessage());
-    }
-
-    // ✅ Persist maintenance
-    $em->persist($maintenance);
-    return;
-}
-
-// Reset to available if no issues
-if ($currentEtat === 'maintenance') {
-    return;
-}
-
-$equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
-
+    $equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
 }
 
        private function isHoliday(\DateTime $date): bool
