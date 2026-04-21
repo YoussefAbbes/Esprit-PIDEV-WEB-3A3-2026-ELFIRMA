@@ -14,8 +14,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+
 use App\Service\FaceIdClient;
 use App\Service\FaceEncodingStore;
+
 
 final class AuthController extends AbstractController
 {
@@ -112,6 +114,9 @@ final class AuthController extends AbstractController
             'redirect' => $this->generateUrl('app_pages_home'),
         ]);
     }
+
+
+
 
 
 

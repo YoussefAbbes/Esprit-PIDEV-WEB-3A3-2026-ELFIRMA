@@ -33,6 +33,15 @@ final class AdminTwoFactorService
             return false;
         }
 
+        return $this->verifyCodeWithSecret($secret, $code);
+    }
+
+    public function verifyCodeWithSecret(string $secret, string $code): bool
+    {
+        if ($secret === '') {
+            return false;
+        }
+
         $cleanCode = preg_replace('/\s+/', '', trim($code));
         if ($cleanCode === '' || !preg_match('/^\d{6}$/', $cleanCode)) {
             return false;
@@ -40,6 +49,11 @@ final class AdminTwoFactorService
 
         $totp = TOTP::create($secret);
         return $totp->verify($cleanCode, null, 1);
+    }
+
+    public function getOrCreateSecretForUser(int $userId): string
+    {
+        return $this->getOrCreateSecret($userId);
     }
 
     private function getOrCreateSecret(int $userId): string
@@ -95,7 +109,10 @@ final class AdminTwoFactorService
             'created_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
         ];
 
-        file_put_contents($this->getUserSecretPath($userId), json_encode($payload, JSON_PRETTY_PRINT));
+        file_put_contents(
+            $this->getUserSecretPath($userId),
+            json_encode($payload, JSON_PRETTY_PRINT)
+        );
     }
 
     private function getStorageDir(): string

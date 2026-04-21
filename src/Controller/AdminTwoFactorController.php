@@ -49,6 +49,14 @@ final class AdminTwoFactorController extends AbstractController
             $code = (string) $request->request->get('code', '');
             $verified = $twoFactorService->verifyCode($userId, $code);
 
+            // Vérification avec secret temporaire si existe
+            if (!$verified) {
+                $pendingSecret = (string) $session->get('admin_2fa_pending_secret', '');
+                if ($pendingSecret !== '') {
+                    $verified = $twoFactorService->verifyCodeWithSecret($pendingSecret, $code);
+                }
+            }
+
             if (!$verified) {
                 return $this->forceLogout($request, 'invalid_code');
             }
@@ -56,9 +64,14 @@ final class AdminTwoFactorController extends AbstractController
             $session->set('admin_2fa_verified', true);
             $session->set('admin_2fa_verified_at', time());
             $session->set('admin_2fa_user_id', $userId);
+            $session->remove('admin_2fa_pending_secret');
 
             return $this->redirectToRoute('elfirma_page', ['module' => 'utilisateurs']);
         }
+
+        // Génération du secret si nécessaire
+        $secret = $twoFactorService->getOrCreateSecretForUser($userId);
+        $session->set('admin_2fa_pending_secret', $secret);
 
         $provisioningUri = $twoFactorService->getProvisioningUri($userId, $userEmail);
 
@@ -80,11 +93,13 @@ final class AdminTwoFactorController extends AbstractController
     public static function hasValidAdminTwoFactor(Request $request): bool
     {
         $session = $request->getSession();
+
         if ($session->get('user_role') !== 'admin') {
             return false;
         }
 
-        if ($session->get('admin_2fa_verified') !== true) {
+        $admin2faVerified = $session->get('admin_2fa_verified');
+        if (!in_array($admin2faVerified, [true, 1, '1'], true)) {
             return false;
         }
 
@@ -108,19 +123,18 @@ final class AdminTwoFactorController extends AbstractController
         return self::hasValidAdminTwoFactor($request);
     }
 
-private function forceLogout(Request $request, ?string $twoFaError = null): Response
-{
-    $session = $request->getSession();
+    private function forceLogout(Request $request, ?string $twoFaError = null): Response
+    {
+        $session = $request->getSession();
 
-    // Hard cleanup of session
-    $session->clear();
-    $session->invalidate();
+        $session->clear();
+        $session->invalidate();
 
-    $params = [];
-    if ($twoFaError !== null && $twoFaError !== '') {
-        $params['twofa_error'] = $twoFaError;
+        $params = [];
+        if ($twoFaError !== null && $twoFaError !== '') {
+            $params['twofa_error'] = $twoFaError;
+        }
+
+        return $this->redirectToRoute('app_login', $params);
     }
-
-    return $this->redirectToRoute('app_login', $params);
-}
 }
