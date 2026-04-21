@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Service\ClientScoringService;
 use App\Entity\Commande;
 use App\Entity\Produit;
 use App\Entity\Utilisateur;
@@ -44,7 +45,7 @@ final class CommandeController extends AbstractController
     }
 
     #[Route('/commandes', name: 'app_commandes_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em, SessionInterface $session, HttpClientInterface $httpClient): Response
+    public function index(EntityManagerInterface $em, SessionInterface $session, HttpClientInterface $httpClient, ClientScoringService $clientScoringService): Response
     {
         $userName = trim((string) $session->get('user_name', ''));
         $criteria = [];
@@ -55,9 +56,34 @@ final class CommandeController extends AbstractController
 
         $commandes = $em->getRepository(Commande::class)->findBy($criteria, ['date_commande' => 'DESC']);
 
+        $clientScore = null;
+        $clientStats = $this->collectClientStats($session, $em);
+        if ($clientStats['ok']) {
+            $scoreResult = $clientScoringService->calculateClientScore([
+                'total_orders' => $clientStats['data']['total_orders'],
+                'total_spent' => $clientStats['data']['total_spent'],
+                'cancellations' => $clientStats['data']['cancellations'],
+                'client_reference' => $clientStats['data']['client_reference'],
+            ]);
+
+            $clientScore = [
+                'ok' => (bool) $scoreResult['ok'],
+                'value' => (int) $scoreResult['score'],
+                'category' => (string) $scoreResult['category'],
+                'explanation' => (string) $scoreResult['explanation'],
+                'metrics' => [
+                    'total_orders' => $clientStats['data']['total_orders'],
+                    'total_spent' => $clientStats['data']['total_spent'],
+                    'cancellations' => $clientStats['data']['cancellations'],
+                ],
+                'error' => $scoreResult['error'] ?? null,
+            ];
+        }
+
         return $this->render('commande_index.html.twig', [
             'commandes' => $commandes,
             'tnd_to_eur_rate' => $this->getTndToEurRate($httpClient, $session),
+            'client_score' => $clientScore,
         ]);
     }
 
@@ -924,6 +950,41 @@ final class CommandeController extends AbstractController
         ]);
     }
 
+    #[Route('/api/commande/client-score', name: 'app_api_commande_client_score', methods: ['GET'])]
+    public function clientScore(SessionInterface $session, EntityManagerInterface $em, ClientScoringService $clientScoringService): JsonResponse
+    {
+        $clientStats = $this->collectClientStats($session, $em);
+        if (!$clientStats['ok']) {
+            return new JsonResponse([
+                'ok' => false,
+                'message' => $clientStats['message'],
+            ], $clientStats['status']);
+        }
+
+        $scoreResult = $clientScoringService->calculateClientScore([
+            'total_orders' => $clientStats['data']['total_orders'],
+            'total_spent' => $clientStats['data']['total_spent'],
+            'cancellations' => $clientStats['data']['cancellations'],
+            'client_reference' => $clientStats['data']['client_reference'],
+        ]);
+
+        return new JsonResponse([
+            'ok' => (bool) $scoreResult['ok'],
+            'client' => $clientStats['data']['client_reference'],
+            'metrics' => [
+                'total_orders' => $clientStats['data']['total_orders'],
+                'total_spent' => $clientStats['data']['total_spent'],
+                'cancellations' => $clientStats['data']['cancellations'],
+            ],
+            'score' => [
+                'value' => (int) $scoreResult['score'],
+                'category' => (string) $scoreResult['category'],
+                'explanation' => (string) $scoreResult['explanation'],
+            ],
+            'error' => $scoreResult['error'] ?? null,
+        ]);
+    }
+
     /**
      * @param array{final_total: float, discount_amount: float, discount_percent: int, generated_code: ?string, expires_at: ?\DateTimeImmutable, is_applied: bool, applied_code: ?string} $promo
      *
@@ -1092,7 +1153,7 @@ final class CommandeController extends AbstractController
     }
 
     #[Route('/admin/commandes', name: 'app_admin_commandes', methods: ['GET'])]
-    public function adminIndex(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
+    public function adminIndex(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator, ClientScoringService $clientScoringService): Response
     {
         $q = trim((string) $request->query->get('q', ''));
         $statusFilter = trim((string) $request->query->get('status', ''));
@@ -1101,8 +1162,25 @@ final class CommandeController extends AbstractController
         $page = max(1, (int) $request->query->get('page', 1));
         $perPage = 10;
 
-        $filteredCommandes = $em->getRepository(Commande::class)->findAll();
+        $allCommandes = $em->getRepository(Commande::class)->findAll();
+        $filteredCommandes = $allCommandes;
         $filteredCommandes = $this->filterAndSortCommandes($filteredCommandes, $q, $statusFilter, $paymentFilter, $sort);
+
+        $adminClientScores = $this->buildAdminClientScores($allCommandes, $clientScoringService);
+        $orderClientScoreMap = [];
+        foreach ($filteredCommandes as $commande) {
+            $orderId = (int) ($commande->getIdCommande() ?? 0);
+            if ($orderId <= 0) {
+                continue;
+            }
+
+            $clientKey = $this->buildClientIdentityKey($commande);
+            if ($clientKey === '') {
+                continue;
+            }
+
+            $orderClientScoreMap[$orderId] = $adminClientScores[$clientKey] ?? null;
+        }
 
         $commandes = $paginator->paginate(
             $filteredCommandes,
@@ -1128,6 +1206,7 @@ final class CommandeController extends AbstractController
                 'payment' => $paymentFilter,
                 'sort' => $sort,
             ],
+            'order_client_scores' => $orderClientScoreMap,
         ]);
     }
 
@@ -1328,6 +1407,77 @@ final class CommandeController extends AbstractController
         };
     }
 
+    /**
+     * @return array{ok:bool,status:int,message:string,data:array{total_orders:int,total_spent:float,cancellations:int,client_reference:string}}
+     */
+    private function collectClientStats(SessionInterface $session, EntityManagerInterface $em): array
+    {
+        $defaultData = [
+            'total_orders' => 0,
+            'total_spent' => 0.0,
+            'cancellations' => 0,
+            'client_reference' => '',
+        ];
+
+        $sessionUserId = $session->get('user_id');
+        $sessionUserName = trim((string) $session->get('user_name', ''));
+
+        $qb = $em->getRepository(Commande::class)->createQueryBuilder('c')
+            ->select(
+                'COUNT(c.id_commande) AS total_orders',
+                "COALESCE(SUM(CASE WHEN c.statut_commande <> 'Annulée' THEN c.prix_total ELSE 0 END), 0) AS total_spent",
+                "COALESCE(SUM(CASE WHEN c.statut_commande = 'Annulée' THEN 1 ELSE 0 END), 0) AS cancellations"
+            );
+
+        if (is_numeric($sessionUserId)) {
+            $utilisateur = $em->getRepository(Utilisateur::class)->find((int) $sessionUserId);
+            if ($utilisateur instanceof Utilisateur) {
+                $qb->andWhere('c.utilisateur = :utilisateur')
+                    ->setParameter('utilisateur', $utilisateur);
+
+                $row = $qb->getQuery()->getSingleResult();
+
+                return [
+                    'ok' => true,
+                    'status' => 200,
+                    'message' => 'ok',
+                    'data' => [
+                        'total_orders' => (int) ($row['total_orders'] ?? 0),
+                        'total_spent' => (float) ($row['total_spent'] ?? 0),
+                        'cancellations' => (int) ($row['cancellations'] ?? 0),
+                        'client_reference' => 'user_id:' . (int) $sessionUserId,
+                    ],
+                ];
+            }
+        }
+
+        if ($sessionUserName === '') {
+            return [
+                'ok' => false,
+                'status' => 401,
+                'message' => 'Client non authentifie.',
+                'data' => $defaultData,
+            ];
+        }
+
+        $qb->andWhere('LOWER(c.nom_client) = :clientName')
+            ->setParameter('clientName', mb_strtolower($sessionUserName));
+
+        $row = $qb->getQuery()->getSingleResult();
+
+        return [
+            'ok' => true,
+            'status' => 200,
+            'message' => 'ok',
+            'data' => [
+                'total_orders' => (int) ($row['total_orders'] ?? 0),
+                'total_spent' => (float) ($row['total_spent'] ?? 0),
+                'cancellations' => (int) ($row['cancellations'] ?? 0),
+                'client_reference' => $sessionUserName,
+            ],
+        ];
+    }
+
     private function canManageFrontCommande(Commande $commande, SessionInterface $session): bool
     {
         $sessionUserId = $session->get('user_id');
@@ -1339,6 +1489,62 @@ final class CommandeController extends AbstractController
         $commandeName = mb_strtolower(trim((string) $commande->getNomClient()));
 
         return $sessionUserName !== '' && $commandeName !== '' && $sessionUserName === $commandeName;
+    }
+
+    /**
+     * @param list<Commande> $commandes
+     *
+     * @return array<string, array{value:int,category:string}>
+     */
+    private function buildAdminClientScores(array $commandes, ClientScoringService $clientScoringService): array
+    {
+        $clientStats = [];
+
+        foreach ($commandes as $commande) {
+            $key = $this->buildClientIdentityKey($commande);
+            if ($key === '') {
+                continue;
+            }
+
+            if (!isset($clientStats[$key])) {
+                $clientStats[$key] = [
+                    'total_orders' => 0,
+                    'total_spent' => 0.0,
+                    'cancellations' => 0,
+                    'client_reference' => $key,
+                ];
+            }
+
+            $clientStats[$key]['total_orders']++;
+            if ($commande->getStatutCommande() === 'Annulée') {
+                $clientStats[$key]['cancellations']++;
+            } else {
+                $clientStats[$key]['total_spent'] += (float) ($commande->getPrixTotal() ?? 0);
+            }
+        }
+
+        $scores = [];
+        foreach ($clientStats as $key => $stats) {
+            $result = $clientScoringService->calculateClientScoreLocal($stats);
+            $scores[$key] = [
+                'value' => (int) ($result['score'] ?? 0),
+                'category' => (string) ($result['category'] ?? 'normal'),
+            ];
+        }
+
+        return $scores;
+    }
+
+    private function buildClientIdentityKey(Commande $commande): string
+    {
+        $userId = (int) ($commande->getUtilisateur()?->getIdU() ?? 0);
+        if ($userId > 0) {
+            return 'user_id:' . $userId;
+        }
+
+        $clientName = mb_strtolower(trim((string) ($commande->getNomClient() ?? '')));
+
+        return $clientName;
     }
 
     /**

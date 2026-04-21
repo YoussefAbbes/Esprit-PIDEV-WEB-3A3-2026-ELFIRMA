@@ -1027,5 +1027,105 @@ Champs passes:
 - Etape 18: front client - ajout action de changement statut commande (`Confirmée` / `Annulée`).
 - Etape 19: backoffice orders - badges statut colores (vert/rouge/orange).
 
+## 22) Score client intelligent (OpenAI + fallback local) - Front + Admin
+### A) Objectif fonctionnel
+- Afficher un score client sur 100 avec categorie metier:
+  - `VIP`, `fidèle`, `normal`, `à risque`.
+- Front office:
+  - chaque client voit son propre score sur la page `Mes Commandes`.
+- Backoffice admin:
+  - l'admin voit un score pour chaque client dans le tableau des commandes.
+
+### B) MVC applique
+- Controller:
+  - `src/Controller/CommandeController.php`
+  - endpoint JSON ajoute:
+    - `GET /api/commande/client-score`
+  - methode front `index(...)` enrichie avec `client_score`.
+  - methode admin `adminIndex(...)` enrichie avec `order_client_scores`.
+- Service metier:
+  - `src/Service/ClientScoringService.php`
+  - calcule score via API OpenAI quand disponible.
+  - fallback local intelligent si quota/billing/reponse invalide.
+- Views:
+  - `templates/commande_index.html.twig`:
+    - carte score client (score, categorie, commandes, total depense, annulations).
+  - `templates/elfirma/commandes.html.twig`:
+    - colonne `Score client` pour chaque ligne commande.
+
+### C) Donnees utilisees pour scorer
+- `total_orders` (nombre de commandes)
+- `total_spent` (montant depense hors commandes annulees)
+- `cancellations` (nombre de commandes annulees)
+
+### D) API OpenAI integree
+- Endpoint appele:
+  - `POST https://api.openai.com/v1/responses`
+- Client HTTP:
+  - `HttpClientInterface` Symfony
+- Cle secrete:
+  - variable env `OPENAI_API_KEY`
+  - placeholder ajoute dans `.env`
+  - valeur locale dans `.env.local`
+
+### E) Gestion robuste des erreurs IA
+- Cas gere:
+  - payload IA invalide,
+  - erreur API OpenAI,
+  - quota/billing depasse,
+  - cle manquante.
+- Comportement:
+  - si OpenAI indisponible, score calcule localement (sans bloquer l'UI).
+  - la page continue a afficher un score exploitable pour la demo.
+
+### F) Regle fallback local (sans API)
+- Score local borne entre 0 et 100.
+- Formule metier:
+  - bonus sur nombre de commandes,
+  - bonus sur montant depense,
+  - malus sur annulations.
+- Categorie derivee du score:
+  - >= 85: `VIP`
+  - >= 65: `fidèle`
+  - >= 40: `normal`
+  - sinon: `à risque`
+
+### G) Affichage front ajuste (UX)
+- Le message technique fallback/quota est masque pour l'utilisateur final.
+- Le client voit uniquement une carte claire avec:
+  - score,
+  - categorie,
+  - metriques metier.
+
+### H) Affichage admin de tous les clients
+- Nouvelle colonne dans le tableau Orders:
+  - `Score client` avec badge couleur + valeur `/100` + categorie.
+- Calcul optimisé:
+  - agrégation par client sur l'ensemble des commandes,
+  - reutilisation d'un calcul local pour eviter un appel OpenAI par ligne.
+
+### I) Securite / bonnes pratiques
+- Cle API jamais hardcodee dans le code PHP.
+- Utilisation des variables d'environnement uniquement.
+- Recommandation operationnelle:
+  - revoquer toute cle partagee publiquement,
+  - regenerer une nouvelle cle privee.
+
+### J) Verifications techniques effectuees
+- `php -l src/Service/ClientScoringService.php` => OK
+- `php -l src/Controller/CommandeController.php` => OK
+- `php bin/console lint:twig templates/commande_index.html.twig` => OK
+- `php bin/console lint:twig templates/elfirma/commandes.html.twig` => OK
+- `php bin/console lint:container` => OK
+
+### K) Journal des changements (suite)
+- Etape 20: ajout service `ClientScoringService` (OpenAI responses API + parsing JSON).
+- Etape 21: ajout endpoint `GET /api/commande/client-score`.
+- Etape 22: affichage score client dans `Mes Commandes` (front office).
+- Etape 23: correction parsing reponse OpenAI + gestion erreurs API explicites.
+- Etape 24: ajout fallback local automatique si quota/billing depasse.
+- Etape 25: masquage message technique fallback cote front.
+- Etape 26: affichage score client pour admin sur toutes les commandes.
+
 ---
 Si on ajoute de nouvelles fonctionnalites, continuer a mettre a jour ce fichier dans cette section journal + sections techniques concernees.
