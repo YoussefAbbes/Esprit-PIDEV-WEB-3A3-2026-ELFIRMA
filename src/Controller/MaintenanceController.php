@@ -19,6 +19,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Form\MaintenanceType;
 use App\Form\EquipementType;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 
 
@@ -58,7 +62,9 @@ class MaintenanceController extends AbstractController
             EntityManagerInterface $em,
             MaintenanceRepository $repo,
             EquipementRepository $equipementRepo,
-            ValidatorInterface $validator
+            ValidatorInterface $validator,
+            ChartBuilderInterface $chartBuilder,
+            MailerInterface $mailer
         ): Response {
             $maintenance = new Maintenance();
             $form = $this->createForm(EquipementType::class, new Equipement());
@@ -67,41 +73,79 @@ class MaintenanceController extends AbstractController
 
             if ($formMaintenance->isSubmitted()) {
 
-                $date = $maintenance->getDateM();
-                $isHoliday = $this->isHoliday($date);
+    $date = $maintenance->getDateM();
+    $isHoliday = $this->isHoliday($date);
 
-                if ($isHoliday) {
-                    $formMaintenance->get('dateM')->addError(
-                        new \Symfony\Component\Form\FormError('❌ Cette date est un jour férié')
-                    );
-                }
+    if ($isHoliday) {
+        $formMaintenance->get('dateM')->addError(
+            new \Symfony\Component\Form\FormError('❌ Cette date est un jour férié')
+        );
+    }
 
-                // 🔥 BLOQUAGE CLAIR
-                if ($formMaintenance->isValid() && !$isHoliday) {
+    // ✅ validation APRÈS ajout des erreurs
+    if ($formMaintenance->isValid()) {
 
-                    $equipement = $maintenance->getEquipement();
+        $equipement = $maintenance->getEquipement();
 
-                    $em->persist($maintenance);
+        $em->persist($maintenance);
 
-                    $this->updateEquipementEtat($equipement, $em);
+        $this->updateEquipementEtat($equipement, $em, $mailer);
 
-                    $em->flush();
+        $em->flush();
 
-                    $this->addFlash('success', '✅ Maintenance ajoutée avec succès !');
+        $this->addFlash('success', '✅ Maintenance ajoutée avec succès !');
 
-                    return $this->redirectToRoute('app_equipement_index');
-                }
+        return $this->redirectToRoute('app_equipement_index');
+    }
 
-                // ❌ sinon on reste sur le formulaire
-                return $this->render('elfirma/equipement/equipements.html.twig', [
-                    'maintenances' => $repo->findAll(),
-                    'equipements' => $equipementRepo->findAll(),
-                    'form' => $form->createView(),
-                    'formMaintenance' => $formMaintenance->createView(),
-                    'show_modal' => true,
-                    'modal_errors' => true
+    // ❌ si erreur → rester sur page
+    $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+    $chart->setData([
+        'labels' => ['Faible', 'Moyen', 'Élevé'],
+        'datasets' => [[
+            'data' => [1, 1, 1],
+            'backgroundColor' => ['#16a34a', '#f59e0b', '#dc2626']
+        ]]
+    ]);
+
+    $chartMaint = $chartBuilder->createChart(Chart::TYPE_LINE);
+    $chartMaint->setData([
+        'labels' => ['Jan', 'Feb', 'Mar'],
+        'datasets' => [[
+            'data' => [1, 2, 3],
+            'borderColor' => '#2563eb'
+        ]]
+    ]);
+
+    return $this->render('elfirma/equipement/equipements.html.twig', [
+        'maintenances' => $repo->findAll(),
+        'equipements' => $equipementRepo->findAll(),
+        'form' => $form->createView(),
+        'formMaintenance' => $formMaintenance->createView(),
+        'show_modal' => true,
+        'modal_errors' => true,
+        'chart' => $chart,
+        'chartMaint' => $chartMaint
+    ]);
+}
+
+            $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+                $chart->setData([
+                    'labels' => ['Faible', 'Moyen', 'Élevé'],
+                    'datasets' => [[
+                        'data' => [1, 1, 1],
+                        'backgroundColor' => ['#16a34a', '#f59e0b', '#dc2626']
+                    ]]
                 ]);
-            }
+
+                $chartMaint = $chartBuilder->createChart(Chart::TYPE_LINE);
+                $chartMaint->setData([
+                    'labels' => ['Jan', 'Feb', 'Mar'],
+                    'datasets' => [[
+                        'data' => [1, 2, 3],
+                        'borderColor' => '#2563eb'
+                    ]]
+                ]);
 
             // GET request
             return $this->render('elfirma/equipement/equipements.html.twig', [
@@ -110,7 +154,9 @@ class MaintenanceController extends AbstractController
                 'formMaintenance' => $formMaintenance->createView(),
                 'form' => $form->createView(),
                 'show_modal' => false,
-                'modal_errors' => false
+                'modal_errors' => false,
+                'chart' => $chart,
+                'chartMaint' => $chartMaint
             ]);
         }
 
@@ -119,7 +165,8 @@ class MaintenanceController extends AbstractController
         Request $request,
         Maintenance $maintenance,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        MailerInterface $mailer
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
@@ -193,7 +240,7 @@ class MaintenanceController extends AbstractController
             $equipement = $maintenance->getEquipement();
 
             // 🔥 recalcul état
-            $this->updateEquipementEtat($equipement, $em);
+                $this->updateEquipementEtat($equipement, $em, $mailer);
 
             $em->flush();
 
@@ -222,7 +269,7 @@ class MaintenanceController extends AbstractController
     }
 
     #[Route('/maintenance/{id}/delete', name: 'maintenance_delete', methods: ['POST'])]
-    public function delete($id, MaintenanceRepository $repo, EntityManagerInterface $em): Response
+    public function delete($id, MaintenanceRepository $repo, EntityManagerInterface $em, MailerInterface $mailer): Response
     {
         $maintenance = $repo->find($id);
 
@@ -236,7 +283,7 @@ class MaintenanceController extends AbstractController
         $em->flush();
 
         // 🔥 recalcul après suppression
-        $this->updateEquipementEtat($equipement, $em);
+            $this->updateEquipementEtat($equipement, $em, $mailer);
         $em->flush();
 
         return new Response('Deleted');
@@ -331,78 +378,104 @@ public function finishMaintenance(
     return $this->redirectToRoute('employee_panel');
 }
 
-    private function updateEquipementEtat(Equipement $equipement, EntityManagerInterface $em)
-    {
-        $maintenances = $equipement->getMaintenances();
+private function updateEquipementEtat(Equipement $equipement, EntityManagerInterface $em, MailerInterface $mailer) 
+{
+    $maintenances = $equipement->getMaintenances();
 
-        $sixMonthsAgo = new \DateTime('-6 months');
+    $sixMonthsAgo = new \DateTime('-6 months');
 
-        $count6Months = 0;
-        $totalCost = 0;
+    $count6Months = 0;
+    $totalCost = 0;
 
-        foreach ($maintenances as $m) {
-            $totalCost += $m->getCout();
+    foreach ($maintenances as $m) {
+        $totalCost += $m->getCout();
 
-            if ($m->getDateM() >= $sixMonthsAgo) {
-                $count6Months++;
-            }
+        if ($m->getDateM() >= $sixMonthsAgo) {
+            $count6Months++;
         }
+    }
 
-        $purchaseCost = $equipement->getCoutAchat();
-        if ($purchaseCost <= 0) {
-            $ratio = 0;
-        } else {
-            $ratio = ($totalCost / $purchaseCost) * 100;
+    $purchaseCost = $equipement->getCoutAchat();
+    $ratio = $purchaseCost > 0 ? ($totalCost / $purchaseCost) * 100 : 0;
+
+    $currentEtat = $equipement->getEtat()->value;
+
+    // 🔥 CONDITION CRITIQUE
+    if (($count6Months > 3 || $ratio > 50) && $totalCost > 0) {
+    $equipement->setEtat(\App\Enum\EquipementEtat::from('panne'));
+
+    $alreadyExists = false;
+    foreach ($maintenances as $m) {
+        if (
+            $m->getTypeM() === 'Maintenance automatique' &&
+            $m->getDateM() >= new \DateTime('-2 days')
+        ) {
+            $alreadyExists = true;
+            break;
         }
-        $currentEtat = $equipement->getEtat()->value;
-        if (($count6Months > 3 || $ratio > 50) && $totalCost > 0) {
+    }
 
-            $equipement->setEtat(\App\Enum\EquipementEtat::from('panne'));
-            foreach ($maintenances as $m) {
-                if ($m->getTypeM() === 'Maintenance automatique' 
-                    && $m->getDateM() >= new \DateTime('-2 days')) {
-                    return; // déjà créée
-                }
-            }
-            $maintenance = new \App\Entity\Maintenance();
+    // ✅ Skip if already exists
+    if ($alreadyExists) {
+        return;
+    }
 
-            $maintenance->setEquipement($equipement);
-            $maintenance->setTypeM('Maintenance automatique');
-            $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
-            
-            $date = new \DateTime('+1 day');
-            while ($this->isHoliday($date)) {
-                $date->modify('+1 day');
-            }
-            $maintenance->setDateM($date);
+    // 🆕 Create maintenance
+    $maintenance = new \App\Entity\Maintenance();
+    $maintenance->setEquipement($equipement);
+    $maintenance->setTypeM('Maintenance automatique');
+    $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
 
-            $maintenance->setCout(200);
+    $date = new \DateTime('+1 day');
+    while ($this->isHoliday($date)) {
+        $date->modify('+1 day');
+    }
+    $maintenance->setDateM($date);
+    $maintenance->setCout(200);
+    $maintenance->setStatut(\App\Enum\MaintenanceStatut::from('planifie'));
+    $maintenance->setPriorite(\App\Enum\MaintenancePriorite::from('urgente'));
 
-            // ⚙️ statut
-            $maintenance->setStatut(\App\Enum\MaintenanceStatut::from('planifie'));
+    // 👨‍🔧 Get technician
+    $technicien = $em->getRepository(\App\Entity\Utilisateur::class)
+        ->findOneBy(['role_u' => 'employee']);
 
-            // 🔥 priorité élevée
-            $maintenance->setPriorite(\App\Enum\MaintenancePriorite::from('urgente'));
+    if (!$technicien || !$technicien->getEmailU()) {
+        // Log error, don't halt
+        error_log('No technician found or technician has no email');
+        return;
+    }
 
-            $technicien = $em->getRepository(\App\Entity\Utilisateur::class)
-                ->findOneBy(['role_u' => 'employee']);
+    // 📬 Send email
+    try {
+        $email = (new TemplatedEmail())
+            ->from('fethizouabi190@gmail.com')
+            ->to($technicien->getEmailU())
+            ->subject('⚠ Maintenance critique')
+            ->htmlTemplate('emails/maintenance_alert.html.twig')
+            ->context([
+                'user' => $technicien->getNomU(),
+                'equipement' => $equipement->getNomEq()
+            ]);
 
-            if ($technicien) {
-                $maintenance->setTechnicien($technicien);
-            }
+        $mailer->send($email);
+    } catch (\Exception $e) {
+        error_log('Email error: ' . $e->getMessage());
+    }
 
-            $em->persist($maintenance);
+    // ✅ Persist maintenance
+    $em->persist($maintenance);
+    return;
+}
 
-            return;
-        }
-        if ($currentEtat === 'maintenance') {
-            return;
-        }
+// Reset to available if no issues
+if ($currentEtat === 'maintenance') {
+    return;
+}
 
-        $equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
-    
-    
-        }
+$equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
+
+}
+
        private function isHoliday(\DateTime $date): bool
         {
             $apiKey = 'uUEzUqYq5jExcWlBWULmo5eSzFm6SBFyeSeHG9pt';
