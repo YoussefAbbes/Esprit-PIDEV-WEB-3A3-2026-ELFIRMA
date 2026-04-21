@@ -35,7 +35,6 @@
 
     <!-- Store errors data -->
     <div id="errors-data" data-errors="{{ (errors ?? {})|json_encode() }}"></div>
-    <div id="twofa-error-data" data-twofa-error="{{ app.request.query.get('twofa_error', '') }}"></div>
 
     {% if error is defined and error %}
       <div style="background-color: #ffebee; border: 1px solid #ef5350; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; color: #d32f2f; display: flex; gap: 0.75rem; align-items: flex-start;">
@@ -57,6 +56,9 @@
         <label for="password">Password</label>
         <input type="password" id="password" name="password" class="form-control" placeholder="••••••••">
         <small class="text-muted">Enter your password</small>
+        <div style="margin-top: 0.55rem; text-align: right;">
+          <a href="{{ path('app_forgot_password') }}" style="font-size: 0.88rem; color: #116530; font-weight: 600; text-decoration: none;">Forgot password?</a>
+        </div>
       </div>
 
       <div class="form-check">
@@ -678,17 +680,6 @@
         }
       }
     }
-
-    const twoFaErrorData = document.getElementById('twofa-error-data');
-    const twoFaError = twoFaErrorData ? twoFaErrorData.getAttribute('data-twofa-error') : '';
-    if (twoFaError === 'invalid_code') {
-      Swal.fire({
-        icon: 'error',
-        title: 'Incorrect verification code',
-        text: 'Your admin 2FA code is invalid. Please sign in again.',
-        confirmButtonColor: '#d32f2f'
-      });
-    }
   });
 
   // Smooth form focus animation
@@ -1002,31 +993,8 @@
   }
 
 
-
   
 </script>
-
-
-
-
-  const params = new URLSearchParams(window.location.search);
-const twoFaError = params.get('twofa_error');
-if (twoFaError === 'invalid_code' && typeof Swal !== 'undefined') {
-  Swal.fire({
-    icon: 'error',
-    title: 'Two-factor verification failed',
-    text: 'The authentication code is invalid or expired. You have been signed out for security.',
-    confirmButtonColor: '#116530'
-  });
-}
-
-</script>
-
-
-
-  
-</script>
-
 
 <script>
   (function () {

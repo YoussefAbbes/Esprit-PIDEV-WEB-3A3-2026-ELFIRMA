@@ -6,6 +6,9 @@
 {% block body_class %}index-page{% endblock %}
 
 {% block body %}
+<!-- Notification Container -->
+<div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;"></div>
+
 <!-- Hero Section -->
     <section id="hero" class="hero section dark-background">
 
@@ -293,7 +296,7 @@
           <div class="row g-4" id="products-grid">
             {% for produit in produits %}
             <div class="col-lg-3 col-md-4 col-sm-6 product-item" data-category="{{ produit.categorie ? produit.categorie.id : 0 }}" data-aos="fade-up" data-aos-delay="100">
-              <div class="product-card" style="border: 2px solid #e8f5e8; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 10px 30px rgba(45, 80, 22, 0.12); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; backdrop-filter: blur(10px); height: 100%;" onclick="openProductDetails({{ produit.idProduit }})">>>
+              <div class="product-card" style="border: 2px solid #e8f5e8; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 10px 30px rgba(45, 80, 22, 0.12); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; backdrop-filter: blur(10px); height: 100%;" onclick="openProductDetails({{ produit.idProduit }})">
                 
                 <!-- Organic certification badge -->
                 <div style="position: absolute; top: 15px; left: 15px; z-index: 10;">
@@ -1562,6 +1565,157 @@
         </div>
       </div>
     </section><!-- /Call To Action Section -->
+
+<script>
+// ===== NOTIFICATION SYSTEM =====
+async function fetchAndDisplayNotifications() {
+  try {
+    const userId = {{ userId ?? 'null' }};
+    
+    if (!userId) {
+      console.log('[Notifications] User ID not available, skipping notification fetch');
+      return;
+    }
+
+    const response = await fetch(`/api/user/${userId}/notifications`);
+    const data = await response.json();
+
+    if (data.success && data.notifications && data.notifications.length > 0) {
+      console.log('[Notifications] Found ' + data.notifications.length + ' unread notification(s)');
+      
+      data.notifications.forEach(notification => {
+        displayNotification(notification);
+      });
+    }
+  } catch (error) {
+    console.error('[Notifications] Error fetching notifications:', error);
+  }
+}
+
+function displayNotification(notification) {
+  const container = document.getElementById('notification-container');
+  
+  // Create notification element
+  const notifElement = document.createElement('div');
+  notifElement.style.cssText = `
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  `;
+  
+  const titleAndMessage = document.createElement('div');
+  titleAndMessage.style.flex = '1';
+  
+  const title = document.createElement('h4');
+  title.textContent = notification.title;
+  title.style.cssText = 'margin: 0 0 8px 0; font-weight: 600; font-size: 14px;';
+  
+  const message = document.createElement('p');
+  message.textContent = notification.message;
+  message.style.cssText = 'margin: 0; font-size: 13px; line-height: 1.4; opacity: 0.95;';
+  
+  titleAndMessage.appendChild(title);
+  titleAndMessage.appendChild(message);
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = `
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  `;
+  closeBtn.onmouseover = () => closeBtn.style.opacity = '1';
+  closeBtn.onmouseout = () => closeBtn.style.opacity = '0.7';
+  closeBtn.onclick = () => {
+    notifElement.style.animation = 'slideOutRight 0.3s ease-in forwards';
+    setTimeout(() => notifElement.remove(), 300);
+    // Mark as read
+    markNotificationAsRead(notification.id);
+  };
+  
+  notifElement.appendChild(titleAndMessage);
+  notifElement.appendChild(closeBtn);
+  container.appendChild(notifElement);
+  
+  // Auto-hide after 8 seconds
+  setTimeout(() => {
+    if (notifElement.parentNode) {
+      notifElement.style.animation = 'slideOutRight 0.3s ease-in forwards';
+      setTimeout(() => {
+        if (notifElement.parentNode) {
+          notifElement.remove();
+        }
+      }, 300);
+    }
+  }, 8000);
+}
+
+function markNotificationAsRead(notificationId) {
+  fetch(`/api/notification/${notificationId}/read`, { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('[Notifications] Notification marked as read: ' + notificationId);
+      }
+    })
+    .catch(error => console.error('[Notifications] Error marking as read:', error));
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideInRight {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOutRight {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);
+
+// Fetch notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('[Notifications] Page loaded, fetching notifications...');
+  fetchAndDisplayNotifications();
+  
+  // Poll for new notifications every 10 seconds
+  setInterval(fetchAndDisplayNotifications, 10000);
+});
+</script>
+
 {% endblock %}
 
 

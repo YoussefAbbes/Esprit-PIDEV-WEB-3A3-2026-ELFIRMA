@@ -10,6 +10,7 @@
         <li><a href="{{ path('app_pages_home') }}" class="{% if app.request.get('_route') == 'app_pages_home' %}active{% endif %}">Home</a></li>
         <li><a href="{{ path('app_about') }}" class="{% if app.request.get('_route') == 'app_about' %}active{% endif %}">About Us</a></li>
         <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
+        <li><a href="{{ path('suppliers_list') }}" class="{% if app.request.get('_route') == 'suppliers_list' %}active{% endif %}">Our Suppliers</a></li>
         <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
         <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Blog</a></li>
         <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>

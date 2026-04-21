@@ -1,0 +1,474 @@
+{# templates/elfirma/_chatbot.html.twig #}
+
+<style>
+  #chatbot-widget {
+    position: fixed;
+    bottom: 28px;
+    right: 180px;
+    z-index: 9997;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+  }
+
+  #chatbot-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: #934b19;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(147,75,25,0.45);
+    transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  #chatbot-toggle-btn:hover { background: #753501; transform: scale(1.07); }
+
+  #chatbot-box {
+    display: none;
+    flex-direction: column;
+    width: 340px;
+    height: 480px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    overflow: hidden;
+    border: 2px solid #efefd7;
+  }
+  #chatbot-widget.open #chatbot-box { display: flex; }
+
+  /* Header */
+  #chatbot-header {
+    background: #0a2200;
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  #chatbot-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+  }
+  #chatbot-header p {
+    margin: 2px 0 0;
+    font-size: 0.72rem;
+    opacity: 0.7;
+  }
+  #chatbot-close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.7;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  #chatbot-close-btn:hover { opacity: 1; }
+
+  /* Messages area */
+  #chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #fafaf0;
+  }
+
+  .chat-msg {
+    max-width: 82%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  .chat-msg.bot {
+    background: #efefd7;
+    color: #1b1d0e;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .chat-msg.user {
+    background: #0a2200;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+  }
+  .chat-msg.typing {
+    background: #efefd7;
+    color: #73796c;
+    align-self: flex-start;
+    font-style: italic;
+  }
+
+  /* Input area */
+  #chatbot-input-area {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 2px solid #efefd7;
+    background: #fff;
+    flex-shrink: 0;
+  }
+  #chatbot-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid #e4e4cc;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    outline: none;
+    font-family: 'Open Sans', sans-serif;
+    transition: border-color 0.2s;
+  }
+  #chatbot-input:focus { border-color: #43682b; }
+
+  #chatbot-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: none;
+    background: #43682b;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  #chatbot-send-btn:hover { background: #2c4f15; transform: scale(1.05); }
+  #chatbot-send-btn:disabled { background: #c3c9b9; cursor: not-allowed; }
+
+  /* Confidence badge */
+  .confidence-badge {
+    font-size: 0.65rem;
+    color: #73796c;
+    margin-top: 4px;
+    display: block;
+  }
+</style>
+
+{# ── HTML ── #}
+<div id="chatbot-widget">
+
+  {# Chat box #}
+  <div id="chatbot-box">
+    <div id="chatbot-header">
+      <div>
+        <h4 id="chatbot-header-title">🤖 Supplier Assistant</h4>
+        <p id="chatbot-header-subtitle">Powered by Random Forest AI</p>
+      </div>
+      <button id="chatbot-close-btn" title="Close">✕</button>
+    </div>
+
+    <div id="chatbot-messages">
+      {# Initial bot message #}
+      <div class="chat-msg bot" id="chatbot-initial-message">
+        Hello! I'm your supplier management assistant. How can I help you today?
+      </div>
+    </div>
+
+    <div id="chatbot-input-area">
+      <input
+        type="text"
+        id="chatbot-input"
+        placeholder="Type a message..."
+        autocomplete="off"
+        maxlength="200"
+      />
+      <button id="chatbot-send-btn" title="Send">
+        <span class="material-symbols-outlined" style="font-size:18px;">send</span>
+      </button>
+    </div>
+  </div>
+
+  {# Toggle button #}
+  <button id="chatbot-toggle-btn" title="Open Chatbot">
+    <span class="material-symbols-outlined" style="font-size:26px;">chat</span>
+  </button>
+
+</div>
+
+<script>
+(function () {
+  const CHAT_URL   = '{{ path("chatbot_message") }}';
+  const USER_INSIGHTS_URL = '{{ path("chatbot_user_insights") }}';
+  const chatbotContext = String(window.chatbotContext || 'supplier').toLowerCase();
+
+  const widget     = document.getElementById('chatbot-widget');
+  const toggleBtn  = document.getElementById('chatbot-toggle-btn');
+  const closeBtn   = document.getElementById('chatbot-close-btn');
+  const messages   = document.getElementById('chatbot-messages');
+  const input      = document.getElementById('chatbot-input');
+  const sendBtn    = document.getElementById('chatbot-send-btn');
+  const headerTitle = document.getElementById('chatbot-header-title');
+  const headerSubtitle = document.getElementById('chatbot-header-subtitle');
+  const initialMessage = document.getElementById('chatbot-initial-message');
+
+  if (chatbotContext === 'users') {
+    if (headerTitle) {
+      headerTitle.textContent = '🤖 User Assistant';
+    }
+    if (headerSubtitle) {
+      headerSubtitle.textContent = 'Live Utilisateur database insights';
+    }
+    if (initialMessage) {
+      initialMessage.textContent = 'Hello! Ask me about users: total count, employees, clients, admins, names, or emails.';
+    }
+  }
+
+  // ── Toggle open/close ───────────────────────────────────────────────────
+  toggleBtn.addEventListener('click', () => {
+    widget.classList.toggle('open');
+    if (widget.classList.contains('open')) {
+      input.focus();
+    }
+  });
+
+  closeBtn.addEventListener('click', () => {
+    widget.classList.remove('open');
+  });
+
+  // ── Send on Enter key ───────────────────────────────────────────────────
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  // ── Add a message bubble ────────────────────────────────────────────────
+  function addMessage(text, role, confidence = null) {
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    div.textContent = text;
+
+    // Show confidence for bot messages (helpful for demo/grading)
+    if (role === 'bot' && confidence !== null) {
+      const badge = document.createElement('span');
+      badge.className = 'confidence-badge';
+      badge.textContent = `Confidence: ${(confidence * 100).toFixed(1)}%`;
+      div.appendChild(badge);
+    }
+
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+  }
+
+  // ── Show typing indicator ───────────────────────────────────────────────
+  function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'chat-msg typing';
+    div.id = 'typing-indicator';
+    div.textContent = 'Assistant is thinking…';
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  // ── Handle special intents ──────────────────────────────────────────────
+  async function handleIntent(intent, userText) {
+    if (chatbotContext !== 'supplier') {
+      return { suppressDefaultResponse: false };
+    }
+
+    if (intent === 'create_supplier') {
+      // Open the existing Add Supplier modal
+      setTimeout(() => {
+        const addBtn = document.getElementById('addSupplierBtn');
+        if (addBtn) addBtn.click();
+      }, 600);
+      return { suppressDefaultResponse: false };
+    }
+
+    if (intent === 'edit_supplier') {
+      const action = window.chatbotSupplierActions?.openEditModalFromCommand;
+      if (typeof action === 'function') {
+        const opened = action(userText);
+        if (opened) {
+          return {
+            suppressDefaultResponse: true,
+            customReply: 'Done. The supplier edit form is now open.',
+          };
+        }
+
+        return {
+          suppressDefaultResponse: true,
+          customReply: 'Please include the exact supplier name, for example: edit supplier SOTUVER.',
+        };
+      }
+
+      return { suppressDefaultResponse: false };
+    }
+
+    if (intent === 'delete_supplier') {
+      const action = window.chatbotSupplierActions?.deleteSupplierFromCommand;
+      if (typeof action === 'function') {
+        const deleted = await action(userText);
+        if (deleted) {
+          return {
+            suppressDefaultResponse: true,
+            customReply: 'Done. Supplier deleted successfully.',
+          };
+        }
+
+        return {
+          suppressDefaultResponse: true,
+          customReply: 'Please include the exact supplier name, for example: delete supplier SOTUVER.',
+        };
+      }
+
+      return { suppressDefaultResponse: false };
+    }
+
+    return { suppressDefaultResponse: false };
+  }
+
+  async function tryUserInsights(userText) {
+    if (chatbotContext !== 'users') {
+      return { matched: false };
+    }
+
+    const res = await fetch(USER_INSIGHTS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userText }),
+    });
+
+    const data = await res.json();
+    return {
+      matched: Boolean(data.matched),
+      response: data.response || '',
+      confidence: typeof data.confidence === 'number' ? data.confidence : null,
+    };
+  }
+
+  async function tryUserActions(userText) {
+    if (chatbotContext !== 'users') {
+      return { matched: false };
+    }
+
+    const normalized = String(userText || '').trim().toLowerCase();
+    if (!normalized) {
+      return { matched: false };
+    }
+
+    if (/\b(add|create|ajoute|ajouter|nouveau)\s+user\b/i.test(normalized)) {
+      const action = window.chatbotUserActions?.openAddModalFromCommand;
+      if (typeof action === 'function') {
+        const opened = action(userText);
+        if (opened) {
+          return {
+            matched: true,
+            response: 'Done. The Add User form is now open.',
+            confidence: 1,
+          };
+        }
+      }
+
+      return {
+        matched: true,
+        response: 'I could not open the Add User form right now.',
+        confidence: 0.85,
+      };
+    }
+
+    if (/\b(delete|remove|supprime|supprimer)\s+user\b/i.test(normalized)) {
+      const action = window.chatbotUserActions?.deleteUserFromCommand;
+      if (typeof action === 'function') {
+        const deleted = await action(userText);
+        if (deleted) {
+          return {
+            matched: true,
+            response: 'Delete flow started for this user. Please confirm in the popup.',
+            confidence: 1,
+          };
+        }
+      }
+
+      return {
+        matched: true,
+        response: 'User not found. Please provide the full user name, for example: delete user John Doe.',
+        confidence: 0.86,
+      };
+    }
+
+    return { matched: false };
+  }
+
+  // ── Main send function ──────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Show user message
+    addMessage(text, 'user');
+    input.value = '';
+    sendBtn.disabled = true;
+
+    // Show typing
+    showTyping();
+
+    try {
+      const userAction = await tryUserActions(text);
+      if (userAction.matched) {
+        removeTyping();
+        addMessage(userAction.response, 'bot', userAction.confidence);
+        return;
+      }
+
+      const userInsight = await tryUserInsights(text);
+      if (userInsight.matched) {
+        removeTyping();
+        addMessage(userInsight.response, 'bot', userInsight.confidence);
+        return;
+      }
+
+      const res  = await fetch(CHAT_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ message: text }),
+      });
+
+      const data = await res.json();
+
+      const intentResult = await handleIntent(data.intent, text);
+
+      removeTyping();
+
+      if (intentResult?.suppressDefaultResponse) {
+        addMessage(intentResult.customReply || 'Done.', 'bot');
+      } else {
+        addMessage(data.response, 'bot', data.confidence);
+      }
+
+    } catch (err) {
+      removeTyping();
+      addMessage('Sorry, I could not connect to the AI service. Make sure the Python server is running.', 'bot');
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+})();
+</script>

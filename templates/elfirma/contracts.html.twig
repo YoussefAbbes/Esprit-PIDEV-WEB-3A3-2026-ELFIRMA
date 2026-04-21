@@ -326,6 +326,12 @@
           </tbody>
         </table>
       </div>
+
+      {% if contracts is defined %}
+      <div class="mt-6 flex justify-center">
+        {{ knp_pagination_render(contracts) }}
+      </div>
+      {% endif %}
     </section>
   </div>
 
@@ -396,12 +402,81 @@
         <div class="error-message-contract" id="statusError"></div>
       </div>
 
-      <!-- PDF -->
+      <!-- PDF Upload Options -->
       <div>
-        <label for="pdf" class="block font-semibold text-primary mb-2">PDF Document (Optional)</label>
-        <input type="file" id="pdf" name="pdf" accept=".pdf" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
-        <p class="text-xs text-on-surface-variant mt-1">PDF format only</p>
-        <div class="error-message-contract" id="pdfError"></div>
+        <label class="block font-semibold text-primary mb-3">Contract Document (Optional)</label>
+
+        <!-- Tabs for PDF and Image -->
+        <div class="flex gap-2 mb-4 border-b-2 border-outline-variant/20">
+          <button type="button" id="pdfTabBtn" class="px-4 py-2 border-b-2 border-primary text-primary font-semibold transition-colors tab-btn active-tab">
+            <span class="material-symbols-outlined text-sm inline mr-1">description</span>
+            Upload PDF
+          </button>
+          <button type="button" id="imageTabBtn" class="px-4 py-2 border-b-2 border-transparent text-on-surface-variant font-semibold hover:text-primary transition-colors tab-btn">
+            <span class="material-symbols-outlined text-sm inline mr-1">image</span>
+            Extract from Image
+          </button>
+        </div>
+
+        <!-- PDF Upload Tab -->
+        <div id="pdfTabContent" class="tab-content">
+          <input type="file" id="pdf" name="pdf" accept=".pdf" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+          <p class="text-xs text-on-surface-variant mt-1">PDF format only</p>
+          <div class="error-message-contract" id="pdfError"></div>
+        </div>
+
+        <!-- Image to Text Tab -->
+        <div id="imageTabContent" class="tab-content hidden">
+          <!-- Hidden File Input -->
+          <input type="file" id="contractImage" name="contract_image" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp" class="hidden">
+
+          <!-- Image Selection Area -->
+          <div id="imageSelectionArea" class="text-center p-8 border-2 border-dashed border-outline-variant/40 rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer" onclick="document.getElementById('contractImage').click()">
+            <span class="material-symbols-outlined text-5xl text-primary/40 block mb-3">image</span>
+            <p class="text-primary font-semibold mb-1">Click to select an image</p>
+            <p class="text-xs text-on-surface-variant">or drag and drop</p>
+            <p class="text-xs text-on-surface-variant/60 mt-2">JPG, PNG, GIF, BMP, WebP (max 5MB)</p>
+          </div>
+
+          <!-- Selected File Display -->
+          <div id="selectedFileInfo" class="hidden mt-4 p-3 bg-primary/10 border-2 border-primary/20 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">image</span>
+              <div class="text-left">
+                <p class="text-sm font-semibold text-primary" id="selectedFileName">No file selected</p>
+                <p class="text-xs text-on-surface-variant" id="selectedFileSize">-</p>
+              </div>
+            </div>
+            <button type="button" id="clearImageBtn" class="p-2 hover:bg-red-100 rounded-lg transition-colors text-red-600" onclick="clearSelectedImage(event)">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- Extract Button -->
+          <button type="button" id="extractImageBtn" class="w-full mt-3 px-4 py-3 bg-secondary text-surface font-semibold rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">image_search</span>
+            Extract Text from Image
+          </button>
+
+          <!-- Extracted Text Display -->
+          <div id="extractedTextContainer" class="hidden mt-4 p-4 bg-surface-container-low border-2 border-primary/20 rounded-xl">
+            <p class="text-xs font-semibold text-primary mb-2 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">check_circle</span>
+              Text Extracted Successfully
+            </p>
+            <div id="extractedTextDisplay" class="bg-white p-3 rounded-lg border border-outline-variant/20 max-h-32 overflow-y-auto text-sm text-on-surface"></div>
+            <input type="hidden" id="generatedPdfPath" name="generated_pdf_file" value="">
+            <input type="hidden" id="extractedTextInput" name="extracted_text" value="">
+          </div>
+
+          <!-- Processing Indicator -->
+          <div id="extractingIndicator" class="hidden mt-3 flex items-center gap-2 text-secondary">
+            <div class="w-4 h-4 border-2 border-secondary border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-sm">Extracting text from image...</span>
+          </div>
+        </div>
+
+        <div class="error-message-contract" id="documentError"></div>
       </div>
 
       <!-- Modal Footer -->
@@ -571,6 +646,186 @@
   const confirmDeleteContractBtn = document.getElementById('confirmDeleteContractBtn');
   const addContractBtn = document.getElementById('addContractBtn');
 
+  // Tab Management for PDF/Image
+  const pdfTabBtn = document.getElementById('pdfTabBtn');
+  const imageTabBtn = document.getElementById('imageTabBtn');
+  const pdfTabContent = document.getElementById('pdfTabContent');
+  const imageTabContent = document.getElementById('imageTabContent');
+  const extractImageBtn = document.getElementById('extractImageBtn');
+  const contractImage = document.getElementById('contractImage');
+  const extractingIndicator = document.getElementById('extractingIndicator');
+  const extractedTextContainer = document.getElementById('extractedTextContainer');
+  const extractedTextDisplay = document.getElementById('extractedTextDisplay');
+  const generatedPdfPath = document.getElementById('generatedPdfPath');
+  const extractedTextInput = document.getElementById('extractedTextInput');
+
+  // Tab switching
+  pdfTabBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    pdfTabBtn.classList.add('active-tab');
+    imageTabBtn.classList.remove('active-tab');
+    pdfTabContent.classList.remove('hidden');
+    imageTabContent.classList.add('hidden');
+    pdfTabBtn.style.borderBottomColor = '#0a2200';
+    imageTabBtn.style.borderBottomColor = 'transparent';
+    contractImage.value = '';
+    extractedTextContainer.classList.add('hidden');
+    extractingIndicator.classList.add('hidden');
+  });
+
+  imageTabBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    imageTabBtn.classList.add('active-tab');
+    pdfTabBtn.classList.remove('active-tab');
+    imageTabContent.classList.remove('hidden');
+    pdfTabContent.classList.add('hidden');
+    imageTabBtn.style.borderBottomColor = '#0a2200';
+    pdfTabBtn.style.borderBottomColor = 'transparent';
+    document.getElementById('pdf').value = '';
+  });
+
+  // Handle file selection
+  contractImage.addEventListener('change', async function(e) {
+    if (!this.files || !this.files[0]) {
+      return;
+    }
+
+    const file = this.files[0];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const selectedFileInfo = document.getElementById('selectedFileInfo');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const selectedFileSize = document.getElementById('selectedFileSize');
+
+    // Show selected file info
+    selectedFileName.textContent = file.name;
+    selectedFileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+    selectedFileInfo.classList.remove('hidden');
+
+    // Validate file size
+    if (file.size > maxSize) {
+      Swal.fire({
+        title: 'File Too Large',
+        text: 'Image file must be smaller than 5MB',
+        icon: 'error',
+        confirmButtonColor: '#0a2200'
+      });
+      contractImage.value = '';
+      selectedFileInfo.classList.add('hidden');
+      return;
+    }
+
+    // Auto-extract text
+    await extractTextFromImage(file);
+  });
+
+  // Drag and drop support
+  const imageSelectionArea = document.getElementById('imageSelectionArea');
+
+  imageSelectionArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    imageSelectionArea.style.backgroundColor = 'rgba(10, 34, 0, 0.05)';
+    imageSelectionArea.style.borderColor = '#0a2200';
+  });
+
+  imageSelectionArea.addEventListener('dragleave', () => {
+    imageSelectionArea.style.backgroundColor = 'transparent';
+    imageSelectionArea.style.borderColor = 'rgba(195, 201, 185, 0.4)';
+  });
+
+  imageSelectionArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    imageSelectionArea.style.backgroundColor = 'transparent';
+    imageSelectionArea.style.borderColor = 'rgba(195, 201, 185, 0.4)';
+
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      contractImage.files = files;
+      const changeEvent = new Event('change', { bubbles: true });
+      contractImage.dispatchEvent(changeEvent);
+    }
+  });
+
+  // Extract Image Function
+  async function extractTextFromImage(file) {
+    extractingIndicator.classList.remove('hidden');
+    extractedTextContainer.classList.add('hidden');
+
+    const formData = new FormData();
+    formData.append('image_file', file);
+    formData.append('supplier_name', 'Unknown Supplier');
+
+    try {
+      const response = await fetch('{{ path("elfirma_image_to_pdf") }}', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      extractingIndicator.classList.add('hidden');
+
+      if (data.success) {
+        // Display extracted text
+        extractedTextDisplay.textContent = data.extracted_text;
+        generatedPdfPath.value = data.pdf_file;
+        extractedTextInput.value = data.extracted_text;
+        extractedTextContainer.classList.remove('hidden');
+
+        // Show success message
+        Swal.fire({
+          title: 'Success!',
+          text: 'Text extracted successfully from image',
+          icon: 'success',
+          confirmButtonColor: '#0a2200',
+          timer: 2000
+        });
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: data.error || 'Failed to extract text from image',
+          icon: 'error',
+          confirmButtonColor: '#0a2200'
+        });
+      }
+    } catch (error) {
+      extractingIndicator.classList.add('hidden');
+      console.error('Error:', error);
+
+      Swal.fire({
+        title: 'Error',
+        text: 'An error occurred while extracting text',
+        icon: 'error',
+        confirmButtonColor: '#0a2200'
+      });
+    }
+  }
+
+  // Manual extract button (in case user wants to re-extract)
+  extractImageBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    if (!contractImage.files || !contractImage.files[0]) {
+      Swal.fire({
+        title: 'No Image Selected',
+        text: 'Please select an image file first',
+        icon: 'warning',
+        confirmButtonColor: '#0a2200'
+      });
+      return;
+    }
+
+    const file = contractImage.files[0];
+    await extractTextFromImage(file);
+  });
+
+  // Clear image function
+  function clearSelectedImage(e) {
+    if (e) e.preventDefault();
+    contractImage.value = '';
+    document.getElementById('selectedFileInfo').classList.add('hidden');
+    extractedTextContainer.classList.add('hidden');
+    extractingIndicator.classList.add('hidden');
+  }
+
   // Form fields
   const startDateField = document.getElementById('startDate');
   const endDateField = document.getElementById('endDate');
@@ -696,6 +951,8 @@
     });
     document.querySelectorAll('.error-field').forEach(el => el.classList.remove('error-field'));
     addContractModal.classList.remove('hidden');
+    // Reset to PDF tab
+    pdfTabBtn.click();
   });
 
   closeContractModalBtn.addEventListener('click', () => {
@@ -1157,11 +1414,17 @@
         .stats-appear.delay-3 {
           animation-delay: 0.3s;
         }
+        .active-tab {
+          border-bottom-color: #0a2200 !important;
+          color: #0a2200 !important;
+        }
+        .tab-content {
+          transition: all 0.3s ease-in-out;
+        }
       `;
       document.head.appendChild(style);
     }
   });
-
 </script>
 
 {{ include('elfirma/_nav_routes.html.twig') }}

@@ -37,6 +37,9 @@ class Commande
     }
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[Assert\NotBlank(message: 'Total price is required.')]
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/', message: 'Total price must be a valid decimal with up to 2 decimals.')]
+    #[Assert\Positive(message: 'Total price must be greater than 0.')]
     private ?string $prix_total = null;
 
     public function getPrixTotal(): ?string
@@ -51,6 +54,11 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    #[Assert\NotBlank(message: 'Order status is required.')]
+    #[Assert\Choice(
+        choices: ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'],
+        message: 'Order status must be one of: En attente, Confirmée, En cours, Livrée, Annulée.'
+    )]
     private ?string $statut_commande = null;
 
     public function getStatutCommande(): ?string
@@ -65,6 +73,11 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    #[Assert\NotBlank(message: 'Payment mode is required.')]
+    #[Assert\Choice(
+        choices: ['Cash', 'Carte bancaire', 'Virement'],
+        message: 'Payment mode must be one of: Cash, Carte bancaire, Virement.'
+    )]
     private ?string $mode_paiement = null;
 
     public function getModePaiement(): ?string
@@ -79,6 +92,11 @@ class Commande
     }
 
     #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    #[Assert\NotBlank(message: 'Payment status is required.')]
+    #[Assert\Choice(
+        choices: ['Non payé', 'Payé', 'Remboursé'],
+        message: 'Payment status must be one of: Non payé, Payé, Remboursé.'
+    )]
     private ?string $statut_paiement = null;
 
     public function getStatutPaiement(): ?string
@@ -108,6 +126,7 @@ class Commande
 
     #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(name: 'id_produit', referencedColumnName: 'id_produit', nullable: true)]
+    #[Assert\NotNull(message: 'Product is required.')]
     private ?Produit $produit = null;
 
     public function getProduit(): ?Produit
@@ -143,7 +162,13 @@ class Commande
     }
 
     #[ORM\Column(type: 'date')]
+    #[Assert\NotNull(message: 'Order date is required.')]
+    #[Assert\Type(type: \DateTimeInterface::class, message: 'Order date is invalid.')]
     private ?\DateTimeInterface $date_commande = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'id_u', nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $utilisateur = null;
 
     public function getDateCommande(): ?\DateTimeInterface
     {
@@ -153,6 +178,17 @@ class Commande
     public function setDateCommande(\DateTimeInterface $date_commande): self
     {
         $this->date_commande = $date_commande;
+        return $this;
+    }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
         return $this;
     }
 }

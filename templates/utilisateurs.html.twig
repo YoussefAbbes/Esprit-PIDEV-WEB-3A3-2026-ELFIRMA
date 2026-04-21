@@ -409,7 +409,7 @@ Open Website
                 </td>
                 <td class="px-8 py-6 text-right">
                   <div class="flex items-center justify-end gap-2">
-                    <button class="p-2 rounded-full hover:bg-primary/5 text-primary transition-all" title="Reply">
+                    <button class="p-2 rounded-full hover:bg-primary/5 text-primary transition-all reply-complaint-btn" data-complaint-id="{{ complaint.idrU }}" data-user-email="{{ complaint.utilisateur.emailU }}" data-complaint-title="{{ complaint.titreU }}" title="Reply by Email">
                       <span class="material-symbols-outlined" data-icon="reply">reply</span>
                     </button>
                     <button class="p-2 rounded-full hover:bg-green/5 text-green transition-all validate-complaint-btn" data-complaint-id="{{ complaint.idrU }}" title="Mark as Reviewed">
@@ -717,6 +717,12 @@ Open Website
     addUserModal.classList.remove('hidden');
   });
 
+  function openAddUserModalFromChat() {
+    resetModalForAdd();
+    addUserModal.classList.remove('hidden');
+    return true;
+  }
+
   // Edit User Button Handler
   document.querySelectorAll('.edit-user-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -849,6 +855,62 @@ Open Website
   });
 
   // Delete User Button Handler
+  function normalizeUserText(value) {
+    return (value || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ');
+  }
+
+  function findDeleteButtonFromCommand(commandText) {
+    const normalizedCommand = normalizeUserText(commandText);
+    if (!normalizedCommand) {
+      return null;
+    }
+
+    const cleanedNameCandidate = normalizedCommand
+      .replace(/^(delete|remove|supprime|supprimer)\s+user\s*/i, '')
+      .trim();
+
+    const buttons = Array.from(document.querySelectorAll('.delete-user-btn'));
+    let bestMatch = null;
+    let bestLength = 0;
+
+    buttons.forEach((btn) => {
+      const fullName = normalizeUserText(btn.dataset.userName || '');
+      if (!fullName) {
+        return;
+      }
+
+      const exactNameMatch = cleanedNameCandidate !== '' && fullName === cleanedNameCandidate;
+      const containsInCommand = normalizedCommand.includes(fullName);
+      const nameIncluded = cleanedNameCandidate !== '' && fullName.includes(cleanedNameCandidate);
+
+      if ((exactNameMatch || containsInCommand || nameIncluded) && fullName.length > bestLength) {
+        bestMatch = btn;
+        bestLength = fullName.length;
+      }
+    });
+
+    return bestMatch;
+  }
+
+  async function deleteUserFromChat(commandText) {
+    const matchedButton = findDeleteButtonFromCommand(commandText);
+    if (!matchedButton) {
+      return false;
+    }
+
+    matchedButton.click();
+    return true;
+  }
+
+  window.chatbotUserActions = {
+    openAddModalFromCommand: openAddUserModalFromChat,
+    deleteUserFromCommand: deleteUserFromChat,
+  };
+
   document.querySelectorAll('.delete-user-btn').forEach(btn => {
     btn.addEventListener('click', async function(e) {
       e.preventDefault();
@@ -1111,6 +1173,257 @@ function closeQr() {
     document.getElementById('qrModal').style.display = 'none';
 }
 </script>
+
+<!-- Reply to Complaint Modal -->
+<div id="replyComplaintModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2] dark:bg-[#173901]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Reply to Complaint</h2>
+        <p class="text-sm text-on-surface-variant mt-1" id="replyComplaintSubtitle">Send email response to user</p>
+      </div>
+      <button id="closeReplyModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="replyComplaintForm" class="p-8 space-y-6">
+      <input type="hidden" id="replyComplaintId" name="complaint_id" value="">
+      
+      <!-- Complaint Details -->
+      <div class="bg-primary/5 border border-primary/20 rounded-xl p-4">
+        <p class="text-sm font-semibold text-primary mb-2">Complaint Summary</p>
+        <p class="text-sm font-bold text-primary mb-1" id="replyComplaintTitle"></p>
+        <p class="text-xs text-on-surface-variant" id="replyComplaintUser"></p>
+      </div>
+
+      <!-- Reply Message -->
+      <div>
+        <label for="replyMessage" class="block font-semibold text-primary mb-2">Your Response</label>
+        <textarea 
+          id="replyMessage" 
+          name="reply_message" 
+          class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors resize-none" 
+          placeholder="Write your response to the user's complaint..." 
+          rows="6"></textarea>
+        <p class="text-xs text-on-surface-variant mt-1">Minimum 10 characters, Maximum 5000 characters</p>
+        <div class="error-message-reply" id="replyMessageError"></div>
+      </div>
+
+      <!-- Character count -->
+      <div class="text-right">
+        <span class="text-xs text-on-surface-variant">
+          <span id="charCount">0</span> / 5000 characters
+        </span>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelReplyBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" id="submitReplyBtn" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined" id="submitReplyIcon">send</span>
+          <span id="submitReplyText">Send Reply</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reply Modal Styles -->
+<style>
+  .error-message-reply {
+    color: #ba1a1a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  #replyMessage.error-field {
+    border-color: #ba1a1a !important;
+    background-color: rgba(186, 26, 26, 0.05);
+  }
+</style>
+
+<!-- Reply to Complaint Script -->
+<script>
+  const replyComplaintModal = document.getElementById('replyComplaintModal');
+  const replyComplaintForm = document.getElementById('replyComplaintForm');
+  const closeReplyModalBtn = document.getElementById('closeReplyModalBtn');
+  const cancelReplyBtn = document.getElementById('cancelReplyBtn');
+  const replyMessage = document.getElementById('replyMessage');
+  const charCount = document.getElementById('charCount');
+
+  // Character counter
+  if (replyMessage) {
+    replyMessage.addEventListener('input', function() {
+      charCount.textContent = this.value.length;
+    });
+  }
+
+  // Reply button handlers
+  document.querySelectorAll('.reply-complaint-btn').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      const complaintId = this.getAttribute('data-complaint-id');
+      const userEmail = this.getAttribute('data-user-email');
+      const complaintTitle = this.getAttribute('data-complaint-title');
+
+      if (!complaintId) {
+        alert('Error: Complaint ID not found');
+        return;
+      }
+
+      // Get complaint details from row
+      const row = document.getElementById('complaint-' + complaintId);
+      const titleCell = row.querySelector('td:nth-child(1)');
+      const userCell = row.querySelector('td:nth-child(4)');
+
+      // Fill modal
+      document.getElementById('replyComplaintId').value = complaintId;
+      document.getElementById('replyComplaintTitle').textContent = titleCell ? titleCell.textContent.trim() : 'Complaint';
+      document.getElementById('replyComplaintUser').textContent = 'To: ' + (userEmail || 'User');
+      document.getElementById('replyMessage').value = '';
+      charCount.textContent = '0';
+
+      // Clear errors
+      document.getElementById('replyMessage').classList.remove('error-field');
+      document.getElementById('replyMessageError').textContent = '';
+
+      // Open modal
+      replyComplaintModal.classList.remove('hidden');
+    });
+  });
+
+  // Close modal handlers
+  closeReplyModalBtn.addEventListener('click', function() {
+    replyComplaintModal.classList.add('hidden');
+  });
+
+  cancelReplyBtn.addEventListener('click', function() {
+    replyComplaintModal.classList.add('hidden');
+  });
+
+  // Close on backdrop click
+  replyComplaintModal.addEventListener('click', function(e) {
+    if (e.target === replyComplaintModal) {
+      replyComplaintModal.classList.add('hidden');
+    }
+  });
+
+  // Form submission
+  replyComplaintForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.getElementById('replyMessage').classList.remove('error-field');
+    document.getElementById('replyMessageError').textContent = '';
+
+    // Get form data
+    const complaintId = document.getElementById('replyComplaintId').value;
+    const message = replyMessage.value.trim();
+
+    // Validation
+    if (!complaintId) {
+      alert('Error: Complaint ID not found');
+      return;
+    }
+
+    if (!message) {
+      document.getElementById('replyMessage').classList.add('error-field');
+      document.getElementById('replyMessageError').textContent = 'Reply message is required';
+      return;
+    }
+
+    if (message.length < 10) {
+      document.getElementById('replyMessage').classList.add('error-field');
+      document.getElementById('replyMessageError').textContent = 'Reply message must be at least 10 characters long';
+      return;
+    }
+
+    // Show loading state
+    const submitBtn = document.getElementById('submitReplyBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span><span>Sending...</span>';
+
+    try {
+      const response = await fetch('{{ path('elfirma_reply_complaint') }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          complaint_id: complaintId,
+          reply_message: message
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Show success message
+        Swal.fire({
+          title: 'Success!',
+          text: data.message || 'Reply sent successfully!',
+          icon: 'success',
+          confirmButtonColor: '#43682b'
+        }).then(() => {
+          // Close modal and reset form
+          replyComplaintModal.classList.add('hidden');
+          replyComplaintForm.reset();
+          charCount.textContent = '0';
+          
+          // Update status in table if needed
+          const row = document.getElementById('complaint-' + complaintId);
+          if (row) {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            if (statusCell) {
+              statusCell.innerHTML = '<span class="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">Responded</span>';
+            }
+          }
+        });
+      } else {
+        // Show error message
+        if (data.errors) {
+          for (const [field, errorMsg] of Object.entries(data.errors)) {
+            if (field === 'reply_message') {
+              document.getElementById('replyMessage').classList.add('error-field');
+              document.getElementById('replyMessageError').textContent = errorMsg;
+            }
+          }
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: data.message || 'An error occurred while sending the reply',
+            icon: 'error',
+            confirmButtonColor: '#ba1a1a'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'An error occurred while sending the reply',
+        icon: 'error',
+        confirmButtonColor: '#ba1a1a'
+      });
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  });
+</script>
+
+<script>
+  window.chatbotContext = 'users';
+</script>
+{{ include('elfirma/_chatbot.html.twig') }}
 
 {{ include('elfirma/_nav_routes.html.twig') }}
 </body></html>

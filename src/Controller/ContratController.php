@@ -6,20 +6,34 @@ namespace App\Controller;
 
 use App\Entity\Contrat;
 use App\Entity\Fournisseur;
+use App\Service\ContractPdfService;
+use App\Service\ImageToTextService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class ContratController extends AbstractController
 {
     #[Route('/elfirma/contracts', name: 'contrat_page', methods: ['GET'], priority: 10)]
-    public function page(EntityManagerInterface $entityManager): Response
+    public function page(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
         $contratRepo = $entityManager->getRepository(Contrat::class);
         $allContracts = $contratRepo->findAll();
+        $contractsQueryBuilder = $contratRepo->createQueryBuilder('c')
+            ->orderBy('c.id_contrat', 'DESC');
+
+        $contracts = $paginator->paginate(
+            $contractsQueryBuilder,
+            max(1, (int) $request->query->get('contractPage', 1)),
+            10,
+            ['pageParameterName' => 'contractPage']
+        );
 
         // Calculate contract statistics
         $activeCount = 0;
@@ -55,7 +69,7 @@ final class ContratController extends AbstractController
         }
 
         return $this->render('elfirma/contracts.html.twig', [
-            'contracts' => $allContracts,
+            'contracts' => $contracts,
             'contractStats' => [
                 'active' => $activeCount,
                 'expired' => $expiredCount,
@@ -83,6 +97,7 @@ final class ContratController extends AbstractController
         $dateFin = $request->request->get('date_fin', '');
         $type = trim($request->request->get('type', ''));
         $statut = trim($request->request->get('statut', ''));
+        $generatedPdfFile = $request->request->get('generated_pdf_file', '');
         $pdfFile = $request->files->get('pdf_file');
         $pdfPath = null;
 
@@ -132,7 +147,7 @@ final class ContratController extends AbstractController
             $errors['statut'] = 'Please select a valid status';
         }
 
-        // Upload PDF if present
+        // Handle PDF: either uploaded file or generated PDF
         if ($pdfFile) {
             $fileName = md5(uniqid()) . '.' . $pdfFile->guessExtension();
             if (!in_array($pdfFile->guessExtension(), ['pdf', 'PDF'])) {
@@ -148,6 +163,9 @@ final class ContratController extends AbstractController
                     $errors['pdf_file'] = 'Error uploading the PDF file';
                 }
             }
+        } elseif ($generatedPdfFile) {
+            // Use the generated PDF file
+            $pdfPath = $generatedPdfFile;
         }
 
         // If there are errors, return them
@@ -199,6 +217,7 @@ final class ContratController extends AbstractController
     public function getSupplierContracts(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $supplierId = $request->query->get('supplier_id', '');
+        $sort = (string) $request->query->get('sort', 'date-desc');
 
         if (!$supplierId) {
             return new JsonResponse([
@@ -208,21 +227,42 @@ final class ContratController extends AbstractController
         }
 
         try {
+            $allowedSort = [
+                'date-desc' => ['c.date_debut_f', 'DESC'],
+                'date-asc' => ['c.date_debut_f', 'ASC'],
+                'status' => ['c.statut_c_f', 'ASC'],
+                'type-asc' => ['c.type_c_f', 'ASC'],
+                'type-desc' => ['c.type_c_f', 'DESC'],
+            ];
+
+            if (!isset($allowedSort[$sort])) {
+                $sort = 'date-desc';
+            }
+
+            [$sortField, $sortDirection] = $allowedSort[$sort];
+
+            // Use QueryBuilder for more explicit query
             $contratRepo = $entityManager->getRepository(Contrat::class);
-            $contracts = $contratRepo->findBy(['fournisseur' => $supplierId]);
+            $queryBuilder = $contratRepo->createQueryBuilder('c')
+                ->where('c.fournisseur = :supplier_id')
+                ->setParameter('supplier_id', $supplierId)
+                ->orderBy($sortField, $sortDirection)
+                ->addOrderBy('c.id_contrat', 'DESC');
+
+            $contracts = $queryBuilder->getQuery()->getResult();
 
             $contractsData = [];
             foreach ($contracts as $contract) {
                 $pdfFile = $contract->getPdfFile();
                 // Remove /public/ prefix if it exists (for old entries)
-                if (strpos($pdfFile, 'public/') === 0) {
+                if ($pdfFile && strpos($pdfFile, 'public/') === 0) {
                     $pdfFile = substr($pdfFile, 7);
                 }
                 $contractsData[] = [
                     'id' => $contract->getIdContrat(),
                     'type' => $contract->getTypeCF(),
-                    'date_debut' => $contract->getDateDebutF()->format('Y-m-d'),
-                    'date_fin' => $contract->getDateFinF()->format('Y-m-d'),
+                    'date_debut' => $contract->getDateDebutF() ? $contract->getDateDebutF()->format('Y-m-d') : null,
+                    'date_fin' => $contract->getDateFinF() ? $contract->getDateFinF()->format('Y-m-d') : null,
                     'statut' => $contract->getStatutCF(),
                     'pdf_file' => $pdfFile
                 ];
@@ -636,6 +676,245 @@ final class ContratController extends AbstractController
                 'success' => false,
                 'message' => 'Error deleting contract: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    #[Route('/elfirma/contract/generate-pdf', name: 'generate_contract_pdf', methods: ['POST'])]
+    public function generateContractPdf(
+        Request $request,
+        ContractPdfService $pdfService,
+        EntityManagerInterface $entityManager
+    ): Response {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/contracts/';
+
+            // Validate required fields
+            if (!isset($data['supplier_id']) || !isset($data['date_debut']) || !isset($data['date_fin'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Missing required fields: supplier_id, date_debut, date_fin'
+                ], 400);
+            }
+
+            // Get supplier details
+            $supplier = $entityManager->getRepository(Fournisseur::class)->find($data['supplier_id']);
+            if (!$supplier) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Supplier not found'
+                ], 404);
+            }
+
+            // Validate dates
+            try {
+                $dateDebut = new \DateTime($data['date_debut']);
+                $dateFin = new \DateTime($data['date_fin']);
+
+                if ($dateFin <= $dateDebut) {
+                    return new JsonResponse([
+                        'success' => false,
+                        'message' => 'End date must be after start date'
+                    ], 400);
+                }
+            } catch (\Exception $e) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Invalid date format'
+                ], 400);
+            }
+
+            // Prepare data for PDF
+            $pdfData = [
+                'supplier_id' => $data['supplier_id'],
+                'supplier_name' => $supplier->getTypeF() ?? 'Unknown Supplier',
+                'date_debut' => $data['date_debut'],
+                'date_fin' => $data['date_fin'],
+                'type' => $data['type'] ?? 'N/A',
+                'statut' => $data['statut'] ?? 'N/A'
+            ];
+
+            // Generate PDF
+            $pdfContent = $pdfService->generateContractPdf($pdfData);
+
+            // Create upload directory if it doesn't exist
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            // Save PDF file with hash name
+            $fileName = md5(uniqid()) . '.pdf';
+            $filePath = $uploadDir . $fileName;
+            file_put_contents($filePath, $pdfContent);
+
+            // Store path for database
+            $pdfDbPath = 'uploads/contracts/' . $fileName;
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'PDF generated successfully',
+                'pdf_file' => $pdfDbPath,
+                'pdf_filename' => $fileName
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Error generating PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/elfirma/contract/image-to-pdf', name: 'elfirma_image_to_pdf', methods: ['POST'])]
+    public function convertImageToPdf(
+        Request $request,
+        ImageToTextService $imageToTextService,
+        ContractPdfService $pdfService,
+        LoggerInterface $logger
+    ): JsonResponse {
+        try {
+            $logger->info('=== IMAGE TO PDF CONVERSION STARTED ===');
+
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/contracts/';
+            $tempDir = $this->getParameter('kernel.project_dir') . '/var/temp/';
+
+            // Get image file from form data
+            $imageFile = $request->files->get('image_file');
+            $supplierId = $request->request->get('supplier_id', '');
+            $supplieName = $request->request->get('supplier_name', 'Unknown Supplier');
+
+            $logger->info('Received request - Supplier: ' . $supplieName . ', Has image: ' . ($imageFile ? 'YES' : 'NO'));
+
+            // Validate image file exists
+            if (!$imageFile) {
+                $logger->error('No image file provided');
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Please select an image file to extract text from.'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Create temp directory if it doesn't exist
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            // Validate image file type
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+            $fileExtension = strtolower($imageFile->guessExtension());
+
+            if (!in_array($fileExtension, $allowedExtensions)) {
+                $logger->error('Invalid file type: ' . $fileExtension);
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Only image files (JPG, PNG, GIF, BMP, WebP) are allowed.'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Validate file size (max 5MB)
+            $maxFileSize = 5 * 1024 * 1024;
+            if ($imageFile->getSize() > $maxFileSize) {
+                $logger->error('File too large: ' . ($imageFile->getSize() / 1024 / 1024) . 'MB');
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Image file must be smaller than 5MB.'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Save image temporarily
+            $tempImageName = md5(uniqid() . time()) . '.' . $fileExtension;
+            $tempImagePath = $tempDir . $tempImageName;
+
+            try {
+                $imageFile->move($tempDir, $tempImageName);
+                $logger->info('Image saved temporarily to: ' . $tempImagePath);
+            } catch (\Exception $e) {
+                $logger->error('Failed to save temp image: ' . $e->getMessage());
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Failed to process image file.'
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            try {
+                // Extract text from image using API Ninjas
+                $logger->info('Starting text extraction via API Ninjas...');
+                $extractionResult = $imageToTextService->extractTextFromImage($tempImagePath);
+
+                if (!$extractionResult['success']) {
+                    $logger->error('Extraction failed: ' . $extractionResult['error']);
+                    @unlink($tempImagePath);
+                    return new JsonResponse([
+                        'success' => false,
+                        'error' => $extractionResult['error']
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+
+                $extractedText = $extractionResult['text'];
+                $logger->info('Extraction result - Text length: ' . strlen($extractedText) . ' characters');
+
+                // Check if any text was actually extracted
+                if (empty(trim($extractedText))) {
+                    @unlink($tempImagePath);
+                    $logger->warning('API returned empty text for image');
+                    return new JsonResponse([
+                        'success' => false,
+                        'error' => 'No text found in the image. Please ensure the image contains clear, readable text.'
+                    ], Response::HTTP_OK);
+                }
+
+                // Clean up temp image
+                @unlink($tempImagePath);
+                $logger->info('Temporary image deleted');
+
+                // Generate PDF from extracted text
+                $logger->info('Generating PDF from extracted text...');
+                $pdfContent = $pdfService->generatePdfFromExtractedText([
+                    'supplier_name' => $supplieName,
+                    'extracted_text' => $extractedText
+                ]);
+                $logger->info('PDF generated successfully');
+
+                // Create upload directory if needed
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                // Save PDF file
+                $pdfFileName = md5(uniqid() . time()) . '.pdf';
+                $pdfPath = $uploadDir . $pdfFileName;
+                file_put_contents($pdfPath, $pdfContent);
+                $logger->info('PDF saved to: ' . $pdfPath);
+
+                $pdfDbPath = 'uploads/contracts/' . $pdfFileName;
+
+                $logger->info('=== IMAGE TO PDF CONVERSION COMPLETED SUCCESSFULLY ===');
+
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Text extracted and PDF generated successfully.',
+                    'extracted_text' => $extractedText,
+                    'pdf_file' => $pdfDbPath,
+                    'pdf_filename' => $pdfFileName
+                ]);
+
+            } catch (\Exception $e) {
+                @unlink($tempImagePath);
+                $logger->error('Error during extraction/PDF generation: ' . $e->getMessage());
+
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'An error occurred: ' . $e->getMessage()
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+        } catch (\Exception $e) {
+            $logger->error('EXCEPTION in convertImageToPdf: ' . $e->getMessage());
+            $logger->error('File: ' . $e->getFile() . ':' . $e->getLine());
+
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'An unexpected error occurred.'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
