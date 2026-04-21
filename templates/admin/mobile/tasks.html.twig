@@ -1,0 +1,100 @@
+{% extends 'baseback.html.twig' %}
+
+{% block title %}Work Planner - Elfirma{% endblock %}
+
+{% block body %}
+<main class="flex-1 min-h-screen md:ml-64 bg-[#fbfbe2]">
+    <header class="sticky top-0 z-30 bg-[#fbfbe2]/80 backdrop-blur-xl border-b border-[#e4e4cc] px-8 py-5 flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-black text-[#0a2200]">Work Planner</h2>
+            <p class="text-sm text-[#5f6658]">Create and follow up assignments for your field team.</p>
+        </div>
+        <nav class="flex gap-2 text-sm font-semibold">
+            <a href="{{ path('admin_mobile_employees') }}" class="px-4 py-2 rounded-full bg-[#e4e4cc] text-[#0a2200]">Employees</a>
+            <a href="{{ path('admin_mobile_tasks') }}" class="px-4 py-2 rounded-full bg-[#0a2200] text-white">Tasks</a>
+            <a href="{{ path('admin_mobile_reports') }}" class="px-4 py-2 rounded-full bg-[#e4e4cc] text-[#0a2200]">Reports</a>
+        </nav>
+    </header>
+
+    <section class="p-8 space-y-6">
+        {% for message in app.flashes('success') %}
+            <div class="p-4 rounded-lg border border-green-300 bg-green-100 text-green-800">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="p-4 rounded-lg border border-red-300 bg-red-100 text-red-800">{{ message }}</div>
+        {% endfor %}
+
+        <div class="bg-white rounded-2xl shadow p-6">
+            <h3 class="text-xl font-bold text-[#0a2200] mb-4">Create Assignment</h3>
+            <form method="post" action="{{ path('admin_mobile_task_create') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input name="title" type="text" required placeholder="Task title" class="px-3 py-2 border border-[#c3c9b9] rounded-lg">
+                <select name="assignee_id" required class="px-3 py-2 border border-[#c3c9b9] rounded-lg">
+                    <option value="">Assign employee</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.idU }}">{{ employee.prenomU }} {{ employee.nomU }}</option>
+                    {% endfor %}
+                </select>
+                <select name="priority" class="px-3 py-2 border border-[#c3c9b9] rounded-lg">
+                    <option value="normal">Normal priority</option>
+                    <option value="high">High priority</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+                <input name="due_date" type="date" class="px-3 py-2 border border-[#c3c9b9] rounded-lg">
+                <textarea name="description" required placeholder="Task description" class="md:col-span-2 px-3 py-2 border border-[#c3c9b9] rounded-lg" rows="3"></textarea>
+                <button type="submit" class="md:col-span-2 px-5 py-3 rounded-xl bg-[#0a2200] text-white font-semibold hover:opacity-90">Create Task</button>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+            <h3 class="text-xl font-bold text-[#0a2200] mb-4">Current Tasks</h3>
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="border-b border-[#e4e4cc] text-left">
+                        <th class="py-3">Title</th>
+                        <th class="py-3">Employee</th>
+                        <th class="py-3">Priority</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Due Date</th>
+                        <th class="py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                        <tr class="border-b border-[#f0f0df] align-top">
+                            <td class="py-3">
+                                <div class="font-semibold">{{ task.title|default('Untitled') }}</div>
+                                <div class="text-[#5f6658] text-xs mt-1">{{ task.description|default('') }}</div>
+                            </td>
+                            <td class="py-3">{{ task.assigned_employee_name|default('Unknown') }}</td>
+                            <td class="py-3">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[#e6f3df] text-[#2d5f1f]">{{ task.priority|default('normal')|capitalize }}</span>
+                            </td>
+                            <td class="py-3">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[#eef1e7] text-[#3e4735]">{{ task.status|default('assigned')|replace({'_': ' '})|capitalize }}</span>
+                            </td>
+                            <td class="py-3">{{ task.due_date|default('No due date') }}</td>
+                            <td class="py-3 space-y-2">
+                                <form method="post" action="{{ path('admin_mobile_task_status', {taskId: task.id}) }}" class="flex gap-2">
+                                    <select name="status" class="px-2 py-1 border border-[#c3c9b9] rounded">
+                                        <option value="assigned" {% if task.status|default('') == 'assigned' %}selected{% endif %}>assigned</option>
+                                        <option value="in_progress" {% if task.status|default('') == 'in_progress' %}selected{% endif %}>in_progress</option>
+                                        <option value="done" {% if task.status|default('') == 'done' %}selected{% endif %}>done</option>
+                                    </select>
+                                    <button type="submit" class="px-3 py-1 rounded bg-[#43682b] text-white">Update</button>
+                                </form>
+                                <form method="post" action="{{ path('admin_mobile_task_delete', {taskId: task.id}) }}">
+                                    <button type="submit" class="px-3 py-1 rounded bg-[#b3261e] text-white">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="py-6 text-center text-[#5f6658]">No tasks created yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+{% endblock %}

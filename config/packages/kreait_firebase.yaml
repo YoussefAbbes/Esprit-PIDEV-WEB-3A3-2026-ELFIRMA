@@ -1,0 +1,7 @@
+kreait_firebase:
+    projects:
+        elfirma_mobile:
+            credentials: '%env(default::FIREBASE_CREDENTIALS_PATH)%'
+            database_uri: '%env(default::FIREBASE_DATABASE_URI)%'
+            default: true
+            public: true

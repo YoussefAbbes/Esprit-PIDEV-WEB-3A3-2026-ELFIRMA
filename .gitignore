@@ -18,3 +18,6 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# Firebase Admin SDK local credentials
+/config/firebase_credentials.json

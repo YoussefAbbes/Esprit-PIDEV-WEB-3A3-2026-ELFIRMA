@@ -1,0 +1,60 @@
+{% extends 'baseback.html.twig' %}
+
+{% block title %}Team Reports - Elfirma{% endblock %}
+
+{% block body %}
+<main class="flex-1 min-h-screen md:ml-64 bg-[#fbfbe2]">
+    <header class="sticky top-0 z-30 bg-[#fbfbe2]/80 backdrop-blur-xl border-b border-[#e4e4cc] px-8 py-5 flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-black text-[#0a2200]">Team Reports</h2>
+            <p class="text-sm text-[#5f6658]">Review updates submitted by the field team.</p>
+        </div>
+        <nav class="flex gap-2 text-sm font-semibold">
+            <a href="{{ path('admin_mobile_employees') }}" class="px-4 py-2 rounded-full bg-[#e4e4cc] text-[#0a2200]">Employees</a>
+            <a href="{{ path('admin_mobile_tasks') }}" class="px-4 py-2 rounded-full bg-[#e4e4cc] text-[#0a2200]">Tasks</a>
+            <a href="{{ path('admin_mobile_reports') }}" class="px-4 py-2 rounded-full bg-[#0a2200] text-white">Reports</a>
+        </nav>
+    </header>
+
+    <section class="p-8 space-y-6">
+        {% for message in app.flashes('success') %}
+            <div class="p-4 rounded-lg border border-green-300 bg-green-100 text-green-800">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="p-4 rounded-lg border border-red-300 bg-red-100 text-red-800">{{ message }}</div>
+        {% endfor %}
+
+        <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+            <h3 class="text-xl font-bold text-[#0a2200] mb-4">Recent Reports</h3>
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="border-b border-[#e4e4cc] text-left">
+                        <th class="py-3">Employee</th>
+                        <th class="py-3">Title</th>
+                        <th class="py-3">Description</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Reported At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                        <tr class="border-b border-[#f0f0df] align-top">
+                            <td class="py-3">{{ report.employee_name|default(report.reported_by_name|default('Team Member')) }}</td>
+                            <td class="py-3">{{ report.title|default(report.type|default('Report')) }}</td>
+                            <td class="py-3 max-w-lg">{{ report.description|default(report.message|default('-')) }}</td>
+                            <td class="py-3">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[#eef1e7] text-[#3e4735]">{{ report.status|default('new')|replace({'_': ' '})|capitalize }}</span>
+                            </td>
+                            <td class="py-3">{{ report.reported_at|default(report.created_at|default('-')) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="py-6 text-center text-[#5f6658]">No reports available yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+{% endblock %}
