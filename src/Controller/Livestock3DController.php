@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\LivestockRepository;
-use App\Service\Livestock3DGenerationService;
+use App\Service\Tripo3DGenerationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,23 +16,27 @@ final class Livestock3DController extends AbstractController
 {
     #[Route('/elfirma/3d-conception', name: 'elfirma_3d_conception', methods: ['GET'])]
     public function page(
-        Livestock3DGenerationService $generationService,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        Tripo3DGenerationService $tripo3DGenerationService
     ): Response
     {
         return $this->render('elfirma/Livestock&Animal Management/conception_3d.html.twig', [
-            'is_3d_configured' => $generationService->isConfigured(),
             'livestock_list' => $livestockRepository->findAllForManagement(),
+            'is_tripo_configured' => $tripo3DGenerationService->isConfigured(),
         ]);
     }
 
     #[Route('/api/livestock/3d/generate', name: 'api_livestock_3d_generate', methods: ['POST'])]
     public function generate(
         Request $request,
-        Livestock3DGenerationService $generationService,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        Tripo3DGenerationService $tripo3DGenerationService
     ): JsonResponse
     {
+        // ✅ FIX : augmente le timeout PHP pour la génération 3D (peut prendre 2-3 minutes)
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
+
         if (!$this->isCsrfTokenValid('livestock_3d_generate', (string) $request->request->get('_token', ''))) {
             return $this->json([
                 'ok' => false,
@@ -40,10 +44,10 @@ final class Livestock3DController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if (!$generationService->isConfigured()) {
+        if (!$tripo3DGenerationService->isConfigured()) {
             return $this->json([
                 'ok' => false,
-                'message' => 'Configuration API 3D manquante sur le serveur.',
+                'message' => 'Cle API Tripo3D manquante dans le serveur.',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -51,7 +55,7 @@ final class Livestock3DController extends AbstractController
         if ($livestockId <= 0) {
             return $this->json([
                 'ok' => false,
-                'message' => 'ID livestock invalide.',
+                'message' => 'Livestock invalide.',
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -63,33 +67,16 @@ final class Livestock3DController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $textureResolution = trim((string) $request->request->get('texture_resolution', '2048'));
-        $remesh = trim((string) $request->request->get('remesh', 'none'));
         $renderMode = strtolower(trim((string) $request->request->get('render_mode', 'signature')));
-
-        if (!in_array($textureResolution, ['512', '1024', '2048'], true)) {
-            $textureResolution = '2048';
-        }
-
-        if (!in_array($remesh, ['none', 'triangle', 'quad'], true)) {
-            $remesh = 'none';
-        }
-
         if (!in_array($renderMode, ['eco', 'balanced', 'ultra', 'cinematic', 'signature'], true)) {
             $renderMode = 'signature';
         }
 
-        $result = $generationService->generateFromLivestock(
-            $livestock,
-            $textureResolution !== '' ? $textureResolution : null,
-            $remesh !== '' ? $remesh : null,
-            $renderMode !== '' ? $renderMode : null
-        );
-
+        $result = $tripo3DGenerationService->generateFromLivestock($livestock, $renderMode);
         if ($result === null) {
             return $this->json([
                 'ok' => false,
-                'message' => $generationService->getLastError() ?? 'Echec de la generation 3D.',
+                'message' => $tripo3DGenerationService->getLastError() ?? 'Generation Tripo3D echouee.',
             ], Response::HTTP_BAD_GATEWAY);
         }
 
@@ -98,53 +85,12 @@ final class Livestock3DController extends AbstractController
             'message' => 'Habitat 3D genere avec succes.',
             'livestock_id' => (int) ($livestock['id_elevage'] ?? 0),
             'livestock_type' => (string) ($livestock['type_elevage'] ?? ''),
-            'model_url' => $result['model_url'],
-            'preview_url' => $result['preview_url'],
-            'file_name' => $result['file_name'],
-            'file_size_bytes' => $result['file_size_bytes'],
-            'prompt' => $result['prompt'],
-            'render_mode' => $result['render_mode'] ?? $renderMode,
-            'generation_options' => $result['three_d_options'] ?? null,
-        ]);
-    }
-
-    #[Route('/api/livestock/3d/balance', name: 'api_livestock_3d_balance', methods: ['POST'])]
-    public function balance(
-        Request $request,
-        Livestock3DGenerationService $generationService
-    ): JsonResponse
-    {
-        if (!$this->isCsrfTokenValid('livestock_3d_balance', (string) $request->request->get('_token', ''))) {
-            return $this->json([
-                'ok' => false,
-                'message' => 'Token CSRF invalide.',
-            ], Response::HTTP_FORBIDDEN);
-        }
-
-        if (!$generationService->isConfigured()) {
-            return $this->json([
-                'ok' => false,
-                'message' => 'Configuration API 3D manquante sur le serveur.',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        $balance = $generationService->fetchBalance();
-        if ($balance === null) {
-            return $this->json([
-                'ok' => false,
-                'message' => $generationService->getLastError() ?? 'Echec de recuperation du solde API.',
-            ], Response::HTTP_BAD_GATEWAY);
-        }
-
-        $credits = (float) ($balance['credits'] ?? 0.0);
-
-        return $this->json([
-            'ok' => true,
-            'credits' => $credits,
-            'has_credits' => $credits > 0,
-            'message' => $credits > 0
-                ? 'Credits disponibles pour la generation 3D.'
-                : 'Credits insuffisants pour la generation 3D.',
+            'model_url' => (string) ($result['model_url'] ?? ''),
+            'preview_url' => (string) ($result['preview_url'] ?? ''),
+            'file_name' => (string) ($result['file_name'] ?? 'livestock.glb'),
+            'file_size_bytes' => (int) ($result['file_size_bytes'] ?? 0),
+            'prompt' => (string) ($result['prompt'] ?? ''),
+            'render_mode' => (string) ($result['render_mode'] ?? $renderMode),
         ]);
     }
 }
