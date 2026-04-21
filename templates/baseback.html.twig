@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html class="light" lang="fr">
 <head>
+    {{ importmap('app') }}
     <meta charset="UTF-8">
 
     <title>{% block title %}Elfirma{% endblock %}</title>
@@ -53,10 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
 </aside>
 
 <!-- ✅ NAVBAR SCRIPT -->
-{{ include('elfirma/_nav_routes.html.twig') }}
-
+{% if app.session.get('user_role') == 'admin' %}
+    {{ include('elfirma/_nav_routes.html.twig') }}
+{% endif %}
 <!-- ✅ CONTENT -->
+
 {% block body %}{% endblock %}
+
 
 </body>
 

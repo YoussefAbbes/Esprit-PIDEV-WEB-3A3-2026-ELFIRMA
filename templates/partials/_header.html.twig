@@ -34,6 +34,18 @@
         {% if app.session.get('user_role') == 'admin' %}
   <li><a href="{{ path('app_admin_panel_entry') }}" class="nav-admin-link">Admin Panel</a></li>
 {% endif %}
+          <li>
+            <a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">
+              Admin Panel
+            </a>
+          </li>
+        {% elseif app.session.get('user_role') == 'employee' %}
+          <li>
+            <a href="{{ path('elfirma_page', { module: 'employee_maintenances' }) }}" class="nav-admin-link">
+              Employee Panel
+            </a>
+          </li>
+        {% endif %}
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>

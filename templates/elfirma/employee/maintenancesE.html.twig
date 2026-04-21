@@ -1,0 +1,437 @@
+{% extends 'baseback.html.twig' %}
+
+{% block title %}Mes Maintenances{% endblock %}
+
+{% block body %}
+
+<style>
+#calendar {
+    max-width: 900px;
+    margin: 30px auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* HEADER */
+.fc-toolbar-title {
+    font-size: 20px !important;
+    font-weight: bold !important;
+    color: #166534 !important;
+}
+
+/* boutons */
+.fc-button {
+    background: #16a34a !important;
+    border: none !important;
+    border-radius: 8px !important;
+}
+
+.fc-button:hover {
+    background: #15803d !important;
+}
+
+.fc-button-active {
+    background: #14532d !important;
+}
+
+/* jours */
+.fc-col-header-cell {
+    background: #f0fdf4 !important;
+    color: #166534 !important;
+}
+
+/* aujourd’hui */
+.fc-day-today {
+    background: #dcfce7 !important;
+}
+
+/* événements */
+.fc-event {
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 3px !important;
+    font-size: 12px !important;
+}
+</style>
+
+<div class="ml-72 p-10 min-h-screen bg-gradient-to-br from-green-50 via-white to-gray-100">
+
+<div class="flex justify-end mb-4">
+
+    <a href="{{ path('app_pages_home') }}"
+       class="flex items-center gap-2 px-4 py-2 
+              bg-gradient-to-r from-[#116530] to-[#0d4c23] 
+              text-white font-semibold rounded-full 
+              hover:shadow-xl transition-all hover:-translate-y-1 
+              shadow-lg text-sm">
+
+        <span class="material-symbols-outlined text-lg">
+            language
+        </span>
+
+        Open Website
+    </a>
+
+</div>
+
+    <!-- HEADER -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-extrabold text-green-700 mb-2">
+            Mes Maintenances
+        </h2>
+        <p class="text-gray-500">
+            {{ maintenances|length }} maintenance(s)
+        </p>
+    </div>
+
+    <!-- STATS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+        <div class="bg-green-100 rounded-xl p-5 shadow">
+            <p>Total</p>
+            <h2 id="stat-m-total" class="text-xl font-bold text-green-700">0</h2>
+        </div>
+
+        <div class="bg-blue-100 rounded-xl p-5 shadow">
+            <p>Coût total</p>
+            <h2 id="stat-m-cout" class="text-xl font-bold text-blue-700">0</h2>
+        </div>
+
+        <div class="bg-purple-100 rounded-xl p-5 shadow">
+            <p>Derniers 6 mois</p>
+            <h2 id="stat-m-6months" class="text-xl font-bold text-purple-700">0</h2>
+        </div>
+
+    </div>
+
+    <!-- SEARCH + FILTER -->
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+
+        <!-- SEARCH -->
+        <div class="relative flex-1 min-w-[200px]">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">
+                search
+            </span>
+
+            <input type="text" id="searchMaintenance"
+                   placeholder="Rechercher..."
+                   class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+                          focus:ring-2 focus:ring-green-500 outline-none transition">
+        </div>
+
+        <!-- PRIORITE -->
+        <select id="filterPriorite"
+                class="min-w-[140px] px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+                   focus:ring-2 focus:ring-green-500 transition">
+
+            <option value="">Priorité</option>
+            <option value="basse">🟢 basse</option>
+            <option value="moyenne">🟡 moyenne</option>
+            <option value="haute">🔴 haute</option>
+            <option value="urgente">🔥 urgente</option>
+
+        </select>
+
+        <!-- SORT -->
+        <select id="sortMaintenance"
+                class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 backdrop-blur 
+                       focus:ring-2 focus:ring-green-500 transition">
+
+            <option value="date-desc">📅 Date récente</option>
+            <option value="date-asc">📅 Date ancienne</option>
+            <option value="cout-desc">💰 Coût élevé</option>
+            <option value="cout-asc">💰 Coût faible</option>
+
+        </select>
+
+        <!-- RESET -->
+        <button onclick="resetMaintenanceFilters()"
+                class="p-2 rounded-lg hover:bg-gray-200 transition">
+
+            <span class="material-symbols-outlined text-gray-600 text-[20px]">
+                refresh
+            </span>
+
+        </button>
+
+    </div>
+
+    <div class="flex justify-end mt-4 mb-4">
+
+    <a href="{{ path('maintenance_pdf') }}"
+       class="flex items-center gap-2 px-5 py-2.5
+              bg-gradient-to-r from-[#116530] to-[#0d4c23]
+              text-white font-semibold rounded-full
+              hover:shadow-xl transition-all hover:-translate-y-1
+              shadow-lg text-sm">
+
+        <span class="material-symbols-outlined text-lg">
+            picture_as_pdf
+        </span>
+
+        Export PDF
+    </a>
+
+</div>
+
+    <!-- TABLE -->
+    <div class="bg-white rounded-xl p-6 shadow">
+
+        <table class="w-full text-left text-sm">
+
+            <thead>
+            <tr class="border-b text-gray-600 uppercase text-xs">
+                <th class="py-3">Type</th>
+                <th>Date</th>
+                <th>Equipement</th>
+                <th>Statut</th>
+                <th>Priorité</th>
+                <th>Coût</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody id="maintenanceTableBody">
+
+            {% for m in maintenances %}
+                <tr class="maintenance-row hover:bg-gray-50 transition"
+                    data-type="{{ m.typeM|lower }}"
+                    data-desc="{{ m.description|lower }}"
+                    data-priorite="{{ m.priorite.value|lower }}"
+                    data-date="{{ m.dateM|date('Y-m-d') }}"
+                    data-cout="{{ m.cout }}">
+
+                    <td class="py-4 font-semibold">{{ m.typeM }}</td>
+                    <td>{{ m.dateM|date('d/m/Y') }}</td>
+                    <td>{{ m.equipement.nomEq }}</td>
+
+                    <td>
+
+{% if m.statut.value == 'planifie' %}
+    <span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
+        Planifié
+    </span>
+
+{% elseif m.statut.value == 'en_cours' %}
+    <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+        En cours
+    </span>
+
+{% elseif m.statut.value == 'termine' %}
+    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
+        Terminé
+    </span>
+
+{% else %}
+    <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+        {{ m.statut.value }}
+    </span>
+{% endif %}
+
+</td>
+
+                    <!-- PRIORITE -->
+                    <td>
+                        <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                            {{ m.priorite.value }}
+                        </span>
+                    </td>
+
+                    <!-- COUT -->
+                    <td class="font-bold text-green-600">
+                        {{ m.cout }} DT
+                    </td>
+
+<td class="flex gap-2 items-center">
+
+    <!-- COMMENCER -->
+    {% if m.statut.value == 'planifie' %}
+        <a href="{{ path('maintenance_start', {id: m.idM}) }}"
+           class="group flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 transition shadow-sm"
+           title="Commencer">
+
+            <span class="material-symbols-outlined text-blue-600 text-[20px] group-hover:scale-110 transition">
+                play_arrow
+            </span>
+
+        </a>
+    {% endif %}
+
+    <!-- TERMINER -->
+    {% if m.statut.value == 'en_cours' %}
+        <a href="{{ path('maintenance_finish', {id: m.idM}) }}"
+           class="group flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 hover:bg-green-100 transition shadow-sm"
+           title="Terminer">
+
+            <span class="material-symbols-outlined text-green-600 text-[20px] group-hover:scale-110 transition">
+                check
+            </span>
+
+        </a>
+    {% endif %}
+
+</td>
+
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-6 text-gray-400">
+                        Aucune maintenance trouvée
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="w-full flex justify-center">
+    <div id="calendar" class="bg-white rounded-2xl p-6 shadow-lg w-full max-w-4xl"></div>
+</div>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<script>
+
+function applyMaintenanceFilters() {
+    const search = document.getElementById('searchMaintenance').value.toLowerCase();
+    const priorite = document.getElementById('filterPriorite').value;
+    const sort = document.getElementById('sortMaintenance').value;
+
+    const rows = Array.from(document.querySelectorAll('.maintenance-row'));
+    let visible = [];
+
+    rows.forEach(row => {
+        const matchSearch = !search || row.dataset.type.includes(search);
+        const matchPriorite = !priorite || row.dataset.priorite === priorite;
+
+        if (matchSearch && matchPriorite) {
+            row.style.display = '';
+            visible.push(row);
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    if (sort) {
+        visible.sort((a, b) => {
+            const [field, dir] = sort.split('-');
+
+            let aVal = a.dataset[field];
+            let bVal = b.dataset[field];
+
+            let result = 0;
+
+            if (field === 'cout') {
+                result = parseFloat(aVal) - parseFloat(bVal);
+            } else if (field === 'date') {
+                result = new Date(aVal) - new Date(bVal);
+            }
+
+            return dir === 'asc' ? result : -result;
+        });
+    }
+
+    const tbody = document.getElementById('maintenanceTableBody');
+    visible.forEach(row => tbody.appendChild(row));
+}
+
+function resetMaintenanceFilters() {
+    document.getElementById('searchMaintenance').value = '';
+    document.getElementById('filterPriorite').value = '';
+    document.getElementById('sortMaintenance').value = 'date-desc';
+
+    document.querySelectorAll('.maintenance-row').forEach(row => {
+        row.style.display = '';
+    });
+}
+
+function calculateMaintenanceStats() {
+    const rows = document.querySelectorAll('.maintenance-row');
+
+    let total = rows.length;
+    let coutTotal = 0;
+    let count6Months = 0;
+
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+    rows.forEach(r => {
+        const cout = parseFloat(r.dataset.cout);
+        const date = new Date(r.dataset.date);
+
+        coutTotal += cout;
+
+        if (date >= sixMonthsAgo) {
+            count6Months++;
+        }
+    });
+
+    document.getElementById('stat-m-total').textContent = total;
+    document.getElementById('stat-m-cout').textContent = coutTotal + ' DT';
+    document.getElementById('stat-m-6months').textContent = count6Months;
+}
+
+
+// ✅ UN SEUL DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function () {
+
+    calculateMaintenanceStats();
+
+    document.getElementById('searchMaintenance').addEventListener('input', applyMaintenanceFilters);
+    document.getElementById('filterPriorite').addEventListener('change', applyMaintenanceFilters);
+    document.getElementById('sortMaintenance').addEventListener('change', applyMaintenanceFilters);
+
+    let calendarEl = document.getElementById('calendar');
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'fr',
+
+    headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+
+    buttonText: {
+        today: "Aujourd'hui",
+        month: "Mois",
+        week: "Semaine",
+        day: "Jour"
+    },
+
+    height: "auto",
+
+        events: [
+            {% set first = true %}
+            {% for m in maintenances %}
+                {% if m.dateM %}
+                    {% if not first %},{% endif %}
+                    {
+                        title: "{{ m.typeM|e('js') }}",
+                        start: "{{ m.dateM|date('Y-m-d') }}",
+                        color: "{% if m.statut.value == 'planifie' %}#facc15{% elseif m.statut.value == 'en_cours' %}#3b82f6{% elseif m.statut.value == 'termine' %}#22c55e{% else %}#9ca3af{% endif %}"
+                    }
+                    {% set first = false %}
+                {% endif %}
+            {% endfor %}
+            ]
+            });
+
+    calendar.render();
+
+});
+
+</script>
+
+
+{% endblock %}
