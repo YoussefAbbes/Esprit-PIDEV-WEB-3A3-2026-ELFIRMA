@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Controller\AdminTwoFactorController;
 
 final class ElfirmaController extends AbstractController
 {
@@ -142,6 +143,14 @@ final class ElfirmaController extends AbstractController
         if (!isset(self::MODULES[$module])) {
             throw $this->createNotFoundException(sprintf('Module "%s" was not found.', $module));
         }
+
+        if ($module === 'utilisateurs') {
+    $session = $request->getSession();
+    if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasValidAdminTwoFactor($request)) {
+        $session->invalidate();
+        return $this->redirectToRoute('app_login');
+    }
+}
 
         $moduleMeta = self::MODULES[$module];
 

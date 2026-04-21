@@ -59,6 +59,19 @@
             "./bin/phpunit"
         ]
     },
+    "scheb/2fa-bundle": {
+        "version": "7.13",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "6.0",
+            "ref": "1e6f68089146853a790b5da9946fc5974f6fcd49"
+        },
+        "files": [
+            "./config/packages/scheb_2fa.yaml",
+            "./config/routes/scheb_2fa.yaml"
+        ]
+    },
     "symfony/asset-mapper": {
         "version": "6.4",
         "recipe": {
@@ -212,6 +225,15 @@
             "./config/packages/security.yaml",
             "./config/routes/security.yaml"
         ]
+    },
+    "symfony/sendgrid-mailer": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "4.4",
+            "ref": "1caff9467bfc5c7f68503aa9eba9dc762a30ae21"
+        }
     },
     "symfony/stimulus-bundle": {
         "version": "2.34",

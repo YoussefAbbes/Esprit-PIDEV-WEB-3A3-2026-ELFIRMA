@@ -81,8 +81,23 @@
       <!-- Password -->
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••" maxlength="7">
-        <small class="text-muted">Between 3 and 7 characters</small>
+        <div class="password-input-wrap">
+          <input type="password" id="password" name="password" class="form-control password-input" placeholder="••••••" maxlength="7">
+          <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Show or hide password" title="Show or hide password">
+            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+          </button>
+        </div>
+        <div class="password-tools-panel">
+          <div class="password-policy-note">
+            <i class="bi bi-shield-check"></i>
+            <span>Use 3 to 7 characters</span>
+          </div>
+          <button type="button" class="password-suggest-btn" id="suggestPasswordBtn">
+            <i class="bi bi-magic"></i>
+            <span>Generate secure suggestion</span>
+          </button>
+        </div>
+        <small class="text-muted password-suggest-status" id="suggestPasswordStatus"></small>
       </div>
 
       <!-- Confirm Password -->
@@ -102,6 +117,8 @@
         </select>
       </div>
 
+      <input type="hidden" id="face_embeddings_json" name="face_embeddings_json" value="">
+
       <button type="submit" class="btn-auth"><span>Create Account</span></button>
     </form>
 
@@ -111,6 +128,29 @@
 
     <div class="auth-footer">
       <p><a href="{{ path('app_login') }}">Sign in here</a></p>
+    </div>
+  </div>
+
+  <div class="face-modal" id="signupFaceModal" aria-hidden="true">
+    <div class="face-modal-backdrop"></div>
+    <div class="face-modal-card" role="dialog" aria-modal="true" aria-labelledby="signupFaceTitle">
+      <div class="face-modal-head">
+        <h3 id="signupFaceTitle">Face Enrollment</h3>
+        <button type="button" class="face-close-btn" id="signupFaceClose" aria-label="Close">&times;</button>
+      </div>
+      <p class="face-helper-text">Look directly at the camera. Keep your face inside the frame.</p>
+      <div class="face-stage">
+        <video id="signupFaceVideo" autoplay playsinline muted></video>
+        <canvas id="signupFaceOverlay"></canvas>
+      </div>
+      <div class="face-status" id="signupFaceStatus">Starting camera...</div>
+      <div class="face-progress-row">
+        <span id="signupFaceSamples">0 / 8 samples</span>
+        <span id="signupFaceCountdown">20s</span>
+      </div>
+      <div class="face-actions">
+        <button type="button" class="face-secondary-btn" id="signupFaceSkip">Skip Face ID</button>
+      </div>
     </div>
   </div>
 
@@ -253,6 +293,125 @@
     margin-bottom: 1.5rem;
   }
 
+  .password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .password-input-wrap .password-input {
+    padding-right: 3rem;
+  }
+
+  .password-tools-panel {
+    margin-top: 0.7rem;
+    background: #f7fbf8;
+    border: 1px solid #dcebe1;
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+
+  .password-policy-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #2f5843;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .password-policy-note i {
+    color: #116530;
+  }
+
+  .password-toggle-btn {
+    position: absolute;
+    right: 0.7rem;
+    border: none;
+    background: transparent;
+    color: #5f6b66;
+    cursor: pointer;
+    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem;
+  }
+
+  .password-toggle-btn:hover {
+    color: #116530;
+  }
+
+  .password-toggle-btn:focus-visible {
+    outline: 2px solid rgba(17, 101, 48, 0.35);
+    border-radius: 6px;
+  }
+
+  .password-suggest-btn {
+    border: 1px solid #116530;
+    background: linear-gradient(135deg, #116530 0%, #0d4c23 100%);
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    box-shadow: 0 4px 10px rgba(17, 101, 48, 0.2);
+    white-space: nowrap;
+  }
+
+  .password-suggest-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(17, 101, 48, 0.28);
+  }
+
+  .password-suggest-btn:active {
+    transform: translateY(0);
+  }
+
+  .password-suggest-btn:focus-visible {
+    outline: 3px solid rgba(17, 101, 48, 0.2);
+    outline-offset: 2px;
+  }
+
+  .password-suggest-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .password-suggest-status {
+    margin-top: 0.45rem;
+    min-height: 1rem;
+    color: #4d5a54;
+  }
+
+  @media (max-width: 640px) {
+    .password-tools-panel {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .password-policy-note {
+      justify-content: center;
+    }
+
+    .password-suggest-btn {
+      justify-content: center;
+      width: 100%;
+    }
+  }
+
   .form-group label {
     font-weight: 600;
     color: #060606;
@@ -300,6 +459,113 @@
     display: block;
     margin-top: 0.3rem;
     color: #999;
+  }
+
+  .face-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+  }
+
+  .face-modal.active {
+    display: flex;
+  }
+
+  .face-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 16, 14, 0.72);
+    backdrop-filter: blur(4px);
+  }
+
+  .face-modal-card {
+    position: relative;
+    width: min(92vw, 600px);
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid rgba(17, 101, 48, 0.22);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
+    padding: 1rem;
+    z-index: 1;
+  }
+
+  .face-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .face-modal-head h3 {
+    margin: 0;
+    color: #183b2a;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .face-close-btn {
+    border: none;
+    background: transparent;
+    color: #52606d;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .face-helper-text {
+    margin: 0.3rem 0 0.8rem;
+    color: #617080;
+    font-size: 0.9rem;
+  }
+
+  .face-stage {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #111;
+    aspect-ratio: 16 / 10;
+  }
+
+  .face-stage video,
+  .face-stage canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .face-status {
+    margin-top: 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #183b2a;
+  }
+
+  .face-progress-row {
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #4a5562;
+    font-size: 0.86rem;
+  }
+
+  .face-actions {
+    margin-top: 0.8rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .face-secondary-btn {
+    border: 1px solid rgba(17, 101, 48, 0.35);
+    background: #fff;
+    color: #116530;
+    padding: 0.52rem 0.9rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
   }
 </style>
 
@@ -352,5 +618,361 @@
       formSection.style.transform = 'perspective(1000px) rotateY(0deg) rotateX(0deg)';
     }
   });
+
+  const signupForm = document.getElementById('signupForm');
+<<<<<<< HEAD
+=======
+  const passwordField = document.getElementById('password');
+  const confirmPasswordField = document.getElementById('confirm_password');
+  const suggestPasswordBtn = document.getElementById('suggestPasswordBtn');
+  const suggestPasswordStatus = document.getElementById('suggestPasswordStatus');
+  const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+  const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
+  const faceInput = document.getElementById('face_embeddings_json');
+  const faceModal = document.getElementById('signupFaceModal');
+  const faceClose = document.getElementById('signupFaceClose');
+  const faceSkip = document.getElementById('signupFaceSkip');
+  const faceVideo = document.getElementById('signupFaceVideo');
+  const faceOverlay = document.getElementById('signupFaceOverlay');
+  const faceStatus = document.getElementById('signupFaceStatus');
+  const faceSamplesEl = document.getElementById('signupFaceSamples');
+  const faceCountdownEl = document.getElementById('signupFaceCountdown');
+
+  const faceCtx = faceOverlay ? faceOverlay.getContext('2d') : null;
+  const targetSamples = 8;
+  const timeoutMs = 20000;
+  let enrolling = false;
+  let enrollmentDone = false;
+  let completionInProgress = false;
+  let frameTimer = null;
+  let stream = null;
+  let startTime = 0;
+  let collectedEmbeddings = [];
+  let isSubmitting = false;
+
+  const validateSignupClient = () => {
+    const email = document.getElementById('email')?.value?.trim() || '';
+    const password = document.getElementById('password')?.value || '';
+    const confirm = document.getElementById('confirm_password')?.value || '';
+    const prenom = document.getElementById('prenom')?.value?.trim() || '';
+    const nom = document.getElementById('nom')?.value?.trim() || '';
+    const role = document.getElementById('role')?.value || '';
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+    if (password.length < 6 || confirm !== password) return false;
+    if (!prenom || !nom) return false;
+    if (!role) return false;
+    return true;
+  };
+
+<<<<<<< HEAD
+=======
+  if (togglePasswordBtn && passwordField && togglePasswordIcon) {
+    togglePasswordBtn.addEventListener('click', function() {
+      const isHidden = passwordField.type === 'password';
+      passwordField.type = isHidden ? 'text' : 'password';
+      togglePasswordIcon.classList.toggle('bi-eye', !isHidden);
+      togglePasswordIcon.classList.toggle('bi-eye-slash', isHidden);
+    });
+  }
+
+  if (suggestPasswordBtn && passwordField) {
+    suggestPasswordBtn.addEventListener('click', async function() {
+      suggestPasswordBtn.disabled = true;
+      if (suggestPasswordStatus) {
+        suggestPasswordStatus.textContent = 'Generating password...';
+      }
+
+      try {
+        const response = await fetch('{{ path('app_api_password_suggest') }}', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success && typeof data.password === 'string' && data.password.length <= 7) {
+          passwordField.value = data.password;
+          if (confirmPasswordField) {
+            confirmPasswordField.value = data.password;
+          }
+
+          if (suggestPasswordStatus) {
+            const source = data.source === 'external_api' ? 'external API' : 'local fallback';
+            suggestPasswordStatus.textContent = `Suggested password inserted (${source}).`;
+          }
+        } else if (suggestPasswordStatus) {
+          suggestPasswordStatus.textContent = 'Could not generate a valid password.';
+        }
+      } catch (error) {
+        if (suggestPasswordStatus) {
+          suggestPasswordStatus.textContent = 'API unavailable. Please try again.';
+        }
+      } finally {
+        suggestPasswordBtn.disabled = false;
+      }
+    });
+  }
+
+>>>>>>> ec33c26 (add genrationg strong password api in signup)
+  const stopEnrollmentCamera = () => {
+    if (frameTimer) {
+      clearInterval(frameTimer);
+      frameTimer = null;
+    }
+    enrolling = false;
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+  };
+
+  const closeEnrollmentModal = () => {
+    stopEnrollmentCamera();
+    if (faceModal) {
+      faceModal.classList.remove('active');
+      faceModal.setAttribute('aria-hidden', 'true');
+    }
+  };
+
+  const drawBox = (bbox, color, label) => {
+    if (!faceCtx || !faceOverlay || !faceVideo) return;
+
+    faceOverlay.width = faceVideo.videoWidth || faceOverlay.clientWidth;
+    faceOverlay.height = faceVideo.videoHeight || faceOverlay.clientHeight;
+    faceCtx.clearRect(0, 0, faceOverlay.width, faceOverlay.height);
+
+    if (!bbox) return;
+
+    faceCtx.strokeStyle = color;
+    faceCtx.lineWidth = 3;
+    faceCtx.strokeRect(bbox.x, bbox.y, bbox.w, bbox.h);
+    faceCtx.fillStyle = color;
+    faceCtx.font = '600 16px Open Sans';
+    faceCtx.fillText(label, bbox.x, Math.max(18, bbox.y - 8));
+  };
+
+  const captureFrameDataUrl = () => {
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = faceVideo.videoWidth;
+    tmpCanvas.height = faceVideo.videoHeight;
+    const tmpCtx = tmpCanvas.getContext('2d');
+    tmpCtx.drawImage(faceVideo, 0, 0, tmpCanvas.width, tmpCanvas.height);
+    return tmpCanvas.toDataURL('image/jpeg', 0.75);
+  };
+
+  const updateCountdown = () => {
+    const elapsed = Date.now() - startTime;
+    const left = Math.max(0, Math.ceil((timeoutMs - elapsed) / 1000));
+    if (faceCountdownEl) faceCountdownEl.textContent = `${left}s`;
+
+    if (elapsed >= timeoutMs) {
+      closeEnrollmentModal();
+      Swal.fire({
+        icon: 'info',
+        title: 'Face enrollment timed out',
+        text: 'We will continue signup without Face ID. You can add it later.',
+        confirmButtonColor: '#116530',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      }).then(() => {
+        if (!isSubmitting) {
+          isSubmitting = true;
+          signupForm.submit();
+        }
+      });
+    }
+  };
+
+  const completeEnrollment = () => {
+    // Prevent multiple completions
+    if (completionInProgress) {
+      return;
+    }
+    completionInProgress = true;
+
+    // Stop the camera and timer FIRST
+    stopEnrollmentCamera();
+
+    // Close the modal
+    closeEnrollmentModal();
+
+    // Show success message and submit form
+    Swal.fire({
+      icon: 'success',
+      title: 'Face saved',
+      text: 'Face ID is ready for your next sign-in.',
+      timer: 2000,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      willClose: () => {
+        if (!isSubmitting) {
+          isSubmitting = true;
+          signupForm.submit();
+        }
+      }
+    });
+  };
+
+  const startEnrollment = async () => {
+    if (!faceModal || !faceVideo || !faceOverlay || !signupForm) return;
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 960 }, height: { ideal: 540 } },
+        audio: false
+      });
+      faceVideo.srcObject = stream;
+      await faceVideo.play();
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Camera access denied',
+        text: 'Signup will continue without Face ID.',
+        confirmButtonColor: '#116530',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      }).then(() => {
+        if (!isSubmitting) {
+          isSubmitting = true;
+          signupForm.submit();
+        }
+      });
+      return;
+    }
+
+    collectedEmbeddings = [];
+    enrolling = true;
+    startTime = Date.now();
+    faceModal.classList.add('active');
+    faceModal.setAttribute('aria-hidden', 'false');
+    if (faceStatus) faceStatus.textContent = 'Detecting face...';
+    if (faceSamplesEl) faceSamplesEl.textContent = `0 / ${targetSamples} samples`;
+
+    frameTimer = setInterval(async () => {
+      // Stop immediately if not enrolling anymore
+      if (!enrolling || faceVideo.readyState < 2) return;
+
+      updateCountdown();
+
+      try {
+        const image = captureFrameDataUrl();
+        const response = await fetch('{{ path('app_face_id_detect') }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image })
+        });
+        const data = await response.json();
+
+        if (!data.ok) {
+          drawBox(null, '#ef4444', '');
+          if (faceStatus) faceStatus.textContent = 'Face service unavailable...';
+          return;
+        }
+
+        if (!data.faceFound || !data.embedding) {
+          drawBox(null, '#f59e0b', '');
+          if (faceStatus) faceStatus.textContent = 'No face detected. Center your face.';
+          return;
+        }
+
+        drawBox(data.bbox, '#16a34a', 'Face detected');
+        if (faceStatus) faceStatus.textContent = 'Good position. Collecting samples...';
+
+        if (collectedEmbeddings.length < targetSamples) {
+          collectedEmbeddings.push(data.embedding);
+          if (faceSamplesEl) faceSamplesEl.textContent = `${collectedEmbeddings.length} / ${targetSamples} samples`;
+        }
+
+        // Check if we have enough samples
+        if (collectedEmbeddings.length >= targetSamples) {
+          // Check if completion is already in progress
+          if (completionInProgress) {
+            return;
+          }
+
+          // Stop enrollment immediately to prevent duplicate submissions
+          stopEnrollmentCamera();
+
+          // Save embeddings
+          faceInput.value = JSON.stringify(collectedEmbeddings);
+
+          // Complete enrollment (shows alert and submits)
+          completeEnrollment();
+        }
+      } catch (err) {
+        if (enrolling && faceStatus) {
+          faceStatus.textContent = 'Network issue during face detection.';
+        }
+      }
+    }, 260);
+  };
+
+  if (signupForm) {
+    signupForm.addEventListener('submit', async function(event) {
+      // If already submitting or enrollment is done, allow form submission
+      if (enrollmentDone || isSubmitting) {
+        return;
+      }
+
+      // Validate form fields
+      if (!validateSignupClient()) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const result = await Swal.fire({
+        title: 'Would you save your face for login with it later?',
+        text: 'You can skip this step and still create your account.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, save my face',
+        cancelButtonText: 'No, continue signup',
+        confirmButtonColor: '#116530',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      });
+
+      if (!result.isConfirmed) {
+        // Skip face enrollment and submit form
+        if (!isSubmitting) {
+          isSubmitting = true;
+          signupForm.submit();
+        }
+        return;
+      }
+
+      // Start face enrollment
+      await startEnrollment();
+    });
+  }
+
+  if (faceClose) {
+    faceClose.addEventListener('click', () => {
+      closeEnrollmentModal();
+      enrollmentDone = true;
+      // Allow form submission without face data
+      if (!isSubmitting) {
+        isSubmitting = true;
+        signupForm.submit();
+      }
+    });
+  }
+
+  if (faceSkip) {
+    faceSkip.addEventListener('click', () => {
+      closeEnrollmentModal();
+      enrollmentDone = true;
+      if (!isSubmitting) {
+        isSubmitting = true;
+        signupForm.submit();
+      }
+    });
+  }
 </script>
 {% endblock %}

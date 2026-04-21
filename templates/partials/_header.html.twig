@@ -31,8 +31,8 @@
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
         {% if app.session.get('user_role') == 'admin' %}
-          <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
-        {% endif %}
+  <li><a href="{{ path('app_admin_panel_entry') }}" class="nav-admin-link">Admin Panel</a></li>
+{% endif %}
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>

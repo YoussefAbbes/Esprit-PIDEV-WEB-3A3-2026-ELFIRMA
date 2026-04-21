@@ -12,6 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use App\Service\FaceIdClient;
+use App\Service\FaceEncodingStore;
 
 final class AuthController extends AbstractController
 {
@@ -23,19 +27,17 @@ final class AuthController extends AbstractController
             $password = trim($request->request->get('password', ''));
 
             if (empty($email) || empty($password)) {
-                return $this->render('auth/login.html.twig', ['error' => 'Email and password are required']);
+                return $this->render('auth/login.html.twig', ['error' => 'Email and password required']);
             }
 
-            // Find user by email (case-insensitive)
             $user = $em->createQuery('SELECT u FROM App\Entity\Utilisateur u WHERE LOWER(u.email_u) = LOWER(:email)')
                 ->setParameter('email', $email)
                 ->getOneOrNullResult();
 
             if (!$user || !password_verify($password, $user->getMotDePasseU())) {
-                return $this->render('auth/login.html.twig', ['error' => 'Invalid email or password']);
+                return $this->render('auth/login.html.twig', ['error' => 'Invalid credentials']);
             }
 
-            // Set session
             $session = $request->getSession();
             $session->set('user_id', $user->getIdU());
             $session->set('user_email', $user->getEmailU());
@@ -44,8 +46,75 @@ final class AuthController extends AbstractController
 
             return $this->redirectToRoute('app_verify_captcha');
         }
+
         return $this->render('auth/login.html.twig');
     }
+
+    #[Route('/face-id/detect', name: 'app_face_id_detect', methods: ['POST'])]
+    public function faceIdDetect(Request $request, FaceIdClient $faceIdClient): JsonResponse
+    {
+        $payload = json_decode((string) $request->getContent(), true);
+        $image = $payload['image'] ?? null;
+
+        if (!is_string($image) || $image === '') {
+            return new JsonResponse(['ok' => false, 'error' => 'Missing frame data'], 400);
+        }
+
+        try {
+            $result = $faceIdClient->detect($image);
+            return new JsonResponse($result);
+        } catch (\Throwable $e) {
+            return new JsonResponse(['ok' => false, 'error' => 'Service unavailable'], 503);
+        }
+    }
+
+    #[Route('/face-id/recognize', name: 'app_face_id_recognize', methods: ['POST'])]
+    public function faceIdRecognize(Request $request, FaceIdClient $faceIdClient): JsonResponse
+    {
+        $payload = json_decode((string) $request->getContent(), true);
+        $image = $payload['image'] ?? null;
+
+        if (!is_string($image) || $image === '') {
+            return new JsonResponse(['ok' => false, 'error' => 'Missing frame data'], 400);
+        }
+
+        try {
+            $result = $faceIdClient->recognize($image);
+            return new JsonResponse($result);
+        } catch (\Throwable $e) {
+            return new JsonResponse(['ok' => false, 'error' => 'Service unavailable'], 503);
+        }
+    }
+
+    #[Route('/face-id/login', name: 'app_face_id_login', methods: ['POST'])]
+    public function faceIdLogin(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $payload = json_decode((string) $request->getContent(), true);
+        $userId = isset($payload['userId']) ? (int) $payload['userId'] : 0;
+
+        if ($userId <= 0) {
+            return new JsonResponse(['ok' => false, 'error' => 'Invalid user id'], 400);
+        }
+
+        $user = $em->getRepository(Utilisateur::class)->find($userId);
+        if (!$user) {
+            return new JsonResponse(['ok' => false, 'error' => 'User not found'], 404);
+        }
+
+        $session = $request->getSession();
+        $session->set('user_id', $user->getIdU());
+        $session->set('user_email', $user->getEmailU());
+        $session->set('user_role', $user->getRoleU());
+        $session->set('user_name', $user->getPrenomU() . ' ' . $user->getNomU());
+
+        return new JsonResponse([
+            'ok' => true,
+            'redirect' => $this->generateUrl('app_pages_home'),
+        ]);
+    }
+
+
+
 
 
     #[Route('/verify-captcha', name: 'app_verify_captcha', methods: ['GET', 'POST'])]
@@ -172,62 +241,39 @@ public function connectGithubCheck(ClientRegistry $clientRegistry, EntityManager
     return $this->redirectToRoute('app_pages_home');
 }
 
-    #[Route('/signup', name: 'app_signup', methods: ['GET', 'POST'])]
-    public function signup(Request $request, EntityManagerInterface $em): Response
+   #[Route('/signup', name: 'app_signup', methods: ['GET', 'POST'])]
+    public function signup(Request $request, EntityManagerInterface $em, FaceEncodingStore $faceEncodingStore): Response
     {
         if ($request->isMethod('POST')) {
             $email = trim($request->request->get('email', ''));
             $password = trim($request->request->get('password', ''));
-            $confirm_password = trim($request->request->get('confirm_password', ''));
             $prenom = trim($request->request->get('prenom', ''));
             $nom = trim($request->request->get('nom', ''));
             $role = trim($request->request->get('role', ''));
+            $faceEmbeddingsRaw = $request->request->get('face_embeddings_json', '');
 
             $errors = [];
 
-            // Validation
-            if (empty($email)) {
-                $errors['email'] = 'Email is required';
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors['email'] = 'Invalid email format';
-            } else {
-                // Check if email exists
-                $existingUser = $em->getRepository(Utilisateur::class)->findOneBy(['email_u' => $email]);
-                if ($existingUser) {
-                    $errors['email'] = 'Email already registered';
-                }
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Valid email required';
             }
 
-            if (empty($password)) {
-                $errors['password'] = 'Password is required';
-            } elseif (strlen($password) < 6) {
-                $errors['password'] = 'Password must be at least 6 characters';
-            }
-
-            if ($password !== $confirm_password) {
-                $errors['confirm_password'] = 'Passwords do not match';
+            if (empty($password) || strlen($password) < 6) {
+                $errors['password'] = 'Password must be 6+ characters';
             }
 
             if (empty($prenom)) {
-                $errors['prenom'] = 'First name is required';
+                $errors['prenom'] = 'First name required';
             }
 
             if (empty($nom)) {
-                $errors['nom'] = 'Last name is required';
+                $errors['nom'] = 'Last name required';
             }
 
-            if (empty($role)) {
-                $errors['role'] = 'Please select a role';
-            } elseif (!in_array($role, ['employee', 'client'])) {
-                $errors['role'] = 'Invalid role selected';
-            }
-
-            // If there are errors, show them
             if (!empty($errors)) {
                 return $this->render('auth/signup.html.twig', ['errors' => $errors]);
             }
 
-            // Create new user
             $user = new Utilisateur();
             $user->setEmailU($email);
             $user->setMotDePasseU(password_hash($password, PASSWORD_BCRYPT));
@@ -240,7 +286,17 @@ public function connectGithubCheck(ClientRegistry $clientRegistry, EntityManager
                 $em->persist($user);
                 $em->flush();
 
-                // Set session after successful registration
+                if (is_string($faceEmbeddingsRaw) && $faceEmbeddingsRaw !== '') {
+                    $decodedEmbeddings = json_decode($faceEmbeddingsRaw, true);
+                    if (is_array($decodedEmbeddings)) {
+                        $faceFile = $faceEncodingStore->saveUserEmbeddings($user, $decodedEmbeddings);
+                        if ($faceFile !== null) {
+                            $user->setPhotoFace($faceFile);
+                            $em->flush();
+                        }
+                    }
+                }
+
                 $session = $request->getSession();
                 $session->set('user_id', $user->getIdU());
                 $session->set('user_email', $user->getEmailU());
@@ -249,11 +305,13 @@ public function connectGithubCheck(ClientRegistry $clientRegistry, EntityManager
 
                 return $this->redirectToRoute('app_pages_home');
             } catch (\Exception $e) {
-                return $this->render('auth/signup.html.twig', ['error' => 'Error creating account: ' . $e->getMessage()]);
+                return $this->render('auth/signup.html.twig', ['error' => 'Error creating account']);
             }
         }
+
         return $this->render('auth/signup.html.twig');
     }
+
 
     #[Route('/logout', name: 'app_logout')]
     public function logout(Request $request): Response

@@ -1,18 +1,19 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    face_id.python_default: '%kernel.project_dir%/scripts/faceid/.venv/Scripts/python'
+    face_id.host_default: '127.0.0.1'
+    face_id.port_default: '8765'
+    face_id.threshold_default: '0.28'
+    face_id.python_bin: '%env(default:face_id.python_default:FACE_ID_PYTHON_BIN)%'
+    face_id.host: '%env(default:face_id.host_default:FACE_ID_HOST)%'
+    face_id.port: '%env(int:default:face_id.port_default:FACE_ID_PORT)%'
+    face_id.threshold: '%env(float:default:face_id.threshold_default:FACE_ID_THRESHOLD)%'
+    face_id.encodings_dir: '%kernel.project_dir%/var/faceid/encodings'
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -20,5 +21,14 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Service\FaceIdClient:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $pythonBin: '%face_id.python_bin%'
+            $host: '%face_id.host%'
+            $port: '%face_id.port%'
+            $threshold: '%face_id.threshold%'
+
+    App\Service\FaceEncodingStore:
+        arguments:
+            $encodingsDir: '%face_id.encodings_dir%'
