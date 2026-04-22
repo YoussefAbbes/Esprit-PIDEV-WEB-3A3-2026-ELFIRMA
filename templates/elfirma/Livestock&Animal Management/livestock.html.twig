@@ -492,6 +492,14 @@
             </section>
 
             <div class="mb-3 flex items-center justify-end gap-2">
+                <a href="{{ path('elfirma_livestock_export_pdf', { search: search_term|default('') }) }}" download class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm hover:bg-red-700 transition-colors" aria-label="Download PDF">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-5 h-5" aria-hidden="true">
+                        <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/>
+                        <path d="M14 2v6h6"/>
+                        <path d="M8 13h8"/>
+                        <path d="M8 17h8"/>
+                    </svg>
+                </a>
                 <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=livestock&add=1" class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white" title="Add Livestock" aria-label="Add Livestock">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-6 h-6" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                     <span class="sr-only">Add Livestock</span>

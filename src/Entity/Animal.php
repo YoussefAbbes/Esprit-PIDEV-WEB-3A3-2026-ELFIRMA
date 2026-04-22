@@ -95,6 +95,10 @@ class Animal
     )]
     private ?string $type_animal = null;
 
+    private ?string $species = null;
+
+    private ?string $dnaMarker = null;
+
     public function getTypeAnimal(): ?string
     {
         return $this->type_animal;
@@ -103,6 +107,28 @@ class Animal
     public function setTypeAnimal(string $type_animal): self
     {
         $this->type_animal = $type_animal;
+        return $this;
+    }
+
+    public function getSpecies(): ?string
+    {
+        return $this->species;
+    }
+
+    public function setSpecies(?string $species): self
+    {
+        $this->species = $species;
+        return $this;
+    }
+
+    public function getDnaMarker(): ?string
+    {
+        return $this->dnaMarker;
+    }
+
+    public function setDnaMarker(?string $dnaMarker): self
+    {
+        $this->dnaMarker = $dnaMarker;
         return $this;
     }
 

@@ -122,6 +122,35 @@ final class ElfirmaController extends AbstractController
         return $this->renderLivestockAnimalManagementView('livestock', $request, $livestockRepository, $animalRepository);
     }
 
+    #[Route('/elfirma/animaux-elevages/export/pdf', name: 'elfirma_livestock_export_pdf', methods: ['GET'])]
+    public function exportLivestockReport(Request $request, LivestockRepository $livestockRepository): Response
+    {
+        $searchTerm = trim($request->query->getString('search', ''));
+        $searchError = $this->validateSearchTerm($searchTerm);
+
+        $elevages = $livestockRepository->findAllForManagement();
+        if ($searchTerm !== '' && $searchError === null) {
+            $elevages = array_values(array_filter(
+                $elevages,
+                function (array $item) use ($searchTerm): bool {
+                    return $this->matchesSearch($searchTerm, [
+                        $item['type_elevage'] ?? '',
+                        $item['etat_elevage'] ?? '',
+                        $item['production'] ?? '',
+                    ]);
+                }
+            ));
+        }
+
+        $generatedAt = (new \DateTimeImmutable())->format('d/m/Y');
+        $pdfBinary = $this->buildLivestockExportPdf($elevages, $generatedAt);
+
+        return new Response($pdfBinary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="livestock-export-report.pdf"',
+        ]);
+    }
+
     #[Route('/elfirma/animals', name: 'elfirma_animals', methods: ['GET'])]
     public function animalsPage(
         Request $request,
@@ -378,5 +407,179 @@ final class ElfirmaController extends AbstractController
         }
 
         return false;
+    }
+
+    /**
+     * @param list<array{type:string, production:string}> $elevages
+     */
+    private function buildLivestockExportPdf(array $elevages, string $generatedAt): string
+{
+    $rows = array_map(
+        static fn (array $item): array => [
+            'type' => (string) ($item['type_elevage'] ?? 'N/A'),
+            'production' => (string) ($item['production'] ?? 'N/A'),
+        ],
+        $elevages
+    );
+
+    // 🔹 Limiter pour éviter scroll
+    $rows = array_slice($rows, 0, 8);
+
+    $content = [];
+    $content[] = 'q';
+
+    // Header
+    $content[] = '0.14 0.45 0.19 rg';
+    $content[] = '0 780 595 62 re f';
+
+    $content[] = 'BT';
+    $content[] = '/F2 26 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = '24 810 Td';
+    $content[] = '(' . $this->escapePdfText('EL FIRMA') . ') Tj';
+    $content[] = 'ET';
+
+    $content[] = 'BT';
+    $content[] = '/F1 11 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = '450 810 Td';
+    $content[] = '(' . $this->escapePdfText('Export: ' . $generatedAt) . ') Tj';
+    $content[] = 'ET';
+
+    // Title
+    $content[] = 'BT';
+    $content[] = '/F2 22 Tf';
+    $content[] = '0.12 0.39 0.17 rg';
+    $content[] = '24 740 Td';
+    $content[] = '(' . $this->escapePdfText('LIVESTOCK REPORT') . ') Tj';
+    $content[] = 'ET';
+
+    // Table settings
+    $tableX = 24;
+    $tableY = 680;
+    $tableW = 547;
+    $headerH = 28;
+    $rowH = 22; // 🔹 réduit
+    $col1W = 290;
+
+    // Header row
+    $content[] = '0.18 0.58 0.22 rg';
+    $content[] = sprintf('%d %d %d %d re f', $tableX, $tableY, $tableW, $headerH);
+
+    $content[] = 'BT';
+    $content[] = '/F2 11 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = sprintf('%d %d Td', $tableX + 10, $tableY + 8);
+    $content[] = '(' . $this->escapePdfText('Type') . ') Tj';
+    $content[] = 'ET';
+
+    $content[] = 'BT';
+    $content[] = '/F2 11 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = sprintf('%d %d Td', $tableX + $col1W + 10, $tableY + 8);
+    $content[] = '(' . $this->escapePdfText('Production') . ') Tj';
+    $content[] = 'ET';
+
+    // Rows
+    $rowY = $tableY - $rowH;
+    foreach ($rows as $index => $row) {
+
+        if ($index % 2 === 0) {
+            $content[] = '0.93 0.97 0.93 rg';
+        } else {
+            $content[] = '1 1 1 rg';
+        }
+
+        $content[] = sprintf('%d %d %d %d re f', $tableX, $rowY, $tableW, $rowH);
+
+        $content[] = 'BT';
+        $content[] = '/F1 9 Tf'; // 🔹 police réduite
+        $content[] = '0.16 0.20 0.16 rg';
+        $content[] = sprintf('%d %d Td', $tableX + 10, $rowY + 6);
+        $content[] = '(' . $this->escapePdfText($row['type']) . ') Tj';
+        $content[] = 'ET';
+
+        $content[] = 'BT';
+        $content[] = '/F1 9 Tf';
+        $content[] = '0.16 0.20 0.16 rg';
+        $content[] = sprintf('%d %d Td', $tableX + $col1W + 10, $rowY + 6);
+        $content[] = '(' . $this->escapePdfText($row['production']) . ') Tj';
+        $content[] = 'ET';
+
+        $rowY -= $rowH;
+    }
+
+    // Footer
+    $content[] = '0.14 0.39 0.17 rg';
+    $content[] = '0 0 595 40 re f';
+
+    $content[] = 'BT';
+    $content[] = '/F2 11 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = '20 20 Td';
+    $content[] = '(' . $this->escapePdfText('EL FIRMA') . ') Tj';
+    $content[] = 'ET';
+
+    // 🔹 Manager modifié
+    $content[] = 'BT';
+    $content[] = '/F1 11 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = '420 20 Td';
+    $content[] = '(' . $this->escapePdfText('Manager : Ahmed Zouari') . ') Tj';
+    $content[] = 'ET';
+
+    $content[] = 'Q';
+
+    $stream = implode("\n", $content);
+
+    $objects = [];
+    $objects[] = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+    $objects[] = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+    $objects[] = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj\n";
+    $objects[] = "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n";
+    $objects[] = "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n";
+    $objects[] = "6 0 obj\n<< /Length " . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream\nendobj\n";
+
+    $pdf = "%PDF-1.4\n";
+    $offsets = [0];
+
+    foreach ($objects as $object) {
+        $offsets[] = strlen($pdf);
+        $pdf .= $object;
+    }
+
+    $xrefPos = strlen($pdf);
+    $pdf .= "xref\n0 " . (count($objects) + 1) . "\n";
+    $pdf .= "0000000000 65535 f \n";
+
+    for ($i = 1; $i <= count($objects); $i++) {
+        $pdf .= sprintf("%010d 00000 n \n", $offsets[$i]);
+    }
+
+    $pdf .= "trailer\n<< /Size " . (count($objects) + 1) . " /Root 1 0 R >>\n";
+    $pdf .= "startxref\n" . $xrefPos . "\n%%EOF";
+
+    return $pdf;
+}
+    private function normalizePdfText(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 'N/A';
+        }
+
+        if (function_exists('iconv')) {
+            $converted = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+            if ($converted !== false) {
+                $value = $converted;
+            }
+        }
+
+        return preg_replace('/[^\x20-\x7E]/', '', $value) ?? $value;
+    }
+
+    private function escapePdfText(string $value): string
+    {
+        return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $this->normalizePdfText($value));
     }
 }
