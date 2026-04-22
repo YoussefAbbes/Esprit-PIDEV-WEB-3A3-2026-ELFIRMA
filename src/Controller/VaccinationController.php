@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+// ...existing code...
 use App\Repository\VaccinationRepository;
 use App\Service\VaccinationSmsAlertService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,6 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class VaccinationController extends AbstractController
 {
+    // ...existing code...
+
     #[Route('/elfirma/animaux-elevages/vaccination/create', name: 'vaccination_create', methods: ['POST'])]
     public function create(
         Request $request,
@@ -42,7 +45,8 @@ final class VaccinationController extends AbstractController
 
         $vaccinationRepository->createVaccination($payload);
 
-        $sent = $vaccinationSmsAlertService->checkAndSendAlerts(2);
+        // Valeur par défaut codée en dur (exemple : 7 jours)
+        $sent = $vaccinationSmsAlertService->checkAndSendAlerts(7);
         if ($sent > 0) {
             $this->addFlash('success', sprintf('%d SMS alert(s) sent successfully.', $sent));
         }
@@ -89,7 +93,8 @@ final class VaccinationController extends AbstractController
 
         $vaccinationRepository->updateVaccination($idVaccination, $payload);
 
-        $sent = $vaccinationSmsAlertService->checkAndSendAlerts(2);
+        // Valeur par défaut codée en dur (exemple : 7 jours)
+        $sent = $vaccinationSmsAlertService->checkAndSendAlerts(7);
         if ($sent > 0) {
             $this->addFlash('success', sprintf('%d SMS alert(s) sent successfully.', $sent));
         }

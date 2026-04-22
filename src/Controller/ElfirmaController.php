@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Entity\Reclamation;
+// ...existing code...
 use App\Repository\AnimalRepository;
 use App\Repository\LivestockRepository;
 use App\Repository\VaccinationRepository;
@@ -20,7 +21,8 @@ final class ElfirmaController extends AbstractController
 {
     public function __construct(
         private readonly VaccinationRepository $vaccinationRepository,
-        private readonly VaccinationSmsAlertService $vaccinationSmsAlertService
+        private readonly VaccinationSmsAlertService $vaccinationSmsAlertService,
+        // ...existing code...
     ) {
     }
 
@@ -137,7 +139,7 @@ final class ElfirmaController extends AbstractController
         AnimalRepository $animalRepository
     ): Response
     {
-        $sentSmsCount = $this->vaccinationSmsAlertService->checkAndSendAlerts(2);
+        $sentSmsCount = $this->vaccinationSmsAlertService->checkAndSendAlerts(7); // Hardcoded value
         if ($sentSmsCount > 0) {
             $this->addFlash('success', sprintf('%d SMS alert(s) sent successfully.', $sentSmsCount));
         }

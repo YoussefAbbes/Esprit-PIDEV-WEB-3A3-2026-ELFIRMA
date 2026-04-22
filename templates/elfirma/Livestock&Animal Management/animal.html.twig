@@ -184,6 +184,7 @@
                     <table id="animal-table" class="w-full text-sm min-w-[760px] border-separate border-spacing-0">
                         <thead>
                         <tr class="bg-emerald-500">
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0">Photo</th>
                             <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="type" data-sort-type="text">Type <span class="sort-indicator" data-sort-indicator="type">&uarr;&darr;</span></button></th>
                             <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="gender" data-sort-type="text">Gender <span class="sort-indicator" data-sort-indicator="gender">&uarr;&darr;</span></button></th>
                             <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="age" data-sort-type="number">Age <span class="sort-indicator" data-sort-indicator="age">&uarr;&darr;</span></button></th>
@@ -197,6 +198,13 @@
                             {% set sexe = item.sexe|default('')|lower %}
                             {% set health = item.etat_sante|default('')|lower %}
                             <tr class="hover:bg-emerald-50/35 transition-colors" data-row="animal" data-type="{{ item.type_animal|default('')|e('html_attr') }}" data-gender="{{ item.sexe|default('')|e('html_attr') }}" data-age="{{ item.age|default(0) }}" data-health="{{ item.etat_sante|default('')|e('html_attr') }}" data-status="{{ item.statut|default('')|e('html_attr') }}">
+                                <td class="py-3 px-3 border-b border-r border-emerald-100">
+                                    {% if item.photo_name is defined and item.photo_name %}
+                                        <img src="{{ asset('/uploads/animals/' ~ item.photo_name) }}" alt="Photo de {{ item.type_animal }}" class="h-14 w-14 rounded-xl object-cover" loading="lazy">
+                                    {% else %}
+                                        <span class="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-500 text-xs uppercase">No photo</span>
+                                    {% endif %}
+                                </td>
                                 <td class="py-3 px-3 font-semibold text-slate-800 border-b border-r border-emerald-100">{{ item.type_animal }}</td>
                                 <td class="py-3 px-3 font-semibold border-b border-r border-emerald-100 {{ sexe == 'male' ? 'text-blue-600' : (sexe == 'female' ? 'text-pink-600' : 'text-slate-700') }}">
                                     <span class="inline-flex items-center gap-1.5">
@@ -294,7 +302,7 @@
                                 <p class="mb-3 text-sm text-red-600 font-semibold">{{ form_errors._form }}</p>
                             {% endif %}
 
-                            <form method="post" action="{{ path(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}" class="space-y-3">
+                            <form method="post" action="{{ path(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}" enctype="multipart/form-data" class="space-y-3">
                                 <input type="hidden" name="_token" value="{{ csrf_token(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}">
                                 {% if is_edit_animal_mode %}
                                     <input type="hidden" name="id_animal" value="{{ edit_animal.id_animal }}">
@@ -374,6 +382,20 @@
                                     {% if form_errors.statut is defined %}
                                         <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.statut }}</p>
                                     {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Photo:</label>
+                                    <div class="md:col-span-4">
+                                        <input type="file" name="photo_file" accept="image/*" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                        {% if form_errors.photo_file is defined %}
+                                            <p class="mt-2 text-sm text-red-600">{{ form_errors.photo_file }}</p>
+                                        {% endif %}
+                                        {% if is_edit_animal_mode and edit_animal.photo_name is defined and edit_animal.photo_name %}
+                                            <p class="mt-2 text-sm text-slate-700">Photo actuelle :</p>
+                                            <img src="{{ asset('/uploads/animals/' ~ edit_animal.photo_name) }}" alt="Current animal photo" class="mt-2 h-20 w-20 rounded-xl object-cover border border-slate-300">
+                                        {% endif %}
+                                    </div>
                                 </div>
 
                                 <div class="pt-1 flex items-center justify-center gap-4">

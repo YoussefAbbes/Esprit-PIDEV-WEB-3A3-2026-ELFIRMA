@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\VaccinationRepository;
 use App\Enum\VaccinationStatus;
+use App\Bundle\VaccinationCalendarBundle;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -16,6 +17,8 @@ class Vaccination
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id_vaccination = null;
+
+    private ?VaccinationCalendarBundle $calendrier_vaccination = null;
 
     public function getIdVaccination(): ?int
     {
@@ -69,6 +72,7 @@ class Vaccination
     public function setDateDone(?\DateTimeInterface $date_done): self
     {
         $this->date_done = $date_done;
+        $this->calendrier_vaccination = null;
         return $this;
     }
 
@@ -85,6 +89,7 @@ class Vaccination
     public function setDateNext(\DateTimeInterface $date_next): self
     {
         $this->date_next = $date_next;
+        $this->calendrier_vaccination = null;
         return $this;
     }
 
@@ -115,6 +120,34 @@ class Vaccination
     public function setStatus(?VaccinationStatus $status): self
     {
         $this->status = $status;
+        $this->calendrier_vaccination = null;
+        return $this;
+    }
+
+    public function getCalendrierVaccination(): VaccinationCalendarBundle
+    {
+        if ($this->calendrier_vaccination === null) {
+            $this->calendrier_vaccination = VaccinationCalendarBundle::fromVaccinationFields(
+                $this->date_done,
+                $this->date_next,
+                $this->status
+            );
+        }
+
+        return $this->calendrier_vaccination;
+    }
+
+    public function setCalendrierVaccination(VaccinationCalendarBundle $calendrier_vaccination): self
+    {
+        $this->calendrier_vaccination = $calendrier_vaccination;
+        $this->date_done = $calendrier_vaccination->getDateDone();
+
+        if ($calendrier_vaccination->getDateNext() !== null) {
+            $this->date_next = $calendrier_vaccination->getDateNext();
+        }
+
+        $this->status = $calendrier_vaccination->getStatus();
+
         return $this;
     }
 }
