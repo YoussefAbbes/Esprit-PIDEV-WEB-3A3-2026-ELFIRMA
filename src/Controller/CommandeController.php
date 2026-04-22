@@ -94,7 +94,10 @@ final class CommandeController extends AbstractController
             'items' => $panierWithData,
             'total' => $total,
             'stripe_enabled' => $stripeEnabled,
-            'promo_min_total' => 50.0
+            'promo_min_total' => 50.0,
+            'promo_generated_code' => null,
+            'promo_expires_at' => null,
+            'promo_is_applied' => false
         ]);
     }
 
