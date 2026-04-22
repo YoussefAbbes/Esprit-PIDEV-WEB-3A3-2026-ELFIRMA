@@ -1,13 +1,2 @@
-knpu_oauth2_client:
-    clients:
-        google:
-            type: google
-            client_id: '%env(GOOGLE_CLIENT_ID)%'
-            client_secret: '%env(GOOGLE_CLIENT_SECRET)%'
-            redirect_route: connect_google_check
-
-        github:
-            type: github
-            client_id: '%env(GITHUB_CLIENT_ID)%'
-            client_secret: '%env(GITHUB_CLIENT_SECRET)%'
-            redirect_route: connect_github_check
+# Disabled because knpuniversity/oauth2-client-bundle is not installed in the
+# merged dependency set. Re-enable this file after installing the bundle.
