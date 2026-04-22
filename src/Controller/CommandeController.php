@@ -87,9 +87,13 @@ final class CommandeController extends AbstractController
             return $this->processOrder($request, $panierWithData, $total, $session, $em, $validator);
         }
 
+        // Check if Stripe is enabled (has both public and secret keys)
+        $stripeEnabled = !empty($_ENV['STRIPE_PUBLIC_KEY'] ?? '') && !empty($_ENV['STRIPE_SECRET_KEY'] ?? '');
+
         return $this->render('commande_create.html.twig', [
             'items' => $panierWithData,
-            'total' => $total
+            'total' => $total,
+            'stripe_enabled' => $stripeEnabled
         ]);
     }
 
