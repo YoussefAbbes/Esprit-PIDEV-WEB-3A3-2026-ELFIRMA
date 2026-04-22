@@ -1,4 +1,3 @@
-
 {% extends 'baseback.html.twig' %}
 
 {% block body %}
@@ -102,30 +101,7 @@
 
     </select>
 
-    <!-- EXCHANGE RATES -->
-<div class="flex items-center gap-2 bg-green-50 border border-green-200 px-3 py-2 rounded-lg shadow-sm">
 
-    <span class="material-symbols-outlined text-green-600 text-[20px]">
-        currency_exchange
-    </span>
-
-    <span class="text-sm font-medium text-green-700">
-        Exchange rates
-    </span>
-
-    <select id="currencySelect"
-            class="ml-2 px-3 py-1.5 text-sm rounded-lg border border-green-300 bg-white 
-                   text-green-700 font-medium
-                   focus:ring-2 focus:ring-green-500 outline-none transition">
-
-        <option value="TND">TND (د.ت)</option>
-        <option value="USD">USD ($)</option>
-        <option value="EUR">EUR (€)</option>
-        <option value="AUD">AUD (A$)</option>
-
-    </select>
-
-</div>
 
     <!-- RESET -->
     <button onclick="resetFilters()"
@@ -171,8 +147,7 @@
 <tbody id="equipementTableBody">
 
 {% for eq in equipements %}
-<tr class="hover:bg-white/30 border-b border-gray-200 equipement-row
-    {% if eq.etat.value == 'panne' %}bg-red-100 border-red-400{% endif %}"
+<tr class="hover:bg-white/30 border-b border-gray-200 equipement-row" 
     data-nom="{{ eq.nomEq|lower }}" 
     data-type="{{ eq.typeEq|lower }}" 
     data-date="{{ eq.dateAchat|date('Y-m-d') }}" 
@@ -213,19 +188,11 @@
     <!-- ETAT -->
     <td class="py-3">
         <span id="text-etat-{{ eq.idEq }}" class="px-3 py-1 rounded text-sm font-medium
-            {% if eq.etat.value == 'panne' %}
-                bg-red-600 text-white
-            {% elseif eq.etat.value == 'disponible' %}
-                bg-green-100 text-green-800
-            {% elseif eq.etat.value == 'maintenance' %}
-                bg-yellow-100 text-yellow-800
+            {% if eq.etat.value == 'disponible' %}bg-green-100 text-green-800
+            {% elseif eq.etat.value == 'maintenance' %}bg-yellow-100 text-yellow-800
+            {% else %}bg-red-100 text-red-800
             {% endif %}">
-
-            {% if eq.etat.value == 'panne' %}
-                Critique ⚠️
-            {% else %}
-                {{ eq.etat.value|capitalize }}
-            {% endif %}
+            {{ eq.etat.value|capitalize }}
         </span>
 
         <select id="input-etat-{{ eq.idEq }}" class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500">
@@ -238,18 +205,10 @@
 
     <!-- COUT -->
     <td class="py-3 font-mono">
-        <span class="price"
-            data-base="{{ eq.coutAchat }}"
-            id="text-cout-{{ eq.idEq }}">
-            {{ eq.coutAchat|number_format(2, ',', ' ') }} TND
-        </span>
-
-        <input type="number" step="0.01"
-            id="input-cout-{{ eq.idEq }}"
-            value="{{ eq.coutAchat }}"
-            class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500"
-            min="0">
-
+        <span id="text-cout-{{ eq.idEq }}">{{ eq.coutAchat|number_format(2, ',', ' ') }}€</span>
+        <input type="number" step="0.01" id="input-cout-{{ eq.idEq }}"
+               value="{{ eq.coutAchat }}"
+               class="hidden border p-2 rounded w-full focus:ring-2 focus:ring-blue-500" min="0">
         <small id="error-cout-{{ eq.idEq }}" class="text-red-600 hidden"></small>
     </td>
 
@@ -279,12 +238,6 @@
             <span class="material-symbols-outlined">delete</span>
         </button>
 
-        <button onclick="generateImage({{ eq.idEq }})"
-                class="text-purple-500 hover:text-purple-700 hover:bg-purple-50 p-2 rounded transition"
-                title="Générer image">
-            <span class="material-symbols-outlined">image</span>
-        </button>
-
         <a href="{{ path('maintenance_list', { equipement: eq.idEq }) }}"
        class="text-yellow-500 hover:text-yellow-700 hover:bg-yellow-50 p-2 rounded transition"
        title="Voir les maintenances">
@@ -305,17 +258,6 @@
                 title="Annuler">
             <span class="material-symbols-outlined">close</span>
         </button>
-
-        <button onclick="openPrediction({{ eq.idEq }})"
-                class="text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 p-2 rounded transition">
-            <span class="material-symbols-outlined">insights</span>
-        </button>
-        <button 
-    class="analyse-btn text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 p-2 rounded transition"
-    data-id="{{ eq.idEq }}"
-    title="Analyse IA">
-    <span class="material-symbols-outlined">analytics</span>
-</button>
     </td>
 </tr>
 {% else %}
@@ -332,29 +274,6 @@
 </div>
 </div>
 
-<hr class="my-10">
-
-<h2 class="text-xl font-bold mb-4">📊 Dashboard IA</h2>
-
-<div class="bg-white p-6 rounded-xl shadow flex justify-center">
-    <div class="w-[400px] h-[400px]">
-        {{ render_chart(chart) }}
-    </div>
-</div>
-<div class="mt-4 text-sm text-gray-600 space-y-1">
-    <p>🟢 <strong>Faible :</strong> équipement en bon état</p>
-    <p>🟠 <strong>Moyen :</strong> nécessite surveillance</p>
-    <p>🔴 <strong>Élevé :</strong> intervention urgente recommandée</p>
-</div>
-
-<h2 class="text-xl font-bold mt-10 mb-4">📈 Évolution des maintenances</h2>
-
-<div class="bg-white p-6 rounded-xl shadow flex justify-center">
-    <div class="w-[600px] h-[400px]">
-        {{ render_chart(chartMaint) }}
-    </div>
-</div>
-
 </div>
 </main>
 
@@ -363,35 +282,6 @@
     <span class="material-symbols-outlined" id="toastIcon">check_circle</span>
     <span id="notificationMessage">Opération réussie</span>
 </div>
-
-
-<div id="ai-modal"
-     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-
-    <div class="bg-white w-[650px] rounded-2xl shadow-2xl overflow-hidden animate-scale">
-
-        <!-- 🧠 HEADER -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-500 p-5 text-white flex justify-between items-center">
-            <div>
-                <h2 class="text-lg font-bold">🤖 Analyse IA</h2>
-                <p id="ai-equipement-name" class="text-sm opacity-80"></p>
-            </div>
-            <button onclick="closeAIModalAi()" class="text-white text-lg">✖</button>
-        </div>
-
-        <!-- 📦 CONTENT -->
-        <div id="ai-content" class="p-6 space-y-5 bg-gray-50">
-
-            <!-- 🔄 LOADER -->
-            <div id="ai-loader" class="text-center">
-                ⏳ Analyse en cours...
-            </div>
-
-        </div>
-
-    </div>
-</div>
-
 
 <!-- ================= MODAL AJOUTER ÉQUIPEMENT ================= -->
 <div id="equipementModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
@@ -609,12 +499,6 @@
         <span class="material-symbols-outlined">close</span>
     </button>
 </div>
-{% for message in app.flashes('error') %}
-    <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg flex items-center gap-2">
-        <span class="material-symbols-outlined">error</span>
-        {{ message }}
-    </div>
-{% endfor %}
 
 {{ form_start(formMaintenance, {
     'action': path('maintenance_new'),
@@ -622,8 +506,7 @@
     'attr': {
         'novalidate': 'novalidate',
         'id': 'maintenanceForm',
-        'class': 'space-y-4',
-        'data-turbo': 'false'
+        'class': 'space-y-4'
     }
 }) }}
 
@@ -762,295 +645,8 @@
 </div>
 </div>
 
-<div id="prediction-modal"
-     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-
-    <div class="bg-white w-[600px] rounded-2xl shadow-2xl overflow-hidden animate-scale">
-
-        <!-- 🔮 HEADER -->
-        <div class="bg-gradient-to-r from-purple-600 to-indigo-500 p-5 text-white flex justify-between items-center">
-            <div>
-                <h2 class="text-lg font-bold">🔮 Prédiction de Maintenance</h2>
-                <p id="equipement-name" class="text-sm opacity-80"></p>
-            </div>
-            <button onclick="closePredictionModal()" class="text-white text-lg">✖</button>
-        </div>
-
-        <!-- 📦 CONTENT -->
-        <div id="modal-content" class="p-6 space-y-5 bg-gray-50">
-
-            <!-- 📅 DATE CARD -->
-            <div class="bg-white p-4 rounded-xl shadow border">
-                <p class="text-sm text-gray-500 mb-2">📅 Date prédite</p>
-                <div class="flex items-center gap-3 bg-purple-50 p-3 rounded-lg">
-                    <span class="text-2xl">📆</span>
-                    <p id="predicted-date" class="text-xl font-bold text-purple-600"></p>
-                </div>
-
-                <p class="text-sm mt-2 text-gray-600">
-                    ⏳ <span id="days-remaining" class="font-bold text-blue-600"></span> jours restants
-                </p>
-            </div>
-
-            <!-- ⚠️ RISK CARD -->
-            <div id="risk-card" class="p-4 rounded-xl border">
-                <p class="font-bold mb-2">⚠️ Niveau de risque</p>
-                <p id="risk-text" class="text-sm"></p>
-            </div>
-
-        </div>
-
-    </div>
-</div>
-
-<style>
-@keyframes scaleIn {
-    from { transform: scale(0.85); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-.animate-scale {
-    animation: scaleIn 0.3s ease;
-}
-
-.loader {
-    border: 5px solid #eee;
-    border-top: 5px solid #3b82f6;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin:auto;
-}
-.animate-scale {
-    animation: scaleIn 0.3s ease;
-}
-
-@keyframes scaleIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
-
-</style>
-
-<script data-turbo="false">
-document.querySelectorAll('.analyse-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-
-        const id = this.dataset.id;
-
-        const aiModal = document.getElementById('ai-modal');
-        const aiContent = document.getElementById('ai-content');
-
-        if (!aiModal || !aiContent) {
-            console.error('Éléments ai-modal ou ai-content non trouvés');
-            return;
-        }
-
-        aiModal.classList.remove('hidden');
-        aiContent.innerHTML = "⏳ Analyse en cours...";
-
-        fetch('/analyse/' + id)
-            .then(res => res.json())
-            .then(data => {
-
-                let riskColor = "green";
-                let riskText = "Faible";
-
-                if (data.risk == 2) {
-                    riskColor = "red";
-                    riskText = "Élevé";
-                } else if (data.risk == 1) {
-                    riskColor = "orange";
-                    riskText = "Moyen";
-                }
-
-                let analysisHtml = data.analysis.map(a => `<li>${a}</li>`).join('');
-                let recHtml = data.recommendations.map(r => `<li>${r}</li>`).join('');
-
-                const equipementNameEl = document.getElementById('ai-equipement-name');
-                if (equipementNameEl) {
-                    equipementNameEl.innerText = data.nom || 'Équipement';
-                }
-
-                aiContent.innerHTML = `
-                    
-                    <!-- 📊 SCORE -->
-                    <div class="bg-white p-4 rounded-xl shadow border">
-                        <p class="text-sm text-gray-500 mb-2">📊 Score santé</p>
-                        <p class="text-2xl font-bold text-blue-600">${data.score}%</p>
-                    </div>
-
-                    <!-- ⚠️ RISQUE -->
-                    <div class="bg-white p-4 rounded-xl shadow border">
-                        <p class="text-sm text-gray-500 mb-2">⚠️ Niveau de risque</p>
-                        <p class="font-bold text-${riskColor}-600">${riskText}</p>
-                    </div>
-
-                    <!-- 📊 ANALYSE -->
-                    <div class="bg-white p-4 rounded-xl shadow border">
-                        <p class="font-bold mb-2">📊 Analyse</p>
-                        <ul class="list-disc pl-5 text-sm text-gray-700">
-                            ${analysisHtml}
-                        </ul>
-                    </div>
-
-                    <!-- 🔧 RECOMMANDATIONS -->
-                    <div class="bg-white p-4 rounded-xl shadow border">
-                        <p class="font-bold mb-2">🔧 Recommandations</p>
-                        <ul class="list-disc pl-5 text-sm text-gray-700">
-                            ${recHtml}
-                        </ul>
-                    </div>
-
-                `;
-            })
-            .catch(err => {
-                if (aiContent) {
-                    aiContent.innerHTML = "❌ Erreur lors de l'analyse";
-                }
-                console.error('Erreur lors de l\'analyse:', err);
-            });
-    });
-});
-
-function closeAIModalAi() {
-    document.getElementById('ai-modal').classList.add('hidden');
-}
-</script>
-
-<script data-turbo="false">
-function openPrediction(id) {
-
-    const modal = document.getElementById('prediction-modal');
-    const content = document.getElementById('modal-content');
-
-    if (!modal || !content) {
-        console.error('Modal de prédiction non trouvée');
-        return;
-    }
-
-    fetch('{{ path('predict_maintenance', {id: 0}) }}'.replace('0', id))
-        .then(res => res.json())
-        .then(data => {
-
-            // 🟢 CAS 1 : Aucune maintenance
-            if (data.status === 'NO_MAINTENANCE') {
-
-                content.innerHTML = `
-                    <div class="bg-green-100 border border-green-400 p-5 rounded-xl text-center">
-                        <p class="text-green-700 font-bold text-lg">
-                            ${data.message}
-                        </p>
-                    </div>
-                `;
-
-                modal.classList.remove('hidden');
-                return;
-            }
-
-            // 🔴 CAS 2 : erreur
-            if (data.error) {
-
-                content.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 p-5 rounded-xl text-center">
-                        <p class="text-red-600 font-semibold">
-                            ${data.error}
-                        </p>
-                    </div>
-                `;
-
-                modal.classList.remove('hidden');
-                return;
-            }
-
-            // ✅ CAS 3 : prédiction normale
-
-            // � Equipement name
-            const equipementNameEl = document.getElementById('equipement-name');
-            if (equipementNameEl) {
-                equipementNameEl.innerText = data.nomEq || 'Équipement';
-            }
-
-            // 📅 Date
-            const predictedDateEl = document.getElementById('predicted-date');
-            if (predictedDateEl) {
-                predictedDateEl.innerText = data.predictedDate.substring(0,10);
-            }
-
-            // ⏳ Jours
-            const daysRemainingEl = document.getElementById('days-remaining');
-            if (daysRemainingEl) {
-                daysRemainingEl.innerText = data.daysRemaining;
-            }
-
-            // ⚠️ Risk
-            const riskCard = document.getElementById('risk-card');
-            const riskText = document.getElementById('risk-text');
-
-            if (!riskCard || !riskText) {
-                console.error('Éléments risk-card ou risk-text non trouvés');
-                modal.classList.remove('hidden');
-                return;
-            }
-
-            let color = "";
-            let bg = "";
-
-            switch (data.riskLevel) {
-                case "CRITIQUE":
-                    bg = "bg-red-100 border-red-400";
-                    color = "text-red-700";
-                    break;
-                case "HAUT":
-                    bg = "bg-orange-100 border-orange-400";
-                    color = "text-orange-700";
-                    break;
-                case "MOYEN":
-                    bg = "bg-yellow-100 border-yellow-400";
-                    color = "text-yellow-700";
-                    break;
-                default:
-                    bg = "bg-green-100 border-green-400";
-                    color = "text-green-700";
-            }
-
-            riskCard.className = `p-4 rounded-xl border ${bg}`;
-            riskText.className = `text-sm font-semibold ${color}`;
-            riskText.innerText = data.riskLevel;
-
-            modal.classList.remove('hidden');
-        })
-        .catch(error => {
-            console.error("Erreur:", error);
-
-            const modalContent = document.getElementById('modal-content');
-            const predictionModal = document.getElementById('prediction-modal');
-
-            if (modalContent) {
-                modalContent.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 p-5 rounded-xl text-center">
-                        <p class="text-red-600">Erreur serveur</p>
-                    </div>
-                `;
-            }
-
-            if (predictionModal) {
-                predictionModal.classList.remove('hidden');
-            }
-        });
-}
-
-function closePredictionModal() {
-    document.getElementById('prediction-modal').classList.add('hidden');
-}
-</script>
-
 <!-- ================= JAVASCRIPT ================= -->
-<script data-turbo="false">
+<script>
 
 // ===== UTILITIES =====
 
@@ -1217,9 +813,7 @@ document.getElementById('equipementModal')?.addEventListener('click', function(e
 
 // ===== MODAL SUPPRESSION =====
 
-if (typeof deleteId === 'undefined') {
-    var deleteId = null;
-}
+let deleteId = null;
 
 function openDeleteModal(id) {
     deleteId = id;
@@ -1455,173 +1049,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </script>
 
-
-<script data-turbo="false">
-if (typeof symbols === 'undefined') {
-    var symbols = {
-    TND: "د.ت",
-    USD: "$",
-    EUR: "€",
-    AUD: "A$"
-};
-
-function convertPrices() {
-    let currency = document.getElementById("currencySelect").value;
-
-    let rate = 1;
-    if (currency !== "TND" && conversionRates[currency]) {
-        rate = conversionRates[currency];
-    }
-
-    document.querySelectorAll(".price").forEach(el => {
-        let base = parseFloat(el.dataset.base);
-        let newPrice = base * rate;
-
-        el.style.transition = "0.3s";
-        el.style.opacity = "0.5";
-
-        setTimeout(() => {
-            el.innerText = newPrice.toFixed(2) + " " + symbols[currency];
-            el.style.opacity = "1";
-        }, 150);
-    });
-}
-
-if (typeof conversionRates === 'undefined') {
-    var conversionRates = {};
-}
-
-async function loadRates() {
-    try {
-        const res = await fetch('/api/exchange-rates');
-        conversionRates = await res.json();
-    } catch (e) {
-        console.error("Erreur API", e);
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadRates();
-
-    document.getElementById("currencySelect")
-        ?.addEventListener("change", convertPrices);
-});
-}
-</script>
-
-<script data-turbo="false">
-async function generateImage(id) {
-
-    // 🔥 overlay (fond sombre)
-    const overlay = document.createElement('div');
-    overlay.style = `
-        position:fixed;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        background:rgba(0,0,0,0.6);
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        z-index:9999;
-    `;
-
-    // 🔥 modal centré
-    const modal = document.createElement('div');
-    modal.style = `
-        background:white;
-        padding:20px;
-        border-radius:12px;
-        max-width:80%;
-        max-height:90%;
-        overflow:auto;
-        box-shadow:0 0 20px rgba(0,0,0,0.3);
-        text-align:center;
-    `;
-
-    modal.innerHTML = "⏳ Génération en cours...";
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-
-    try {
-        const response = await fetch(`/equipement/${id}/generate-image`, {
-            method: 'POST'
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            overlay.remove();
-            alert(data.message);
-            return;
-        }
-
-        // 🔥 contenu final
-        modal.innerHTML = `
-            <h2 style="margin-bottom:10px;">🎨 Image générée</h2>
-
-            <img id="generatedImg" src="${data.image}" 
-                style="max-width:500px; width:100%; border-radius:10px;" />
-
-            <br><br>
-
-            <div style="display:flex; justify-content:center; gap:10px;">
-                <button id="downloadBtn"
-                    style="padding:10px 20px;
-                        background:#4caf50;
-                        color:white;
-                        border:none;
-                        border-radius:8px;
-                        cursor:pointer;">
-                    💾 Télécharger
-                </button>
-
-                <button id="closeModal"
-                    style="padding:10px 20px;
-                        background:#f44336;
-                        color:white;
-                        border:none;
-                        border-radius:8px;
-                        cursor:pointer;">
-                    ❌ Fermer
-                </button>
-            </div>
-        `;
-
-document.getElementById('closeModal').onclick = () => {
-    overlay.remove();
-};
-
-// ✅ télécharger image
-document.getElementById('downloadBtn').onclick = () => {
-    const img = document.getElementById('generatedImg');
-
-    const link = document.createElement('a');
-    link.href = img.src;
-    link.download = 'equipement_image.png';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-        // ✅ fermer si clic en dehors
-        overlay.onclick = (e) => {
-            if (e.target === overlay) {
-                overlay.remove();
-            }
-        };
-
-    } catch (e) {
-        overlay.remove();
-        alert("Erreur : " + e.message);
-    }
-}
-</script>
-
 {% if form.vars.submitted and not form.vars.valid %}
-<script data-turbo="false">
+<script>
     document.addEventListener("DOMContentLoaded", function() {
         openModal();
         showNotification('❌ Le formulaire contient des erreurs', 'error');
@@ -1630,7 +1059,7 @@ document.getElementById('downloadBtn').onclick = () => {
 {% endif %}
 
 {% if formMaintenance.vars.submitted and not formMaintenance.vars.valid %}
-<script data-turbo="false">
+<script>
     document.addEventListener("DOMContentLoaded", function() {
         openMaintenanceModal();
         showNotification('❌ Le formulaire contient des erreurs', 'error');

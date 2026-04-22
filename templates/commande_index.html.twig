@@ -13,6 +13,41 @@
         </div>
 
         <div style="padding: 30px;">
+            {% if client_score is not null %}
+                {% set scoreColor = client_score.value >= 85 ? '#16a34a' : (client_score.value >= 65 ? '#2563eb' : (client_score.value >= 40 ? '#f59e0b' : '#ef4444')) %}
+                <div style="margin-bottom: 24px; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="padding: 14px 18px; background: linear-gradient(135deg, #ecfdf5 0%, #f0f9ff 100%); border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 10px; color: #1f2937; font-weight: 700;">
+                            <span class="material-symbols-outlined" style="font-size: 22px; color: #15803d;">insights</span>
+                            Votre score client intelligent
+                        </div>
+                        <span style="background: {{ scoreColor }}; color: #fff; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">
+                            {{ client_score.category }}
+                        </span>
+                    </div>
+
+                    <div style="padding: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;">
+                        <div style="background: #f9fafb; border-radius: 10px; padding: 12px; border: 1px solid #eef2f7;">
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">Score / 100</div>
+                            <div style="font-size: 26px; font-weight: 800; color: {{ scoreColor }};">{{ client_score.value }}</div>
+                        </div>
+                        <div style="background: #f9fafb; border-radius: 10px; padding: 12px; border: 1px solid #eef2f7;">
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">Commandes</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #111827;">{{ client_score.metrics.total_orders }}</div>
+                        </div>
+                        <div style="background: #f9fafb; border-radius: 10px; padding: 12px; border: 1px solid #eef2f7;">
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">Total depense</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #111827;">{{ client_score.metrics.total_spent|number_format(2, '.', ' ') }} DT</div>
+                        </div>
+                        <div style="background: #f9fafb; border-radius: 10px; padding: 12px; border: 1px solid #eef2f7;">
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">Annulations</div>
+                            <div style="font-size: 20px; font-weight: 700; color: #111827;">{{ client_score.metrics.cancellations }}</div>
+                        </div>
+                    </div>
+
+                </div>
+            {% endif %}
+
             {% if commandes is empty %}
                 <div style="text-align: center; padding: 50px 20px;">
                     <span class="material-symbols-outlined" style="font-size: 80px; color: #d1d5db; margin-bottom: 20px;">receipt_long</span>
@@ -29,6 +64,7 @@
                             <tr style="border-bottom: 2px solid #f3f4f6;">
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Commande</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Produit</th>
+                                <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Adresse livraison</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Quantité</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Total</th>
                                 <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Statut</th>
@@ -66,11 +102,17 @@
                                         <span style="color: #ef4444;">Produit supprimé</span>
                                     {% endif %}
                                 </td>
+                                <td style="border: none; padding: 20px 15px; vertical-align: middle;">
+                                    <span style="font-size: 14px; color: #4b5563;">{{ commande.adresseLivraison ?: '-' }}</span>
+                                </td>
                                 <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                     <span style="font-size: 16px; font-weight: 600;">{{ commande.quantite }}</span>
                                 </td>
                                 <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
-                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ commande.prixTotal }} DT</span>
+                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ commande.prixTotal|number_format(2, '.', ' ') }} DT</span>
+                                    {% if tnd_to_eur_rate is not null %}
+                                        <div style="font-size: 12px; color: #0f766e; font-weight: 600; margin-top: 4px;">~ {{ (commande.prixTotal * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                    {% endif %}
                                 </td>
                                 <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                     {% set statusColor = commande.statutCommande == 'En attente' ? '#f59e0b' : (commande.statutCommande == 'Confirmée' ? '#3b82f6' : (commande.statutCommande == 'Livrée' ? '#10b981' : '#ef4444')) %}

@@ -2,7 +2,48 @@
 
 {% block title %}Créer une commande - EL FIRMA{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .stripe-zone { display: none; margin-top: 12px; border-radius: 14px; border: 1px solid #d1fae5; background: linear-gradient(145deg, #ecfdf5 0%, #f0fdf4 55%, #dcfce7 100%); padding: 18px; }
+        .stripe-zone.active { display: block; animation: fadeInStripe 260ms ease-out; }
+        .pay-card-preview { position: relative; border-radius: 16px; padding: 20px; color: #ecfeff; background: radial-gradient(circle at 15% 15%, rgba(16,185,129,.4), transparent 45%), linear-gradient(135deg, #052e16 0%, #064e3b 45%, #065f46 100%); box-shadow: 0 14px 26px rgba(6,95,70,.28); overflow: hidden; min-height: 170px; transform-style: preserve-3d; transition: transform .28s ease, box-shadow .28s ease; }
+        .pay-card-preview::after { content: ''; position: absolute; top: -40%; right: -10%; width: 180px; height: 180px; background: rgba(255,255,255,.08); border-radius: 50%; }
+        .pay-card-preview:hover { transform: translateY(-2px) rotateX(2deg); box-shadow: 0 20px 34px rgba(6,95,70,.35); }
+        .pay-chip { width: 44px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%); margin-bottom: 18px; }
+        .pay-card-number { letter-spacing: 2px; font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+        .pay-card-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; text-transform: uppercase; opacity: .92; }
+        .stripe-element-wrap { margin-top: 14px; border: 2px solid #bbf7d0; background: #fff; border-radius: 10px; padding: 12px; transition: border-color .2s ease, box-shadow .2s ease; }
+        .stripe-element-wrap.focused { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+        .assist-fab { position: fixed; right: 22px; bottom: 22px; z-index: 1100; width: 58px; height: 58px; border-radius: 50%; border: none; background: linear-gradient(135deg, #0f766e 0%, #0ea5a4 100%); color: #fff; box-shadow: 0 12px 22px rgba(15,118,110,.35); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+        .assist-panel { position: fixed; right: 22px; bottom: 92px; width: min(92vw, 380px); max-height: 68vh; z-index: 1100; border-radius: 16px; overflow: hidden; box-shadow: 0 18px 38px rgba(15,23,42,.2); background: #fff; border: 1px solid #ccfbf1; transform: translateY(10px); opacity: 0; pointer-events: none; transition: .22s ease; }
+        .assist-panel.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        .assist-head { padding: 14px 16px; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: #f0fdfa; display: flex; justify-content: space-between; align-items: center; }
+        .assist-body { padding: 12px; background: linear-gradient(180deg, #f8fafc 0%, #ecfeff 100%); height: 320px; overflow-y: auto; }
+        .assist-msg { margin-bottom: 10px; display: flex; }
+        .assist-msg .bubble { max-width: 86%; padding: 9px 11px; border-radius: 11px; font-size: 14px; line-height: 1.35; }
+        .assist-msg.bot { justify-content: flex-start; }
+        .assist-msg.bot .bubble { background: #fff; border: 1px solid #bae6fd; color: #0f172a; }
+        .assist-msg.user { justify-content: flex-end; }
+        .assist-msg.user .bubble { background: #0d9488; color: #fff; }
+        .assist-quick { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .assist-quick button { border: 1px solid #99f6e4; background: #f0fdfa; color: #134e4a; border-radius: 999px; padding: 5px 10px; font-size: 12px; }
+        .assist-input { border-top: 1px solid #ccfbf1; padding: 10px; background: #fff; display: flex; gap: 8px; }
+        .assist-input input { flex: 1; border: 1px solid #99f6e4; border-radius: 8px; padding: 9px 10px; font-size: 14px; }
+        .assist-input button { border: none; background: #0f766e; color: #fff; border-radius: 8px; padding: 9px 12px; font-weight: 700; }
+        .delivery-map-box { margin-top: 10px; border: 2px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; }
+        .delivery-map-head { padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid #e5e7eb; }
+        .delivery-map-head button { border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; border-radius: 7px; font-size: 12px; padding: 5px 8px; font-weight: 700; }
+        #delivery-map { height: 240px; width: 100%; }
+        #delivery-map-status { font-size: 12px; color: #6b7280; }
+        @keyframes fadeInStripe { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+{% endblock %}
+
 {% block body %}
+{% set formErrors = form_errors|default({}) %}
+{% set oldInput = old|default({}) %}
 <div class="container mt-5">
     <div class="row">
         <div class="col-lg-8">
@@ -14,7 +55,15 @@
                     </h2>
                 </div>
 
-                <form method="POST" style="padding: 30px;">
+                <form method="POST" id="checkoutForm" style="padding: 30px;">
+                    <input type="hidden" id="stripe_payment_intent_id" name="stripe_payment_intent_id" value="{{ oldInput.stripe_payment_intent_id|default('') }}">
+                    {% if formErrors._global is defined %}
+                        <div class="alert alert-danger" role="alert" style="margin-bottom: 20px;">
+                            {% for err in formErrors._global %}
+                                <div>{{ err }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                     <!-- Informations client -->
                     <div style="margin-bottom: 30px;">
                         <h4 style="color: #2d5016; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
@@ -25,38 +74,124 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="nom_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Nom complet *</label>
-                                <input type="text" id="nom_client" name="nom_client" required 
+                                <input type="text" id="nom_client" name="nom_client" value="{{ oldInput.nom_client|default('') }}"
                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                                {% if formErrors.nom_client is defined %}
+                                    {% for err in formErrors.nom_client %}
+                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
+                                    {% endfor %}
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="email_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Email *</label>
-                                <input type="email" id="email_client" name="email_client" required 
-                                       style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                                <label for="adresse_livraison" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Adresse de livraison *</label>
+                                <textarea id="adresse_livraison" name="adresse_livraison" rows="2"
+                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;">{{ oldInput.adresse_livraison|default('') }}</textarea>
+                                <div class="delivery-map-box">
+                                    <div class="delivery-map-head">
+                                        <span style="font-size: 12px; font-weight: 700; color: #1f2937;">Choisir sur la carte (clic pour remplir l'adresse)</span>
+                                        <button id="use-current-location" type="button">Ma position</button>
+                                    </div>
+                                    <div id="delivery-map"></div>
+                                    <div id="delivery-map-status" style="padding: 8px 10px;">Astuce: vous pouvez ecrire manuellement ou cliquer sur la carte.</div>
+                                </div>
+                                {% if formErrors.adresse_livraison is defined %}
+                                    {% for err in formErrors.adresse_livraison %}
+                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
+                                    {% endfor %}
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="telephone_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Téléphone *</label>
-                                <input type="tel" id="telephone_client" name="telephone_client" required 
-                                       style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Mode de paiement</label>
+                                <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Mode de paiement *</label>
                                 <select id="mode_paiement" name="mode_paiement" 
                                         style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
-                                    <option value="Cash">Cash (à la livraison)</option>
-                                    <option value="Carte bancaire">Carte bancaire</option>
-                                    <option value="Virement">Virement bancaire</option>
+                                    <option value="Cash" {% if oldInput.mode_paiement|default('Cash') == 'Cash' %}selected{% endif %}>Cash (à la livraison)</option>
+                                    <option value="Carte bancaire" {% if oldInput.mode_paiement|default('Cash') == 'Carte bancaire' %}selected{% endif %}>Carte bancaire</option>
+                                    <option value="Virement" {% if oldInput.mode_paiement|default('Cash') == 'Virement' %}selected{% endif %}>Virement bancaire</option>
                                 </select>
+                                {% if formErrors.mode_paiement is defined %}
+                                    {% for err in formErrors.mode_paiement %}
+                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
+                                    {% endfor %}
+                                {% endif %}
                             </div>
                             <div class="col-12 mb-3">
-                                <label for="adresse_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Adresse de livraison *</label>
-                                <textarea id="adresse_client" name="adresse_client" rows="3" required 
-                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                                <div id="stripe-zone" class="stripe-zone {% if oldInput.mode_paiement|default('Cash') == 'Carte bancaire' %}active{% endif %}">
+                                    <div class="pay-card-preview" id="pay-card-preview">
+                                        <div class="pay-chip"></div>
+                                        <div class="pay-card-number" id="card-preview-number">•••• •••• •••• ••••</div>
+                                        <div class="pay-card-row">
+                                            <div>
+                                                <div>Nom porteur</div>
+                                                <div id="card-preview-name" style="font-size: 15px; font-weight: 700; margin-top: 3px;">{{ oldInput.nom_client|default('Votre nom') }}</div>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <div>Réseau</div>
+                                                <div style="font-size: 16px; font-weight: 700; margin-top: 3px;">Stripe</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 14px; display: grid; gap: 10px;">
+                                        <div>
+                                            <label for="stripe_card_holder" style="font-weight: 600; color: #14532d; margin-bottom: 6px; display: block;">Nom du porteur de carte</label>
+                                            <input type="text" id="stripe_card_holder" value="{{ oldInput.nom_client|default('') }}" placeholder="Nom et prénom"
+                                                   style="width: 100%; padding: 10px 12px; border: 2px solid #bbf7d0; border-radius: 8px; font-size: 15px;">
+                                        </div>
+                                        <div>
+                                            <label style="font-weight: 600; color: #14532d; margin-bottom: 6px; display: block;">Informations carte</label>
+                                            <div id="stripe-element-wrap" class="stripe-element-wrap">
+                                                <div id="stripe-card-element"></div>
+                                            </div>
+                                        </div>
+                                        {% if not stripe_enabled %}
+                                            <div style="color: #dc2626; font-size: 13px;">Paiement carte indisponible: configurez les cles Stripe (STRIPE_PUBLIC_KEY et STRIPE_SECRET_KEY).</div>
+                                        {% endif %}
+                                        <div id="stripe-client-error" style="display: none; color: #dc2626; font-size: 13px;"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-12 mb-3">
-                                <label for="commentaires" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Commentaires (optionnel)</label>
-                                <textarea id="commentaires" name="commentaires" rows="2" 
-                                          style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;" 
-                                          placeholder="Instructions spéciales pour la livraison..."></textarea>
+                            <div class="col-12 mb-3" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 15px;">
+                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #92400e;">Code promo (valable 3 jours)</p>
+                                <p style="margin: 0 0 12px 0; color: #78350f; font-size: 14px;">Génération disponible pour un panier à partir de {{ promo_min_total|number_format(0, '.', ' ') }} DT.</p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                                    <input type="text" id="promo_code" name="promo_code" value="{{ oldInput.promo_code|default('') }}" placeholder="Entrez votre code promo"
+                                           style="flex: 1; min-width: 220px; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 15px;">
+                                    <button type="submit" name="checkout_action" value="generate_promo"
+                                            style="background: #92400e; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        Générer code
+                                    </button>
+                                    <button type="submit" name="checkout_action" value="apply_promo"
+                                            style="background: #b45309; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        Appliquer code
+                                    </button>
+                                </div>
+                                {% if promo_generated_code %}
+                                    <p style="margin: 10px 0 0 0; font-size: 14px; color: #065f46;">
+                                        Code généré: <strong>{{ promo_generated_code }}</strong>
+                                        {% if promo_expires_at %}
+                                            (expire le {{ promo_expires_at|date('d/m/Y H:i') }})
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+                                {% if promo_is_applied %}
+                                    <p style="margin: 8px 0 0 0; font-size: 14px; color: #166534; font-weight: 700;">
+                                        Code promo appliqué: réduction de {{ promo_percent }}%
+                                    </p>
+                                {% endif %}
+                                {% if formErrors.promo_code is defined %}
+                                    {% for err in formErrors.promo_code %}
+                                        <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">{{ err }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="col-12 mb-3" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px;">
+                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #2d5016;">Champs remplis automatiquement</p>
+                                <ul style="margin: 0; padding-left: 18px; color: #4b5563; font-size: 14px;">
+                                    <li>Date de commande: maintenant</li>
+                                    <li>Statut commande: En attente</li>
+                                    <li>Statut paiement: Non payé</li>
+                                    <li>Prix total: calculé depuis le panier</li>
+                                    <li>Produit et quantité: récupérés depuis le panier</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -83,20 +218,47 @@
                                     </div>
                                     <div>
                                         <h6 style="margin: 0 0 5px 0; font-weight: 700;">{{ item.produit.nom }}</h6>
-                                        <p style="margin: 0; font-size: 14px; color: #6b7280;">{{ item.produit.prixUnitaire }} DT x {{ item.quantite }}</p>
+                                        <p style="margin: 0; font-size: 14px; color: #6b7280;">{{ item.produit.prixUnitaire|number_format(2, '.', ' ') }} DT x {{ item.quantite }}</p>
+                                        {% if tnd_to_eur_rate is not null %}
+                                            <p style="margin: 3px 0 0 0; font-size: 12px; color: #0f766e;">~ {{ (item.produit.prixUnitaire * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR / unite</p>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ item.subtotal }} DT</span>
+                                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ item.subtotal|number_format(2, '.', ' ') }} DT</span>
+                                    {% if tnd_to_eur_rate is not null %}
+                                        <div style="font-size: 12px; color: #0f766e; font-weight: 600; margin-top: 4px;">~ {{ (item.subtotal * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}
                             
                             <div style="border-top: 2px solid #e5e7eb; margin-top: 20px; padding-top: 20px;">
+                                {% if promo_discount|default(0) > 0 %}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 16px; font-weight: 600; color: #92400e;">Réduction promo ({{ promo_percent }}%) :</span>
+                                        <span style="font-size: 18px; font-weight: 700; color: #b45309;">-{{ promo_discount|number_format(2, '.', ' ') }} DT</span>
+                                    </div>
+                                    {% if tnd_to_eur_rate is not null %}
+                                        <div style="text-align: right; margin: -4px 0 8px 0; color: #0f766e; font-size: 12px;">~ -{{ (promo_discount * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                    {% endif %}
+                                {% endif %}
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total:</span>
-                                    <span style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total }} DT</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total à payer:</span>
+                                    <span style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ final_total|default(total)|number_format(2, '.', ' ') }} DT</span>
                                 </div>
+                                {% if tnd_to_eur_rate is not null %}
+                                    <div style="text-align: right; margin-top: 4px; color: #0f766e; font-size: 13px; font-weight: 700;">~ {{ (final_total|default(total) * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                {% endif %}
+                                {% if eur_estimate is not null %}
+                                    <div style="text-align: right; margin-top: 4px; color: #0f766e; font-size: 13px; font-weight: 600;">Approx. {{ eur_estimate|number_format(2, '.', ' ') }} EUR (paiement carte)</div>
+                                {% endif %}
+                                {% if promo_discount|default(0) > 0 %}
+                                    <div style="text-align: right; margin-top: 4px; color: #6b7280; font-size: 13px;">Sous-total avant réduction: {{ total|number_format(2, '.', ' ') }} DT</div>
+                                    {% if tnd_to_eur_rate is not null %}
+                                        <div style="text-align: right; margin-top: 2px; color: #6b7280; font-size: 12px;">~ {{ (total * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                    {% endif %}
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -106,7 +268,7 @@
                         <a href="{{ path('app_panier_index') }}" style="background: #6b7280; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
                             Retour au panier
                         </a>
-                        <button type="submit" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; max-width: 300px;">
+                        <button type="submit" id="confirm-order-btn" name="checkout_action" value="confirm_order" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; max-width: 300px;">
                             Confirmer la commande
                         </button>
                     </div>
@@ -179,4 +341,829 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 {% endfor %}
+
+<button id="assist-fab" class="assist-fab" type="button" aria-label="Ouvrir assistant commande">
+    <span class="material-symbols-outlined">forum</span>
+</button>
+
+<section id="assist-panel" class="assist-panel" aria-live="polite">
+    <div class="assist-head">
+        <strong>Assistant commande</strong>
+        <button id="assist-close" type="button" style="border:none;background:transparent;color:#fff;">✕</button>
+    </div>
+    <div id="assist-body" class="assist-body"></div>
+    <div class="assist-input">
+        <input id="assist-input" type="text" placeholder="Ex: comment utiliser le code promo ?">
+        <button id="assist-send" type="button">Envoyer</button>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="{{ asset('assets/js/gesture_assistant.js') }}?v=3"></script>
+    <script>
+        (function () {
+            const addressInput = document.getElementById('adresse_livraison');
+            const mapEl = document.getElementById('delivery-map');
+            const statusEl = document.getElementById('delivery-map-status');
+            const myLocationBtn = document.getElementById('use-current-location');
+
+            if (!addressInput || !mapEl || typeof L === 'undefined') {
+                if (statusEl) {
+                    statusEl.textContent = 'Carte indisponible. Vous pouvez saisir l\'adresse manuellement.';
+                }
+                return;
+            }
+
+            const defaultCenter = [36.8065, 10.1815];
+            const map = L.map('delivery-map', { zoomControl: true }).setView(defaultCenter, 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            let marker = null;
+
+            function setStatus(message, isError) {
+                if (!statusEl) return;
+                statusEl.textContent = message;
+                statusEl.style.color = isError ? '#b91c1c' : '#6b7280';
+            }
+
+            function placeMarker(lat, lng) {
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                    return;
+                }
+                marker = L.marker([lat, lng]).addTo(map);
+            }
+
+            async function reverseGeocode(lat, lng) {
+                setStatus('Recherche de l\'adresse...', false);
+                try {
+                    const response = await fetch('{{ path('app_api_commande_reverse_geocode') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ lat: lat, lng: lng })
+                    });
+
+                    const data = await response.json();
+                    const address = (response.ok && data && data.ok && data.address)
+                        ? String(data.address).trim()
+                        : '';
+
+                    if (address !== '') {
+                        addressInput.value = address;
+                        addressInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        setStatus('Adresse remplie automatiquement depuis la carte.', false);
+                    } else {
+                        addressInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                        setStatus('Adresse exacte non trouvee, coordonnees remplies.', false);
+                    }
+                } catch (_error) {
+                    addressInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    setStatus('Impossible de recuperer l\'adresse exacte. Coordonnees remplies.', true);
+                }
+            }
+
+            map.on('click', function (event) {
+                const lat = event.latlng.lat;
+                const lng = event.latlng.lng;
+                placeMarker(lat, lng);
+                reverseGeocode(lat, lng);
+            });
+
+            if (myLocationBtn) {
+                myLocationBtn.addEventListener('click', function () {
+                    if (!navigator.geolocation) {
+                        setStatus('Geolocalisation non supportee par ce navigateur.', true);
+                        return;
+                    }
+
+                    setStatus('Detection de votre position...', false);
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        map.setView([lat, lng], 16);
+                        placeMarker(lat, lng);
+                        reverseGeocode(lat, lng);
+                    }, function () {
+                        setStatus('Impossible d\'obtenir votre position.', true);
+                    }, { enableHighAccuracy: true, timeout: 8000 });
+                });
+            }
+
+            setTimeout(function () {
+                map.invalidateSize();
+            }, 120);
+        })();
+    </script>
+    <script>
+        (function () {
+            const modeSelect = document.getElementById('mode_paiement');
+            const stripeZone = document.getElementById('stripe-zone');
+            const checkoutForm = document.getElementById('checkoutForm');
+            const confirmButton = document.getElementById('confirm-order-btn');
+            const stripeErrorEl = document.getElementById('stripe-client-error');
+            const stripeIntentInput = document.getElementById('stripe_payment_intent_id');
+            const cardHolderInput = document.getElementById('stripe_card_holder');
+            const nameInput = document.getElementById('nom_client');
+            const cardPreviewName = document.getElementById('card-preview-name');
+            const cardPreviewNumber = document.getElementById('card-preview-number');
+            const elementWrap = document.getElementById('stripe-element-wrap');
+            const stripeEnabled = {{ stripe_enabled ? 'true' : 'false' }};
+            const stripePublicKey = '{{ stripe_public_key|e('js') }}';
+            let stripe = null;
+            let cardElement = null;
+            let stripeValidated = false;
+
+            function showStripeError(message) {
+                if (!stripeErrorEl) return;
+                stripeErrorEl.style.display = 'block';
+                stripeErrorEl.textContent = message;
+            }
+
+            function clearStripeError() {
+                if (!stripeErrorEl) return;
+                stripeErrorEl.style.display = 'none';
+                stripeErrorEl.textContent = '';
+            }
+
+            function refreshCardName() {
+                if (!cardPreviewName) return;
+                const value = (cardHolderInput && cardHolderInput.value.trim() !== '')
+                    ? cardHolderInput.value.trim()
+                    : ((nameInput && nameInput.value.trim() !== '') ? nameInput.value.trim() : 'Votre nom');
+                cardPreviewName.textContent = value;
+            }
+
+            function refreshStripeVisibility() {
+                if (!modeSelect || !stripeZone) return;
+                const isCard = modeSelect.value === 'Carte bancaire';
+                stripeZone.classList.toggle('active', isCard);
+                if (!isCard) {
+                    clearStripeError();
+                }
+            }
+
+            function initStripe() {
+                if (!stripeEnabled || !stripePublicKey || typeof Stripe === 'undefined') {
+                    return;
+                }
+                stripe = Stripe(stripePublicKey);
+                const elements = stripe.elements();
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            color: '#111827',
+                            fontSize: '16px',
+                            fontFamily: 'Open Sans, sans-serif',
+                            '::placeholder': { color: '#6b7280' }
+                        },
+                        invalid: { color: '#dc2626' }
+                    }
+                });
+
+                cardElement.mount('#stripe-card-element');
+
+                cardElement.on('focus', function () {
+                    if (elementWrap) elementWrap.classList.add('focused');
+                });
+                cardElement.on('blur', function () {
+                    if (elementWrap) elementWrap.classList.remove('focused');
+                });
+                cardElement.on('change', function (event) {
+                    clearStripeError();
+                    cardPreviewNumber.textContent = event.empty ? '•••• •••• •••• ••••' : '•••• •••• •••• ' + (event.brand ? event.brand.toUpperCase().slice(0, 4) : 'CARD');
+                    if (event.error) {
+                        showStripeError(event.error.message);
+                    }
+                });
+            }
+
+            async function createPaymentIntent() {
+                const promoCode = document.getElementById('promo_code');
+                const adresseInput = document.getElementById('adresse_livraison');
+                const body = new URLSearchParams();
+                body.set('promo_code', promoCode ? promoCode.value : '');
+                body.set('adresse_livraison', adresseInput ? adresseInput.value : '');
+                const response = await fetch('{{ path('app_commande_stripe_create_intent') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: body.toString()
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erreur de creation du paiement Stripe.');
+                }
+
+                return data;
+            }
+
+            if (modeSelect) {
+                modeSelect.addEventListener('change', refreshStripeVisibility);
+            }
+
+            if (cardHolderInput) {
+                cardHolderInput.addEventListener('input', refreshCardName);
+            }
+
+            if (nameInput) {
+                nameInput.addEventListener('input', refreshCardName);
+            }
+
+            refreshCardName();
+            refreshStripeVisibility();
+            initStripe();
+
+            if (checkoutForm && confirmButton) {
+                checkoutForm.addEventListener('submit', async function (event) {
+                    const submitter = event.submitter;
+                    const isConfirmAction = submitter && submitter.name === 'checkout_action' && submitter.value === 'confirm_order';
+
+                    if (!isConfirmAction) {
+                        return;
+                    }
+
+                    const isCardPayment = modeSelect && modeSelect.value === 'Carte bancaire';
+                    if (!isCardPayment) {
+                        stripeValidated = false;
+                        stripeIntentInput.value = '';
+                        return;
+                    }
+
+                    if (stripeValidated) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    clearStripeError();
+
+                    if (!stripeEnabled) {
+                        showStripeError('Paiement carte indisponible pour le moment.');
+                        return;
+                    }
+
+                    if (!stripe || !cardElement) {
+                        showStripeError('Stripe n\'est pas pret. Rechargez la page.');
+                        return;
+                    }
+
+                    submitter.disabled = true;
+                    submitter.textContent = 'Paiement en cours...';
+
+                    try {
+                        const intentData = await createPaymentIntent();
+                        const holderName = (cardHolderInput && cardHolderInput.value.trim() !== '')
+                            ? cardHolderInput.value.trim()
+                            : (nameInput ? nameInput.value.trim() : '');
+
+                        const result = await stripe.confirmCardPayment(intentData.clientSecret, {
+                            payment_method: {
+                                card: cardElement,
+                                billing_details: {
+                                    name: holderName
+                                }
+                            }
+                        });
+
+                        if (result.error) {
+                            throw new Error(result.error.message || 'Paiement refuse.');
+                        }
+
+                        if (!result.paymentIntent || result.paymentIntent.status !== 'succeeded') {
+                            throw new Error('Paiement carte non confirme.');
+                        }
+
+                        stripeIntentInput.value = result.paymentIntent.id;
+                        stripeValidated = true;
+                        submitter.textContent = 'Validation...';
+                        submitter.disabled = false;
+                        checkoutForm.requestSubmit(submitter);
+                    } catch (err) {
+                        showStripeError(err.message || 'Erreur lors du paiement carte.');
+                        submitter.disabled = false;
+                        submitter.textContent = 'Confirmer la commande';
+                    }
+                });
+            }
+        })();
+    </script>
+
+    <script>
+        (function () {
+            const panel = document.getElementById('assist-panel');
+            const fab = document.getElementById('assist-fab');
+            const closeBtn = document.getElementById('assist-close');
+            const body = document.getElementById('assist-body');
+            const input = document.getElementById('assist-input');
+            const send = document.getElementById('assist-send');
+
+            if (!panel || !fab || !closeBtn || !body || !input || !send) {
+                return;
+            }
+
+            function appendMessage(text, isUser, quickReplies) {
+                const wrap = document.createElement('div');
+                wrap.className = 'assist-msg ' + (isUser ? 'user' : 'bot');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = text;
+                wrap.appendChild(bubble);
+
+                if (!isUser && Array.isArray(quickReplies) && quickReplies.length > 0) {
+                    const quick = document.createElement('div');
+                    quick.className = 'assist-quick';
+                    quickReplies.slice(0, 4).forEach(function (label) {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.textContent = label;
+                        btn.addEventListener('click', function () {
+                            askBot(label);
+                        });
+                        quick.appendChild(btn);
+                    });
+                    bubble.appendChild(quick);
+                }
+
+                body.appendChild(wrap);
+                body.scrollTop = body.scrollHeight;
+            }
+
+            async function askBot(question) {
+                const text = (question || input.value || '').trim();
+                if (!text) {
+                    return;
+                }
+
+                appendMessage(text, true, []);
+                input.value = '';
+
+                try {
+                    const response = await fetch('{{ path('app_api_commande_chatbot') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: text })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erreur chatbot.');
+                    }
+
+                    appendMessage(data.reply || 'Je suis la pour vous aider.', false, data.quick_replies || []);
+                } catch (err) {
+                    appendMessage(err.message || 'Erreur lors de la reponse assistant.', false, []);
+                }
+            }
+
+            fab.addEventListener('click', function () {
+                panel.classList.add('active');
+                if (body.children.length === 0) {
+                    appendMessage('Bonjour! Je suis votre assistant commande. Je peux vous aider sur promo, paiement Stripe, adresse et total.', false, ['Code promo', 'Paiement carte Stripe', 'Adresse de livraison', 'Total actuel']);
+                }
+            });
+
+            closeBtn.addEventListener('click', function () {
+                panel.classList.remove('active');
+            });
+
+            send.addEventListener('click', function () {
+                askBot('');
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    askBot('');
+                }
+            });
+        })();
+    </script>
+
+    <script>
+        (function () {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const synth = window.speechSynthesis;
+            const hasVoice = !!SpeechRecognition && !!synth;
+            let isListening = false;
+            let networkRetryCount = 0;
+            let isRecognitionStarting = false;
+            let restartOnEnd = false;
+            let manualStop = false;
+
+            const fab = document.createElement('button');
+            fab.type = 'button';
+            fab.id = 'voice-checkout-fab';
+            fab.style.cssText = 'position: fixed; left: 22px; bottom: 22px; z-index: 1100; width: 58px; height: 58px; border-radius: 50%; border: none; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: #fff; box-shadow: 0 12px 22px rgba(15,118,110,.35); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;';
+            fab.innerHTML = '<span class="material-symbols-outlined">mic</span>';
+            fab.title = hasVoice ? 'Voice assistant for checkout' : 'Voice assistant not supported on this browser';
+            document.body.appendChild(fab);
+
+            const form = document.getElementById('checkoutForm');
+            const nameInput = document.getElementById('nom_client');
+            const addressInput = document.getElementById('adresse_livraison');
+            const paymentSelect = document.getElementById('mode_paiement');
+            const promoInput = document.getElementById('promo_code');
+            const totalEl = Array.from(document.querySelectorAll('span')).find((el) => el.textContent.includes('DT') && el.style.fontSize === '24px');
+            const confirmBtn = document.getElementById('confirm-order-btn');
+
+            const voiceStatus = document.createElement('div');
+            voiceStatus.id = 'voice-checkout-status';
+            voiceStatus.style.cssText = 'position: fixed; left: 22px; bottom: 90px; z-index: 1100; max-width: 320px; padding: 8px 12px; border-radius: 10px; background: rgba(15,23,42,.9); color: #fff; font-size: 13px; line-height: 1.35; display: none;';
+            document.body.appendChild(voiceStatus);
+
+            function showVoiceStatus(message, isError, withSpeech = true) {
+                voiceStatus.textContent = message;
+                voiceStatus.style.display = 'block';
+                voiceStatus.style.background = isError ? 'rgba(185,28,28,.95)' : 'rgba(15,23,42,.9)';
+                if (withSpeech) {
+                    speak(message);
+                }
+                setTimeout(function () {
+                    voiceStatus.style.display = 'none';
+                }, 3600);
+            }
+
+            function openVoiceFallbackPrompt() {
+                const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande checkout. Ex: nom ahmed');
+                if (typeof typed === 'string' && typed.trim() !== '') {
+                    handleVoiceCommand(typed.trim());
+                }
+            }
+
+            function speak(message) {
+                if (!synth) {
+                    return;
+                }
+                synth.cancel();
+                const utt = new SpeechSynthesisUtterance(message);
+                utt.lang = 'fr-FR';
+                utt.rate = 1;
+                synth.speak(utt);
+            }
+
+            function submitAction(action) {
+                if (!form) {
+                    return;
+                }
+                const temp = document.createElement('button');
+                temp.type = 'submit';
+                temp.name = 'checkout_action';
+                temp.value = action;
+                temp.style.display = 'none';
+                form.appendChild(temp);
+                temp.click();
+                form.removeChild(temp);
+            }
+
+            function readCheckoutSummary() {
+                const totalText = totalEl ? totalEl.textContent.trim() : 'total indisponible';
+                speak(`Recapitulatif. Nom ${nameInput?.value || 'non renseigne'}. Mode de paiement ${paymentSelect?.value || 'non renseigne'}. Total ${totalText}.`);
+            }
+
+            function getGeneratedPromoCodeFromUi() {
+                const generatedStrong = Array.from(document.querySelectorAll('p strong')).find((el) => {
+                    const txt = (el.textContent || '').trim();
+                    return txt.length >= 4 && /^[A-Z0-9-]+$/i.test(txt);
+                });
+
+                return generatedStrong ? String(generatedStrong.textContent || '').trim() : '';
+            }
+
+            function executeVoiceActions(actions) {
+                if (!Array.isArray(actions)) {
+                    return;
+                }
+
+                actions.forEach((action) => {
+                    if (!action || typeof action !== 'object') {
+                        return;
+                    }
+
+                    if (action.type === 'set_field') {
+                        const fieldId = String(action.field_id || '');
+                        const value = String(action.value || '');
+                        const field = document.getElementById(fieldId);
+                        if (field) {
+                            field.value = value;
+                            field.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'set_payment_mode') {
+                        if (paymentSelect) {
+                            paymentSelect.value = String(action.value || 'Cash');
+                            paymentSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'submit_checkout_action') {
+                        submitAction(String(action.value || ''));
+                        return;
+                    }
+
+                    if (action.type === 'apply_generated_promo') {
+                        const generated = getGeneratedPromoCodeFromUi();
+                        if (promoInput && generated !== '') {
+                            promoInput.value = generated.toUpperCase();
+                            promoInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            submitAction('apply_promo');
+                            return;
+                        }
+
+                        showVoiceStatus('Aucun code promo genere trouve. Dites generer promo puis reutilisez cette commande.', true, true);
+                        return;
+                    }
+
+                    if (action.type === 'read_checkout_summary') {
+                        readCheckoutSummary();
+                        return;
+                    }
+
+                    if (action.type === 'click_confirm_order') {
+                        if (confirmBtn) {
+                            confirmBtn.click();
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'navigate') {
+                        const url = String(action.url || '');
+                        if (url !== '') {
+                            window.location.href = url;
+                        }
+                        return;
+                    }
+
+                    if (action.type === 'reload_page') {
+                        window.location.reload();
+                    }
+                });
+            }
+
+            async function handleVoiceCommand(rawText) {
+                try {
+                    const response = await fetch('{{ path('app_api_ai_voice_command') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            context: 'checkout',
+                            transcript: rawText,
+                        }),
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok || !data.ok) {
+                        showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+                        return;
+                    }
+
+                    executeVoiceActions(data.actions || []);
+                    if (typeof data.speak === 'string' && data.speak !== '') {
+                        speak(data.speak);
+                    }
+                } catch (_error) {
+                    showVoiceStatus('Erreur reseau pendant la commande vocale.', true, true);
+                }
+            }
+
+            if (!hasVoice) {
+                fab.style.opacity = '0.65';
+                fab.addEventListener('click', function () {
+                    showVoiceStatus('La reconnaissance vocale n\'est pas supportee par ce navigateur.', true);
+                });
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'fr-FR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            function startRecognitionSafely(quiet = false) {
+                if (isListening || isRecognitionStarting) {
+                    return;
+                }
+
+                try {
+                    isRecognitionStarting = true;
+                    recognition.start();
+                    restartOnEnd = false;
+                    fab.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                    if (!quiet) {
+                        // Ne pas parler au moment du start pour eviter de couper l'ecoute.
+                        showVoiceStatus('Je vous ecoute... dites votre commande vocale.', false, false);
+                    }
+                } catch (_error) {
+                    isRecognitionStarting = false;
+                    showVoiceStatus('Impossible de demarrer le micro, reessayez.', true);
+                }
+            }
+
+            recognition.onstart = function () {
+                isRecognitionStarting = false;
+                isListening = true;
+            };
+
+            recognition.onresult = function (event) {
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const result = event.results[i];
+                    if (!result.isFinal) {
+                        continue;
+                    }
+
+                    const transcript = result?.[0]?.transcript || '';
+                    if (transcript) {
+                        networkRetryCount = 0;
+                        manualStop = true;
+                        restartOnEnd = false;
+                        handleVoiceCommand(transcript);
+                    }
+                }
+            };
+
+            recognition.onerror = function (event) {
+                const code = event?.error || 'unknown';
+                isRecognitionStarting = false;
+                isListening = false;
+
+                if (code === 'not-allowed' || code === 'service-not-allowed') {
+                    showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site puis reessayez.', true);
+                    return;
+                }
+
+                if (code === 'audio-capture') {
+                    showVoiceStatus('Aucun micro detecte ou accessible.', true);
+                    return;
+                }
+
+                if (code === 'network') {
+                    if (networkRetryCount < 1) {
+                        networkRetryCount++;
+                        showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+                        setTimeout(function () {
+                            startRecognitionSafely(true);
+                        }, 550);
+
+                        return;
+                    }
+
+                    restartOnEnd = false;
+                    showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
+                    openVoiceFallbackPrompt();
+                    return;
+                }
+
+                if (code === 'no-speech') {
+                    showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+                    return;
+                }
+
+                if (code !== 'aborted') {
+                    showVoiceStatus('Erreur vocale: ' + code + '. Veuillez reessayer.', true);
+                }
+            };
+
+            recognition.onend = function () {
+                isRecognitionStarting = false;
+                isListening = false;
+                fab.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
+            };
+
+            async function ensureMicroPermission() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    return true;
+                }
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(function (t) { t.stop(); });
+
+                    return true;
+                } catch (_error) {
+                    showVoiceStatus('Micro non autorise. Activez l\'acces micro dans le navigateur.', true);
+
+                    return false;
+                }
+            }
+
+            fab.addEventListener('click', async function () {
+                if (isListening || isRecognitionStarting) {
+                    manualStop = true;
+                    restartOnEnd = false;
+                    isRecognitionStarting = false;
+                    recognition.stop();
+                    isListening = false;
+                    showVoiceStatus('Ecoute arretee.', false, false);
+
+                    return;
+                }
+
+                const allowed = await ensureMicroPermission();
+                if (!allowed) {
+                    return;
+                }
+
+                try {
+                    networkRetryCount = 0;
+                    manualStop = false;
+                    restartOnEnd = false;
+                    synth.cancel();
+                    startRecognitionSafely();
+                } catch (_error) {
+                    showVoiceStatus('Impossible de demarrer le micro, reessayez.', true);
+                }
+            });
+
+            showVoiceStatus('Assistant vocal checkout actif.', false);
+        })();
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!window.GestureAssistant) {
+                return;
+            }
+
+            const focusOrder = ['nom_client', 'adresse_livraison', 'mode_paiement', 'promo_code'];
+
+            window.GestureAssistant.create({
+                id: 'checkout',
+                autoSpeak: true,
+                onGesture: async function (gesture) {
+                    try {
+                        const response = await fetch('{{ path('app_api_ai_gesture_command') }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ context: 'checkout', gesture: gesture })
+                        });
+
+                        const data = await response.json();
+                        if (!response.ok || !data.ok) {
+                            return data.speak || 'Commande gestes non reconnue.';
+                        }
+
+                        const actions = Array.isArray(data.actions) ? data.actions : [];
+                        for (const action of actions) {
+                            if (!action || typeof action !== 'object') continue;
+
+                            if (action.type === 'focus_next_checkout_field') {
+                                const activeId = document.activeElement?.id || '';
+                                const currentIndex = focusOrder.indexOf(activeId);
+                                const nextIndex = (currentIndex + 1) % focusOrder.length;
+                                const nextField = document.getElementById(focusOrder[nextIndex]);
+                                if (nextField) {
+                                    nextField.focus();
+                                }
+                            }
+
+                            if (action.type === 'submit_checkout_action') {
+                                const value = String(action.value || '');
+                                const btn = document.querySelector(`button[name="checkout_action"][value="${value}"]`);
+                                if (btn) {
+                                    btn.click();
+                                }
+                            }
+
+                            if (action.type === 'click_confirm_order') {
+                                const confirmBtn = document.getElementById('confirm-order-btn');
+                                if (confirmBtn) {
+                                    confirmBtn.click();
+                                }
+                            }
+
+                            if (action.type === 'read_checkout_summary') {
+                                const totalEl = Array.from(document.querySelectorAll('span')).find((el) => (el.textContent || '').includes('DT') && el.style.fontSize === '24px');
+                                const total = totalEl ? totalEl.textContent.trim() : 'indisponible';
+                                return `Recap commande. Total ${total}.`;
+                            }
+                        }
+
+                        return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+                    } catch (_error) {
+                        return 'Service gestes temporairement indisponible.';
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}

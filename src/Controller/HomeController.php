@@ -6,8 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\EquipementRepository;
-
 
 final class HomeController extends AbstractController
 {
@@ -30,19 +28,9 @@ final class HomeController extends AbstractController
     }
 
     #[Route('/blog', name: 'app_blog')]
-    public function blog(EquipementRepository $repo): Response
+    public function blog(): Response
     {
-        $dateLimite = new \DateTime('-4 years');
-
-        $equipements = $repo->createQueryBuilder('e')
-            ->where('e.date_achat <= :date')
-            ->setParameter('date', $dateLimite)
-            ->getQuery()
-            ->getResult();
-
-        return $this->render('pages/blog.html.twig', [
-            'equipements' => $equipements
-        ]);
+        return $this->render('pages/blog.html.twig');
     }
 
     #[Route('/blog/details', name: 'app_blog_details')]

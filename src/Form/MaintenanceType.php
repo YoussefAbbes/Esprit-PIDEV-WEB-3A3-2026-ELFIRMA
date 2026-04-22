@@ -4,7 +4,6 @@ namespace App\Form;
 
 use App\Entity\Maintenance;
 use App\Entity\Equipement;
-use App\Entity\Utilisateur;
 use App\Enum\MaintenanceStatut;
 use App\Enum\MaintenancePriorite;
 use Symfony\Component\Form\AbstractType;
@@ -77,19 +76,10 @@ class MaintenanceType extends AbstractType
             ])
 
             // ✅ TECHNICIEN
-            ->add('technicien', EntityType::class, [
-                'class' => Utilisateur::class,
-                'choice_label' => function (Utilisateur $u) {
-                    return $u->getPrenomU() . ' ' . $u->getNomU();
-                },
-                'placeholder' => 'Choisir un technicien',
-                'query_builder' => function ($repo) {
-                    return $repo->createQueryBuilder('u')
-                        ->where('u.role_u = :role')
-                        ->setParameter('role', 'employee');
-                },
+            ->add('technicien', TextType::class, [
+                'required' => true,
                 'attr' => [
-                    'class' => 'w-full p-2 border rounded focus:ring-2 focus:ring-blue-500'
+                    'placeholder' => 'Nom du technicien'
                 ]
             ])
 

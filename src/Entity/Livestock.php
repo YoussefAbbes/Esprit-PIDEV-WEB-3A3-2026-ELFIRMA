@@ -107,6 +107,34 @@ class Livestock
         return $this;
     }
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $latitude = null;
+
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): self
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $longitude = null;
+
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?float $longitude): self
+    {
+        $this->longitude = $longitude;
+        return $this;
+    }
+
     #[ORM\OneToMany(targetEntity: Animal::class, mappedBy: 'elevage')]
     private Collection $animals;
 
@@ -118,5 +146,19 @@ class Livestock
     public function getAnimals(): Collection
     {
         return $this->animals;
+    }
+
+    public function addAnimal(Animal $animal): self
+    {
+        if (!$this->animals->contains($animal)) {
+            $this->animals[] = $animal;
+        }
+        return $this;
+    }
+
+    public function removeAnimal(Animal $animal): self
+    {
+        $this->animals->removeElement($animal);
+        return $this;
     }
 }

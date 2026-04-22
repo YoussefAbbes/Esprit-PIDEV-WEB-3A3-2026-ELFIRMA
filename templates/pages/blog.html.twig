@@ -1,60 +1,23 @@
 ﻿{% extends 'base.html.twig' %}
 
-{% block title %}Equipments - EL FIRMA{% endblock %}
+{% block title %}Blog - EL FIRMA{% endblock %}
 {% block meta_description %}{% endblock %}
 {% block meta_keywords %}{% endblock %}
-{% block body_class %}Equipments-page{% endblock %}
+{% block body_class %}blog-page{% endblock %}
 
 {% block body %}
-<style>
-.btn-modern {
-  padding:10px 20px;
-  background:linear-gradient(135deg, #1e7e34, #218838);
-  color:white;
-  border-radius:25px;
-  text-decoration:none;
-  border:2px solid #1e7e34;
-  transition:0.3s;
-}
-
-.btn-modern:hover {
-  background:white;
-  color:#1e7e34;
-  transform:translateY(-3px);
-}
-
-@keyframes fadeIn {
-  from { transform:scale(0.9); opacity:0; }
-  to { transform:scale(1); opacity:1; }
-}
-</style>
-
-<!-- SUCCESS MESSAGE -->
-<div id="successMessage" style="
-display:none;
-position:fixed;
-top:20px;
-right:20px;
-background:#1e7e34;
-color:white;
-padding:15px 20px;
-border-radius:10px;
-z-index:1000;">
-✅ Order Done Successfully!
-</div>
-
 <!-- Page Title -->
     <div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
       <div class="container position-relative">
-        <h1>Equipments</h1>
+        <h1>Blog</h1>
         <p>
           Home
           /
-          Equipments</p>
+          Blog</p>
         <nav class="breadcrumbs">
           <ol>
             <li><a href="{{ path('app_home') }}">Home</a></li>
-            <li class="current">Equipments</li>
+            <li class="current">Blog</li>
           </ol>
         </nav>
       </div>
@@ -64,123 +27,170 @@ z-index:1000;">
     <section id="blog-posts-2" class="blog-posts-2 section">
 
       <div class="container">
-  <div class="row gy-4">
+        <div class="row gy-4">
 
-    {% for equipement in equipements %}
-      <div class="col-lg-4">
-        <article class="position-relative h-100">
+          <div class="col-lg-4">
+            <article class="position-relative h-100">
 
-          <!-- IMAGE (remplace l'image statique) -->
-          <div class="post-img position-relative overflow-hidden" 
-     style="height:250px; display:flex; align-items:center; justify-content:center; background:#f5f5f5;">
+              <div class="post-img position-relative overflow-hidden">
+                <img src="{{ asset('assets/img/blog/blog-1.jpg') }}" class="img-fluid" alt="">
+              </div>
 
-  <img src="{{ asset('uploads/equipement/' ~ equipement.imageEq) }}" 
-       style="max-height:100%; max-width:100%; object-fit:contain;" 
-       class="img-fluid" 
-       alt="">
-</div>
+              <div class="meta d-flex align-items-end">
+                <span class="post-date"><span>12</span>December</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-person"></i> <span class="ps-2">John Doe</span>
+                </div>
+                <span class="px-3 text-black-50">/</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-folder2"></i> <span class="ps-2">Politics</span>
+                </div>
+              </div>
 
-          <div class="post-content d-flex flex-column">
+              <div class="post-content d-flex flex-column">
 
-            <!-- NOM -->
-            <h3 class="post-title">
-              {{ equipement.nomEq }}
-            </h3>
+                <h3 class="post-title">Dolorum optio tempore voluptas dignissimos</h3>
+                <a href="{{ path('app_blog_details') }}" class="readmore stretched-link"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
 
-            <!-- DESCRIPTION -->
-            <p>
-              {{ equipement.descriptionEq }}
-            </p>
+              </div>
 
-            <!-- PRIX -->
-            {% set prixOriginal = equipement.coutAchat %}
-            {% set prixPromo = prixOriginal * 0.7 %}
+            </article>
+          </div><!-- End post list item -->
 
-            <p>
-              <span style="text-decoration:line-through; color:#888;">
-                {{ prixOriginal }} DT
-              </span>
-            </p>
+          <div class="col-lg-4">
+            <article class="position-relative h-100">
 
-            <p style="color:#1e7e34; font-weight:bold; font-size:18px;">
-              {{ prixPromo|number_format(2) }} DT
-            </p>
-            <a href="#" 
-              class="btn-modern"
-              onclick="openModal('{{ equipement.nomEq }}')"
-              style="align-self:flex-end;">
-              🛒 Order
-            </a>
+              <div class="post-img position-relative overflow-hidden">
+                <img src="{{ asset('assets/img/blog/blog-2.jpg') }}" class="img-fluid" alt="">
+              </div>
 
-        </article>
+              <div class="meta d-flex align-items-end">
+                <span class="post-date"><span>19</span>March</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-person"></i> <span class="ps-2">Julia Parker</span>
+                </div>
+                <span class="px-3 text-black-50">/</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-folder2"></i> <span class="ps-2">Economics</span>
+                </div>
+              </div>
+
+              <div class="post-content d-flex flex-column">
+                <h3 class="post-title">Nisi magni odit consequatur autem nulla dolorem</h3>
+                <a href="{{ path('app_blog_details') }}" class="readmore stretched-link"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
+              </div>
+
+            </article>
+          </div><!-- End post list item -->
+
+          <div class="col-lg-4">
+            <article class="position-relative h-100">
+
+              <div class="post-img position-relative overflow-hidden">
+                <img src="{{ asset('assets/img/blog/blog-3.jpg') }}" class="img-fluid" alt="">
+              </div>
+              <div class="meta d-flex align-items-end">
+                <span class="post-date"><span>24</span>June</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-person"></i> <span class="ps-2">Maria Doe</span>
+                </div>
+                <span class="px-3 text-black-50">/</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-folder2"></i> <span class="ps-2">Sports</span>
+                </div>
+              </div>
+
+              <div class="post-content d-flex flex-column">
+                <h3 class="post-title">Possimus soluta ut id suscipit ea ut. In quo quia et soluta libero sit sint.</h3>
+                <a href="{{ path('app_blog_details') }}" class="readmore stretched-link"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
+              </div>
+
+            </article>
+          </div><!-- End post list item -->
+
+          <div class="col-lg-4">
+            <article class="position-relative h-100">
+
+              <div class="post-img position-relative overflow-hidden">
+                <img src="{{ asset('assets/img/blog/blog-4.jpg') }}" class="img-fluid" alt="">
+              </div>
+              <div class="meta d-flex align-items-end">
+                <span class="post-date"><span>05</span>August</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-person"></i> <span class="ps-2">Maria Doe</span>
+                </div>
+                <span class="px-3 text-black-50">/</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-folder2"></i> <span class="ps-2">Sports</span>
+                </div>
+              </div>
+
+              <div class="post-content d-flex flex-column">
+                <h3 class="post-title">Non rem rerum nam cum quo minus explicabo eius exercitationem.</h3>
+                <a href="{{ path('app_blog_details') }}" class="readmore stretched-link"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
+              </div>
+
+            </article>
+          </div><!-- End post list item -->
+
+          <div class="col-lg-4">
+            <article class="position-relative h-100">
+
+              <div class="post-img position-relative overflow-hidden">
+                <img src="{{ asset('assets/img/blog/blog-5.jpg') }}" class="img-fluid" alt="">
+              </div>
+
+              <div class="meta d-flex align-items-end">
+                <span class="post-date"><span>17</span>September</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-person"></i> <span class="ps-2">John Parker</span>
+                </div>
+                <span class="px-3 text-black-50">/</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-folder2"></i> <span class="ps-2">Politics</span>
+                </div>
+              </div>
+
+              <div class="post-content d-flex flex-column">
+
+                <h3 class="post-title">Accusamus quaerat aliquam qui debitis facilis consequatur</h3>
+                <a href="{{ path('app_blog_details') }}" class="readmore stretched-link"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
+
+              </div>
+
+            </article>
+          </div><!-- End post list item -->
+
+          <div class="col-lg-4">
+            <article class="position-relative h-100">
+
+              <div class="post-img position-relative overflow-hidden">
+                <img src="{{ asset('assets/img/blog/blog-6.jpg') }}" class="img-fluid" alt="">
+              </div>
+
+              <div class="meta d-flex align-items-end">
+                <span class="post-date"><span>07</span>December</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-person"></i> <span class="ps-2">Julia White</span>
+                </div>
+                <span class="px-3 text-black-50">/</span>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-folder2"></i> <span class="ps-2">Economics</span>
+                </div>
+              </div>
+
+              <div class="post-content d-flex flex-column">
+
+                <h3 class="post-title">Distinctio provident quibusdam numquam aperiam aut</h3>
+                <a href="{{ path('app_blog_details') }}" class="readmore stretched-link"><span>Read More</span><i class="bi bi-arrow-right"></i></a>
+
+              </div>
+
+            </article>
+          </div><!-- End post list item -->
+
+        </div>
       </div>
-    {% else %}
-      <p>Aucun équipement disponible.</p>
-    {% endfor %}
-
-  </div>
-</div>
-
-<!-- MODAL -->
-<div id="orderModal" style="
-display:none;
-position:fixed;
-top:0; left:0;
-width:100%; height:100%;
-background:rgba(0,0,0,0.6);
-backdrop-filter:blur(5px);
-z-index:999;
-">
-
-  <div style="
-  background:white;
-  width:450px;
-  margin:80px auto;
-  border-radius:20px;
-  overflow:hidden;
-  box-shadow:0 20px 50px rgba(0,0,0,0.3);
-  animation:fadeIn 0.3s;
-  ">
-
-    <div style="
-    background:linear-gradient(135deg, #1e7e34, #218838);
-    color:white;
-    padding:20px;
-    display:flex;
-    justify-content:space-between;">
-      <h5>🛒 Place Order</h5>
-      <span onclick="closeModal()" style="cursor:pointer;">✖</span>
-    </div>
-
-    <div style="padding:20px;">
-      <p id="productName" style="background:#e6f4ea; padding:10px; border-radius:10px;"></p>
-
-      <input type="text" id="clientName" placeholder="Your name"
-             style="width:100%; padding:10px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
-
-      <select id="paymentMethod"
-              style="width:100%; padding:10px; border-radius:10px; border:1px solid #ccc;">
-        <option>Cash</option>
-        <option>Card</option>
-        <option>Online</option>
-      </select>
-    </div>
-
-    <div style="padding:20px; display:flex; justify-content:flex-end; gap:10px;">
-      <button onclick="closeModal()">Cancel</button>
-
-      <button onclick="submitOrder()" style="
-      background:linear-gradient(135deg, #1e7e34, #218838);
-      color:white;
-      border:none;
-      padding:10px 20px;
-      border-radius:10px;">
-      Confirm
-      </button>
-    </div>
-
-  </div>
-</div>
 
     </section><!-- /Blog Posts 2 Section -->
 
@@ -234,36 +244,6 @@ z-index:999;
         </div>
       </div>
     </section><!-- /Call To Action Section -->
-
-    
-<script>
-function openModal(name) {
-  document.getElementById('orderModal').style.display = 'block';
-  document.getElementById('productName').innerText = "Product: " + name;
-}
-
-function closeModal() {
-  document.getElementById('orderModal').style.display = 'none';
-}
-
-function submitOrder() {
-  let name = document.getElementById('clientName').value;
-
-  if (name === "") {
-    alert("Enter your name");
-    return;
-  }
-
-  closeModal();
-
-  let msg = document.getElementById('successMessage');
-  msg.style.display = 'block';
-
-  setTimeout(() => {
-    msg.style.display = 'none';
-  }, 3000);
-}
-</script>
 {% endblock %}
 
 
