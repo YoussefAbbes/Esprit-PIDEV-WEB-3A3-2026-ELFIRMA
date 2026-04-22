@@ -1267,10 +1267,13 @@ final class CommandeController extends AbstractController
             'amount' => array_reduce($filteredCommandes, static fn (float $carry, Commande $c): float => $carry + (float) ($c->getPrixTotal() ?? 0), 0.0),
         ];
 
+        $geoZoneAnalytics = $this->buildGeoZoneAnalytics($filteredCommandes);
+
         return $this->render('elfirma/commandes.html.twig', [
             'commandes' => $commandes,
             'produits' => $em->getRepository(Produit::class)->findBy([], ['nom' => 'ASC']),
             'order_stats' => $stats,
+            'geo_zone_analytics' => $geoZoneAnalytics,
             'filters' => [
                 'q' => $q,
                 'status' => $statusFilter,
@@ -1667,5 +1670,109 @@ final class CommandeController extends AbstractController
         });
 
         return $commandes;
+    }
+
+    /**
+     * @param list<Commande> $commandes
+     *
+     * @return array{top_zone: ?array{zone:string,revenue:float,orders:int,avg_ticket:float},zones:list<array{zone:string,revenue:float,orders:int,avg_ticket:float}>,unknown_count:int}
+     */
+    private function buildGeoZoneAnalytics(array $commandes): array
+    {
+        $zones = [];
+        $unknownCount = 0;
+
+        foreach ($commandes as $commande) {
+            $zone = $this->extractZoneFromAddress((string) ($commande->getAdresseLivraison() ?? ''));
+            if ($zone === null) {
+                $unknownCount++;
+                continue;
+            }
+
+            if (!isset($zones[$zone])) {
+                $zones[$zone] = [
+                    'zone' => $zone,
+                    'revenue' => 0.0,
+                    'orders' => 0,
+                ];
+            }
+
+            $zones[$zone]['orders']++;
+            if ($commande->getStatutCommande() !== 'Annulée') {
+                $zones[$zone]['revenue'] += (float) ($commande->getPrixTotal() ?? 0);
+            }
+        }
+
+        $rows = array_values($zones);
+        foreach ($rows as $idx => $row) {
+            $orders = max(1, (int) $row['orders']);
+            $rows[$idx]['revenue'] = round((float) $row['revenue'], 2);
+            $rows[$idx]['avg_ticket'] = round(((float) $row['revenue']) / $orders, 2);
+        }
+
+        usort($rows, static function (array $a, array $b): int {
+            $cmp = ((float) $b['revenue']) <=> ((float) $a['revenue']);
+            if ($cmp !== 0) {
+                return $cmp;
+            }
+
+            return ((int) $b['orders']) <=> ((int) $a['orders']);
+        });
+
+        return [
+            'top_zone' => $rows[0] ?? null,
+            'zones' => array_slice($rows, 0, 8),
+            'unknown_count' => $unknownCount,
+        ];
+    }
+
+    private function extractZoneFromAddress(string $address): ?string
+    {
+        $normalized = mb_strtolower(trim($address));
+        if ($normalized === '') {
+            return null;
+        }
+
+        $zoneMap = [
+            'tunis' => 'Tunis',
+            'ariana' => 'Ariana',
+            'ben arous' => 'Ben Arous',
+            'manouba' => 'Manouba',
+            'nabeul' => 'Nabeul',
+            'zaghouan' => 'Zaghouan',
+            'bizerte' => 'Bizerte',
+            'beja' => 'Beja',
+            'jendouba' => 'Jendouba',
+            'kef' => 'Le Kef',
+            'siliana' => 'Siliana',
+            'sousse' => 'Sousse',
+            'monastir' => 'Monastir',
+            'mahdia' => 'Mahdia',
+            'sfax' => 'Sfax',
+            'kairouan' => 'Kairouan',
+            'kasserine' => 'Kasserine',
+            'sidi bouzid' => 'Sidi Bouzid',
+            'gabes' => 'Gabes',
+            'medenine' => 'Medenine',
+            'tataouine' => 'Tataouine',
+            'gafsa' => 'Gafsa',
+            'tozeur' => 'Tozeur',
+            'kebili' => 'Kebili',
+        ];
+
+        foreach ($zoneMap as $token => $label) {
+            if (str_contains($normalized, $token)) {
+                return $label;
+            }
+        }
+
+        $parts = preg_split('/[,;\-\/]+/', $address) ?: [];
+        $parts = array_values(array_filter(array_map(static fn (string $part): string => trim($part), $parts), static fn (string $part): bool => mb_strlen($part) >= 3));
+
+        if ($parts === []) {
+            return null;
+        }
+
+        return mb_convert_case($parts[count($parts) - 1], MB_CASE_TITLE, 'UTF-8');
     }
 }
