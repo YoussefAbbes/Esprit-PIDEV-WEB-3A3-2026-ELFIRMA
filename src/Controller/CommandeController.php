@@ -93,7 +93,8 @@ final class CommandeController extends AbstractController
         return $this->render('commande_create.html.twig', [
             'items' => $panierWithData,
             'total' => $total,
-            'stripe_enabled' => $stripeEnabled
+            'stripe_enabled' => $stripeEnabled,
+            'promo_min_total' => 50.0
         ]);
     }
 
