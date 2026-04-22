@@ -50,7 +50,7 @@ if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasVali
         // =========================
         // QR CODE GENERATION
         // =========================
-       $profileUrl = 'http://192.168.1.29:8000/elfirma/user/' . $user->getIdU() . '/profile';
+       $profileUrl = 'http://192.168.43.23:8000/elfirma/user/' . $user->getIdU() . '/profile';
 
         $user->qrCode = $this->generateQrCode($profileUrl);
     }

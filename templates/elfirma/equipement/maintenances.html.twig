@@ -233,9 +233,11 @@
     </div>
 </div>
 
-<script>
+<script data-turbo="false">
 
-let deleteMaintenanceId = null;
+if (typeof deleteMaintenanceId === 'undefined') {
+    var deleteMaintenanceId = null;
+}
 
 // OUVRIR MODAL
 function openDeleteMaintenanceModal(id) {
@@ -264,7 +266,7 @@ function confirmDeleteMaintenance() {
 
     if (!deleteMaintenanceId) return;
 
-    fetch(/maintenance/${deleteMaintenanceId}/delete, {
+    fetch(`/maintenance/${deleteMaintenanceId}/delete`, {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
@@ -278,7 +280,7 @@ function confirmDeleteMaintenance() {
         closeDeleteMaintenanceModal();
 
         // 🔥 UX PRO (suppression sans reload)
-        document.querySelector([data-id="${deleteMaintenanceId}"])?.remove();
+        document.querySelector(`[data-id="${deleteMaintenanceId}"]`)?.remove();
         setTimeout(() => location.reload(), 600);
 
         // recalcul stats

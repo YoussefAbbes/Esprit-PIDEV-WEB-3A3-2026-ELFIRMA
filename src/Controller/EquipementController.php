@@ -58,16 +58,16 @@ public function index(
         $age = (new \DateTime())->diff($eq->getDateAchat())->y;
 
         $etatMap = [
-            'bon' => 1,
-            'moyen' => 2,
-            'critique' => 3,
-            'disponible' => 1,
-            'maintenance' => 2,
-            'panne' => 3
+            'bon' => 'bon',
+            'moyen' => 'moyen',
+            'critique' => 'critique',
+            'disponible' => 'bon',
+            'maintenance' => 'moyen',
+            'panne' => 'critique'
         ];
 
         $etatString = strtolower($eq->getEtat()->value);
-        $etat = $etatMap[$etatString] ?? 1;
+        $etat = $etatMap[$etatString] ?? 'bon';
 
         $payload = [
             'etat' => $etat,
@@ -79,7 +79,7 @@ public function index(
 
         try {
             $result = $ai->predict($payload);
-            $risques[$result['risk_level']]++;
+            $risques[$result['risk']]++;
         } catch (\Exception $e) {
             // fallback si API down
             $risques[0]++;
@@ -389,102 +389,126 @@ public function index(
         }
 
         $equipement->setEtat(\App\Enum\EquipementEtat::from('disponible'));
-        }
-
-
-       #[Route('/analyse/{id}', name: 'ai_analyse')]
-public function analyse($id, EquipementRepository $repo, AIPredictionService $ai)
-{
-    $equipement = $repo->find($id);
-
-    $nbMaintenances = count($equipement->getMaintenances());
-
-    $totalCout = 0;
-    foreach ($equipement->getMaintenances() as $m) {
-        $totalCout += $m->getCout();
     }
 
-    $age = (new \DateTime())->diff($equipement->getDateAchat())->y;
-
-    $etatMap = [
-        'bon' => 1,
-        'moyen' => 2,
-        'critique' => 3
-    ];
-
-    $payload = [
-        'etat' => $etatMap[strtolower($equipement->getEtat()->value)] ?? 1,
-        'age' => $age,
-        'cout' => $equipement->getCoutAchat(),
-        'nb_maintenances' => $nbMaintenances,
-        'total_cout' => $totalCout
-    ];
-
-    $result = $ai->predict($payload);
-
-    return $this->json([
-    'nom' => $equipement->getNomEq(),
-    'score' => $result['health_score'],
-    'risk' => $result['risk_level'],
-    'analysis' => $result['analysis'],
-    'recommendations' => $result['recommendations']
-]);
-}
-
-        #[Route('/equipement/{id}/generate-image', name: 'generate_image', methods: ['POST'])]
-        public function generateImage(Equipement $equipement): JsonResponse
-        {
-            $description = $equipement->getDescriptionEq();
-
-            if (!$description) {
-                return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Description vide'
-                ], 400);
-            }
-
-            $accountId = '1c9e8098b3c6cb26f06ef73dcc8d8846';
-            $apiToken = '81nlNeNoH1aS4SZ0K06jKtt8X9H2DnluC75DR_Jn';
-
-            $url = "https://api.cloudflare.com/client/v4/accounts/$accountId/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0";
-
-            $payload = json_encode([
-                'prompt' => $description
-            ]);
-
-            $ch = curl_init();
-
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => $payload,
-                CURLOPT_HTTPHEADER => [
-                    "Authorization: Bearer $apiToken",
-                    "Content-Type: application/json"
-                ],
-                CURLOPT_TIMEOUT => 60
-            ]);
-
-            $response = curl_exec($ch);
-
-            if ($response === false) {
-                curl_close($ch);
-                return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Erreur API'
-                ], 500);
-            }
-
-            curl_close($ch);
-
-            // 🔥 encoder image en base64 pour frontend
-            $base64 = base64_encode($response);
-
-            return new JsonResponse([
-                'success' => true,
-                'image' => 'data:image/png;base64,' . $base64
-            ]);
+    #[Route('/analyse/{id}', name: 'ai_analyse')]
+    public function analyse($id, EquipementRepository $repo, AIPredictionService $ai)
+{
+        $equipement = $repo->find($id);
+        
+        if (!$equipement) {
+            return $this->json([
+                'error' => 'Équipement non trouvé'
+            ], Response::HTTP_NOT_FOUND);
         }
-    
+
+        $nbMaintenances = count($equipement->getMaintenances());
+
+        $totalCout = 0;
+        foreach ($equipement->getMaintenances() as $m) {
+            $totalCout += $m->getCout();
+        }
+
+        $age = (new \DateTime())->diff($equipement->getDateAchat())->y;
+
+        $etatMap = [
+            'bon' => 'bon',
+            'moyen' => 'moyen',
+            'critique' => 'critique',
+            'disponible' => 'bon',
+            'maintenance' => 'moyen',
+            'panne' => 'critique'
+        ];
+
+        $payload = [
+            'etat' => $etatMap[strtolower($equipement->getEtat()->value)] ?? 'bon',
+            'age' => $age,
+            'cout' => $equipement->getCoutAchat(),
+            'nb_maintenances' => $nbMaintenances,
+            'total_cout' => $totalCout
+        ];
+
+        try {
+            $result = $ai->predict($payload);
+            
+            return $this->json([
+                'nom' => $equipement->getNomEq(),
+                'score' => $result['score'] ?? 0,
+                'risk' => $result['risk'] ?? 0,
+                'analysis' => $result['analysis'] ?? [],
+                'recommendations' => $result['recommendations'] ?? ['Consultez les logs pour plus de détails']
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Le service d\'analyse IA est temporairement indisponible',
+                'analysis' => [
+                    'Données récupérées mais analyse IA non disponible',
+                    'Âge de l\'équipement: ' . $age . ' ans',
+                    'Nombre de maintenances: ' . $nbMaintenances
+                ],
+                'recommendations' => [
+                    'Vérifiez que le service Python d\'IA est en cours d\'exécution sur le port 8001',
+                    'Consultez les logs d\'application pour plus de détails'
+                ],
+                'score' => 50,
+                'risk' => 1
+            ], Response::HTTP_OK);
+        }
+    }
+
+    #[Route('/equipement/{id}/generate-image', name: 'generate_image', methods: ['POST'])]
+    public function generateImage(Equipement $equipement): JsonResponse
+    {
+        $description = $equipement->getDescriptionEq();
+
+        if (!$description) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Description vide'
+            ], 400);
+        }
+
+        $accountId = '1c9e8098b3c6cb26f06ef73dcc8d8846';
+        $apiToken = '81nlNeNoH1aS4SZ0K06jKtt8X9H2DnluC75DR_Jn';
+
+        $url = "https://api.cloudflare.com/client/v4/accounts/$accountId/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0";
+
+        $payload = json_encode([
+            'prompt' => $description
+        ]);
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => [
+                "Authorization: Bearer $apiToken",
+                "Content-Type: application/json"
+            ],
+            CURLOPT_TIMEOUT => 60
+        ]);
+
+        $response = curl_exec($ch);
+
+        if ($response === false) {
+            curl_close($ch);
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur API'
+            ], 500);
+        }
+
+        curl_close($ch);
+
+        // 🔥 encoder image en base64 pour frontend
+        $base64 = base64_encode($response);
+
+        return new JsonResponse([
+            'success' => true,
+            'image' => 'data:image/png;base64,' . $base64
+        ]);
+    }
 }

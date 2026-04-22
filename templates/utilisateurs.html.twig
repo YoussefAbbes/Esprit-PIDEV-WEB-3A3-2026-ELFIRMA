@@ -5,8 +5,11 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Open_Sans:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -81,12 +84,19 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 1);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         body {
             font-family: 'Open Sans', sans-serif;
+            background-image:
+                linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%),
+                url('{{ asset('assets/img/page-title-bg.webp') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
         h1, h2, h3, .font-headline {
             font-family: 'Inter', sans-serif;
@@ -98,56 +108,56 @@
 <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 border-r-0 bg-[#f5f5dc] dark:bg-[#173901] py-8 pr-4 z-40">
 <div class="px-8 mb-8">
 <h1 class="text-3xl font-black text-[#0a2200] dark:text-[#fbfbe2] tracking-tighter">Elfirma</h1>
-<p class="text-sm font-semibold text-[#43493d] dark:text-[#c3c9b9]">Gestion Agricole</p>
+<p class="text-sm font-semibold text-[#43493d] dark:text-[#c3c9b9]">Agricultural Management</p>
 </div>
 <nav class="flex-grow space-y-1">
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="dashboard">dashboard</span>
-<span class="font-semibold">Tableau de Bord</span>
+<span class="font-semibold">Dashboard</span>
 </a>
 <a class="flex items-center px-8 py-3 bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="group">group</span>
-<span class="font-semibold">Utilisateurs</span>
+<span class="font-semibold">Users</span>
 </a>
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="agriculture">agriculture</span>
-<span class="font-semibold">Parcelles &amp; Cultures</span>
+<span class="font-semibold">Fields & Crops</span>
 </a>
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="pets">pets</span>
-<span class="font-semibold">Animaux &amp; Élevages</span>
+<span class="font-semibold">Livestock</span>
 </a>
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="shopping_basket">shopping_basket</span>
-<span class="font-semibold">Produits &amp; Commandes</span>
+<span class="font-semibold">Products & Orders</span>
 </a>
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="handyman">handyman</span>
-<span class="font-semibold">Équipements &amp; Maintenance</span>
+<span class="font-semibold">Equipment & Maintenance</span>
 </a>
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="contract">contract</span>
-<span class="font-semibold">Fournisseurs &amp; Contrats</span>
+<span class="font-semibold">Suppliers & Contracts</span>
 </a>
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="report_problem">report_problem</span>
-<span class="font-semibold">Réclamations</span>
+<span class="font-semibold">Claims</span>
 </a>
 </nav>
 <div class="px-6 mt-6">
 <button class="w-full py-4 bg-primary text-on-primary rounded-full font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
 <span class="material-symbols-outlined" data-icon="add">add</span>
-                Nouvelle Saison
+                New Season
             </button>
 </div>
 <div class="mt-auto px-4 space-y-1">
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="help">help</span>
-<span class="font-semibold">Aide</span>
+<span class="font-semibold">Help</span>
 </a>
 <a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full transition-transform" href="#">
 <span class="material-symbols-outlined mr-4" data-icon="logout">logout</span>
-<span class="font-semibold">Déconnexion</span>
+<span class="font-semibold">Logout</span>
 </a>
 </div>
 </aside>
@@ -155,206 +165,165 @@
 <main class="flex-1 md:ml-72 min-h-screen flex flex-col relative overflow-x-hidden">
 <!-- TopNavBar Component -->
 <header class="sticky top-0 z-30 flex justify-between items-center w-full px-8 py-4 bg-[#fbfbe2]/70 dark:bg-[#0a2200]/70 backdrop-blur-xl">
-<div class="flex items-center gap-6 flex-1">
-<div class="relative w-full max-w-md">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
-<input class="w-full pl-12 pr-4 py-3 bg-surface-container-low border-none rounded-full focus:ring-2 focus:ring-primary text-sm font-medium" placeholder="Rechercher un utilisateur" type="text"/>
-</div>
-</div>
-<div class="flex items-center gap-4 ml-6">
+<div class="flex items-center gap-4 ml-auto">
+<a href="/home" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#116530] to-[#0d4c23] text-white font-semibold rounded-full hover:shadow-xl transition-all hover:translate-y-[-3px] shadow-lg text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="language">language</span>
+Open Website
+</a>
 <button class="p-3 rounded-full text-[#0a2200] dark:text-[#fbfbe2] hover:bg-[#f5f5dc]/50 transition-colors active:scale-95">
 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
 </button>
 <button class="p-3 rounded-full text-[#0a2200] dark:text-[#fbfbe2] hover:bg-[#f5f5dc]/50 transition-colors active:scale-95">
 <span class="material-symbols-outlined" data-icon="settings">settings</span>
 </button>
-<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
-<img alt="Profil de l'administrateur" class="w-full h-full object-cover" data-alt="professional portrait of a middle-aged tunisian man in a smart casual outfit, soft studio lighting, focused gaze" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDABSjb_fSlV7MBx7BjNhlUkAGZY0O_rEUEVAldjJJztKCfzU-RYTO-PlK-9SnX8xiKI0gQjLHNA5bK3euJBBha4qSdqKyuUsrnU9HByoe6Uwn50FWfbPYaVb6XW9WoeBDUFOa_doQEHy0J0vbB9AhkT6qXs6b5R5ieSjOidxvCxIowTM2yNvt7UfHZfg8biz3eIqWKVjTpA16Q-tJAH7s66PcH1R5LsDKP3vdNjey54D1o9n036We5c0BAtOnIAziIMosnJYCnZpTl"/>
-</div>
+<button onclick="window.location.href='{{ path('elfirma_profile') }}'" class="p-3 rounded-full text-[#0a2200] dark:text-[#fbfbe2] hover:bg-[#f5f5dc]/50 transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
 </div>
 </header>
 <section class="p-8 flex-1 flex flex-col gap-8">
 <!-- Header Section -->
 <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
 <div>
-<h2 class="text-4xl font-black text-primary tracking-tight mb-2">Gestion des Utilisateurs</h2>
-<p class="text-on-surface-variant max-w-lg">Supervisez les accès et les rôles de votre équipe agricole. Gérez les permissions des administrateurs, gérants et ouvriers.</p>
+<h2 class="text-4xl font-black text-primary tracking-tight mb-2">User Management</h2>
+<p class="text-white max-w-lg">Manage access and roles for your agricultural team. Handle permissions for administrators, managers and workers.</p>
 </div>
 <div class="flex items-center gap-3">
-<button class="flex items-center gap-2 px-6 py-3 bg-surface-container-highest text-primary font-bold rounded-full hover:opacity-80 transition-all">
+<!-- <button class="flex items-center gap-2 px-6 py-3 bg-surface-container-highest text-primary font-bold rounded-full hover:opacity-80 transition-all" id="filterBtn">
 <span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
-                        Filtrer
-                    </button>
-<button class="flex items-center gap-2 px-8 py-4 bg-primary-container text-on-primary font-bold rounded-full shadow-xl hover:translate-y-[-2px] transition-all">
+                        Filter
+                    </button> -->
+<button class="flex items-center gap-2 px-8 py-4 bg-primary-container text-on-primary font-bold rounded-full shadow-xl hover:translate-y-[-2px] transition-all" id="addUserBtn">
 <span class="material-symbols-outlined" data-icon="person_add">person_add</span>
-                        Ajouter un utilisateur
+                        Add User
                     </button>
 </div>
 </div>
 <!-- Dashboard Stats (Editorial Style) -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="flex justify-center">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-20 w-full md:w-auto">
 <div class="glass-card p-8 rounded-xl border border-white/20">
-<span class="text-on-surface-variant font-bold text-xs uppercase tracking-widest block mb-4">Total Utilisateurs</span>
-<div class="flex items-end gap-3">
-<span class="text-5xl font-black text-primary">42</span>
-<span class="text-primary-container font-bold mb-1 flex items-center gap-1">
-<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
-                            +3 ce mois
+<span class="text-on-surface-variant font-bold text-xs uppercase tracking-widest block mb-4">Total Users</span>
+<div class="flex flex-col items-start gap-2">
+<span class="text-6xl font-black text-primary">{{ totalUsers is defined ? totalUsers : 0 }}</span>
+<span class="text-primary-container font-semibold flex items-center gap-2 text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="trending_up">trending_up</span>
+                            +3 this month
                         </span>
 </div>
 </div>
-<div class="glass-card p-8 rounded-xl border border-white/20">
-<span class="text-on-surface-variant font-bold text-xs uppercase tracking-widest block mb-4">Membres Actifs</span>
-<div class="flex items-end gap-3">
-<span class="text-5xl font-black text-primary">38</span>
-<div class="w-full h-2 bg-surface-container-low rounded-full overflow-hidden mb-2 ml-4">
-<div class="h-full bg-primary-container w-[90%]"></div>
+<div class="glass-card p-8 rounded-xl border border-white/20 w-full md:w-96">
+<span class="text-on-surface-variant font-bold text-xs uppercase tracking-widest block mb-4">User Distribution</span>
+<div class="flex flex-col items-center gap-6">
+<div class="flex items-center justify-center" style="height: 280px; width: 100%;">
+<canvas id="userDistributionChart"></canvas>
+</div>
+<div class="grid grid-cols-3 gap-4 w-full text-center">
+<div>
+<p class="text-xs font-semibold text-primary">Employees</p>
+<p class="text-2xl font-black text-primary">{{ employeeCount is defined ? employeeCount : 0 }}</p>
+</div>
+<div>
+<p class="text-xs font-semibold text-primary">Clients</p>
+<p class="text-2xl font-black text-primary">{{ clientCount is defined ? clientCount : 0 }}</p>
+</div>
+<div>
+<p class="text-xs font-semibold text-primary">Admins</p>
+<p class="text-2xl font-black text-primary">{{ adminCount is defined ? adminCount : 0 }}</p>
 </div>
 </div>
 </div>
-<div class="glass-card p-8 rounded-xl border border-white/20 bg-primary-container text-surface">
-<span class="text-surface/70 font-bold text-xs uppercase tracking-widest block mb-4">Rôles Critiques</span>
-<div class="flex -space-x-3">
-<div class="w-10 h-10 rounded-full border-2 border-primary-container bg-surface-container-highest grid place-items-center text-primary font-bold text-xs">AD</div>
-<div class="w-10 h-10 rounded-full border-2 border-primary-container bg-secondary-fixed grid place-items-center text-on-secondary-container font-bold text-xs">GE</div>
-<div class="w-10 h-10 rounded-full border-2 border-primary-container bg-tertiary-fixed grid place-items-center text-on-tertiary-fixed font-bold text-xs">OU</div>
-<div class="w-10 h-10 rounded-full border-2 border-primary-container bg-surface flex items-center justify-center text-primary text-sm font-bold">+8</div>
-</div>
-<p class="mt-4 text-sm font-medium opacity-80">8 gérants de parcelles actifs</p>
 </div>
 </div>
+</div>
+<!-- Search Input Above Table -->
+<div class="relative w-full max-w-md mb-6">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input id="headerSearchInput" class="w-full pl-12 pr-4 py-3 bg-white border-2 border-outline-variant/30 rounded-full focus:border-primary focus:outline-none transition-colors text-sm font-medium" placeholder="Search a user by name or email" type="text"/>
+</div>
+
 <!-- User Table Container -->
 <div class="glass-card rounded-xl overflow-hidden border border-white/20 shadow-2xl">
 <div class="overflow-x-auto">
 <table class="w-full text-left border-collapse">
 <thead>
 <tr class="bg-surface-container-low/50">
-<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Utilisateur</th>
-<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Rôle</th>
-<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Statut</th>
-<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Dernière Connexion</th>
+<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">User</th>
+<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Email</th>
+<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Role</th>
+<th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Created Date</th>
+<th class="px-8 py-6 text-xs font-black uppercase">QR Code</th>
 <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest text-right">Actions</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-outline-variant/10">
-<!-- Row 1 -->
-<tr class="hover:bg-white/30 transition-colors group">
-<td class="px-8 py-6">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-surface font-bold">SM</div>
-<div>
-<p class="font-bold text-primary">Sami Mansour</p>
-<p class="text-sm text-on-surface-variant">s.mansour@elfirma.tn</p>
-</div>
-</div>
+{% if users is defined and users|length > 0 %}
+  {% for user in users %}
+    <tr class="hover:bg-white/30 transition-colors group">
+      <td class="px-8 py-6">
+        <div class="flex items-center gap-4">
+          {% set photo = user.imageU %}
+          {% if photo is null or photo == '' or photo == 'default.JPG' %}
+            <img src="{{ asset('assets/img/default.JPG') }}" class="w-12 h-12 rounded-full object-cover" alt="{{ user.nomU }} {{ user.prenomU }}">
+          {% elseif photo starts with 'uploads/' %}
+            <img src="{{ asset(photo) }}" class="w-12 h-12 rounded-full object-cover" alt="{{ user.nomU }} {{ user.prenomU }}">
+          {% elseif photo starts with 'http' or photo starts with '/' %}
+            <img src="{{ photo }}" class="w-12 h-12 rounded-full object-cover" alt="{{ user.nomU }} {{ user.prenomU }}">
+          {% else %}
+            <img src="{{ asset('uploads/users/' ~ photo) }}" class="w-12 h-12 rounded-full object-cover" alt="{{ user.nomU }} {{ user.prenomU }}">
+          {% endif %}
+          <div>
+            <p class="font-bold text-primary">{{ user.nomU }} {{ user.prenomU }}</p>
+            <p class="text-sm text-on-surface-variant">{{ user.emailU }}</p>
+          </div>
+        </div>
+      </td>
+      <td class="px-8 py-6">
+        <p class="text-sm text-on-surface-variant">{{ user.emailU }}</p>
+      </td>
+      <td class="px-8 py-6">
+        {% if user.roleU == 'employee' %}
+          <span class="px-4 py-1 rounded-full bg-[#43682b] text-white text-xs font-bold">Employee</span>
+        {% elseif user.roleU == 'client' %}
+          <span class="px-4 py-1 rounded-full bg-[#934b19] text-white text-xs font-bold">Client</span>
+        {% elseif user.roleU == 'admin' %}
+          <span class="px-4 py-1 rounded-full bg-[#9c27b0] text-white text-xs font-bold">Admin</span>
+        {% else %}
+          <span class="px-4 py-1 rounded-full bg-primary-container text-white text-xs font-bold">{{ user.roleU }}</span>
+        {% endif %}
+      </td>
+      <td class="px-8 py-6">
+        <p class="text-sm text-on-surface-variant">{{ user.dateCreationU ? user.dateCreationU|date('M d, Y') : 'N/A' }}</p>
+      </td>
+      <td class="text-center align-middle">
+    <button class="btn btn-dark d-flex justify-content-center align-items-center mx-auto"
+            onclick="showQr('{{ user.qrCode }}')"
+            style="width: 45px; height: 45px; border-radius: 10px;">
+        <i class="fa-solid fa-qrcode" style="font-size: 40px;"></i>
+    </button>
 </td>
-<td class="px-8 py-6">
-<span class="px-4 py-1 rounded-full bg-primary-container text-white text-xs font-bold">Admin</span>
-</td>
-<td class="px-8 py-6">
-<div class="flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-[#43682b]"></span>
-<span class="text-sm font-semibold text-[#43682b]">Actif</span>
-</div>
-</td>
-<td class="px-8 py-6">
-<p class="text-sm text-on-surface-variant">Aujourd'hui, 08:45</p>
-</td>
-<td class="px-8 py-6 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-2 rounded-full hover:bg-primary/5 text-primary transition-all">
-<span class="material-symbols-outlined" data-icon="edit">edit</span>
-</button>
-<button class="p-2 rounded-full hover:bg-error/5 text-error transition-all">
-<span class="material-symbols-outlined" data-icon="block">block</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="hover:bg-white/30 transition-colors group">
-<td class="px-8 py-6">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold">FB</div>
-<div>
-<p class="font-bold text-primary">Fatma Ben Salem</p>
-<p class="text-sm text-on-surface-variant">f.bensalem@elfirma.tn</p>
-</div>
-</div>
-</td>
-<td class="px-8 py-6">
-<span class="px-4 py-1 rounded-full bg-secondary-fixed text-on-secondary-container text-xs font-bold">Gérant</span>
-</td>
-<td class="px-8 py-6">
-<div class="flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-[#43682b]"></span>
-<span class="text-sm font-semibold text-[#43682b]">Actif</span>
-</div>
-</td>
-<td class="px-8 py-6">
-<p class="text-sm text-on-surface-variant">Hier, 17:20</p>
-</td>
-<td class="px-8 py-6 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-2 rounded-full hover:bg-primary/5 text-primary transition-all">
-<span class="material-symbols-outlined" data-icon="edit">edit</span>
-</button>
-<button class="p-2 rounded-full hover:bg-error/5 text-error transition-all">
-<span class="material-symbols-outlined" data-icon="block">block</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Loading Skeleton Placeholder -->
-<tr class="opacity-40 grayscale">
-<td class="px-8 py-6">
-<div class="flex items-center gap-4 animate-pulse">
-<div class="w-12 h-12 rounded-full bg-outline-variant"></div>
-<div class="space-y-2">
-<div class="h-4 w-32 bg-outline-variant rounded"></div>
-<div class="h-3 w-24 bg-outline-variant rounded"></div>
-</div>
-</div>
-</td>
-<td class="px-8 py-6"><div class="h-6 w-20 bg-outline-variant rounded-full animate-pulse"></div></td>
-<td class="px-8 py-6"><div class="h-4 w-16 bg-outline-variant rounded animate-pulse"></div></td>
-<td class="px-8 py-6"><div class="h-4 w-28 bg-outline-variant rounded animate-pulse"></div></td>
-<td class="px-8 py-6"><div class="h-8 w-16 bg-outline-variant rounded-full ml-auto animate-pulse"></div></td>
-</tr>
-<!-- Row 3 (Inactive) -->
-<tr class="hover:bg-white/30 transition-colors group">
-<td class="px-8 py-6">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full bg-outline-variant flex items-center justify-center text-on-surface-variant font-bold">HK</div>
-<div>
-<p class="font-bold text-primary">Hedi Kallel</p>
-<p class="text-sm text-on-surface-variant">h.kallel@partenaire.tn</p>
-</div>
-</div>
-</td>
-<td class="px-8 py-6">
-<span class="px-4 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-xs font-bold">Fournisseur</span>
-</td>
-<td class="px-8 py-6">
-<div class="flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-error"></span>
-<span class="text-sm font-semibold text-error">Inactif</span>
-</div>
-</td>
-<td class="px-8 py-6">
-<p class="text-sm text-on-surface-variant">Il y a 12 jours</p>
-</td>
-<td class="px-8 py-6 text-right">
-<div class="flex items-center justify-end gap-2">
-<button class="p-2 rounded-full hover:bg-primary/5 text-primary transition-all">
-<span class="material-symbols-outlined" data-icon="edit">edit</span>
-</button>
-<button class="p-2 rounded-full hover:bg-primary-container/10 text-primary-container transition-all">
-<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
-</button>
-</div>
-</td>
-</tr>
+      <td class="px-8 py-6 text-right">
+        <div class="flex items-center justify-end gap-2">
+          <button class="p-2 rounded-full hover:bg-primary/5 text-primary transition-all edit-user-btn" data-user-id="{{ user.idU }}" data-nom="{{ user.nomU }}" data-prenom="{{ user.prenomU }}" data-email="{{ user.emailU }}" data-role="{{ user.roleU }}" data-image="{{ user.imageU }}">
+            <span class="material-symbols-outlined" data-icon="edit">edit</span>
+          </button>
+          <button class="p-2 rounded-full hover:bg-error/5 text-error transition-all delete-user-btn" data-user-id="{{ user.idU }}" data-user-name="{{ user.nomU }} {{ user.prenomU }}">
+            <span class="material-symbols-outlined" data-icon="delete">delete</span>
+          </button>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+{% else %}
+  <tr>
+    <td colspan="5" class="px-8 py-12 text-center">
+      <div class="flex flex-col items-center justify-center">
+        <span class="material-symbols-outlined text-4xl text-outline mb-4">person_search</span>
+        <p class="text-on-surface-variant font-semibold">No users found</p>
+      </div>
+    </td>
+  </tr>
+{% endif %}
 </tbody>
 </table>
 </div>
@@ -363,13 +332,13 @@
 <div class="w-24 h-24 rounded-full bg-surface-container-low flex items-center justify-center mb-6">
 <span class="material-symbols-outlined text-4xl text-outline" data-icon="person_search">person_search</span>
 </div>
-<h3 class="text-2xl font-black text-primary mb-2">Aucun utilisateur trouvé</h3>
-<p class="text-on-surface-variant max-w-sm mx-auto">Nous n'avons trouvé aucun résultat pour votre recherche. Essayez d'ajuster vos filtres.</p>
-<button class="mt-8 px-8 py-3 bg-primary text-surface rounded-full font-bold">Voir tous les utilisateurs</button>
+<h3 class="text-2xl font-black text-primary mb-2">No user found</h3>
+<p class="text-on-surface-variant max-w-sm mx-auto">We found no results for your search. Try adjusting your filters.</p>
+<button class="mt-8 px-8 py-3 bg-primary text-surface rounded-full font-bold">View all users</button>
 </div>
 <!-- Pagination -->
 <div class="px-8 py-6 bg-surface-container-low/30 flex items-center justify-between border-t border-outline-variant/10">
-<p class="text-sm text-on-surface-variant font-medium">Affichage de <span class="font-bold text-primary">1-10</span> sur <span class="font-bold text-primary">42</span> utilisateurs</p>
+<p class="text-sm text-on-surface-variant font-medium">Showing <span class="font-bold text-primary">1-10</span> of <span class="font-bold text-primary">{{ totalUsers is defined ? totalUsers : 0 }}</span> users</p>
 <div class="flex items-center gap-2">
 <button class="p-2 rounded-full hover:bg-surface-container-highest disabled:opacity-30 transition-all" disabled="">
 <span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
@@ -388,13 +357,131 @@
 </div>
 </div>
 </section>
-<!-- Footer Component -->
+
+<!-- Complaints Section -->
+<section class="p-8 flex-1 flex flex-col gap-8">
+<div style="margin-top: 40px;">
+  <h2 class="text-3xl font-black text-primary mb-6">Complaints Management</h2>
+
+  <!-- Complaints Table -->
+  <div class="glass-card rounded-xl overflow-hidden border border-white/20 shadow-2xl">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low/50">
+            <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Title</th>
+            <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Description</th>
+            <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Type</th>
+            <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">User</th>
+            <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Date</th>
+            <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest">Status</th>
+            <th class="px-8 py-6 text-xs font-black text-on-surface-variant uppercase tracking-widest text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/10">
+          {% if complaints is defined and complaints|length > 0 %}
+            {% for complaint in complaints %}
+              <tr class="hover:bg-white/30 transition-colors group" id="complaint-{{ complaint.idrU }}">
+                <td class="px-8 py-6">
+                  <p class="font-bold text-primary">{{ complaint.titreU }}</p>
+                </td>
+                <td class="px-8 py-6">
+                  <p class="text-sm text-on-surface-variant">{{ complaint.descriptionU }}</p>
+                </td>
+                <td class="px-8 py-6">
+                  <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold capitalize">{{ complaint.typeReclamationU }}</span>
+                </td>
+                <td class="px-8 py-6">
+                  <p class="font-semibold text-primary">{{ complaint.utilisateur.nomU }} {{ complaint.utilisateur.prenomU }}</p>
+                  <p class="text-xs text-on-surface-variant">{{ complaint.utilisateur.emailU }}</p>
+                </td>
+                <td class="px-8 py-6">
+                  <p class="text-sm text-on-surface-variant">{{ complaint.dateReclamationU ? complaint.dateReclamationU|date('M d, Y') : 'N/A' }}</p>
+                </td>
+                <td class="px-8 py-6">
+                  {% if complaint.statutU == 'pending' %}
+                    <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-bold">Pending</span>
+                  {% elseif complaint.statutU == 'reviewed' %}
+                    <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold">Reviewed</span>
+                  {% else %}
+                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-xs font-bold">{{ complaint.statutU|capitalize }}</span>
+                  {% endif %}
+                </td>
+                <td class="px-8 py-6 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <button class="p-2 rounded-full hover:bg-primary/5 text-primary transition-all reply-complaint-btn" data-complaint-id="{{ complaint.idrU }}" data-user-email="{{ complaint.utilisateur.emailU }}" data-complaint-title="{{ complaint.titreU }}" title="Reply by Email">
+                      <span class="material-symbols-outlined" data-icon="reply">reply</span>
+                    </button>
+                    <button class="p-2 rounded-full hover:bg-green/5 text-green transition-all validate-complaint-btn" data-complaint-id="{{ complaint.idrU }}" title="Mark as Reviewed">
+                      <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="px-8 py-12 text-center">
+                <div class="flex flex-col items-center justify-center">
+                  <span class="material-symbols-outlined text-4xl text-outline mb-4">chat_bubble_outline</span>
+                  <p class="text-on-surface-variant font-semibold">No complaints found</p>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- JavaScript for Complaint Actions -->
+<script>
+  document.querySelectorAll('.validate-complaint-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const complaintId = this.getAttribute('data-complaint-id');
+      const row = document.getElementById('complaint-' + complaintId);
+
+      if (!complaintId) {
+        alert('Error: Complaint ID not found');
+        return;
+      }
+
+      try {
+        const response = await fetch('{{ path('elfirma_validate_complaint') }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'complaint_id=' + complaintId
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Update status badge
+          const statusCell = row.querySelector('td:nth-child(6)');
+          statusCell.innerHTML = '<span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold">Reviewed</span>';
+
+          // Show success message
+          alert('Complaint marked as reviewed!');
+        } else {
+          alert('Error: ' + (data.message || 'Failed to update complaint'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while updating the complaint');
+      }
+    });
+  });
+</script>
 <footer class="w-full py-6 mt-auto flex justify-between items-center px-12 border-t border-[#c3c9b9]/15 bg-[#fbfbe2] dark:bg-[#0a2200]">
 <p class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d]">Elfirma © 2026</p>
 <div class="flex gap-8">
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Support Technique</a>
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Mentions Légales</a>
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Confidentialité</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Technical Support</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Legal Notice</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Privacy</a>
 </div>
 </footer>
 </main>
@@ -402,6 +489,942 @@
 <button class="fixed bottom-10 right-10 w-16 h-16 bg-primary text-surface rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 md:hidden">
 <span class="material-symbols-outlined text-3xl" data-icon="person_add">person_add</span>
 </button>
+<!-- Filter Modal -->
+<div id="filterModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-md w-full mx-4">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-8 border-b border-outline-variant/20">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Filter Users</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Search and filter by role</p>
+      </div>
+      <button id="closeFilterModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-8 space-y-6">
+      <!-- Search by Name/Email -->
+      <div>
+        <label class="block font-semibold text-primary mb-3">Search by Name or Email</label>
+        <input type="text" id="searchInput" placeholder="Search..." class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+      </div>
+
+      <!-- Filter by Role -->
+      <div>
+        <label class="block font-semibold text-primary mb-3">Filter by Role</label>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+            <input type="radio" name="roleFilter" value="" class="w-4 h-4" checked>
+            <span class="text-on-surface">All Roles</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+            <input type="radio" name="roleFilter" value="employee" class="w-4 h-4">
+            <span class="text-[#43682b] font-semibold">Employee</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+            <input type="radio" name="roleFilter" value="client" class="w-4 h-4">
+            <span class="text-[#934b19] font-semibold">Client</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+            <input type="radio" name="roleFilter" value="admin" class="w-4 h-4">
+            <span class="text-[#9c27b0] font-semibold">Admin</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="resetFilterBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Reset
+        </button>
+        <button type="button" id="applyFilterBtn" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all">
+          Apply Filter
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Add User Modal -->
+<div id="addUserModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2] dark:bg-[#173901]">
+      <div>
+        <h2 class="text-3xl font-black text-primary" id="modalTitle">Add New User</h2>
+        <p class="text-sm text-on-surface-variant mt-1" id="modalSubtitle">Fill in the details to create a new user account</p>
+      </div>
+      <button id="closeModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="addUserForm" class="p-8 space-y-6">
+      <input type="hidden" id="userIdModal" name="user_id" value="">
+      <!-- Photo Upload -->
+      <div class="text-center">
+        <p class="font-semibold text-primary mb-4">Add Profile Photo</p>
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-32 h-32 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border-4 border-primary-container/30" id="photoPreviewModal">
+            <span class="material-symbols-outlined text-6xl text-surface">person</span>
+          </div>
+          <label class="flex items-center gap-2 px-6 py-2 bg-primary-container text-on-primary font-semibold rounded-full cursor-pointer hover:opacity-90 transition-all">
+            <span class="material-symbols-outlined">upload_file</span>
+            Choose Photo
+            <input type="file" id="photoInputModal" name="photo" class="hidden" accept="image/*">
+          </label>
+          <p class="text-xs text-on-surface-variant">Optional - Leave empty for default</p>
+        </div>
+      </div>
+
+      <!-- Form Fields Row 1 -->
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Last Name -->
+        <div>
+          <label for="nomModal" class="block font-semibold text-primary mb-2">Last Name</label>
+          <input type="text" id="nomModal" name="nom" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="Dupont">
+          <p class="text-xs text-on-surface-variant mt-1">Max. 10 characters</p>
+          <div class="error-message-modal" id="nomErrorModal"></div>
+        </div>
+
+        <!-- First Name -->
+        <div>
+          <label for="prenomModal" class="block font-semibold text-primary mb-2">First Name</label>
+          <input type="text" id="prenomModal" name="prenom" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="Jean">
+          <p class="text-xs text-on-surface-variant mt-1">Max. 10 characters</p>
+          <div class="error-message-modal" id="prenomErrorModal"></div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label for="emailModal" class="block font-semibold text-primary mb-2">Email Address</label>
+        <input type="text" id="emailModal" name="email" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="you@example.com">
+        <div class="error-message-modal" id="emailErrorModal"></div>
+      </div>
+
+      <!-- Form Fields Row 2 -->
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Password -->
+        <div>
+          <label for="passwordModal" class="block font-semibold text-primary mb-2">Password</label>
+          <input type="text" id="passwordModal" name="password" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" placeholder="••••••">
+          <p class="text-xs text-on-surface-variant mt-1">3-7 characters</p>
+          <div class="error-message-modal" id="passwordErrorModal"></div>
+        </div>
+
+        <!-- Role -->
+        <div>
+          <label for="roleModal" class="block font-semibold text-primary mb-2">Role</label>
+          <select id="roleModal" name="role" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors">
+            <option value="">Select a role</option>
+            <option value="employee">Employee</option>
+            <option value="client">Client</option>
+          </select>
+          <div class="error-message-modal" id="roleErrorModal"></div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelModalBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" id="submitModalBtn" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg">
+          <span class="flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined" id="submitBtnIcon">person_add</span>
+            <span id="submitBtnText">Create User</span>
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Styles -->
+<style>
+  .error-message-modal {
+    color: #ba1a1a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  #nomModal.error-field,
+  #prenomModal.error-field,
+  #emailModal.error-field,
+  #passwordModal.error-field,
+  #roleModal.error-field {
+    border-color: #ba1a1a !important;
+    background-color: rgba(186, 26, 26, 0.05);
+  }
+</style>
+
+<!-- Modal JavaScript -->
+<script>
+  // Photo Preview
+  const photoInputModal = document.getElementById('photoInputModal');
+  const photoPreviewModal = document.getElementById('photoPreviewModal');
+
+  if (photoInputModal && photoPreviewModal) {
+    photoInputModal.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          photoPreviewModal.style.backgroundImage = `url(${event.target.result})`;
+          photoPreviewModal.style.backgroundSize = 'cover';
+          photoPreviewModal.style.backgroundPosition = 'center';
+          const icon = photoPreviewModal.querySelector('span');
+          if (icon) icon.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Modal Control
+  const addUserBtn = document.getElementById('addUserBtn');
+  const addUserModal = document.getElementById('addUserModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const cancelModalBtn = document.getElementById('cancelModalBtn');
+  const addUserForm = document.getElementById('addUserForm');
+
+  // Function to reset modal for adding new user
+  function resetModalForAdd() {
+    document.getElementById('modalTitle').textContent = 'Add New User';
+    document.getElementById('modalSubtitle').textContent = 'Fill in the details to create a new user account';
+    document.getElementById('userIdModal').value = '';
+    document.getElementById('submitBtnIcon').textContent = 'person_add';
+    document.getElementById('submitBtnText').textContent = 'Create User';
+    addUserForm.reset();
+    photoPreviewModal.style.backgroundImage = '';
+    photoPreviewModal.querySelector('span').style.display = '';
+    document.querySelectorAll('[id$="Modal"]').forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('.error-message-modal').forEach(el => {
+      el.textContent = '';
+    });
+  }
+
+  // Open Modal for Adding
+  addUserBtn.addEventListener('click', function() {
+    resetModalForAdd();
+    addUserModal.classList.remove('hidden');
+  });
+
+  function openAddUserModalFromChat() {
+    resetModalForAdd();
+    addUserModal.classList.remove('hidden');
+    return true;
+  }
+
+  // Edit User Button Handler
+  document.querySelectorAll('.edit-user-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const userId = this.dataset.userId;
+      const nom = this.dataset.nom;
+      const prenom = this.dataset.prenom;
+      const email = this.dataset.email;
+      const role = this.dataset.role;
+      const image = this.dataset.image;
+
+      // Update modal title
+      document.getElementById('modalTitle').textContent = 'Edit User';
+      document.getElementById('modalSubtitle').textContent = `Update ${nom} ${prenom}'s information`;
+      document.getElementById('userIdModal').value = userId;
+      document.getElementById('submitBtnIcon').textContent = 'edit';
+      document.getElementById('submitBtnText').textContent = 'Update User';
+
+      // Fill form fields
+      document.getElementById('nomModal').value = nom;
+      document.getElementById('prenomModal').value = prenom;
+      document.getElementById('emailModal').value = email;
+      document.getElementById('roleModal').value = role;
+
+      // Clear new photo input
+      document.getElementById('photoInputModal').value = '';
+
+      // Display current photo
+      const photoPreview = document.getElementById('photoPreviewModal');
+      photoPreview.querySelector('span').style.display = 'none';
+
+      if (image && image !== 'default.JPG' && image !== '') {
+        if (image.startsWith('uploads/')) {
+          photoPreview.style.backgroundImage = `url('{{ asset('') }}${image}')`;
+        } else if (image.startsWith('http') || image.startsWith('/')) {
+          photoPreview.style.backgroundImage = `url('${image}')`;
+        } else {
+          photoPreview.style.backgroundImage = `url('{{ asset('uploads/users/') }}${image}')`;
+        }
+      } else {
+        photoPreview.style.backgroundImage = `url('{{ asset('assets/img/default.JPG') }}')`;
+      }
+      photoPreview.style.backgroundSize = 'cover';
+      photoPreview.style.backgroundPosition = 'center';
+
+      // Clear errors
+      document.querySelectorAll('[id$="Modal"]').forEach(el => {
+        el.classList.remove('error-field');
+      });
+      document.querySelectorAll('.error-message-modal').forEach(el => {
+        el.textContent = '';
+      });
+
+      // Open modal
+      addUserModal.classList.remove('hidden');
+    });
+  });
+
+  // Close Modal
+  closeModalBtn.addEventListener('click', function() {
+    addUserModal.classList.add('hidden');
+  });
+
+  cancelModalBtn.addEventListener('click', function() {
+    addUserModal.classList.add('hidden');
+  });
+
+  // Close on backdrop click
+  addUserModal.addEventListener('click', function(e) {
+    if (e.target === addUserModal) {
+      addUserModal.classList.add('hidden');
+    }
+  });
+
+  // Form Submission
+  addUserForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.querySelectorAll('[id$="Modal"]').forEach(el => {
+      el.classList.remove('error-field');
+    });
+    document.querySelectorAll('.error-message-modal').forEach(el => {
+      el.textContent = '';
+    });
+
+    // Get form data
+    const formData = new FormData(addUserForm);
+    const userId = document.getElementById('userIdModal').value;
+
+    // Determine endpoint
+    let endpoint = '{{ path("elfirma_add_user") }}';
+    let method = 'POST';
+
+    if (userId) {
+      endpoint = '{{ path("elfirma_update_user") }}';
+      method = 'POST';
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: method,
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const message = userId ? 'User updated successfully!' : 'User created successfully!';
+        alert(message);
+        addUserModal.classList.add('hidden');
+        // Reload page to show updated/new user
+        window.location.reload();
+      } else {
+        // Display errors
+        if (data.errors) {
+          for (const [field, message] of Object.entries(data.errors)) {
+            const input = document.getElementById(field + 'Modal');
+            const errorEl = document.getElementById(field + 'ErrorModal');
+            if (input) input.classList.add('error-field');
+            if (errorEl) errorEl.textContent = message;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      const msg = userId ? 'An error occurred while updating the user' : 'An error occurred while creating the user';
+      alert(msg);
+    }
+  });
+
+  // Delete User Button Handler
+  function normalizeUserText(value) {
+    return (value || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ');
+  }
+
+  function findDeleteButtonFromCommand(commandText) {
+    const normalizedCommand = normalizeUserText(commandText);
+    if (!normalizedCommand) {
+      return null;
+    }
+
+    const cleanedNameCandidate = normalizedCommand
+      .replace(/^(delete|remove|supprime|supprimer)\s+user\s*/i, '')
+      .trim();
+
+    const buttons = Array.from(document.querySelectorAll('.delete-user-btn'));
+    let bestMatch = null;
+    let bestLength = 0;
+
+    buttons.forEach((btn) => {
+      const fullName = normalizeUserText(btn.dataset.userName || '');
+      if (!fullName) {
+        return;
+      }
+
+      const exactNameMatch = cleanedNameCandidate !== '' && fullName === cleanedNameCandidate;
+      const containsInCommand = normalizedCommand.includes(fullName);
+      const nameIncluded = cleanedNameCandidate !== '' && fullName.includes(cleanedNameCandidate);
+
+      if ((exactNameMatch || containsInCommand || nameIncluded) && fullName.length > bestLength) {
+        bestMatch = btn;
+        bestLength = fullName.length;
+      }
+    });
+
+    return bestMatch;
+  }
+
+  async function deleteUserFromChat(commandText) {
+    const matchedButton = findDeleteButtonFromCommand(commandText);
+    if (!matchedButton) {
+      return false;
+    }
+
+    matchedButton.click();
+    return true;
+  }
+
+  window.chatbotUserActions = {
+    openAddModalFromCommand: openAddUserModalFromChat,
+    deleteUserFromCommand: deleteUserFromChat,
+  };
+
+  document.querySelectorAll('.delete-user-btn').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      const userId = this.dataset.userId;
+      const userName = this.dataset.userName;
+
+      const result = await Swal.fire({
+        title: 'Delete User',
+        text: `Are you sure you want to delete ${userName}? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ba1a1a',
+        cancelButtonColor: '#73796c',
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const formData = new FormData();
+          formData.append('user_id', userId);
+
+          const response = await fetch('{{ path("elfirma_delete_user") }}', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            Swal.fire({
+              title: 'Deleted!',
+              text: 'User has been deleted successfully.',
+              icon: 'success',
+              confirmButtonColor: '#43682b'
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: data.message || 'An error occurred while deleting the user.',
+              icon: 'error',
+              confirmButtonColor: '#ba1a1a'
+            });
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          Swal.fire({
+            title: 'Error!',
+            text: 'An error occurred while deleting the user.',
+            icon: 'error',
+            confirmButtonColor: '#ba1a1a'
+          });
+        }
+      }
+    });
+  });
+</script>
+
+<!-- Filter Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const filterBtn = document.getElementById('filterBtn');
+    const filterModal = document.getElementById('filterModal');
+    const closeFilterModalBtn = document.getElementById('closeFilterModalBtn');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const resetFilterBtn = document.getElementById('resetFilterBtn');
+    const searchInput = document.getElementById('searchInput');
+    const headerSearchInput = document.getElementById('headerSearchInput');
+    const roleFilterRadios = document.querySelectorAll('input[name="roleFilter"]');
+
+    if (!headerSearchInput) {
+      console.error('headerSearchInput not found');
+      return;
+    }
+
+    // Open Filter Modal
+    if (filterBtn) {
+      filterBtn.addEventListener('click', function() {
+        filterModal.classList.remove('hidden');
+      });
+    }
+
+    // Close Filter Modal
+    if (closeFilterModalBtn) {
+      closeFilterModalBtn.addEventListener('click', function() {
+        filterModal.classList.add('hidden');
+      });
+    }
+
+    // Close on backdrop click
+    if (filterModal) {
+      filterModal.addEventListener('click', function(e) {
+        if (e.target === filterModal) {
+          filterModal.classList.add('hidden');
+        }
+      });
+    }
+
+    // Apply Filter
+    if (applyFilterBtn) {
+      applyFilterBtn.addEventListener('click', function() {
+        updateTableDisplay();
+        filterModal.classList.add('hidden');
+      });
+    }
+
+    // Reset Filter
+    if (resetFilterBtn) {
+      resetFilterBtn.addEventListener('click', function() {
+        roleFilterRadios.forEach(radio => {
+          if (radio.value === '') radio.checked = true;
+          else radio.checked = false;
+        });
+        updateTableDisplay();
+      });
+    }
+
+    // Update Table Display Function (combines header search + role filter)
+    function updateTableDisplay() {
+      const headerSearchTerm = headerSearchInput.value.toLowerCase();
+      const selectedRole = document.querySelector('input[name="roleFilter"]:checked') ?
+        document.querySelector('input[name="roleFilter"]:checked').value : '';
+
+      const tableRows = document.querySelectorAll('tbody tr');
+      let visibleCount = 0;
+
+      tableRows.forEach(row => {
+        // Skip empty state row
+        if (row.querySelector('td[colspan="5"]')) return;
+
+        let displayRow = true;
+
+        // Filter by header search term (name or email)
+        if (headerSearchTerm) {
+          const fullText = row.textContent.toLowerCase();
+          if (!fullText.includes(headerSearchTerm)) {
+            displayRow = false;
+          }
+        }
+
+        // Show or hide row
+        row.style.display = displayRow ? '' : 'none';
+        if (displayRow) visibleCount++;
+      });
+    }
+
+    // Real-time search as you type (header search input)
+    headerSearchInput.addEventListener('input', function() {
+      updateTableDisplay();
+    });
+
+    // Real-time filter by role (from modal)
+    roleFilterRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        updateTableDisplay();
+      });
+    });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('userDistributionChart');
+    if (ctx) {
+      const employeeCount = {{ employeeCount is defined ? employeeCount : 0 }};
+      const clientCount = {{ clientCount is defined ? clientCount : 0 }};
+      const adminCount = {{ adminCount is defined ? adminCount : 0 }};
+
+      const total = employeeCount + clientCount + adminCount;
+
+      const employeePercent = total > 0 ? ((employeeCount / total) * 100).toFixed(1) : 0;
+      const clientPercent = total > 0 ? ((clientCount / total) * 100).toFixed(1) : 0;
+      const adminPercent = total > 0 ? ((adminCount / total) * 100).toFixed(1) : 0;
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            'Employees (' + employeePercent + '%)',
+            'Clients (' + clientPercent + '%)',
+            'Admins (' + adminPercent + '%)'
+          ],
+          datasets: [{
+            data: [employeeCount, clientCount, adminCount],
+            backgroundColor: [
+              '#43682b',
+              '#934b19',
+              '#9c27b0'
+            ],
+            borderColor: [
+              '#2d4620',
+              '#6a3612',
+              '#6b1b7d'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                color: '#1b1d0e',
+                padding: 15,
+                usePointStyle: true
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+
+<div id="qrModal" style="display:none; position:fixed; top:0; left:0;
+width:100%; height:100%; background:rgba(0,0,0,0.7);
+justify-content:center; align-items:center;">
+
+    <div style="background:white; padding:20px; border-radius:10px;">
+        <img id="qrImage" style="width:300px; height:300px;">
+        <br><br>
+        <button onclick="closeQr()">Close</button>
+    </div>
+
+</div>
+<style>.qr-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.qr-modal-img {
+    width: 300px;
+    height: 300px;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+}</style>
+<script>
+function showQr(img) {
+    document.getElementById('qrImage').src = img;
+    document.getElementById('qrModal').style.display = 'flex';
+}
+
+function closeQr() {
+    document.getElementById('qrModal').style.display = 'none';
+}
+</script>
+
+<!-- Reply to Complaint Modal -->
+<div id="replyComplaintModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] dark:bg-[#173901] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2] dark:bg-[#173901]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Reply to Complaint</h2>
+        <p class="text-sm text-on-surface-variant mt-1" id="replyComplaintSubtitle">Send email response to user</p>
+      </div>
+      <button id="closeReplyModalBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form id="replyComplaintForm" class="p-8 space-y-6">
+      <input type="hidden" id="replyComplaintId" name="complaint_id" value="">
+      
+      <!-- Complaint Details -->
+      <div class="bg-primary/5 border border-primary/20 rounded-xl p-4">
+        <p class="text-sm font-semibold text-primary mb-2">Complaint Summary</p>
+        <p class="text-sm font-bold text-primary mb-1" id="replyComplaintTitle"></p>
+        <p class="text-xs text-on-surface-variant" id="replyComplaintUser"></p>
+      </div>
+
+      <!-- Reply Message -->
+      <div>
+        <label for="replyMessage" class="block font-semibold text-primary mb-2">Your Response</label>
+        <textarea 
+          id="replyMessage" 
+          name="reply_message" 
+          class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors resize-none" 
+          placeholder="Write your response to the user's complaint..." 
+          rows="6"></textarea>
+        <p class="text-xs text-on-surface-variant mt-1">Minimum 10 characters, Maximum 5000 characters</p>
+        <div class="error-message-reply" id="replyMessageError"></div>
+      </div>
+
+      <!-- Character count -->
+      <div class="text-right">
+        <span class="text-xs text-on-surface-variant">
+          <span id="charCount">0</span> / 5000 characters
+        </span>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" id="cancelReplyBtn" class="flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" id="submitReplyBtn" class="flex-1 px-6 py-3 bg-primary-container text-on-primary font-semibold rounded-xl hover:translate-y-[-2px] transition-all shadow-lg flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined" id="submitReplyIcon">send</span>
+          <span id="submitReplyText">Send Reply</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reply Modal Styles -->
+<style>
+  .error-message-reply {
+    color: #ba1a1a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  #replyMessage.error-field {
+    border-color: #ba1a1a !important;
+    background-color: rgba(186, 26, 26, 0.05);
+  }
+</style>
+
+<!-- Reply to Complaint Script -->
+<script>
+  const replyComplaintModal = document.getElementById('replyComplaintModal');
+  const replyComplaintForm = document.getElementById('replyComplaintForm');
+  const closeReplyModalBtn = document.getElementById('closeReplyModalBtn');
+  const cancelReplyBtn = document.getElementById('cancelReplyBtn');
+  const replyMessage = document.getElementById('replyMessage');
+  const charCount = document.getElementById('charCount');
+
+  // Character counter
+  if (replyMessage) {
+    replyMessage.addEventListener('input', function() {
+      charCount.textContent = this.value.length;
+    });
+  }
+
+  // Reply button handlers
+  document.querySelectorAll('.reply-complaint-btn').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      const complaintId = this.getAttribute('data-complaint-id');
+      const userEmail = this.getAttribute('data-user-email');
+      const complaintTitle = this.getAttribute('data-complaint-title');
+
+      if (!complaintId) {
+        alert('Error: Complaint ID not found');
+        return;
+      }
+
+      // Get complaint details from row
+      const row = document.getElementById('complaint-' + complaintId);
+      const titleCell = row.querySelector('td:nth-child(1)');
+      const userCell = row.querySelector('td:nth-child(4)');
+
+      // Fill modal
+      document.getElementById('replyComplaintId').value = complaintId;
+      document.getElementById('replyComplaintTitle').textContent = titleCell ? titleCell.textContent.trim() : 'Complaint';
+      document.getElementById('replyComplaintUser').textContent = 'To: ' + (userEmail || 'User');
+      document.getElementById('replyMessage').value = '';
+      charCount.textContent = '0';
+
+      // Clear errors
+      document.getElementById('replyMessage').classList.remove('error-field');
+      document.getElementById('replyMessageError').textContent = '';
+
+      // Open modal
+      replyComplaintModal.classList.remove('hidden');
+    });
+  });
+
+  // Close modal handlers
+  closeReplyModalBtn.addEventListener('click', function() {
+    replyComplaintModal.classList.add('hidden');
+  });
+
+  cancelReplyBtn.addEventListener('click', function() {
+    replyComplaintModal.classList.add('hidden');
+  });
+
+  // Close on backdrop click
+  replyComplaintModal.addEventListener('click', function(e) {
+    if (e.target === replyComplaintModal) {
+      replyComplaintModal.classList.add('hidden');
+    }
+  });
+
+  // Form submission
+  replyComplaintForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.getElementById('replyMessage').classList.remove('error-field');
+    document.getElementById('replyMessageError').textContent = '';
+
+    // Get form data
+    const complaintId = document.getElementById('replyComplaintId').value;
+    const message = replyMessage.value.trim();
+
+    // Validation
+    if (!complaintId) {
+      alert('Error: Complaint ID not found');
+      return;
+    }
+
+    if (!message) {
+      document.getElementById('replyMessage').classList.add('error-field');
+      document.getElementById('replyMessageError').textContent = 'Reply message is required';
+      return;
+    }
+
+    if (message.length < 10) {
+      document.getElementById('replyMessage').classList.add('error-field');
+      document.getElementById('replyMessageError').textContent = 'Reply message must be at least 10 characters long';
+      return;
+    }
+
+    // Show loading state
+    const submitBtn = document.getElementById('submitReplyBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span><span>Sending...</span>';
+
+    try {
+      const response = await fetch('{{ path('elfirma_reply_complaint') }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          complaint_id: complaintId,
+          reply_message: message
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Show success message
+        Swal.fire({
+          title: 'Success!',
+          text: data.message || 'Reply sent successfully!',
+          icon: 'success',
+          confirmButtonColor: '#43682b'
+        }).then(() => {
+          // Close modal and reset form
+          replyComplaintModal.classList.add('hidden');
+          replyComplaintForm.reset();
+          charCount.textContent = '0';
+          
+          // Update status in table if needed
+          const row = document.getElementById('complaint-' + complaintId);
+          if (row) {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            if (statusCell) {
+              statusCell.innerHTML = '<span class="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">Responded</span>';
+            }
+          }
+        });
+      } else {
+        // Show error message
+        if (data.errors) {
+          for (const [field, errorMsg] of Object.entries(data.errors)) {
+            if (field === 'reply_message') {
+              document.getElementById('replyMessage').classList.add('error-field');
+              document.getElementById('replyMessageError').textContent = errorMsg;
+            }
+          }
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: data.message || 'An error occurred while sending the reply',
+            icon: 'error',
+            confirmButtonColor: '#ba1a1a'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'An error occurred while sending the reply',
+        icon: 'error',
+        confirmButtonColor: '#ba1a1a'
+      });
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  });
+</script>
+
+<script>
+  window.chatbotContext = 'users';
+</script>
+{{ include('elfirma/_chatbot.html.twig') }}
+
 {{ include('elfirma/_nav_routes.html.twig') }}
 </body></html>
 

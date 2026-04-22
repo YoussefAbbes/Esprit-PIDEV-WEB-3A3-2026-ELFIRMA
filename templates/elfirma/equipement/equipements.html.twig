@@ -1,3 +1,4 @@
+
 {% extends 'baseback.html.twig' %}
 
 {% block body %}
@@ -835,14 +836,22 @@
 
 </style>
 
-<script>
+<script data-turbo="false">
 document.querySelectorAll('.analyse-btn').forEach(btn => {
     btn.addEventListener('click', function () {
 
         const id = this.dataset.id;
 
-        document.getElementById('ai-modal').classList.remove('hidden');
-        document.getElementById('ai-content').innerHTML = "⏳ Analyse en cours...";
+        const aiModal = document.getElementById('ai-modal');
+        const aiContent = document.getElementById('ai-content');
+
+        if (!aiModal || !aiContent) {
+            console.error('Éléments ai-modal ou ai-content non trouvés');
+            return;
+        }
+
+        aiModal.classList.remove('hidden');
+        aiContent.innerHTML = "⏳ Analyse en cours...";
 
         fetch('/analyse/' + id)
             .then(res => res.json())
@@ -859,12 +868,15 @@ document.querySelectorAll('.analyse-btn').forEach(btn => {
                     riskText = "Moyen";
                 }
 
-                let analysisHtml = data.analysis.map(a => <li>${a}</li>).join('');
-                let recHtml = data.recommendations.map(r => <li>${r}</li>).join('');
+                let analysisHtml = data.analysis.map(a => `<li>${a}</li>`).join('');
+                let recHtml = data.recommendations.map(r => `<li>${r}</li>`).join('');
 
-                document.getElementById('ai-equipement-name').innerText = data.nom;
+                const equipementNameEl = document.getElementById('ai-equipement-name');
+                if (equipementNameEl) {
+                    equipementNameEl.innerText = data.nom || 'Équipement';
+                }
 
-                document.getElementById('ai-content').innerHTML = `
+                aiContent.innerHTML = `
                     
                     <!-- 📊 SCORE -->
                     <div class="bg-white p-4 rounded-xl shadow border">
@@ -897,7 +909,10 @@ document.querySelectorAll('.analyse-btn').forEach(btn => {
                 `;
             })
             .catch(err => {
-                document.getElementById('ai-content').innerHTML = "❌ Erreur lors de l'analyse";
+                if (aiContent) {
+                    aiContent.innerHTML = "❌ Erreur lors de l'analyse";
+                }
+                console.error('Erreur lors de l\'analyse:', err);
             });
     });
 });
@@ -907,15 +922,20 @@ function closeAIModalAi() {
 }
 </script>
 
-<script>
+<script data-turbo="false">
 function openPrediction(id) {
+
+    const modal = document.getElementById('prediction-modal');
+    const content = document.getElementById('modal-content');
+
+    if (!modal || !content) {
+        console.error('Modal de prédiction non trouvée');
+        return;
+    }
 
     fetch('{{ path('predict_maintenance', {id: 0}) }}'.replace('0', id))
         .then(res => res.json())
         .then(data => {
-
-            const modal = document.getElementById('prediction-modal');
-            const content = document.getElementById('modal-content');
 
             // 🟢 CAS 1 : Aucune maintenance
             if (data.status === 'NO_MAINTENANCE') {
@@ -949,17 +969,33 @@ function openPrediction(id) {
 
             // ✅ CAS 3 : prédiction normale
 
+            // � Equipement name
+            const equipementNameEl = document.getElementById('equipement-name');
+            if (equipementNameEl) {
+                equipementNameEl.innerText = data.nomEq || 'Équipement';
+            }
+
             // 📅 Date
-            document.getElementById('predicted-date').innerText =
-                data.predictedDate.substring(0,10);
+            const predictedDateEl = document.getElementById('predicted-date');
+            if (predictedDateEl) {
+                predictedDateEl.innerText = data.predictedDate.substring(0,10);
+            }
 
             // ⏳ Jours
-            document.getElementById('days-remaining').innerText =
-                data.daysRemaining;
+            const daysRemainingEl = document.getElementById('days-remaining');
+            if (daysRemainingEl) {
+                daysRemainingEl.innerText = data.daysRemaining;
+            }
 
             // ⚠️ Risk
             const riskCard = document.getElementById('risk-card');
             const riskText = document.getElementById('risk-text');
+
+            if (!riskCard || !riskText) {
+                console.error('Éléments risk-card ou risk-text non trouvés');
+                modal.classList.remove('hidden');
+                return;
+            }
 
             let color = "";
             let bg = "";
@@ -982,8 +1018,8 @@ function openPrediction(id) {
                     color = "text-green-700";
             }
 
-            riskCard.className = p-4 rounded-xl border ${bg};
-            riskText.className = text-sm font-semibold ${color};
+            riskCard.className = `p-4 rounded-xl border ${bg}`;
+            riskText.className = `text-sm font-semibold ${color}`;
             riskText.innerText = data.riskLevel;
 
             modal.classList.remove('hidden');
@@ -991,13 +1027,20 @@ function openPrediction(id) {
         .catch(error => {
             console.error("Erreur:", error);
 
-            document.getElementById('modal-content').innerHTML = `
-                <div class="bg-red-100 border border-red-400 p-5 rounded-xl text-center">
-                    <p class="text-red-600">Erreur serveur</p>
-                </div>
-            `;
+            const modalContent = document.getElementById('modal-content');
+            const predictionModal = document.getElementById('prediction-modal');
 
-            document.getElementById('prediction-modal').classList.remove('hidden');
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 p-5 rounded-xl text-center">
+                        <p class="text-red-600">Erreur serveur</p>
+                    </div>
+                `;
+            }
+
+            if (predictionModal) {
+                predictionModal.classList.remove('hidden');
+            }
         });
 }
 
@@ -1007,7 +1050,7 @@ function closePredictionModal() {
 </script>
 
 <!-- ================= JAVASCRIPT ================= -->
-<script>
+<script data-turbo="false">
 
 // ===== UTILITIES =====
 
@@ -1047,7 +1090,7 @@ function getSelectedEquipement() {
 function restoreSelectedEquipement() {
     const selected = getSelectedEquipement();
     if (selected) {
-        const radio = document.querySelector(input[name="selectedEquipement"][value="${selected}"]);
+        const radio = document.querySelector(`input[name="selectedEquipement"][value="${selected}"]`);
         if (radio) {
             radio.checked = true;
         }
@@ -1135,7 +1178,7 @@ function updateFilterInfo(visibleCount, totalCount) {
     
     if (visibleCount < totalCount) {
         filterInfo.classList.remove('hidden');
-        filterInfoText.textContent = ${visibleCount}/${totalCount} équipements affichés;
+        filterInfoText.textContent = `${visibleCount}/${totalCount} équipements affichés`;
     } else {
         filterInfo.classList.add('hidden');
     }
@@ -1174,7 +1217,9 @@ document.getElementById('equipementModal')?.addEventListener('click', function(e
 
 // ===== MODAL SUPPRESSION =====
 
-let deleteId = null;
+if (typeof deleteId === 'undefined') {
+    var deleteId = null;
+}
 
 function openDeleteModal(id) {
     deleteId = id;
@@ -1193,7 +1238,7 @@ function closeDeleteModal() {
 function confirmDelete() {
     if (!deleteId) return;
     
-    fetch(/equipements/${deleteId}/delete, {
+    fetch(`/equipements/${deleteId}/delete`, {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -1202,7 +1247,7 @@ function confirmDelete() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(Erreur HTTP ${response.status});
+            throw new Error(`Erreur HTTP ${response.status}`);
         }
         return response.json();
     })
@@ -1343,7 +1388,7 @@ function saveRow(id) {
         descriptionEq: document.getElementById('input-desc-' + id).value?.trim()
     };
 
-    fetch(/equipements/${id}/edit, {
+    fetch(`/equipements/${id}/edit`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1353,7 +1398,7 @@ function saveRow(id) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(Erreur HTTP ${response.status});
+            throw new Error(`Erreur HTTP ${response.status}`);
         }
         return response.json();
     })
@@ -1411,8 +1456,9 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 
-<script>
-const symbols = {
+<script data-turbo="false">
+if (typeof symbols === 'undefined') {
+    var symbols = {
     TND: "د.ت",
     USD: "$",
     EUR: "€",
@@ -1441,7 +1487,9 @@ function convertPrices() {
     });
 }
 
-let conversionRates = {};
+if (typeof conversionRates === 'undefined') {
+    var conversionRates = {};
+}
 
 async function loadRates() {
     try {
@@ -1458,9 +1506,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("currencySelect")
         ?.addEventListener("change", convertPrices);
 });
+}
 </script>
 
-<script>
+<script data-turbo="false">
 async function generateImage(id) {
 
     // 🔥 overlay (fond sombre)
@@ -1496,7 +1545,7 @@ async function generateImage(id) {
     document.body.appendChild(overlay);
 
     try {
-        const response = await fetch(/equipement/${id}/generate-image, {
+        const response = await fetch(`/equipement/${id}/generate-image`, {
             method: 'POST'
         });
 
@@ -1572,7 +1621,7 @@ document.getElementById('downloadBtn').onclick = () => {
 </script>
 
 {% if form.vars.submitted and not form.vars.valid %}
-<script>
+<script data-turbo="false">
     document.addEventListener("DOMContentLoaded", function() {
         openModal();
         showNotification('❌ Le formulaire contient des erreurs', 'error');
@@ -1581,7 +1630,7 @@ document.getElementById('downloadBtn').onclick = () => {
 {% endif %}
 
 {% if formMaintenance.vars.submitted and not formMaintenance.vars.valid %}
-<script>
+<script data-turbo="false">
     document.addEventListener("DOMContentLoaded", function() {
         openMaintenanceModal();
         showNotification('❌ Le formulaire contient des erreurs', 'error');

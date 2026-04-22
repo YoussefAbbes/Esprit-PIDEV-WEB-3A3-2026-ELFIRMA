@@ -12,7 +12,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ChatbotController extends AbstractController
 {
-    private const FASTAPI_URL = 'http://localhost:8001/chat';
+    private const FASTAPI_URL = 'http://localhost:8002/chat';
 
     public function __construct(private HttpClientInterface $http) {}
 

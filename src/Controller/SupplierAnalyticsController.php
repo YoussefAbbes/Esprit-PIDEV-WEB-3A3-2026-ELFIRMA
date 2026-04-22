@@ -13,7 +13,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SupplierAnalyticsController extends AbstractController
 {
-    private const FASTAPI_URL = 'http://localhost:8001/analyze';
+    private const FASTAPI_URL = 'http://localhost:8002/analyze';
 
     public function __construct(private HttpClientInterface $http) {}
 
@@ -66,8 +66,39 @@ class SupplierAnalyticsController extends AbstractController
                 'timeout' => 15,
             ]);
 
-            $data = $response->toArray();
-            return $this->json($data);
+            $aiData = $response->toArray();
+            
+            // Transform AI response from chatbot_ai to expected template format
+            $results = [];
+            if (isset($aiData['results']) && is_array($aiData['results'])) {
+                foreach ($aiData['results'] as $supplier) {
+                    // Convert sentiment_breakdown from {Positive, Neutral, Negative} to {positive%, neutral%, negative%}
+                    $sentiments = $supplier['sentiment_breakdown'] ?? [];
+                    $total_senti = array_sum($sentiments);
+                    
+                    $results[] = [
+                        'supplier_id'    => $supplier['supplier_id'] ?? 0,
+                        'supplier_name'  => $supplier['supplier_name'] ?? 'Unknown',
+                        'avg_stars'      => $supplier['avg_stars'] ?? 0,
+                        'total_reviews'  => $supplier['total_reviews'] ?? 0,
+                        'sentiment_breakdown' => [
+                            'positive' => $total_senti > 0 ? round(($sentiments['Positive'] ?? 0) / $total_senti * 100) : 0,
+                            'neutral'  => $total_senti > 0 ? round(($sentiments['Neutral'] ?? 0) / $total_senti * 100) : 0,
+                            'negative' => $total_senti > 0 ? round(($sentiments['Negative'] ?? 0) / $total_senti * 100) : 0,
+                        ],
+                        'star_distribution' => $supplier['star_distribution'] ?? [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0],
+                        'top_complaints' => $supplier['top_complaints'] ?? [],
+                        'top_keywords' => $supplier['top_keywords'] ?? [],
+                        'health' => [
+                            'label' => $supplier['health']['label'] ?? 'Unknown',
+                            'confidence' => ($supplier['health']['confidence'] ?? 0),
+                        ],
+                        'recommendation' => $supplier['recommendation'] ?? 'Review supplier performance',
+                    ];
+                }
+            }
+
+            return $this->json(['results' => $results]);
 
         } catch (\Throwable $e) {
             return $this->json([

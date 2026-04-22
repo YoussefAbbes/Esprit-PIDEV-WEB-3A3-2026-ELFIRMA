@@ -12,24 +12,53 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Psr\Log\LoggerInterface;
 
 final class AdminTwoFactorController extends AbstractController
 {
     private const ADMIN_2FA_TTL_SECONDS = 1800;
+    private LoggerInterface $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
     #[Route('/admin-panel/secure', name: 'app_admin_panel_entry', methods: ['GET'])]
     public function entry(Request $request): Response
     {
         $session = $request->getSession();
+        
+        $userRole = $session->get('user_role');
+        $userId = $session->get('user_id');
+        
+        $this->logger->info('📍 AdminTwoFactorController::entry() called', [
+            'user_role' => $userRole,
+            'user_id' => $userId,
+            'session_id' => $session->getId(),
+        ]);
 
-        if ($session->get('user_role') !== 'admin' || !$session->get('user_id')) {
+        if ($userRole !== 'admin' || !$userId) {
+            $this->logger->warning('❌ User is not admin or no user_id', [
+                'user_role' => $userRole,
+                'user_id' => $userId,
+            ]);
             return $this->forceLogout($request);
         }
 
-        if ($this->isAdminTwoFactorValid($request)) {
-            return $this->redirectToRoute('elfirma_page', ['module' => 'utilisateurs']);
+        $isValid = $this->isAdminTwoFactorValid($request);
+        $this->logger->info('🔐 2FA validation check', [
+            'is_valid' => $isValid,
+            'admin_2fa_verified' => $session->get('admin_2fa_verified'),
+            'admin_2fa_verified_at' => $session->get('admin_2fa_verified_at'),
+        ]);
+
+        if ($isValid) {
+            $this->logger->info('✅ 2FA is valid, redirecting to user_page');
+            return $this->redirectToRoute('user_page');
         }
 
+        $this->logger->info('⚠️ 2FA not valid, redirecting to 2FA form');
         return $this->redirectToRoute('app_admin_panel_2fa');
     }
 
@@ -41,33 +70,75 @@ final class AdminTwoFactorController extends AbstractController
         $userRole = (string) $session->get('user_role', '');
         $userEmail = (string) $session->get('user_email', '');
 
+        $this->logger->info('📍 AdminTwoFactorController::challenge() called', [
+            'method' => $request->getMethod(),
+            'user_id' => $userId,
+            'user_role' => $userRole,
+            'user_email' => $userEmail,
+        ]);
+
         if ($userId <= 0 || $userRole !== 'admin') {
+            $this->logger->warning('❌ Invalid user for 2FA challenge', [
+                'user_id' => $userId,
+                'user_role' => $userRole,
+            ]);
             return $this->forceLogout($request);
         }
 
         if ($request->isMethod('POST')) {
             $code = (string) $request->request->get('code', '');
+            
+            $this->logger->info('🔑 2FA code received', [
+                'code_length' => strlen($code),
+                'user_id' => $userId,
+            ]);
+
             $verified = $twoFactorService->verifyCode($userId, $code);
+            $this->logger->info('✓ verifyCode result', ['verified' => $verified]);
 
             // Vérification avec secret temporaire si existe
             if (!$verified) {
                 $pendingSecret = (string) $session->get('admin_2fa_pending_secret', '');
+                $this->logger->info('🔍 Trying pending secret', [
+                    'has_pending_secret' => !empty($pendingSecret),
+                ]);
+                
                 if ($pendingSecret !== '') {
                     $verified = $twoFactorService->verifyCodeWithSecret($pendingSecret, $code);
+                    $this->logger->info('✓ verifyCodeWithSecret result', ['verified' => $verified]);
                 }
             }
 
             if (!$verified) {
+                $this->logger->warning('❌ Invalid 2FA code', [
+                    'user_id' => $userId,
+                    'code_length' => strlen($code),
+                ]);
                 return $this->forceLogout($request, 'invalid_code');
             }
+
+            $this->logger->info('✅ 2FA code verified successfully', [
+                'user_id' => $userId,
+            ]);
 
             $session->set('admin_2fa_verified', true);
             $session->set('admin_2fa_verified_at', time());
             $session->set('admin_2fa_user_id', $userId);
             $session->remove('admin_2fa_pending_secret');
 
-            return $this->redirectToRoute('elfirma_page', ['module' => 'utilisateurs']);
+            $this->logger->info('✅ Session updated, redirecting to user_page', [
+                'admin_2fa_verified' => $session->get('admin_2fa_verified'),
+                'admin_2fa_verified_at' => $session->get('admin_2fa_verified_at'),
+                'admin_2fa_user_id' => $session->get('admin_2fa_user_id'),
+            ]);
+
+            return $this->redirectToRoute('user_page');
         }
+
+        $this->logger->info('📋 Displaying 2FA form for user', [
+            'user_id' => $userId,
+            'user_email' => $userEmail,
+        ]);
 
         // Génération du secret si nécessaire
         $secret = $twoFactorService->getOrCreateSecretForUser($userId);
@@ -120,7 +191,19 @@ final class AdminTwoFactorController extends AbstractController
 
     private function isAdminTwoFactorValid(Request $request): bool
     {
-        return self::hasValidAdminTwoFactor($request);
+        $result = self::hasValidAdminTwoFactor($request);
+        
+        $session = $request->getSession();
+        $this->logger->debug('🔍 isAdminTwoFactorValid() result', [
+            'result' => $result,
+            'user_role' => $session->get('user_role'),
+            'admin_2fa_verified' => $session->get('admin_2fa_verified'),
+            'time_now' => time(),
+            'admin_2fa_verified_at' => $session->get('admin_2fa_verified_at'),
+            'ttl_seconds' => self::ADMIN_2FA_TTL_SECONDS,
+        ]);
+        
+        return $result;
     }
 
     private function forceLogout(Request $request, ?string $twoFaError = null): Response
