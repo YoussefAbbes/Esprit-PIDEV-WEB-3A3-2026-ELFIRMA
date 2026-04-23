@@ -1,0 +1,1036 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Animal Storyboard - EL FIRMA{% endblock %}
+{% block body_class %}animals-catalog-page{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .animals-catalog-page {
+      --animal-soft: #f6fbf8;
+      --animal-cream: #fff7ec;
+      --animal-mint: #eff7f0;
+      --animal-sky: #eef5ff;
+      --animal-line: color-mix(in srgb, var(--default-color), transparent 85%);
+      --animal-shadow: 0 14px 34px color-mix(in srgb, #102f20, transparent 90%);
+      --animal-sale: #8f1f3a;
+    }
+
+    .animal-intro {
+      position: relative;
+      padding-top: 128px;
+      overflow: hidden;
+      background:
+        radial-gradient(440px 170px at 8% 0%, color-mix(in srgb, var(--accent-color), #ffffff 84%), transparent 72%),
+        radial-gradient(380px 220px at 92% 6%, color-mix(in srgb, #2d7a55, #ffffff 88%), transparent 76%),
+        #ffffff;
+    }
+
+    .animal-intro .intro-shell {
+      background: linear-gradient(132deg, #ffffff, var(--animal-soft));
+      border: 1px solid var(--animal-line);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: var(--animal-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .animal-intro .intro-shell::after {
+      content: '';
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -70px;
+      top: -120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, #2d7a55, #ffffff 70%), transparent 72%);
+      pointer-events: none;
+    }
+
+    .animal-intro .intro-visual {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--animal-line);
+      box-shadow: var(--animal-shadow);
+      min-height: 100%;
+    }
+
+    .animal-intro .intro-visual img {
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .animal-intro .content-title {
+      color: var(--accent-color);
+    }
+
+    .animal-intro .kpi-band {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .animal-intro .kpi-card {
+      border: 1px solid var(--animal-line);
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 12px 14px;
+    }
+
+    .animal-intro .kpi-card.sale {
+      background: color-mix(in srgb, #c3264c, #ffffff 94%);
+      border-color: color-mix(in srgb, #c3264c, #ffffff 75%);
+    }
+
+    .animal-intro .kpi-card.retained {
+      background: color-mix(in srgb, var(--accent-color), #ffffff 94%);
+      border-color: color-mix(in srgb, var(--accent-color), #ffffff 75%);
+    }
+
+    .animal-intro .kpi-card span {
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 42%);
+      font-weight: 700;
+    }
+
+    .animal-intro .kpi-card strong {
+      display: block;
+      font-family: var(--heading-font);
+      font-size: 34px;
+      line-height: 1;
+      margin-top: 6px;
+      color: var(--heading-color);
+    }
+
+    .animal-workbench {
+      background:
+        linear-gradient(180deg, #f8fcfa 0%, #f2f8f3 34%, #fff9f1 100%);
+    }
+
+    .animal-workbench .section-title {
+      padding-bottom: 34px;
+    }
+
+    .animal-workbench .section-title h2 {
+      color: var(--accent-color);
+      font-size: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    .animal-workbench .content {
+      padding: 0;
+    }
+
+    .animal-sidebar,
+    .animal-detail {
+      border: 1px solid var(--animal-line);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: var(--animal-shadow);
+      height: 100%;
+    }
+
+    .animal-sidebar {
+      background: linear-gradient(160deg, var(--animal-cream), var(--animal-mint));
+    }
+
+    .animal-detail {
+      background: linear-gradient(168deg, #ffffff 0%, var(--animal-sky) 58%, var(--animal-mint) 100%);
+    }
+
+    .animal-detail {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .animal-detail::before {
+      content: '';
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -100px;
+      bottom: -120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--accent-color), #ffffff 78%), transparent 72%);
+      pointer-events: none;
+    }
+
+    .animal-sidebar h3,
+    .animal-detail h3 {
+      margin: 0;
+      font-size: 31px;
+      color: var(--heading-color);
+    }
+
+    .animal-overline {
+      margin: 0 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 45%);
+      font-weight: 700;
+    }
+
+    .animal-input-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--heading-color);
+    }
+
+    .animal-input,
+    .animal-select {
+      width: 100%;
+      border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%);
+      border-radius: 9px;
+      padding: 10px 12px;
+      font-size: 15px;
+      color: var(--default-color);
+      background: color-mix(in srgb, #ffffff, var(--animal-cream) 28%);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .animal-input:focus,
+    .animal-select:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--accent-color), transparent 35%);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color), transparent 85%);
+    }
+
+    .animal-error {
+      margin-top: 8px;
+      margin-bottom: 0;
+      color: #bd2a2a;
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .animal-error.is-visible {
+      display: block;
+    }
+
+    .animal-list-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    .animal-list-head h4 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--heading-color);
+    }
+
+    .animal-list-head span {
+      font-size: 13px;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--default-color), transparent 42%);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .animal-list {
+      display: grid;
+      gap: 10px;
+      max-height: 520px;
+      overflow: auto;
+      padding: 8px;
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 86%);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--accent-color), #ffffff 96%));
+    }
+
+    .animal-entry {
+      width: 100%;
+      border: 1px solid var(--animal-line);
+      border-radius: 10px;
+      background: linear-gradient(146deg, #ffffff, #f8fcf8);
+      text-align: left;
+      padding: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .animal-entry:nth-child(even) {
+      background: linear-gradient(146deg, #fffdf7, #f7fbf5);
+    }
+
+    .animal-entry:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--accent-color), transparent 30%);
+      box-shadow: 0 10px 20px color-mix(in srgb, #102f20, transparent 88%);
+    }
+
+    .animal-entry.is-active {
+      border-color: color-mix(in srgb, var(--accent-color), transparent 20%);
+      box-shadow: inset 3px 0 0 var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), #ffffff 95%);
+    }
+
+    .entry-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .entry-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .entry-number {
+      font-size: 13px;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--default-color), transparent 55%);
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .entry-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--heading-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .entry-sub {
+      display: block;
+      margin-top: 6px;
+      color: color-mix(in srgb, var(--default-color), transparent 30%);
+      font-size: 14px;
+    }
+
+    .status-chip,
+    .detail-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 75%);
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      color: color-mix(in srgb, var(--accent-color), #000000 22%);
+      background: color-mix(in srgb, var(--accent-color), #ffffff 94%);
+      white-space: nowrap;
+    }
+
+    .status-chip i,
+    .detail-status i {
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .status-chip.sale,
+    .detail-status.sale {
+      border-color: color-mix(in srgb, #c3264c, #ffffff 70%);
+      color: var(--animal-sale);
+      background: color-mix(in srgb, #c3264c, #ffffff 92%);
+    }
+
+    .animal-empty {
+      margin: 12px 0 0;
+      border: 1px dashed var(--animal-line);
+      border-radius: 10px;
+      padding: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 40%);
+      font-weight: 600;
+      display: none;
+    }
+
+    .animal-empty.is-visible {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .detail-livestock {
+      margin-top: 6px;
+      margin-bottom: 0;
+      color: color-mix(in srgb, var(--default-color), transparent 25%);
+      font-size: 16px;
+    }
+
+    .detail-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .detail-metric {
+      border: 1px solid var(--animal-line);
+      border-radius: 12px;
+      padding: 12px;
+      background: linear-gradient(145deg, #ffffff, #f6faf8);
+    }
+
+    .detail-metrics .detail-metric:nth-child(1) {
+      background: linear-gradient(145deg, #f6f9ff, #eef4ff);
+    }
+
+    .detail-metrics .detail-metric:nth-child(2) {
+      background: linear-gradient(145deg, #fff9ee, #fff3df);
+    }
+
+    .detail-metrics .detail-metric:nth-child(3) {
+      background: linear-gradient(145deg, #f2fbf5, #e9f8ee);
+    }
+
+    .detail-metrics .detail-metric:nth-child(4) {
+      background: linear-gradient(145deg, #f1fbf8, #e9f7f2);
+    }
+
+    .detail-metric p {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 12px;
+      color: color-mix(in srgb, var(--default-color), transparent 42%);
+      font-weight: 700;
+    }
+
+    .detail-metric p i {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .detail-metrics .detail-metric:nth-child(1) p i {
+      color: #2f567d;
+    }
+
+    .detail-metrics .detail-metric:nth-child(2) p i {
+      color: #8a6c30;
+    }
+
+    .detail-metrics .detail-metric:nth-child(3) p i {
+      color: #1f7a51;
+    }
+
+    .detail-metrics .detail-metric:nth-child(4) p i {
+      color: #2b8f64;
+    }
+
+    .detail-metric strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 30px;
+      line-height: 1;
+      color: var(--heading-color);
+      font-family: var(--heading-font);
+    }
+
+    .story-grid .service-item {
+      position: relative;
+      border: 1px solid var(--animal-line);
+      border-radius: 16px;
+      padding: 24px 20px 18px;
+      background: linear-gradient(145deg, #ffffff, #f7fbf9);
+      height: 100%;
+      overflow: hidden;
+      isolation: isolate;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .story-grid .service-item::before {
+      content: '';
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      right: -58px;
+      bottom: -92px;
+      border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--accent-color), #ffffff 86%), transparent 72%);
+      z-index: -1;
+    }
+
+    .story-grid .service-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 30px color-mix(in srgb, #102f20, transparent 86%);
+      border-color: color-mix(in srgb, var(--accent-color), transparent 40%);
+    }
+
+    .story-grid .col-md-6:nth-child(1) .service-item {
+      border-top: 4px solid #1f7a51;
+    }
+
+    .story-grid .col-md-6:nth-child(2) .service-item {
+      border-top: 4px solid #2b8f64;
+    }
+
+    .story-grid .col-md-6:nth-child(3) .service-item {
+      border-top: 4px solid #a06a2f;
+    }
+
+    .story-grid .col-md-6:nth-child(4) .service-item {
+      border-top: 4px solid #2f567d;
+    }
+
+    .story-grid .service-item .number {
+      right: 14px;
+      top: 10px;
+      color: color-mix(in srgb, var(--accent-color), transparent 75%);
+      font-family: var(--heading-font);
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .story-grid .service-item .service-item-content .story-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      border: 1px solid color-mix(in srgb, var(--accent-color), #ffffff 65%);
+      background: color-mix(in srgb, var(--accent-color), #ffffff 90%);
+      color: color-mix(in srgb, var(--accent-color), #000000 16%);
+    }
+
+    .story-grid .service-item .service-item-content .story-icon i {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .story-grid .col-md-6:nth-child(1) .story-icon {
+      color: #1f7a51;
+      background: color-mix(in srgb, #1f7a51, #ffffff 90%);
+      border-color: color-mix(in srgb, #1f7a51, #ffffff 72%);
+    }
+
+    .story-grid .col-md-6:nth-child(2) .story-icon {
+      color: #2b8f64;
+      background: color-mix(in srgb, #2b8f64, #ffffff 90%);
+      border-color: color-mix(in srgb, #2b8f64, #ffffff 72%);
+    }
+
+    .story-grid .col-md-6:nth-child(3) .story-icon {
+      color: #a06a2f;
+      background: color-mix(in srgb, #a06a2f, #ffffff 90%);
+      border-color: color-mix(in srgb, #a06a2f, #ffffff 72%);
+    }
+
+    .story-grid .col-md-6:nth-child(4) .story-icon {
+      color: #2f567d;
+      background: color-mix(in srgb, #2f567d, #ffffff 90%);
+      border-color: color-mix(in srgb, #2f567d, #ffffff 72%);
+    }
+
+    .story-grid .service-item .service-item-content .service-heading {
+      font-size: 25px;
+      margin-bottom: 8px;
+      color: var(--heading-color);
+    }
+
+    .story-grid .service-item .service-item-content p {
+      margin-bottom: 0;
+      color: color-mix(in srgb, var(--default-color), transparent 20%);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 991px) {
+      .animal-intro .intro-shell {
+        padding: 20px;
+      }
+
+      .animal-intro {
+        padding-top: 112px;
+      }
+
+      .animal-intro .kpi-band {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 575px) {
+      .animal-intro .kpi-band,
+      .detail-metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .animal-sidebar,
+      .animal-detail {
+        padding: 16px;
+      }
+
+      .animal-sidebar h3,
+      .animal-detail h3 {
+        font-size: 27px;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <section class="about-3 section animal-intro">
+    <div class="container">
+      <div class="intro-shell">
+        <div class="row gy-4 justify-content-between align-items-center">
+          <div class="col-lg-6 order-lg-2" data-aos="zoom-out">
+            <div class="intro-visual">
+              <img src="{{ asset('assets/img/farm-animals-real.jpg') }}" alt="Real farm animals photo with sheep and chickens" class="img-fluid">
+            </div>
+          </div>
+          <div class="col-lg-5 order-lg-1" data-aos="fade-up" data-aos-delay="120">
+            <h2 class="content-title mb-4">Creative Animal Storyboard by Livestock</h2>
+            <p class="mb-4">
+              A cleaner and more expressive view of each animal profile, focused on health, behavior, and traceability in a premium interface.
+            </p>
+            <ul class="list-unstyled list-check">
+              <li>Fast search by type, status, and livestock</li>
+              <li>Detailed profile with clear operational data</li>
+              <li>Four narrative cards fully focused on the selected animal</li>
+            </ul>
+
+            <div class="kpi-band" data-aos="fade-up" data-aos-delay="180">
+              <article class="kpi-card">
+                <span>Total animals</span>
+                <strong>{{ catalog_summary.total_animals }}</strong>
+              </article>
+              <article class="kpi-card sale">
+                <span>For Sale</span>
+                <strong>{{ catalog_summary.for_sale }}</strong>
+              </article>
+              <article class="kpi-card retained">
+                <span>Retained</span>
+                <strong>{{ catalog_summary.retained }}</strong>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section animal-workbench">
+    <div class="container section-title" data-aos="fade-up">
+      <h2>Animal Creative Explorer</h2>
+      <p>An expressive and story-driven reading of each animal profile</p>
+    </div>
+
+    <div class="content">
+      <div class="container">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-4" data-aos="fade-right" data-aos-delay="90">
+            <aside class="animal-sidebar">
+              <p class="animal-overline">Search and Filters</p>
+              <h3>Profile List</h3>
+
+              <div class="mt-3">
+                <label for="animal-search" class="animal-input-label">Search</label>
+                <input id="animal-search" class="animal-input" type="text" maxlength="60" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]*" title="Use letters and spaces only" placeholder="Search animals...">
+                <p id="animal-search-error" class="animal-error">Please use letters and spaces only.</p>
+              </div>
+
+              <div class="row g-2 mt-2">
+                <div class="col-12">
+                  <label for="animal-type" class="animal-input-label">Type</label>
+                  <select id="animal-type" class="animal-select">
+                    <option value="">All types</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="animal-status" class="animal-input-label">Status</label>
+                  <select id="animal-status" class="animal-select">
+                    <option value="">All statuses</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="animal-list-head">
+                <h4>Animals</h4>
+                <span id="animal-count">0 items</span>
+              </div>
+
+              <div id="animal-list" class="animal-list" aria-live="polite"></div>
+              <p id="animal-empty" class="animal-empty">No animals match the current filters.</p>
+            </aside>
+          </div>
+
+          <div class="col-lg-8" data-aos="fade-left" data-aos-delay="130">
+            <article class="animal-detail">
+              <div class="detail-header">
+                <div>
+                  <p class="animal-overline">Active Profile</p>
+                  <h3 id="animal-detail-title">Select an animal</h3>
+                  <p id="animal-detail-livestock" class="detail-livestock">Livestock: --</p>
+                </div>
+                <span id="animal-detail-status" class="detail-status"><i class="bi bi-info-circle" aria-hidden="true"></i> Status: --</span>
+              </div>
+
+              <div class="detail-metrics">
+                <article class="detail-metric">
+                  <p><i class="bi bi-gender-ambiguous" aria-hidden="true"></i>Gender</p>
+                  <strong id="animal-detail-gender">--</strong>
+                </article>
+                <article class="detail-metric">
+                  <p><i class="bi bi-hourglass-split" aria-hidden="true"></i>Age</p>
+                  <strong id="animal-detail-age">--</strong>
+                </article>
+                <article class="detail-metric">
+                  <p><i class="bi bi-heart-pulse" aria-hidden="true"></i>Health</p>
+                  <strong id="animal-detail-health">--</strong>
+                </article>
+                <article class="detail-metric">
+                  <p><i class="bi bi-house-heart" aria-hidden="true"></i>Livestock</p>
+                  <strong id="animal-detail-livestock-name">--</strong>
+                </article>
+              </div>
+
+              <div class="row g-3 story-grid">
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">01</span>
+                    <div class="service-item-content">
+                      <span class="story-icon" aria-hidden="true"><i class="bi bi-person-vcard-fill"></i></span>
+                      <h4 class="service-heading">Animal Profile</h4>
+                      <p id="story-care">Select an animal to show its profile summary.</p>
+                    </div>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">02</span>
+                    <div class="service-item-content">
+                      <span class="story-icon" aria-hidden="true"><i class="bi bi-heart-pulse-fill"></i></span>
+                      <h4 class="service-heading">Health Monitoring</h4>
+                      <p id="story-health">Select an animal to show its health monitoring focus.</p>
+                    </div>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">03</span>
+                    <div class="service-item-content">
+                      <span class="story-icon" aria-hidden="true"><i class="bi bi-activity"></i></span>
+                      <h4 class="service-heading">Behavior Notes</h4>
+                      <p id="story-status">Select an animal to show its behavior notes.</p>
+                    </div>
+                  </article>
+                </div>
+                <div class="col-md-6">
+                  <article class="service-item">
+                    <span class="number">04</span>
+                    <div class="service-item-content">
+                      <span class="story-icon" aria-hidden="true"><i class="bi bi-diagram-3-fill"></i></span>
+                      <h4 class="service-heading">Traceability Context</h4>
+                      <p id="story-id">Select an animal to show its traceability context.</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function () {
+      const animalsData = {{ animals|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+      if (!Array.isArray(animalsData)) {
+        return;
+      }
+
+      const searchInput = document.getElementById('animal-search');
+      const searchError = document.getElementById('animal-search-error');
+      const typeFilter = document.getElementById('animal-type');
+      const statusFilter = document.getElementById('animal-status');
+      const listNode = document.getElementById('animal-list');
+      const countNode = document.getElementById('animal-count');
+      const emptyNode = document.getElementById('animal-empty');
+
+      const detailTitle = document.getElementById('animal-detail-title');
+      const detailLivestock = document.getElementById('animal-detail-livestock');
+      const detailStatus = document.getElementById('animal-detail-status');
+      const detailGender = document.getElementById('animal-detail-gender');
+      const detailAge = document.getElementById('animal-detail-age');
+      const detailHealth = document.getElementById('animal-detail-health');
+      const detailLivestockName = document.getElementById('animal-detail-livestock-name');
+
+      const storyCare = document.getElementById('story-care');
+      const storyHealth = document.getElementById('story-health');
+      const storyStatus = document.getElementById('story-status');
+      const storyId = document.getElementById('story-id');
+
+      const invalidSearchMessage = 'Please use letters and spaces only.';
+      const searchPattern = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]*$/;
+      const sanitizeSearchValue = (value) => String(value || '').replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s]/g, '');
+      let activeId = animalsData.length > 0 ? Number(animalsData[0].id_animal || 0) : null;
+
+      const normalize = (value) => String(value || '').trim().toLowerCase();
+
+      const normalizeStatusLabel = (value) => {
+        const text = normalize(value);
+        if (text.includes('sale') || text.includes('vente')) {
+          return 'For Sale';
+        }
+        if (text.includes('retained') || text.includes('garde')) {
+          return 'Retained';
+        }
+        return String(value || 'Unknown').trim() || 'Unknown';
+      };
+
+      const normalizeHealthLabel = (value) => {
+        const text = normalize(value);
+        if (text.includes('healthy') || text.includes('sain')) {
+          return 'Healthy';
+        }
+        if (text.includes('treatment') || text.includes('traitement')) {
+          return 'Under Treatment';
+        }
+        if (text.includes('sick') || text.includes('malade')) {
+          return 'Sick';
+        }
+        return String(value || 'Unknown').trim() || 'Unknown';
+      };
+
+      const statusIconClass = (statusLabel) => {
+        if (statusLabel === 'For Sale') {
+          return 'bi-tag-fill';
+        }
+        if (statusLabel === 'Retained') {
+          return 'bi-shield-check';
+        }
+
+        return 'bi-info-circle';
+      };
+
+      const buildStories = (item, statusLabel, healthLabel) => {
+        const type = item.type_animal || 'Animal';
+        const livestock = item.livestock_label || 'Livestock';
+        const age = Number(item.age || 0);
+        const ageLabel = age > 0 ? age + (age === 1 ? ' year' : ' years') : 'age not specified';
+        const genderLabel = String(item.sexe || 'not specified').trim();
+
+        return {
+          care: 'This ' + type + ' (' + genderLabel + ') is part of ' + livestock + ' and currently recorded at ' + ageLabel + ', with a stable daily care routine.',
+          health: healthLabel === 'Under Treatment' || healthLabel === 'Sick'
+            ? 'Health supervision is currently intensified with closer veterinary checks, adaptive care actions, and daily follow-up until recovery improves.'
+            : 'Health condition is stable with preventive monitoring, hygiene control, and regular observation of key biological indicators.',
+          status: statusLabel === 'For Sale'
+            ? 'Behavior and readiness profile indicate this animal is prepared for sale, supported by consistent records and clear condition tracking.'
+            : 'Behavior profile supports retention in herd strategy, helping maintain long-term productivity balance and operational continuity.',
+          id: 'Traceability records connect this animal to ' + livestock + ' with a complete lifecycle context available for operational review.'
+        };
+      };
+
+      const renderDetail = (item) => {
+        if (!item) {
+          detailTitle.textContent = 'Select an animal';
+          detailLivestock.textContent = 'Livestock: --';
+          detailStatus.innerHTML = '<i class="bi bi-info-circle" aria-hidden="true"></i> Status: --';
+          detailStatus.className = 'detail-status';
+          detailGender.textContent = '--';
+          detailAge.textContent = '--';
+          detailHealth.textContent = '--';
+          detailLivestockName.textContent = '--';
+          storyCare.textContent = 'Select an animal to show its profile summary.';
+          storyHealth.textContent = 'Select an animal to show its health monitoring focus.';
+          storyStatus.textContent = 'Select an animal to show its behavior notes.';
+          storyId.textContent = 'Select an animal to show its traceability context.';
+          return;
+        }
+
+        const statusLabel = normalizeStatusLabel(item.statut);
+        const healthLabel = normalizeHealthLabel(item.etat_sante);
+        const stories = buildStories(item, statusLabel, healthLabel);
+
+        detailTitle.textContent = item.type_animal || 'Animal';
+        detailLivestock.textContent = 'Livestock: ' + (item.livestock_label || 'Unknown livestock');
+  detailStatus.innerHTML = '<i class="bi ' + statusIconClass(statusLabel) + '" aria-hidden="true"></i> Status: ' + statusLabel;
+        detailStatus.className = 'detail-status' + (statusLabel === 'For Sale' ? ' sale' : '');
+
+        detailGender.textContent = item.sexe || 'Not specified';
+        const ageValue = Number(item.age || 0);
+        detailAge.textContent = ageValue > 0 ? String(ageValue) + (ageValue === 1 ? ' year' : ' years') : '--';
+        detailHealth.textContent = healthLabel;
+        detailLivestockName.textContent = item.livestock_label || 'Unknown livestock';
+
+        storyCare.textContent = stories.care;
+        storyHealth.textContent = stories.health;
+        storyStatus.textContent = stories.status;
+        storyId.textContent = stories.id;
+      };
+
+      const filteredData = () => {
+        const term = normalize(searchInput.value);
+        const type = normalize(typeFilter.value);
+        const status = normalize(statusFilter.value);
+
+        return animalsData.filter((item) => {
+          const itemType = normalize(item.type_animal);
+          const itemStatus = normalize(item.statut);
+          const itemLivestock = normalize(item.livestock_label);
+          const itemHealth = normalize(item.etat_sante);
+          const itemId = normalize(item.id_animal);
+          const searchable = [itemType, itemStatus, itemLivestock, itemHealth, itemId].join(' ');
+
+          const matchesTerm = term === '' || searchable.includes(term);
+          const matchesType = type === '' || itemType === type;
+          const matchesStatus = status === '' || itemStatus === status;
+
+          return matchesTerm && matchesType && matchesStatus;
+        });
+      };
+
+      const validateSearch = () => {
+        const rawValue = String(searchInput.value || '');
+        const sanitizedValue = sanitizeSearchValue(rawValue);
+        const hadInvalidCharacters = rawValue !== sanitizedValue;
+
+        console.assert(!hadInvalidCharacters, 'Animal search accepts letters and spaces only.');
+
+        if (hadInvalidCharacters) {
+          searchInput.value = sanitizedValue;
+          searchInput.setCustomValidity(invalidSearchMessage);
+          searchError.classList.add('is-visible');
+          return true;
+        }
+
+        const isValid = searchPattern.test(rawValue);
+        searchInput.setCustomValidity(isValid ? '' : invalidSearchMessage);
+        searchError.classList.toggle('is-visible', !isValid);
+        return isValid;
+      };
+
+      const createEntry = (item, index) => {
+        const id = Number(item.id_animal || 0);
+        const statusLabel = normalizeStatusLabel(item.statut);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'animal-entry' + (id === Number(activeId || 0) ? ' is-active' : '');
+
+        const top = document.createElement('span');
+        top.className = 'entry-top';
+
+        const left = document.createElement('span');
+        left.className = 'entry-left';
+
+        const number = document.createElement('span');
+        number.className = 'entry-number';
+        number.textContent = String(index + 1).padStart(2, '0');
+
+        const title = document.createElement('span');
+        title.className = 'entry-title';
+        title.textContent = item.type_animal || 'Animal';
+
+        const chip = document.createElement('span');
+        chip.className = 'status-chip' + (statusLabel === 'For Sale' ? ' sale' : '');
+        chip.innerHTML = '<i class="bi ' + statusIconClass(statusLabel) + '" aria-hidden="true"></i> ' + statusLabel;
+
+        const sub = document.createElement('span');
+        sub.className = 'entry-sub';
+        sub.textContent = item.livestock_label || 'Unknown livestock';
+
+        left.appendChild(number);
+        left.appendChild(title);
+        top.appendChild(left);
+        top.appendChild(chip);
+
+        button.appendChild(top);
+        button.appendChild(sub);
+
+        button.addEventListener('click', () => {
+          activeId = id;
+          renderList();
+        });
+
+        return button;
+      };
+
+      const renderList = () => {
+        if (!validateSearch()) {
+          return;
+        }
+
+        const rows = filteredData();
+        listNode.innerHTML = '';
+
+        countNode.textContent = rows.length + (rows.length === 1 ? ' item' : ' items');
+        emptyNode.classList.toggle('is-visible', rows.length === 0);
+
+        if (rows.length === 0) {
+          activeId = null;
+          renderDetail(null);
+          return;
+        }
+
+        if (!rows.some((item) => Number(item.id_animal || 0) === Number(activeId || 0))) {
+          activeId = Number(rows[0].id_animal || 0);
+        }
+
+        rows.forEach((item, index) => {
+          listNode.appendChild(createEntry(item, index));
+        });
+
+        const activeItem = rows.find((item) => Number(item.id_animal || 0) === Number(activeId || 0)) || rows[0];
+        renderDetail(activeItem);
+      };
+
+      const hydrateFilters = () => {
+        const types = [...new Set(animalsData.map((item) => String(item.type_animal || '').trim()).filter(Boolean))].sort();
+        const statuses = [...new Set(animalsData.map((item) => String(item.statut || '').trim()).filter(Boolean))].sort();
+
+        types.forEach((value) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          typeFilter.appendChild(option);
+        });
+
+        statuses.forEach((value) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = normalizeStatusLabel(value);
+          statusFilter.appendChild(option);
+        });
+      };
+
+      hydrateFilters();
+      renderList();
+
+      searchInput.addEventListener('input', renderList);
+      typeFilter.addEventListener('change', renderList);
+      statusFilter.addEventListener('change', renderList);
+    })();
+  </script>
+{% endblock %}

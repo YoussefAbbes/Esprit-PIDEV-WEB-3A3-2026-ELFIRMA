@@ -5,6 +5,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\VaccinationRepository;
 use App\Enum\VaccinationStatus;
+use App\Bundle\VaccinationCalendarBundle;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: VaccinationRepository::class)]
@@ -16,6 +18,8 @@ class Vaccination
     #[ORM\Column(type: 'integer')]
     private ?int $id_vaccination = null;
 
+    private ?VaccinationCalendarBundle $calendrier_vaccination = null;
+
     public function getIdVaccination(): ?int
     {
         return $this->id_vaccination;
@@ -23,6 +27,7 @@ class Vaccination
 
     #[ORM\ManyToOne(targetEntity: Animal::class, inversedBy: 'vaccinations')]
     #[ORM\JoinColumn(name: 'id_animal', referencedColumnName: 'id_animal', nullable: true)]
+    #[Assert\NotNull(message: 'Please select a valid animal.')]
     private ?Animal $animal = null;
 
     public function getAnimal(): ?Animal
@@ -37,6 +42,11 @@ class Vaccination
     }
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Vaccine name is required.')]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\s]+$/u',
+        message: 'Vaccination name can contain letters and spaces only'
+    )]
     private ?string $vaccine_name = null;
 
     public function getVaccineName(): ?string
@@ -51,6 +61,7 @@ class Vaccination
     }
 
     #[ORM\Column(type: 'date', nullable: true)]
+    #[Assert\NotNull(message: 'Vaccination Date is required')]
     private ?\DateTimeInterface $date_done = null;
 
     public function getDateDone(): ?\DateTimeInterface
@@ -61,10 +72,13 @@ class Vaccination
     public function setDateDone(?\DateTimeInterface $date_done): self
     {
         $this->date_done = $date_done;
+        $this->calendrier_vaccination = null;
         return $this;
     }
 
     #[ORM\Column(type: 'date')]
+    #[Assert\NotNull(message: 'Next vaccination date is required.')]
+    #[Assert\GreaterThanOrEqual(propertyPath: 'date_done', message: 'Next date must be after vaccination date.')]
     private ?\DateTimeInterface $date_next = null;
 
     public function getDateNext(): ?\DateTimeInterface
@@ -75,10 +89,12 @@ class Vaccination
     public function setDateNext(\DateTimeInterface $date_next): self
     {
         $this->date_next = $date_next;
+        $this->calendrier_vaccination = null;
         return $this;
     }
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Notes is required')]
     private ?string $notes = null;
 
     public function getNotes(): ?string
@@ -93,6 +109,7 @@ class Vaccination
     }
 
     #[ORM\Column(enumType: VaccinationStatus::class, length: 20, nullable: true)]
+    #[Assert\NotNull(message: 'Status is required.')]
     private ?VaccinationStatus $status = null;
 
     public function getStatus(): ?VaccinationStatus
@@ -103,6 +120,34 @@ class Vaccination
     public function setStatus(?VaccinationStatus $status): self
     {
         $this->status = $status;
+        $this->calendrier_vaccination = null;
+        return $this;
+    }
+
+    public function getCalendrierVaccination(): VaccinationCalendarBundle
+    {
+        if ($this->calendrier_vaccination === null) {
+            $this->calendrier_vaccination = VaccinationCalendarBundle::fromVaccinationFields(
+                $this->date_done,
+                $this->date_next,
+                $this->status
+            );
+        }
+
+        return $this->calendrier_vaccination;
+    }
+
+    public function setCalendrierVaccination(VaccinationCalendarBundle $calendrier_vaccination): self
+    {
+        $this->calendrier_vaccination = $calendrier_vaccination;
+        $this->date_done = $calendrier_vaccination->getDateDone();
+
+        if ($calendrier_vaccination->getDateNext() !== null) {
+            $this->date_next = $calendrier_vaccination->getDateNext();
+        }
+
+        $this->status = $calendrier_vaccination->getStatus();
+
         return $this;
     }
 }

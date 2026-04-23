@@ -6,8 +6,11 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Entity\Reclamation;
+// ...existing code...
 use App\Repository\AnimalRepository;
 use App\Repository\LivestockRepository;
+use App\Repository\VaccinationRepository;
+use App\Service\VaccinationSmsAlertService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +20,13 @@ use App\Controller\AdminTwoFactorController;
 
 final class ElfirmaController extends AbstractController
 {
+    public function __construct(
+        private readonly VaccinationRepository $vaccinationRepository,
+        private readonly VaccinationSmsAlertService $vaccinationSmsAlertService,
+        // ...existing code...
+    ) {
+    }
+
     private const MODULES = [
         'tableau-de-bord' => [
             'folder' => 'tableau_de_bord',
@@ -113,6 +123,35 @@ final class ElfirmaController extends AbstractController
         return $this->renderLivestockAnimalManagementView('livestock', $request, $livestockRepository, $animalRepository);
     }
 
+    #[Route('/elfirma/animaux-elevages/export/pdf', name: 'elfirma_livestock_export_pdf', methods: ['GET'])]
+    public function exportLivestockReport(Request $request, LivestockRepository $livestockRepository): Response
+    {
+        $searchTerm = trim($request->query->getString('search', ''));
+        $searchError = $this->validateSearchTerm($searchTerm);
+
+        $elevages = $livestockRepository->findAllForManagement();
+        if ($searchTerm !== '' && $searchError === null) {
+            $elevages = array_values(array_filter(
+                $elevages,
+                function (array $item) use ($searchTerm): bool {
+                    return $this->matchesSearch($searchTerm, [
+                        $item['type_elevage'] ?? '',
+                        $item['etat_elevage'] ?? '',
+                        $item['production'] ?? '',
+                    ]);
+                }
+            ));
+        }
+
+        $generatedAt = (new \DateTimeImmutable())->format('d/m/Y');
+        $pdfBinary = $this->buildLivestockExportPdf($elevages, $generatedAt);
+
+        return new Response($pdfBinary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="livestock-export-report.pdf"',
+        ]);
+    }
+
     #[Route('/elfirma/animals', name: 'elfirma_animals', methods: ['GET'])]
     public function animalsPage(
         Request $request,
@@ -121,6 +160,37 @@ final class ElfirmaController extends AbstractController
     ): Response
     {
         return $this->renderLivestockAnimalManagementView('animal', $request, $livestockRepository, $animalRepository);
+    }
+
+    #[Route('/elfirma/vaccinations', name: 'elfirma_vaccinations', methods: ['GET'])]
+    public function vaccinationsPage(
+        Request $request,
+        LivestockRepository $livestockRepository,
+        AnimalRepository $animalRepository
+    ): Response
+    {
+        $sentSmsCount = $this->vaccinationSmsAlertService->checkAndSendAlerts(7); // Hardcoded value
+        if ($sentSmsCount > 0) {
+            $this->addFlash('success', sprintf('%d SMS alert(s) sent successfully.', $sentSmsCount));
+        }
+
+        return $this->renderLivestockAnimalManagementView('vaccination', $request, $livestockRepository, $animalRepository);
+    }
+
+    #[Route('/elfirma/map', name: 'elfirma_livestock_map', methods: ['GET'])]
+    public function mapPage(
+        Request $request,
+        LivestockRepository $livestockRepository,
+        AnimalRepository $animalRepository
+    ): Response
+    {
+        return $this->renderLivestockAnimalManagementView('map', $request, $livestockRepository, $animalRepository);
+    }
+
+    #[Route('/elfirma/chatbot', name: 'elfirma_chatbot', methods: ['GET'])]
+    public function chatbotPage(): Response
+    {
+        return $this->render('elfirma/Livestock&Animal Management/chatbot.html.twig');
     }
 
     #[Route(
@@ -196,11 +266,16 @@ final class ElfirmaController extends AbstractController
 
         if ($module === 'animaux-elevages') {
             $view = $request->query->getString('view', 'livestock');
-            if (!\in_array($view, ['livestock', 'animal'], true)) {
+            if (!\in_array($view, ['livestock', 'animal', 'vaccination', 'map'], true)) {
                 $view = 'livestock';
             }
 
-            $routeName = $view === 'animal' ? 'elfirma_animals' : 'elfirma_livestock';
+            $routeName = match ($view) {
+                'animal' => 'elfirma_animals',
+                'vaccination' => 'elfirma_vaccinations',
+                'map' => 'elfirma_livestock_map',
+                default => 'elfirma_livestock',
+            };
             $queryParams = $request->query->all();
             unset($queryParams['view']);
 
@@ -229,7 +304,7 @@ final class ElfirmaController extends AbstractController
         AnimalRepository $animalRepository
     ): Response
     {
-        if (!\in_array($view, ['livestock', 'animal'], true)) {
+        if (!\in_array($view, ['livestock', 'animal', 'vaccination', 'map'], true)) {
             $view = 'livestock';
         }
 
@@ -269,47 +344,90 @@ final class ElfirmaController extends AbstractController
                 'search_error' => $searchError,
                 'show_add_form' => $showAddForm,
                 'edit_livestock' => $editLivestock,
+                'maptiler_api_key' => (string) $this->getParameter('app.maptiler_api_key'),
             ]);
         }
 
-        $animalEditId = $request->query->getInt('edit', 0);
-        $editAnimal = null;
-        if ($animalEditId > 0) {
-            $editAnimal = $animalRepository->findForEdit($animalEditId);
+        if ($view === 'animal') {
+            $animalEditId = $request->query->getInt('edit', 0);
+            $editAnimal = null;
+            if ($animalEditId > 0) {
+                $editAnimal = $animalRepository->findForEdit($animalEditId);
+            }
+
+            $livestockOptions = $livestockRepository->findOptionsForAnimalForm();
+
+            $showAddAnimalForm = \in_array(strtolower($request->query->getString('add', '0')), ['1', 'true', 'yes'], true);
+
+            $animalStatuses = $animalRepository->findDistinctStatuses();
+            $animalHealthOptions = $animalRepository->findDistinctHealthOptions();
+            $animals = $animalRepository->findAllForManagement();
+            if ($searchTerm !== '' && $searchError === null) {
+                $animals = array_values(array_filter(
+                    $animals,
+                    function (array $item) use ($searchTerm): bool {
+                        return $this->matchesSearch($searchTerm, [
+                            $item['type_animal'] ?? '',
+                            $item['sexe'] ?? '',
+                            $item['etat_sante'] ?? '',
+                            $item['statut'] ?? '',
+                        ]);
+                    }
+                ));
+            }
+            $animalStats = $animalRepository->fetchStats();
+
+            return $this->render('elfirma/Livestock&Animal Management/animal.html.twig', [
+                'animals' => $animals,
+                'livestock_options' => $livestockOptions,
+                'animal_stats' => $animalStats,
+                'animal_statuses' => $animalStatuses,
+                'animal_health_options' => $animalHealthOptions,
+                'search_term' => $searchTerm,
+                'search_error' => $searchError,
+                'show_add_animal_form' => $showAddAnimalForm,
+                'edit_animal' => $editAnimal,
+            ]);
         }
 
-        $livestockOptions = $livestockRepository->findOptionsForAnimalForm();
+        if ($view === 'map') {
+            return $this->render('elfirma/Livestock&Animal Management/map.html.twig', [
+                'elevages' => $livestockRepository->findAllForMap(),
+                'maptiler_api_key' => (string) $this->getParameter('app.maptiler_api_key'),
+            ]);
+        }
 
-        $showAddAnimalForm = \in_array(strtolower($request->query->getString('add', '0')), ['1', 'true', 'yes'], true);
+        $vaccinationEditId = $request->query->getInt('edit', 0);
+        $editVaccination = null;
+        if ($vaccinationEditId > 0) {
+            $editVaccination = $this->vaccinationRepository->findForEdit($vaccinationEditId);
+        }
 
-        $animalStatuses = $animalRepository->findDistinctStatuses();
-        $animalHealthOptions = $animalRepository->findDistinctHealthOptions();
-        $animals = $animalRepository->findAllForManagement();
+        $showAddVaccinationForm = \in_array(strtolower($request->query->getString('add', '0')), ['1', 'true', 'yes'], true);
+
+        $vaccinations = $this->vaccinationRepository->findAllForManagement();
         if ($searchTerm !== '' && $searchError === null) {
-            $animals = array_values(array_filter(
-                $animals,
+            $vaccinations = array_values(array_filter(
+                $vaccinations,
                 function (array $item) use ($searchTerm): bool {
                     return $this->matchesSearch($searchTerm, [
-                        $item['type_animal'] ?? '',
-                        $item['sexe'] ?? '',
-                        $item['etat_sante'] ?? '',
-                        $item['statut'] ?? '',
+                        $item['animal_type'] ?? '',
+                        $item['vaccine_name'] ?? '',
+                        $item['notes'] ?? '',
+                        $item['status'] ?? '',
                     ]);
                 }
             ));
         }
-        $animalStats = $animalRepository->fetchStats();
 
-        return $this->render('elfirma/Livestock&Animal Management/animal.html.twig', [
-            'animals' => $animals,
-            'livestock_options' => $livestockOptions,
-            'animal_stats' => $animalStats,
-            'animal_statuses' => $animalStatuses,
-            'animal_health_options' => $animalHealthOptions,
+        return $this->render('elfirma/Livestock&Animal Management/vaccination.html.twig', [
+            'vaccinations' => $vaccinations,
+            'vaccination_stats' => $this->vaccinationRepository->fetchStats(),
+            'animal_options' => $this->vaccinationRepository->findAnimalOptions(),
             'search_term' => $searchTerm,
             'search_error' => $searchError,
-            'show_add_animal_form' => $showAddAnimalForm,
-            'edit_animal' => $editAnimal,
+            'show_add_vaccination_form' => $showAddVaccinationForm,
+            'edit_vaccination' => $editVaccination,
         ]);
     }
 
@@ -338,5 +456,217 @@ final class ElfirmaController extends AbstractController
         }
 
         return false;
+    }
+
+    /**
+     * @param list<array{type:string, production:string}> $elevages
+     */
+   private function buildLivestockExportPdf(array $elevages, string $generatedAt): string
+{
+    $rows = array_map(
+        static fn (array $item): array => [
+            'type' => (string) ($item['type_elevage'] ?? 'N/A'),
+            'production' => (string) ($item['production'] ?? 'N/A'),
+            'status' => (string) ($item['etat_elevage'] ?? 'N/A'),
+        ],
+        $elevages
+    );
+
+    // Limite pour éviter débordement
+    $rows = array_slice($rows, 0, 10);
+
+    $total = count($rows);
+
+    $content = [];
+    $content[] = 'q';
+
+    /* ================= HEADER ================= */
+    $content[] = '0.10 0.45 0.20 rg';
+    $content[] = '0 800 595 50 re f';
+
+    $content[] = 'BT';
+    $content[] = '/F2 20 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = '25 815 Td';
+    $content[] = '(' . $this->escapePdfText('EL FIRMA - LIVESTOCK REPORT') . ') Tj';
+    $content[] = 'ET';
+
+    $content[] = 'BT';
+    $content[] = '/F1 10 Tf';
+    $content[] = '1 1 1 rg';
+    $content[] = '420 815 Td';
+    $content[] = '(' . $this->escapePdfText('Date: ' . $generatedAt) . ') Tj';
+    $content[] = 'ET';
+
+    /* ================= TITLE ================= */
+    $content[] = 'BT';
+    $content[] = '/F2 16 Tf';
+    $content[] = '0.1 0.35 0.15 rg';
+    $content[] = '25 770 Td';
+    $content[] = '(' . $this->escapePdfText('Livestock & Production Overview') . ') Tj';
+    $content[] = 'ET';
+
+    /* ================= DESCRIPTION (plus aérée) ================= */
+    $description = [
+        'This report summarizes livestock production data.',
+        'It helps monitoring farm performance and animal status.',
+        'All data below is generated automatically from the system.'
+    ];
+
+    $y = 750;
+    foreach ($description as $line) {
+        $content[] = 'BT';
+        $content[] = '/F1 10 Tf';
+        $content[] = '0.25 0.25 0.25 rg';
+        $content[] = '25 ' . $y . ' Td';
+        $content[] = '(' . $this->escapePdfText($line) . ') Tj';
+        $content[] = 'ET';
+
+        $y -= 18; // espacement plus propre
+    }
+
+    /* ================= STATS ================= */
+    $content[] = 'BT';
+    $content[] = '/F2 11 Tf';
+    $content[] = '0.10 0.40 0.10 rg';
+    $content[] = '25 700 Td';
+    $content[] = '(' . $this->escapePdfText("Total Records: $total") . ') Tj';
+    $content[] = 'ET';
+
+    /* ================= TABLE ================= */
+    $tableX = 25;
+    $tableY = 680;
+    $tableW = 545;
+    $rowH = 30;
+
+    $col1 = 200;
+    $col2 = 200;
+    $col3 = 145;
+
+    $positions = [
+        $tableX + 10,
+        $tableX + $col1 + 10,
+        $tableX + $col1 + $col2 + 10
+    ];
+
+    /* HEADER TABLE */
+    $content[] = '0.18 0.55 0.22 rg';
+    $content[] = sprintf('%d %d %d %d re f', $tableX, $tableY, $tableW, $rowH);
+
+    $headers = ['Type', 'Production', 'Status'];
+
+    foreach ($headers as $i => $h) {
+        $content[] = 'BT';
+        $content[] = '/F2 11 Tf';
+        $content[] = '1 1 1 rg';
+        $content[] = $positions[$i] . ' ' . ($tableY + 10) . ' Td';
+        $content[] = '(' . $this->escapePdfText($h) . ') Tj';
+        $content[] = 'ET';
+    }
+
+    /* ROWS */
+    $y = $tableY - $rowH;
+
+    foreach ($rows as $i => $row) {
+
+        // alternance couleur
+        $content[] = ($i % 2 === 0)
+            ? '0.95 0.98 0.95 rg'
+            : '1 1 1 rg';
+
+        $content[] = sprintf('%d %d %d %d re f', $tableX, $y, $tableW, $rowH);
+
+        $values = [$row['type'], $row['production'], $row['status']];
+
+        foreach ($values as $j => $val) {
+            $content[] = 'BT';
+            $content[] = '/F1 10 Tf';
+            $content[] = '0.15 0.15 0.15 rg';
+            $content[] = $positions[$j] . ' ' . ($y + 10) . ' Td';
+            $content[] = '(' . $this->escapePdfText($val) . ') Tj';
+            $content[] = 'ET';
+        }
+
+        $y -= $rowH;
+    }
+
+    /* ================= FOOTER ================= */
+   /* ================= FOOTER (remonté) ================= */
+/* ================= FOOTER (beaucoup plus haut) ================= */
+$content[] = '0.10 0.45 0.20 rg';
+
+// 🔥 FOOTER TRÈS HAUT (y = 180)
+$content[] = '0 180 595 60 re f';
+
+$content[] = 'BT';
+$content[] = '/F1 10 Tf';
+$content[] = '1 1 1 rg';
+
+// 🔥 texte très haut
+$content[] = '25 100 Td';
+$content[] = '(' . $this->escapePdfText('EL FIRMA - Farm Management System') . ') Tj';
+$content[] = 'ET';
+
+$content[] = 'BT';
+$content[] = '/F1 10 Tf';
+$content[] = '1 1 1 rg';
+
+// 🔥 manager aligné avec le footer
+$content[] = '400 200 Td';
+$content[] = '(' . $this->escapePdfText('Manager: Ahmed Zouari') . ') Tj';
+$content[] = 'ET';
+
+    /* ================= PDF BUILD ================= */
+    $stream = implode("\n", $content);
+
+    $objects = [];
+    $objects[] = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+    $objects[] = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+    $objects[] = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj\n";
+    $objects[] = "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n";
+    $objects[] = "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n";
+    $objects[] = "6 0 obj\n<< /Length " . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream\nendobj\n";
+
+    $pdf = "%PDF-1.4\n";
+    $offsets = [0];
+
+    foreach ($objects as $object) {
+        $offsets[] = strlen($pdf);
+        $pdf .= $object;
+    }
+
+    $xrefPos = strlen($pdf);
+    $pdf .= "xref\n0 " . (count($objects) + 1) . "\n";
+    $pdf .= "0000000000 65535 f \n";
+
+    for ($i = 1; $i <= count($objects); $i++) {
+        $pdf .= sprintf("%010d 00000 n \n", $offsets[$i]);
+    }
+
+    $pdf .= "trailer\n<< /Size " . (count($objects) + 1) . " /Root 1 0 R >>\n";
+    $pdf .= "startxref\n" . $xrefPos . "\n%%EOF";
+
+    return $pdf;
+}
+    private function normalizePdfText(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 'N/A';
+        }
+
+        if (function_exists('iconv')) {
+            $converted = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+            if ($converted !== false) {
+                $value = $converted;
+            }
+        }
+
+        return preg_replace('/[^\x20-\x7E]/', '', $value) ?? $value;
+    }
+
+    private function escapePdfText(string $value): string
+    {
+        return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $this->normalizePdfText($value));
     }
 }

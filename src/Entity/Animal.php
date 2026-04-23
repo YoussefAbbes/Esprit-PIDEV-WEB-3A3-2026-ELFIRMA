@@ -3,13 +3,14 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use App\Repository\AnimalRepository;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
 #[ORM\Table(name: 'animal')]
+#[Vich\Uploadable]
 class Animal
 {
     #[ORM\Id]
@@ -37,6 +38,55 @@ class Animal
         return $this;
     }
 
+    #[Vich\UploadableField(mapping: 'animal_photo', fileNameProperty: 'photoName')]
+    private ?File $photoFile = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $photoName = null;
+
+    #[ORM\Column(name: 'photo_updated_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    public function setPhotoFile(?File $photoFile = null): self
+    {
+        $this->photoFile = $photoFile;
+
+        if ($photoFile !== null) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    public function getPhotoFile(): ?File
+    {
+        return $this->photoFile;
+    }
+
+    public function setPhotoName(?string $photoName): self
+    {
+        $this->photoName = $photoName;
+
+        return $this;
+    }
+
+    public function getPhotoName(): ?string
+    {
+        return $this->photoName;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
     #[ORM\Column(type: 'string', length: 50)]
     #[Assert\NotBlank(message: 'Type is required.')]
     #[Assert\Regex(
@@ -44,6 +94,10 @@ class Animal
         message: 'Type can contain letters and spaces only.'
     )]
     private ?string $type_animal = null;
+
+    private ?string $species = null;
+
+    private ?string $dnaMarker = null;
 
     public function getTypeAnimal(): ?string
     {
@@ -53,6 +107,28 @@ class Animal
     public function setTypeAnimal(string $type_animal): self
     {
         $this->type_animal = $type_animal;
+        return $this;
+    }
+
+    public function getSpecies(): ?string
+    {
+        return $this->species;
+    }
+
+    public function setSpecies(?string $species): self
+    {
+        $this->species = $species;
+        return $this;
+    }
+
+    public function getDnaMarker(): ?string
+    {
+        return $this->dnaMarker;
+    }
+
+    public function setDnaMarker(?string $dnaMarker): self
+    {
+        $this->dnaMarker = $dnaMarker;
         return $this;
     }
 
@@ -71,6 +147,9 @@ class Animal
     }
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\NotNull(message: 'Age is required.')]
+    #[Assert\Type(type: 'integer', message: 'Age must contain digits only.')]
+    #[Assert\GreaterThanOrEqual(value: 0, message: 'Age must be greater than or equal to 0.')]
     private ?int $age = null;
 
     public function getAge(): ?int
@@ -112,30 +191,4 @@ class Animal
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Vaccination::class, mappedBy: 'animal')]
-    private Collection $vaccinations;
-
-    public function __construct()
-    {
-        $this->vaccinations = new ArrayCollection();
-    }
-
-    public function getVaccinations(): Collection
-    {
-        return $this->vaccinations;
-    }
-
-    public function addVaccination(Vaccination $vaccination): self
-    {
-        if (!$this->vaccinations->contains($vaccination)) {
-            $this->vaccinations[] = $vaccination;
-        }
-        return $this;
-    }
-
-    public function removeVaccination(Vaccination $vaccination): self
-    {
-        $this->vaccinations->removeElement($vaccination);
-        return $this;
-    }
 }

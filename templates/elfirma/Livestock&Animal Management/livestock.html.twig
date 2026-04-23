@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livestock Management</title>
     <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
     <style>
         .elf-sidebar-toggle,
         .elf-sidebar-overlay {
@@ -71,6 +73,306 @@
             .management-form-modal {
                 transform: scale(0.88);
             }
+        }
+
+        .location-picker-map {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            border-radius: 0.9rem;
+            border: 2px solid #86efac;
+            overflow: hidden;
+        }
+
+        .map-picker-panel {
+            width: 100%;
+            max-width: 1280px;
+            height: calc(100vh - 0.6rem);
+            max-height: calc(100vh - 0.6rem);
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-height: 820px) {
+            .map-picker-panel {
+                height: calc(100vh - 0.35rem);
+                max-height: calc(100vh - 0.35rem);
+            }
+        }
+
+        .map-picker-btn {
+            border: 2px solid #166534;
+            background: #166534;
+            color: #ffffff;
+            transition: background-color 0.2s ease;
+        }
+
+        .map-picker-btn:hover {
+            background: #14532d;
+        }
+
+        .map-picker-btn:disabled {
+            background: #94a3b8;
+            border-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* ── Nutrition modal ── */
+        .nutrition-icon-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #1d4ed8;
+            border-radius: 0.75rem;
+            background: #1d4ed8;
+            color: #fff;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nutrition-icon-btn:hover {
+            background: #1e40af;
+            box-shadow: 0 8px 18px -12px rgba(29, 78, 216, 0.65);
+        }
+
+        .nutrition-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 140;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .nutrition-modal-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 25px 60px -12px rgba(0,0,0,0.35);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: nutrition-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes nutrition-pop {
+            from { opacity: 0; transform: scale(0.88) translateY(12px); }
+            to   { opacity: 1; transform: scale(1)    translateY(0); }
+        }
+
+        .nutrition-header {
+            background: linear-gradient(135deg, #1a4731 0%, #166534 60%, #15803d 100%);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .nutrition-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        .nutrition-icon-circle {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .nutrition-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .nutrition-badge {
+            display: inline-block;
+            margin-top: 0.25rem;
+            background: rgba(255,255,255,0.18);
+            color: #d1fae5;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .nutrition-production-label {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.55);
+            font-style: italic;
+            font-weight: 600;
+            margin-left: auto;
+            align-self: flex-start;
+            margin-top: 0.25rem;
+        }
+
+        .nutrition-close-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+
+        .nutrition-close-btn:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .nutrition-macros {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .nutrition-macro-card {
+            border-radius: 0.875rem;
+            padding: 1rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: center;
+        }
+
+        .nutrition-macro-card.proteins {
+            background: #eff6ff;
+            border: 1.5px solid #bfdbfe;
+        }
+
+        .nutrition-macro-card.carbs {
+            background: #fff7ed;
+            border: 1.5px solid #fed7aa;
+        }
+
+        .nutrition-macro-card.fats {
+            background: #f0fdf4;
+            border: 1.5px solid #bbf7d0;
+        }
+
+        .nutrition-macro-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .nutrition-macro-card.proteins .nutrition-macro-value { color: #1d4ed8; }
+        .nutrition-macro-card.carbs    .nutrition-macro-value { color: #c2410c; }
+        .nutrition-macro-card.fats     .nutrition-macro-value { color: #15803d; }
+
+        .nutrition-macro-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nutrition-macro-emoji {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .nutrition-footer {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+
+        .nutrition-footer-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .nutrition-footer-icon {
+            font-size: 1.1rem;
+            opacity: 0.55;
+        }
+
+        .nutrition-footer-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .nutrition-footer-value {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .nutrition-footer-value.state-clean         { color: #16a34a; }
+        .nutrition-footer-value.state-dirty         { color: #dc2626; }
+        .nutrition-footer-value.state-under-cleaning { color: #d97706; }
+
+        .nutrition-loading {
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .nutrition-spinner {
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 3px solid #e2e8f0;
+            border-top-color: #1d4ed8;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .nutrition-error {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* ── Animal icon in table type cell ── */
+        .livestock-type-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .livestock-animal-emoji {
+            font-size: 1.25rem;
+            line-height: 1;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -190,6 +492,14 @@
             </section>
 
             <div class="mb-3 flex items-center justify-end gap-2">
+                <a href="{{ path('elfirma_livestock_export_pdf', { search: search_term|default('') }) }}" download class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm hover:bg-red-700 transition-colors" aria-label="Download PDF">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="w-5 h-5" aria-hidden="true">
+                        <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/>
+                        <path d="M14 2v6h6"/>
+                        <path d="M8 13h8"/>
+                        <path d="M8 17h8"/>
+                    </svg>
+                </a>
                 <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=livestock&add=1" class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white" title="Add Livestock" aria-label="Add Livestock">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-6 h-6" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                     <span class="sr-only">Add Livestock</span>
@@ -226,23 +536,76 @@
                         <tbody id="livestock-table-body">
                         {% for item in elevages %}
                             {% set state = item.etat_elevage|default('')|lower %}
-                            <tr class="hover:bg-emerald-50/35 transition-colors" data-row="livestock" data-type="{{ item.type_elevage|default('')|e('html_attr') }}" data-state="{{ item.etat_elevage|default('')|e('html_attr') }}" data-capacity="{{ item.capacite|default(0) }}" data-count="{{ item.nombre_animaux|default(0) }}" data-production="{{ item.production|default('')|e('html_attr') }}">
-                                <td class="py-3 px-3 font-semibold text-slate-800 border-b border-r border-emerald-100">{{ item.type_elevage }}</td>
+
+                            {# ── Résolution icône animal selon type ── #}
+                            {% set type_lower = item.type_elevage|default('')|lower|trim %}
+                            {% if type_lower in ['mouton', 'sheep', 'sheep farm', 'sheepfarm', 'ferme mouton'] %}
+                                {% set animal_emoji = '🐑' %}
+                            {% elseif type_lower in ['poule', 'poultry', 'poulet', 'poultry farm', 'poultryfarm', 'ferme volaille', 'volaille'] %}
+                                {% set animal_emoji = '🐔' %}
+                            {% elseif type_lower in ['vache', 'cow', 'bovin', 'bovine', 'cattle', 'bovin farm', 'bovine farm', 'bovin ferme', 'cattle farm', 'cattlefarm'] %}
+                                {% set animal_emoji = '🐄' %}
+                            {% else %}
+                                {% set animal_emoji = '🌾' %}
+                            {% endif %}
+
+                            <tr class="hover:bg-emerald-50/35 transition-colors" data-row="livestock"
+                                data-type="{{ item.type_elevage|default('')|e('html_attr') }}"
+                                data-state="{{ item.etat_elevage|default('')|e('html_attr') }}"
+                                data-capacity="{{ item.capacite|default(0) }}"
+                                data-count="{{ item.nombre_animaux|default(0) }}"
+                                data-production="{{ item.production|default('')|e('html_attr') }}">
+
+                                {# Type + icône animal ── #}
+                                <td class="py-3 px-3 font-semibold text-slate-800 border-b border-r border-emerald-100">
+                                    <span class="livestock-type-cell">
+                                        <span class="livestock-animal-emoji" aria-hidden="true">{{ animal_emoji }}</span>
+                                        <span>{{ item.type_elevage }}</span>
+                                    </span>
+                                </td>
+
                                 <td class="py-3 px-3 font-semibold border-b border-r border-emerald-100 {{ state in ['clean', 'cleaning', 'propre'] ? 'text-emerald-600' : (state in ['dirty', 'sale'] ? 'text-red-500' : (state in ['under cleaning'] ? 'text-amber-600' : 'text-slate-700')) }}">{{ item.etat_elevage }}</td>
                                 <td class="py-3 px-3 font-semibold text-slate-700 border-b border-r border-emerald-100">{{ item.capacite }}</td>
                                 <td class="py-3 px-3 font-semibold text-slate-700 border-b border-r border-emerald-100">{{ item.nombre_animaux }}</td>
                                 <td class="py-3 px-3 font-semibold text-slate-700 border-b border-r border-emerald-100">{{ item.production }}</td>
                                 <td class="py-3 px-3 border-b border-emerald-100">
-                                    <div class="flex items-center justify-center gap-3">
-                                        <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=livestock&edit={{ item.id_elevage }}" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50" title="Edit">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                                    <div class="flex items-center justify-center gap-2">
+                                        {# ── Edit button (green) ── #}
+                                        <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=livestock&edit={{ item.id_elevage }}"
+                                           class="inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                                           title="Edit">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                                         </a>
 
-                                        <form method="post" action="{{ path('livestock_delete') }}" class="js-delete-form" data-delete-kind="livestock" data-delete-label="{{ item.type_elevage|default('Livestock')|e('html_attr') }}">
+                                        {# ── Nutrition button (blue) — data-animal transmis au JS ── #}
+                                        <button type="button"
+                                                class="nutrition-icon-btn js-nutrition-btn"
+                                                title="Nutritional values"
+                                                data-type="{{ item.type_elevage|default('')|e('html_attr') }}"
+                                                data-state="{{ item.etat_elevage|default('')|e('html_attr') }}"
+                                                data-capacity="{{ item.capacite|default(0) }}"
+                                                data-count="{{ item.nombre_animaux|default(0) }}"
+                                                data-production="{{ item.production|default('')|e('html_attr') }}"
+                                                data-animal="{{ animal_emoji }}">
+                                            {# Icône flasque / microscope #}
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true">
+                                                <path d="M6 2v6l-2 2v2h12v-2l-2-2V2"/>
+                                                <path d="M8 2h8"/>
+                                                <path d="M5 22h14"/>
+                                                <path d="M12 14v4"/>
+                                                <circle cx="12" cy="10" r="2"/>
+                                            </svg>
+                                        </button>
+
+                                        {# ── Delete button (red) ── #}
+                                        <form method="post" action="{{ path('livestock_delete') }}"
+                                              class="js-delete-form"
+                                              data-delete-kind="livestock"
+                                              data-delete-label="{{ item.type_elevage|default('Livestock')|e('html_attr') }}">
                                             <input type="hidden" name="id_elevage" value="{{ item.id_elevage }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('livestock_delete') }}">
                                             <button type="submit" class="delete-icon-btn" title="Delete">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                                             </button>
                                         </form>
                                     </div>
@@ -268,6 +631,8 @@
                 {% set current_etat_elevage = form_input.etat_elevage is defined ? form_input.etat_elevage : (is_edit_mode ? edit_livestock.etat_elevage : 'Clean') %}
                 {% set current_capacite = form_input.capacite is defined ? form_input.capacite : (is_edit_mode ? edit_livestock.capacite : '') %}
                 {% set current_production = form_input.production is defined ? form_input.production : (is_edit_mode ? edit_livestock.production : '') %}
+                {% set current_latitude = form_input.latitude is defined ? form_input.latitude : (is_edit_mode ? edit_livestock.latitude : '') %}
+                {% set current_longitude = form_input.longitude is defined ? form_input.longitude : (is_edit_mode ? edit_livestock.longitude : '') %}
 
                 {% set default_states = ['Cleaning', 'Dirty', 'Under Cleaning'] %}
                 {% set state_options = default_states %}
@@ -343,6 +708,24 @@
                                     {% endif %}
                                 </div>
 
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-start gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold pt-2">Location:</label>
+                                    <div class="md:col-span-4 space-y-2">
+                                        <button type="button" class="map-picker-btn w-full rounded-xl px-4 py-2.5 text-sm md:text-base font-semibold" data-open-map-picker>
+                                            Select on map
+                                        </button>
+                                        <div class="flex items-center gap-6 text-sm md:text-base text-emerald-900 font-semibold">
+                                            <span>Lat: <strong id="livestock-lat-value">{{ current_latitude is not empty ? current_latitude : '---' }}</strong></span>
+                                            <span>Lon: <strong id="livestock-lon-value">{{ current_longitude is not empty ? current_longitude : '---' }}</strong></span>
+                                        </div>
+                                        <input type="hidden" name="latitude" id="livestock-lat-input" value="{{ current_latitude }}">
+                                        <input type="hidden" name="longitude" id="livestock-lon-input" value="{{ current_longitude }}">
+                                        {% if form_errors.location is defined %}
+                                            <p class="text-sm text-red-600">{{ form_errors.location }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
                                 <div class="pt-4 md:pt-6 mt-auto flex items-center justify-center gap-4">
                                     <button type="submit" class="h-11 w-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_8px_18px_-8px_rgba(16,127,61,0.65)] flex items-center justify-center" title="Save">
                                         {% if is_edit_mode %}
@@ -356,11 +739,128 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="livestock-map-picker-modal" class="fixed inset-0 z-[125] hidden items-start justify-center bg-black/40 p-1.5 md:p-2 overflow-hidden" data-maptiler-key="{{ maptiler_api_key|default('')|e('html_attr') }}">
+                    <div class="map-picker-panel rounded-2xl border-2 border-emerald-500 bg-[#d6e7d9] p-3 md:p-4 shadow-2xl">
+                        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-2">
+                            <div>
+                                <h4 class="text-xl md:text-2xl font-black text-emerald-800">Choose location on map</h4>
+                                <p class="text-sm text-emerald-900">Click on the map to place the marker.</p>
+                            </div>
+                            <button type="button" class="h-10 w-10 rounded-xl bg-slate-400 hover:bg-slate-500 text-white flex items-center justify-center" data-close-map-picker aria-label="Close map picker">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" class="w-5 h-5" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <div class="mb-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-semibold text-emerald-900">
+                            <span>Latitude: <strong id="map-picker-lat">---</strong></span>
+                            <span>Longitude: <strong id="map-picker-lon">---</strong></span>
+                        </div>
+                        <p id="map-picker-warning" class="hidden mb-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">OpenStreetMap fallback actif.</p>
+                        <div class="flex-1 min-h-0">
+                            <div id="livestock-location-map" class="location-picker-map"></div>
+                        </div>
+                        <div class="mt-2.5 flex items-center justify-end gap-3">
+                            <button type="button" class="h-10 rounded-xl px-4 bg-slate-500 hover:bg-slate-600 text-white font-semibold" data-close-map-picker>Cancel</button>
+                            <button type="button" id="confirm-map-location" class="map-picker-btn h-10 rounded-xl px-4 font-semibold" disabled>Confirm location</button>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
         </section>
     </div>
 </main>
 
+{# ════════════════════════════════════════════════════════
+   NUTRITION MODAL
+   ════════════════════════════════════════════════════════ #}
+<div id="nutrition-modal" class="nutrition-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="nutrition-modal-title">
+    <div class="nutrition-modal-card" id="nutrition-modal-card">
+
+        {# Loading state #}
+        <div id="nutrition-loading" class="nutrition-loading">
+            <div class="nutrition-spinner"></div>
+            <p class="text-sm font-semibold">Loading nutritional data…</p>
+        </div>
+
+        {# Error state #}
+        <div id="nutrition-error" class="nutrition-error hidden">
+            <p>⚠️ Unable to load nutritional data.</p>
+            <p class="mt-1 text-xs text-slate-500" id="nutrition-error-detail"></p>
+        </div>
+
+        {# Content (hidden until loaded) #}
+        <div id="nutrition-content" class="hidden">
+            {# Header #}
+            <div class="nutrition-header">
+                <div class="nutrition-header-left">
+                    {# Cercle avec l'icône animal (emoji renvoyé par l'API ou résolu côté JS) #}
+                    <div class="nutrition-icon-circle" id="nutrition-animal-circle">
+                        🌾
+                    </div>
+                    <div>
+                        <p id="nutrition-modal-title" class="nutrition-title">Farm Name</p>
+                        <span id="nutrition-production-badge" class="nutrition-badge">Milk</span>
+                    </div>
+                </div>
+                <p id="nutrition-production-label" class="nutrition-production-label">Milk</p>
+                <button type="button" id="nutrition-close-btn" class="nutrition-close-btn" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            {# Macro cards — icônes emoji depuis l'API (icons.proteins / icons.carbs / icons.fats) #}
+            <div class="nutrition-macros">
+                {# Proteins #}
+                <div class="nutrition-macro-card proteins">
+                    <span id="nutrition-icon-proteins" class="nutrition-macro-emoji">💪</span>
+                    <p id="nutrition-proteins" class="nutrition-macro-value">0,0g</p>
+                    <p class="nutrition-macro-label">Protéines</p>
+                </div>
+
+                {# Carbs #}
+                <div class="nutrition-macro-card carbs">
+                    <span id="nutrition-icon-carbs" class="nutrition-macro-emoji">🍬</span>
+                    <p id="nutrition-carbs" class="nutrition-macro-value">0,0g</p>
+                    <p class="nutrition-macro-label">Glucides</p>
+                </div>
+
+                {# Fats #}
+                <div class="nutrition-macro-card fats">
+                    <span id="nutrition-icon-fats" class="nutrition-macro-emoji">🥑</span>
+                    <p id="nutrition-fats" class="nutrition-macro-value">0,0g</p>
+                    <p class="nutrition-macro-label">Lipides</p>
+                </div>
+            </div>
+
+            {# Footer info #}
+            <div class="nutrition-footer">
+                <div class="nutrition-footer-item">
+                    <span class="nutrition-footer-icon">🏠</span>
+                    <span class="nutrition-footer-label">Livestock</span>
+                    <span id="nutrition-footer-type" class="nutrition-footer-value">—</span>
+                </div>
+                <div class="nutrition-footer-item">
+                    <span class="nutrition-footer-icon">🔧</span>
+                    <span class="nutrition-footer-label">State</span>
+                    <span id="nutrition-footer-state" class="nutrition-footer-value">—</span>
+                </div>
+                <div class="nutrition-footer-item">
+                    <span class="nutrition-footer-icon">📦</span>
+                    <span class="nutrition-footer-label">Capacity</span>
+                    <span id="nutrition-footer-capacity" class="nutrition-footer-value" style="color:#d97706;">— units</span>
+                </div>
+                <div class="nutrition-footer-item">
+                    <span class="nutrition-footer-icon">🐾</span>
+                    <span class="nutrition-footer-label">Occupied</span>
+                    <span id="nutrition-footer-count" class="nutrition-footer-value" style="color:#d97706;">— animals</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{# ── Delete confirmation modal ── #}
 <div id="delete-confirm-modal" class="fixed inset-0 z-[130] hidden items-center justify-center p-3 bg-black/35">
     <div class="delete-modal-card w-full max-w-md rounded-2xl shadow-2xl flex items-center">
         <div class="p-4 md:p-5 text-center">
@@ -392,6 +892,21 @@
         return String(value || '').trim().toLowerCase();
     };
 
+    /* ── Résolution icône animal côté JS (même mapping que Twig + LivestockController) ── */
+    const resolveAnimalEmoji = function (type) {
+        const t = normalize(type);
+        if (t === 'mouton' || t === 'sheep' || t === 'sheep farm' || t === 'sheepfarm' || t === 'ferme mouton') {
+            return '🐑';
+        }
+        if (t === 'poule' || t === 'poultry' || t === 'poulet' || t === 'poultry farm' || t === 'poultryfarm' || t === 'ferme volaille' || t === 'volaille') {
+            return '🐔';
+        }
+        if (t === 'vache' || t === 'cow' || t === 'bovin' || t === 'bovine' || t === 'cattle' || t === 'bovin farm' || t === 'bovine farm' || t === 'bovin ferme' || t === 'cattle farm' || t === 'cattlefarm') {
+            return '🐄';
+        }
+        return '🏠';
+    };
+
     const table = document.getElementById('livestock-table');
     const tableBody = document.getElementById('livestock-table-body');
     const searchInput = document.getElementById('livestock-search-input');
@@ -413,33 +928,331 @@
     const quickTitle = document.getElementById('livestock-quick-title');
     const detailList = document.getElementById('livestock-detail-list');
     const mainCanvas = document.getElementById('livestock-main-chart');
+    const mapPickerModal = document.getElementById('livestock-map-picker-modal');
+
+    /* ══════════════════════════════════════════════════════
+       NUTRITION MODAL
+    ══════════════════════════════════════════════════════ */
+    (function initNutritionModal() {
+        const overlay           = document.getElementById('nutrition-modal');
+        const loadingEl         = document.getElementById('nutrition-loading');
+        const errorEl           = document.getElementById('nutrition-error');
+        const errorDetail       = document.getElementById('nutrition-error-detail');
+        const contentEl         = document.getElementById('nutrition-content');
+        const closeBtn          = document.getElementById('nutrition-close-btn');
+
+        // Header
+        const titleEl           = document.getElementById('nutrition-modal-title');
+        const badgeEl           = document.getElementById('nutrition-production-badge');
+        const productionLabel   = document.getElementById('nutrition-production-label');
+        const animalCircle      = document.getElementById('nutrition-animal-circle');
+
+        // Macros
+        const proteinsEl        = document.getElementById('nutrition-proteins');
+        const carbsEl           = document.getElementById('nutrition-carbs');
+        const fatsEl            = document.getElementById('nutrition-fats');
+
+        // Macro icons (from API response.icons)
+        const iconProteins      = document.getElementById('nutrition-icon-proteins');
+        const iconCarbs         = document.getElementById('nutrition-icon-carbs');
+        const iconFats          = document.getElementById('nutrition-icon-fats');
+
+        // Footer
+        const footerType        = document.getElementById('nutrition-footer-type');
+        const footerState       = document.getElementById('nutrition-footer-state');
+        const footerCapacity    = document.getElementById('nutrition-footer-capacity');
+        const footerCount       = document.getElementById('nutrition-footer-count');
+
+        if (!overlay || !closeBtn) { return; }
+
+        const formatG = function (value) {
+            return String(value).replace('.', ',') + 'g';
+        };
+
+        const stateClass = function (state) {
+            const s = normalize(state);
+            if (['clean', 'cleaning', 'propre'].includes(s)) { return 'state-clean'; }
+            if (['dirty', 'sale'].includes(s))               { return 'state-dirty'; }
+            if (s === 'under cleaning')                       { return 'state-under-cleaning'; }
+            return '';
+        };
+
+        const showLoading = function () {
+            loadingEl.classList.remove('hidden');
+            errorEl.classList.add('hidden');
+            contentEl.classList.add('hidden');
+        };
+
+        const showError = function (message) {
+            loadingEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+            contentEl.classList.add('hidden');
+            if (errorDetail) { errorDetail.textContent = message || ''; }
+        };
+
+        const showContent = function (data, meta) {
+            loadingEl.classList.add('hidden');
+            errorEl.classList.add('hidden');
+            contentEl.classList.remove('hidden');
+
+            // ── Icône animal : préférer la valeur renvoyée par l'API, sinon celle du data-animal ──
+            const animalEmoji = data.animal || meta.animal || resolveAnimalEmoji(meta.type);
+            if (animalCircle) { animalCircle.textContent = animalEmoji; }
+
+            // Header
+            if (titleEl)         { titleEl.textContent         = meta.type; }
+            if (badgeEl)         { badgeEl.textContent          = meta.production; }
+            if (productionLabel) { productionLabel.textContent  = meta.production; }
+
+            // ── Icônes nutrition depuis l'API (icons.proteins / .carbs / .fats) ──
+            if (iconProteins) { iconProteins.textContent = (data.icons && data.icons.proteins) ? data.icons.proteins : '💪'; }
+            if (iconCarbs)    { iconCarbs.textContent    = (data.icons && data.icons.carbs)    ? data.icons.carbs    : '🍬'; }
+            if (iconFats)     { iconFats.textContent     = (data.icons && data.icons.fats)     ? data.icons.fats     : '🥑'; }
+
+            // Macros
+            if (proteinsEl) { proteinsEl.textContent = formatG(data.proteins); }
+            if (carbsEl)    { carbsEl.textContent    = formatG(data.carbs);    }
+            if (fatsEl)     { fatsEl.textContent     = formatG(data.fats);     }
+
+            // Footer
+            if (footerType)     { footerType.textContent     = meta.type; }
+            if (footerCapacity) { footerCapacity.textContent = meta.capacity + ' units'; }
+            if (footerCount)    { footerCount.textContent    = meta.count + ' animals'; }
+
+            if (footerState) {
+                footerState.textContent = meta.state;
+                footerState.className   = 'nutrition-footer-value ' + stateClass(meta.state);
+            }
+        };
+
+        const openModal = function (btn) {
+            const meta = {
+                type:       btn.dataset.type       || '—',
+                state:      btn.dataset.state      || '—',
+                capacity:   btn.dataset.capacity   || '0',
+                count:      btn.dataset.count      || '0',
+                production: btn.dataset.production || '—',
+                // data-animal est prérempli en Twig (résolution serveur)
+                animal:     btn.dataset.animal     || resolveAnimalEmoji(btn.dataset.type || ''),
+            };
+
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            showLoading();
+
+            const url = '/elfirma/animaux-elevages/livestock/nutrition'
+                      + '?production=' + encodeURIComponent(meta.production)
+                      + '&type='       + encodeURIComponent(meta.type);
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (response) {
+                    if (!response.ok) { throw new Error('HTTP ' + response.status); }
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.error) { throw new Error(data.error); }
+                    showContent(data, meta);
+                })
+                .catch(function (err) {
+                    showError(err.message || 'Unknown error');
+                });
+        };
+
+        const closeModal = function () {
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        document.querySelectorAll('.js-nutrition-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () { openModal(btn); });
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+
+        overlay.addEventListener('click', function (event) {
+            if (event.target === overlay) { closeModal(); }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !overlay.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+    }());
+
+    /* ══════════════════════════════════════════════════════
+       MAP PICKER
+    ══════════════════════════════════════════════════════ */
+    if (mapPickerModal && typeof ol !== 'undefined') {
+        const openButtons = Array.from(document.querySelectorAll('[data-open-map-picker]'));
+        const closeButtons = Array.from(mapPickerModal.querySelectorAll('[data-close-map-picker]'));
+        const confirmLocationBtn = document.getElementById('confirm-map-location');
+        const latInput = document.getElementById('livestock-lat-input');
+        const lonInput = document.getElementById('livestock-lon-input');
+        const latValue = document.getElementById('livestock-lat-value');
+        const lonValue = document.getElementById('livestock-lon-value');
+        const pickerLat = document.getElementById('map-picker-lat');
+        const pickerLon = document.getElementById('map-picker-lon');
+        const pickerWarning = document.getElementById('map-picker-warning');
+        const mapTarget = document.getElementById('livestock-location-map');
+        const mapKey = mapPickerModal.getAttribute('data-maptiler-key') || '';
+
+        const parseCoordinate = function (value) {
+            const raw = String(value === null || value === undefined ? '' : value).trim();
+            if (raw === '') { return null; }
+            const parsed = Number(raw);
+            return isFinite(parsed) ? parsed : null;
+        };
+
+        const showPickerWarning = function (message) {
+            if (!pickerWarning) { return; }
+            pickerWarning.textContent = message;
+            pickerWarning.classList.remove('hidden');
+        };
+
+        const hidePickerWarning = function () {
+            if (!pickerWarning) { return; }
+            pickerWarning.classList.add('hidden');
+        };
+
+        let selectedLat = parseCoordinate(latInput ? latInput.value : '');
+        let selectedLon = parseCoordinate(lonInput ? lonInput.value : '');
+
+        if (selectedLat !== null && selectedLon !== null && selectedLat === 0 && selectedLon === 0) {
+            selectedLat = null;
+            selectedLon = null;
+        }
+
+        let pickerMap = null;
+        let markerSource = null;
+        let markerLayer = null;
+        let baseLayer = null;
+
+        const buildBaseLayer = function () {
+            const normalizedKey = String(mapKey || '').trim();
+
+            if (normalizedKey !== '' && normalizedKey !== 'YOUR_MAPTILER_API_KEY_HERE') {
+                hidePickerWarning();
+                const maptilerSource = new ol.source.XYZ({
+                    url: 'https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=' + encodeURIComponent(normalizedKey),
+                    tileSize: 512,
+                    maxZoom: 20,
+                    attributions: '&copy; MapTiler &copy; OSM',
+                    crossOrigin: 'anonymous'
+                });
+                const layer = new ol.layer.Tile({ source: maptilerSource });
+                let fallbackApplied = false;
+                const fallbackToOsm = function () {
+                    if (fallbackApplied) { return; }
+                    fallbackApplied = true;
+                    layer.setSource(new ol.source.OSM());
+                    showPickerWarning('MapTiler indisponible. OpenStreetMap fallback actif.');
+                };
+                maptilerSource.on('tileloaderror', fallbackToOsm);
+                return layer;
+            }
+
+            showPickerWarning('Cle API MapTiler manquante. OpenStreetMap fallback actif.');
+            return new ol.layer.Tile({ source: new ol.source.OSM() });
+        };
+
+        const drawMarker = function (lat, lon) {
+            if (!markerSource) { return; }
+            markerSource.clear();
+            if (lat === null || lon === null) { return; }
+            const coord = ol.proj.fromLonLat([lon, lat]);
+            markerSource.addFeature(new ol.Feature({ geometry: new ol.geom.Point(coord) }));
+        };
+
+        const syncPickerLabels = function () {
+            if (pickerLat) { pickerLat.textContent = selectedLat === null ? '---' : selectedLat.toFixed(6); }
+            if (pickerLon) { pickerLon.textContent = selectedLon === null ? '---' : selectedLon.toFixed(6); }
+            if (confirmLocationBtn) { confirmLocationBtn.disabled = selectedLat === null || selectedLon === null; }
+        };
+
+        const syncFormLabels = function () {
+            if (latValue) { latValue.textContent = selectedLat === null ? '---' : selectedLat.toFixed(6); }
+            if (lonValue) { lonValue.textContent = selectedLon === null ? '---' : selectedLon.toFixed(6); }
+            if (latInput) { latInput.value = selectedLat === null ? '' : selectedLat.toFixed(7); }
+            if (lonInput) { lonInput.value = selectedLon === null ? '' : selectedLon.toFixed(7); }
+        };
+
+        const ensurePickerMap = function () {
+            if (pickerMap || !mapTarget) { return; }
+            markerSource = new ol.source.Vector();
+            markerLayer = new ol.layer.Vector({
+                source: markerSource,
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 10,
+                        fill: new ol.style.Fill({ color: '#ef4444' }),
+                        stroke: new ol.style.Stroke({ color: 'white', width: 3 })
+                    })
+                })
+            });
+            baseLayer = buildBaseLayer();
+            pickerMap = new ol.Map({
+                target: mapTarget,
+                layers: [baseLayer, markerLayer],
+                view: new ol.View({ center: ol.proj.fromLonLat([9.5375, 33.8869]), zoom: 6 })
+            });
+            pickerMap.on('click', function (event) {
+                var lonLat = ol.proj.toLonLat(event.coordinate);
+                selectedLon = lonLat[0];
+                selectedLat = lonLat[1];
+                drawMarker(selectedLat, selectedLon);
+                syncPickerLabels();
+            });
+        };
+
+        const openPicker = function () {
+            document.body.style.overflow = 'hidden';
+            mapPickerModal.classList.remove('hidden');
+            mapPickerModal.classList.add('flex');
+            syncPickerLabels();
+            window.requestAnimationFrame(function () {
+                ensurePickerMap();
+                if (!pickerMap) { return; }
+                drawMarker(selectedLat, selectedLon);
+                pickerMap.updateSize();
+                pickerMap.renderSync();
+                if (baseLayer && baseLayer.getSource() && typeof baseLayer.getSource().refresh === 'function') {
+                    baseLayer.getSource().refresh();
+                }
+                if (selectedLat !== null && selectedLon !== null) {
+                    pickerMap.getView().setCenter(ol.proj.fromLonLat([selectedLon, selectedLat]));
+                    pickerMap.getView().setZoom(12);
+                }
+            });
+        };
+
+        const closePicker = function () {
+            document.body.style.overflow = '';
+            mapPickerModal.classList.add('hidden');
+            mapPickerModal.classList.remove('flex');
+        };
+
+        openButtons.forEach(function (button) { button.addEventListener('click', openPicker); });
+        closeButtons.forEach(function (button) { button.addEventListener('click', closePicker); });
+        mapPickerModal.addEventListener('click', function (event) { if (event.target === mapPickerModal) { closePicker(); } });
+        if (confirmLocationBtn) {
+            confirmLocationBtn.addEventListener('click', function () { syncFormLabels(); closePicker(); });
+        }
+        syncPickerLabels();
+        syncFormLabels();
+    }
 
     if (searchInput && searchError) {
         const urlParams = new URLSearchParams(window.location.search);
         const initialSearchTerm = (urlParams.get('search') || '').trim();
-
         searchInput.addEventListener('input', function () {
             searchError.classList.add('hidden');
-
-            if (searchInput.value.trim() !== '' || initialSearchTerm === '') {
-                return;
-            }
-
-            // If the search was previously active and user clears it,
-            // go back to initial full table without requiring Enter.
+            if (searchInput.value.trim() !== '' || initialSearchTerm === '') { return; }
             urlParams.delete('search');
-            if (!urlParams.has('view')) {
-                urlParams.set('view', 'livestock');
-            }
-
+            if (!urlParams.has('view')) { urlParams.set('view', 'livestock'); }
             const queryString = urlParams.toString();
-            const targetUrl = queryString !== ''
-                ? (window.location.pathname + '?' + queryString)
-                : (window.location.pathname + '?view=livestock');
-
-            if (window.location.href !== targetUrl) {
-                window.location.href = targetUrl;
-            }
+            const targetUrl = queryString !== '' ? (window.location.pathname + '?' + queryString) : (window.location.pathname + '?view=livestock');
+            if (window.location.href !== targetUrl) { window.location.href = targetUrl; }
         });
     }
 
@@ -447,38 +1260,21 @@
         const rows = Array.from(tableBody.querySelectorAll('tr[data-row="livestock"]'));
         const sortButtons = Array.from(table.querySelectorAll('.js-livestock-sort'));
         const chartPalette = ['#3b82f6', '#f59e0b', '#8b5cf6', '#14b8a6', '#ef4444', '#22c55e', '#0ea5e9', '#84cc16'];
-        const statePalette = {
-            Clean: '#16a34a',
-            Dirty: '#ef4444',
-            'Under Cleaning': '#f59e0b',
-            Unknown: '#64748b',
-        };
+        const statePalette = { Clean: '#16a34a', Dirty: '#ef4444', 'Under Cleaning': '#f59e0b', Unknown: '#64748b' };
         let activeStatsTab = 'distribution';
         let mainChart = null;
         let sortState = { key: null, direction: 'asc', type: 'text' };
 
         const normalizeStateLabel = function (value) {
             const normalized = normalize(value);
-
-            if (['clean', 'propre', 'cleaning'].includes(normalized)) {
-                return 'Clean';
-            }
-            if (normalized === 'under cleaning') {
-                return 'Under Cleaning';
-            }
-            if (normalized === 'dirty') {
-                return 'Dirty';
-            }
-
+            if (['clean', 'propre', 'cleaning'].includes(normalized)) { return 'Clean'; }
+            if (normalized === 'under cleaning') { return 'Under Cleaning'; }
+            if (normalized === 'dirty') { return 'Dirty'; }
             return value ? String(value).trim() : 'Unknown';
         };
 
         const fillFilterOptions = function (selectElement, key) {
-            const uniqueValues = Array.from(new Set(rows
-                .map(function (row) { return row.dataset[key] || ''; })
-                .filter(function (value) { return normalize(value) !== ''; })))
-                .sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base' }); });
-
+            const uniqueValues = Array.from(new Set(rows.map(function (row) { return row.dataset[key] || ''; }).filter(function (value) { return normalize(value) !== ''; }))).sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base' }); });
             uniqueValues.forEach(function (value) {
                 const option = document.createElement('option');
                 option.value = value;
@@ -491,11 +1287,7 @@
             const factor = direction === 'asc' ? 1 : -1;
             const valueA = rowA.dataset[key] || '';
             const valueB = rowB.dataset[key] || '';
-
-            if (type === 'number') {
-                return (Number(valueA) - Number(valueB)) * factor;
-            }
-
+            if (type === 'number') { return (Number(valueA) - Number(valueB)) * factor; }
             return valueA.localeCompare(valueB, undefined, { sensitivity: 'base' }) * factor;
         };
 
@@ -504,16 +1296,10 @@
                 const key = button.dataset.sortKey || '';
                 const indicator = table.querySelector('[data-sort-indicator="' + key + '"]');
                 button.classList.remove('is-active');
-
-                if (indicator) {
-                    indicator.innerHTML = '&uarr;&darr;';
-                }
-
+                if (indicator) { indicator.innerHTML = '&uarr;&darr;'; }
                 if (sortState.key === key) {
                     button.classList.add('is-active');
-                    if (indicator) {
-                        indicator.innerHTML = sortState.direction === 'asc' ? '&uarr;' : '&darr;';
-                    }
+                    if (indicator) { indicator.innerHTML = sortState.direction === 'asc' ? '&uarr;' : '&darr;'; }
                 }
             });
         };
@@ -524,23 +1310,12 @@
             const capacity = Number(row.dataset.capacity || 0);
             const animals = Number(row.dataset.count || 0);
             const utilization = capacity > 0 ? (animals / capacity) * 100 : 0;
-
-            return {
-                label: label,
-                state: state,
-                capacity: capacity,
-                animals: animals,
-                utilization: utilization,
-            };
+            return { label: label, state: state, capacity: capacity, animals: animals, utilization: utilization };
         };
 
         const renderDetailList = function (items) {
-            if (!detailList) {
-                return;
-            }
-
+            if (!detailList) { return; }
             detailList.innerHTML = '';
-
             if (items.length === 0) {
                 const emptyRow = document.createElement('p');
                 emptyRow.className = 'text-sm text-slate-500';
@@ -548,82 +1323,54 @@
                 detailList.appendChild(emptyRow);
                 return;
             }
-
             items.forEach(function (item, index) {
                 const container = document.createElement('div');
                 container.className = 'rounded-xl border border-slate-100 bg-slate-50 px-3 py-2';
-
                 const top = document.createElement('div');
                 top.className = 'flex items-center justify-between gap-2';
-
                 const left = document.createElement('div');
                 left.className = 'flex items-center gap-2 min-w-0';
-
                 const dot = document.createElement('span');
                 dot.className = 'h-2.5 w-2.5 rounded-full shrink-0';
                 dot.style.backgroundColor = item.color || chartPalette[index % chartPalette.length];
-
                 const name = document.createElement('span');
                 name.className = 'text-sm font-bold text-slate-800 truncate';
                 name.textContent = item.label;
-
                 left.appendChild(dot);
                 left.appendChild(name);
-
                 const pct = document.createElement('span');
                 pct.className = 'text-sm font-black text-emerald-700';
                 pct.style.color = item.color || '#047857';
                 pct.textContent = item.valueText || '0%';
-
                 top.appendChild(left);
                 top.appendChild(pct);
-
                 const sub = document.createElement('p');
                 sub.className = 'mt-1 text-xs text-slate-500';
                 sub.textContent = item.detail || '';
-
                 const progressTrack = document.createElement('div');
                 progressTrack.className = 'mt-2 h-1.5 rounded-full bg-slate-200';
-
                 const progressFill = document.createElement('div');
                 progressFill.className = 'h-1.5 rounded-full';
                 progressFill.style.width = Math.max(0, Math.min(item.progress || 0, 100)).toFixed(1) + '%';
                 progressFill.style.backgroundColor = item.color || chartPalette[index % chartPalette.length];
-
                 progressTrack.appendChild(progressFill);
-
                 container.appendChild(top);
                 container.appendChild(sub);
                 container.appendChild(progressTrack);
-
                 detailList.appendChild(container);
             });
         };
 
         const aggregateByType = function (items) {
             const map = new Map();
-
             items.forEach(function (item) {
-                if (!map.has(item.label)) {
-                    map.set(item.label, {
-                        label: item.label,
-                        capacity: 0,
-                        animals: 0,
-                    });
-                }
-
+                if (!map.has(item.label)) { map.set(item.label, { label: item.label, capacity: 0, animals: 0 }); }
                 const current = map.get(item.label);
                 current.capacity += item.capacity;
                 current.animals += item.animals;
             });
-
             return Array.from(map.values()).map(function (item) {
-                return {
-                    label: item.label,
-                    capacity: item.capacity,
-                    animals: item.animals,
-                    utilization: item.capacity > 0 ? (item.animals / item.capacity) * 100 : 0,
-                };
+                return { label: item.label, capacity: item.capacity, animals: item.animals, utilization: item.capacity > 0 ? (item.animals / item.capacity) * 100 : 0 };
             });
         };
 
@@ -635,31 +1382,21 @@
             }, {});
         };
 
-        const getStatisticsItems = function () {
-            // Statistics are always based on the initial dataset loaded in the table.
-            return rows.map(toLivestockItem);
-        };
+        const getStatisticsItems = function () { return rows.map(toLivestockItem); };
 
         const colorByUtilization = function (value) {
-            if (value >= 80) {
-                return '#ef4444';
-            }
-            if (value >= 40) {
-                return '#f59e0b';
-            }
-
+            if (value >= 80) { return '#ef4444'; }
+            if (value >= 40) { return '#f59e0b'; }
             return '#16a34a';
         };
 
         const renderTabVisualState = function () {
             statsTabButtons.forEach(function (button) {
                 const isActive = button.dataset.tab === activeStatsTab;
-
                 button.classList.toggle('bg-white', isActive);
                 button.classList.toggle('text-emerald-700', isActive);
                 button.classList.toggle('border-emerald-500', isActive);
                 button.classList.toggle('shadow-sm', isActive);
-
                 button.classList.toggle('bg-slate-100', !isActive);
                 button.classList.toggle('text-slate-600', !isActive);
                 button.classList.toggle('border-transparent', !isActive);
@@ -667,171 +1404,38 @@
         };
 
         const renderStatisticsPanel = function (items) {
-            if (typeof Chart === 'undefined' || !mainCanvas) {
-                return;
-            }
-
-            if (mainChart) {
-                mainChart.destroy();
-            }
-
+            if (typeof Chart === 'undefined' || !mainCanvas) { return; }
+            if (mainChart) { mainChart.destroy(); }
             const byType = aggregateByType(items);
 
             if (activeStatsTab === 'utilization') {
                 const labels = byType.map(function (item) { return item.label; });
                 const utilizationData = byType.map(function (item) { return Number(item.utilization.toFixed(1)); });
                 const colors = utilizationData.map(colorByUtilization);
-
-                if (chartTitle) {
-                    chartTitle.textContent = 'Utilization rate by livestock';
-                }
-                if (utilizationLevelLegend) {
-                    utilizationLevelLegend.classList.remove('hidden');
-                    utilizationLevelLegend.classList.add('flex');
-                }
-                if (quickTitle) {
-                    quickTitle.textContent = 'Quick view';
-                }
-
+                if (chartTitle) { chartTitle.textContent = 'Utilization rate by livestock'; }
+                if (utilizationLevelLegend) { utilizationLevelLegend.classList.remove('hidden'); utilizationLevelLegend.classList.add('flex'); }
+                if (quickTitle) { quickTitle.textContent = 'Quick view'; }
                 mainChart = new Chart(mainCanvas, {
                     type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: "Utilization Rate",
-                            data: utilizationData,
-                            backgroundColor: colors,
-                            borderRadius: 8,
-                            borderSkipped: false,
-                            barThickness: 26,
-                        }],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'bottom',
-                                labels: {
-                                    boxWidth: 16,
-                                },
-                            },
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                ticks: {
-                                    stepSize: 20,
-                                    callback: function (value) {
-                                        return value + '%';
-                                    },
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Rate (%)',
-                                    color: '#1f2937',
-                                    font: {
-                                        weight: '700',
-                                    },
-                                },
-                                grid: {
-                                    color: 'rgba(148, 163, 184, 0.2)',
-                                },
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Livestock Type',
-                                    color: '#1f2937',
-                                    font: {
-                                        weight: '700',
-                                    },
-                                },
-                                grid: {
-                                    color: 'rgba(148, 163, 184, 0.12)',
-                                },
-                            },
-                        },
-                    },
+                    data: { labels: labels, datasets: [{ label: "Utilization Rate", data: utilizationData, backgroundColor: colors, borderRadius: 8, borderSkipped: false, barThickness: 26 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 16 } } }, scales: { y: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: function (value) { return value + '%'; } }, title: { display: true, text: 'Rate (%)', color: '#1f2937', font: { weight: '700' } }, grid: { color: 'rgba(148, 163, 184, 0.2)' } }, x: { title: { display: true, text: 'Livestock Type', color: '#1f2937', font: { weight: '700' } }, grid: { color: 'rgba(148, 163, 184, 0.12)' } } } }
                 });
-
-                renderDetailList(byType.map(function (item) {
-                    return {
-                        label: item.label,
-                        color: colorByUtilization(item.utilization),
-                        valueText: Math.round(item.utilization) + '%',
-                        detail: item.animals + ' / ' + item.capacity + ' animaux',
-                        progress: item.utilization,
-                    };
-                }));
-
+                renderDetailList(byType.map(function (item) { return { label: item.label, color: colorByUtilization(item.utilization), valueText: Math.round(item.utilization) + '%', detail: item.animals + ' / ' + item.capacity + ' animaux', progress: item.utilization }; }));
                 return;
             }
 
             if (activeStatsTab === 'state') {
                 const summary = buildStateSummary(items);
                 const preferredOrder = ['Clean', 'Under Cleaning', 'Dirty', 'Unknown'];
-                const labels = preferredOrder.filter(function (label) {
-                    return summary[label] !== undefined;
-                }).concat(Object.keys(summary).filter(function (label) {
-                    return !preferredOrder.includes(label);
-                }));
+                const labels = preferredOrder.filter(function (label) { return summary[label] !== undefined; }).concat(Object.keys(summary).filter(function (label) { return !preferredOrder.includes(label); }));
                 const values = labels.map(function (label) { return summary[label]; });
                 const colors = labels.map(function (label) { return statePalette[label] || '#64748b'; });
                 const total = values.reduce(function (sum, value) { return sum + value; }, 0);
-
-                if (chartTitle) {
-                    chartTitle.textContent = 'Distribution by livestock state';
-                }
-                if (utilizationLevelLegend) {
-                    utilizationLevelLegend.classList.add('hidden');
-                    utilizationLevelLegend.classList.remove('flex');
-                }
-                if (quickTitle) {
-                    quickTitle.textContent = 'Detail by state';
-                }
-
-                mainChart = new Chart(mainCanvas, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: values,
-                            backgroundColor: colors,
-                            borderColor: '#ffffff',
-                            borderWidth: 2,
-                        }],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '62%',
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    usePointStyle: true,
-                                    boxWidth: 8,
-                                },
-                            },
-                        },
-                    },
-                });
-
-                renderDetailList(labels.map(function (label) {
-                    const value = summary[label] || 0;
-                    const percentage = total > 0 ? (value / total) * 100 : 0;
-                    return {
-                        label: label,
-                        color: statePalette[label] || '#64748b',
-                        valueText: value + ' (' + percentage.toFixed(0) + '%)',
-                        detail: 'state count',
-                        progress: percentage,
-                    };
-                }));
-
+                if (chartTitle) { chartTitle.textContent = 'Distribution by livestock state'; }
+                if (utilizationLevelLegend) { utilizationLevelLegend.classList.add('hidden'); utilizationLevelLegend.classList.remove('flex'); }
+                if (quickTitle) { quickTitle.textContent = 'Detail by state'; }
+                mainChart = new Chart(mainCanvas, { type: 'doughnut', data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } });
+                renderDetailList(labels.map(function (label) { const value = summary[label] || 0; const percentage = total > 0 ? (value / total) * 100 : 0; return { label: label, color: statePalette[label] || '#64748b', valueText: value + ' (' + percentage.toFixed(0) + '%)', detail: 'state count', progress: percentage }; }));
                 return;
             }
 
@@ -839,152 +1443,60 @@
             const capacityData = byType.map(function (item) { return item.capacity; });
             const colors = byType.map(function (_, index) { return chartPalette[index % chartPalette.length]; });
             const totalCapacity = capacityData.reduce(function (sum, value) { return sum + value; }, 0);
-
-            if (chartTitle) {
-                chartTitle.textContent = 'Capacity distribution by livestock';
-            }
-            if (utilizationLevelLegend) {
-                utilizationLevelLegend.classList.add('hidden');
-                utilizationLevelLegend.classList.remove('flex');
-            }
-            if (quickTitle) {
-                quickTitle.textContent = 'Detail by livestock';
-            }
-
-            mainChart = new Chart(mainCanvas, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: capacityData,
-                        backgroundColor: colors,
-                        borderColor: '#ffffff',
-                        borderWidth: 2,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '62%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                usePointStyle: true,
-                                boxWidth: 8,
-                            },
-                        },
-                    },
-                },
-            });
-
-            renderDetailList(byType.map(function (item, index) {
-                const share = totalCapacity > 0 ? (item.capacity / totalCapacity) * 100 : 0;
-                return {
-                    label: item.label,
-                    color: colors[index],
-                    valueText: share.toFixed(0) + '%',
-                    detail: item.capacity + ' capacity units',
-                    progress: share,
-                };
-            }));
+            if (chartTitle) { chartTitle.textContent = 'Capacity distribution by livestock'; }
+            if (utilizationLevelLegend) { utilizationLevelLegend.classList.add('hidden'); utilizationLevelLegend.classList.remove('flex'); }
+            if (quickTitle) { quickTitle.textContent = 'Detail by livestock'; }
+            mainChart = new Chart(mainCanvas, { type: 'doughnut', data: { labels: labels, datasets: [{ data: capacityData, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } });
+            renderDetailList(byType.map(function (item, index) { const share = totalCapacity > 0 ? (item.capacity / totalCapacity) * 100 : 0; return { label: item.label, color: colors[index], valueText: share.toFixed(0) + '%', detail: item.capacity + ' capacity units', progress: share }; }));
         };
 
         const refreshStatistics = function () {
             const items = getStatisticsItems();
-
-            let avg = 0;
-            let alerts = 0;
-            let mostOccupied = null;
-
+            let avg = 0, alerts = 0, mostOccupied = null;
             if (items.length > 0) {
                 const totalUtilization = items.reduce(function (sum, item) {
-                    if (item.utilization >= 80) {
-                        alerts += 1;
-                    }
-
-                    if (mostOccupied === null || item.utilization > mostOccupied.utilization) {
-                        mostOccupied = item;
-                    }
-
+                    if (item.utilization >= 80) { alerts += 1; }
+                    if (mostOccupied === null || item.utilization > mostOccupied.utilization) { mostOccupied = item; }
                     return sum + item.utilization;
                 }, 0);
-
                 avg = totalUtilization / items.length;
             }
-
-            if (totalStat) {
-                totalStat.textContent = String(items.length);
-            }
-            if (avgStat) {
-                avgStat.textContent = avg.toFixed(1) + '%';
-            }
-            if (avgBar) {
-                avgBar.style.width = Math.max(0, Math.min(avg, 100)).toFixed(1) + '%';
-            }
-            if (alertStat) {
-                alertStat.textContent = String(alerts);
-            }
-            if (mostLabel) {
-                mostLabel.textContent = mostOccupied ? mostOccupied.label : '--';
-            }
-            if (mostDetail) {
-                mostDetail.textContent = mostOccupied
-                    ? mostOccupied.utilization.toFixed(1) + '% occupied - ' + mostOccupied.state
-                    : '0%';
-            }
+            if (totalStat)  { totalStat.textContent  = String(items.length); }
+            if (avgStat)    { avgStat.textContent    = avg.toFixed(1) + '%'; }
+            if (avgBar)     { avgBar.style.width     = Math.max(0, Math.min(avg, 100)).toFixed(1) + '%'; }
+            if (alertStat)  { alertStat.textContent  = String(alerts); }
+            if (mostLabel)  { mostLabel.textContent  = mostOccupied ? mostOccupied.label : '--'; }
+            if (mostDetail) { mostDetail.textContent = mostOccupied ? mostOccupied.utilization.toFixed(1) + '% occupied - ' + mostOccupied.state : '0%'; }
             if (statsUpdated) {
                 const now = new Date();
-                const hh = String(now.getHours()).padStart(2, '0');
-                const mm = String(now.getMinutes()).padStart(2, '0');
-                statsUpdated.textContent = 'Updated: ' + hh + ':' + mm;
+                statsUpdated.textContent = 'Updated: ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
             }
-
             renderStatisticsPanel(items);
         };
 
         const applyFilters = function () {
-            const selectedType = normalize(typeFilter.value);
+            const selectedType  = normalize(typeFilter.value);
             const selectedState = normalize(stateFilter.value);
             let visibleCount = 0;
-
             rows.forEach(function (row) {
-                const matchesType = selectedType === '' || normalize(row.dataset.type) === selectedType;
+                const matchesType  = selectedType  === '' || normalize(row.dataset.type)  === selectedType;
                 const matchesState = selectedState === '' || normalize(row.dataset.state) === selectedState;
                 const isVisible = matchesType && matchesState;
-
                 row.classList.toggle('hidden', !isVisible);
-                if (isVisible) {
-                    visibleCount += 1;
-                }
+                if (isVisible) { visibleCount += 1; }
             });
-
-            if (noResultsRow) {
-                noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
-            }
+            if (noResultsRow) { noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0); }
         };
 
         const sortRows = function () {
-            if (!sortState.key) {
-                return;
-            }
-
-            const sortedRows = rows.slice().sort(function (rowA, rowB) {
-                return compareRows(rowA, rowB, sortState.key, sortState.type, sortState.direction);
-            });
-
-            sortedRows.forEach(function (row) {
-                tableBody.appendChild(row);
-            });
-
-            if (noResultsRow) {
-                tableBody.appendChild(noResultsRow);
-            }
+            if (!sortState.key) { return; }
+            const sortedRows = rows.slice().sort(function (rowA, rowB) { return compareRows(rowA, rowB, sortState.key, sortState.type, sortState.direction); });
+            sortedRows.forEach(function (row) { tableBody.appendChild(row); });
+            if (noResultsRow) { tableBody.appendChild(noResultsRow); }
         };
 
         fillFilterOptions(typeFilter, 'type');
         fillFilterOptions(stateFilter, 'state');
-
         typeFilter.addEventListener('change', applyFilters);
         stateFilter.addEventListener('change', applyFilters);
 
@@ -992,14 +1504,8 @@
             button.addEventListener('click', function () {
                 const key = button.dataset.sortKey || '';
                 const type = button.dataset.sortType || 'text';
-
-                if (sortState.key === key) {
-                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    sortState.key = key;
-                    sortState.direction = 'asc';
-                }
-
+                if (sortState.key === key) { sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc'; }
+                else { sortState.key = key; sortState.direction = 'asc'; }
                 sortState.type = type;
                 sortRows();
                 renderSortIndicators();
@@ -1008,19 +1514,11 @@
         });
 
         statsTabButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
-                activeStatsTab = button.dataset.tab || 'distribution';
-                renderTabVisualState();
-                refreshStatistics();
-            });
+            button.addEventListener('click', function () { activeStatsTab = button.dataset.tab || 'distribution'; renderTabVisualState(); refreshStatistics(); });
         });
 
         statsCards.forEach(function (card) {
-            card.addEventListener('click', function () {
-                activeStatsTab = card.dataset.focus || 'distribution';
-                renderTabVisualState();
-                refreshStatistics();
-            });
+            card.addEventListener('click', function () { activeStatsTab = card.dataset.focus || 'distribution'; renderTabVisualState(); refreshStatistics(); });
         });
 
         applyFilters();
@@ -1029,58 +1527,34 @@
         renderTabVisualState();
     }
 
-    const modal = document.getElementById('delete-confirm-modal');
-    const title = document.getElementById('delete-modal-title');
-    const text = document.getElementById('delete-modal-text');
+    /* ── Delete modal ── */
+    const modal     = document.getElementById('delete-confirm-modal');
+    const title     = document.getElementById('delete-modal-title');
+    const text      = document.getElementById('delete-modal-text');
     const confirmBtn = document.getElementById('delete-modal-confirm');
-    const cancelBtn = document.getElementById('delete-modal-cancel');
+    const cancelBtn  = document.getElementById('delete-modal-cancel');
     const deleteForms = document.querySelectorAll('.js-delete-form');
 
-    if (!modal || !title || !text || !confirmBtn || !cancelBtn || !deleteForms.length) {
-        return;
-    }
+    if (!modal || !title || !text || !confirmBtn || !cancelBtn || !deleteForms.length) { return; }
 
     let pendingForm = null;
-
-    const closeModal = function () {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        pendingForm = null;
-    };
+    const closeModal = function () { modal.classList.add('hidden'); modal.classList.remove('flex'); pendingForm = null; };
 
     deleteForms.forEach(function (form) {
         form.addEventListener('submit', function (event) {
             event.preventDefault();
             pendingForm = form;
-
-            const label = form.dataset.deleteLabel || 'Livestock';
-            title.textContent = 'Delete: ' + label;
-            text.textContent = 'Are you sure you want to delete this livestock? This action cannot be undone.';
-
+            title.textContent = 'Delete: ' + (form.dataset.deleteLabel || 'Livestock');
+            text.textContent  = 'Are you sure you want to delete this livestock? This action cannot be undone.';
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         });
     });
 
-    confirmBtn.addEventListener('click', function () {
-        if (pendingForm) {
-            pendingForm.submit();
-        }
-    });
-
+    confirmBtn.addEventListener('click', function () { if (pendingForm) { pendingForm.submit(); } });
     cancelBtn.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
-            closeModal();
-        }
-    });
+    modal.addEventListener('click', function (event) { if (event.target === modal) { closeModal(); } });
+    document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !modal.classList.contains('hidden')) { closeModal(); } });
 })();
 </script>
 

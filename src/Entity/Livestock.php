@@ -108,6 +108,11 @@ class Livestock
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(
+        min: -90,
+        max: 90,
+        notInRangeMessage: 'Latitude must be between {{ min }} and {{ max }}.'
+    )]
     private ?float $latitude = null;
 
     public function getLatitude(): ?float
@@ -122,6 +127,11 @@ class Livestock
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(
+        min: -180,
+        max: 180,
+        notInRangeMessage: 'Longitude must be between {{ min }} and {{ max }}.'
+    )]
     private ?float $longitude = null;
 
     public function getLongitude(): ?float
@@ -146,19 +156,5 @@ class Livestock
     public function getAnimals(): Collection
     {
         return $this->animals;
-    }
-
-    public function addAnimal(Animal $animal): self
-    {
-        if (!$this->animals->contains($animal)) {
-            $this->animals[] = $animal;
-        }
-        return $this;
-    }
-
-    public function removeAnimal(Animal $animal): self
-    {
-        $this->animals->removeElement($animal);
-        return $this;
     }
 }

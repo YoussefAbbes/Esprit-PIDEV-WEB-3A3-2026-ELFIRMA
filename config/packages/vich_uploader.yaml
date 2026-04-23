@@ -1,4 +1,3 @@
-
 vich_uploader:
     db_driver: orm
     mappings:
@@ -10,3 +9,10 @@ vich_uploader:
             delete_on_update: true
             inject_on_load: false
 
+        animal_photo:
+            uri_prefix: /uploads/animals
+            upload_destination: '%kernel.project_dir%/public/uploads/animals'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            delete_on_remove: true
+            delete_on_update: true
+            inject_on_load: false

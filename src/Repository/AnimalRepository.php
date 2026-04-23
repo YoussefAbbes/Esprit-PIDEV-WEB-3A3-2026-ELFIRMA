@@ -8,6 +8,8 @@ use App\Entity\Animal;
 use Doctrine\DBAL\Connection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Vich\UploaderBundle\Handler\UploadHandler;
 
 /**
  * @extends ServiceEntityRepository<Animal>
@@ -22,13 +24,15 @@ final class AnimalRepository extends ServiceEntityRepository
     /**
      * @param array{id_elevage:int,type_animal:string,sexe:string,age:int,etat_sante:string,statut:string} $payload
      */
-    public function createAnimal(array $payload): void
+    public function createAnimal(array $payload): int
     {
         $this->connection()->executeStatement(
             'INSERT INTO animal (id_elevage, type_animal, sexe, age, etat_sante, statut)
              VALUES (:id_elevage, :type_animal, :sexe, :age, :etat_sante, :statut)',
             $payload
         );
+
+        return (int) $this->connection()->lastInsertId();
     }
 
     /**
@@ -57,8 +61,28 @@ final class AnimalRepository extends ServiceEntityRepository
         );
     }
 
+    public function saveAnimalPhoto(int $idAnimal, UploadedFile $photoFile, UploadHandler $uploadHandler): void
+    {
+        $animal = $this->find($idAnimal);
+        if ($animal === null) {
+            return;
+        }
+
+        $animal->setPhotoFile($photoFile);
+        $uploadHandler->upload($animal, 'photoFile');
+        $this->getEntityManager()->flush();
+    }
+
     public function deleteAnimal(int $idAnimal): void
     {
+        $animal = $this->find($idAnimal);
+        if ($animal !== null) {
+            $entityManager = $this->getEntityManager();
+            $entityManager->remove($animal);
+            $entityManager->flush();
+            return;
+        }
+
         $this->connection()->executeStatement(
             'DELETE FROM animal WHERE id_animal = :id_animal',
             ['id_animal' => $idAnimal]
@@ -85,7 +109,7 @@ final class AnimalRepository extends ServiceEntityRepository
     public function findForEdit(int $idAnimal): ?array
     {
         $row = $this->connection()->fetchAssociative(
-            'SELECT id_animal, id_elevage, type_animal, sexe, age, etat_sante, statut
+            'SELECT id_animal, id_elevage, type_animal, sexe, age, etat_sante, statut, photo_name
              FROM animal
              WHERE id_animal = :id_animal',
             ['id_animal' => $idAnimal]
@@ -100,7 +124,7 @@ final class AnimalRepository extends ServiceEntityRepository
     public function findAllForManagement(): array
     {
         return $this->connection()->fetchAllAssociative(
-            'SELECT id_animal, id_elevage, type_animal, sexe, age, etat_sante, statut
+            'SELECT id_animal, id_elevage, type_animal, sexe, age, etat_sante, statut, photo_name
              FROM animal
              ORDER BY id_animal DESC'
         );

@@ -1,0 +1,147 @@
+{
+  "version": "2.0.0",
+  "generated_on": "2026-04-16",
+  "description": "Evaluation seed set aligned to evidence-conservative corpus.",
+  "notes": {
+    "unknown_policy_usage": "unknown_policy is a query class for evaluation/routing, not a confidence metadata label.",
+    "confidence_taxonomy": [
+      "confirmed",
+      "inferred",
+      "assumed"
+    ]
+  },
+  "confidence_groups": {
+    "confirmed": [
+      {
+        "id": "C001",
+        "domain": "animals",
+        "intent": "animal.field_explanation",
+        "query": "What fields are confirmed in the animals table?"
+      },
+      {
+        "id": "C002",
+        "domain": "animals",
+        "intent": "animal.field_explanation",
+        "query": "Which type_animal values were observed in screenshots?"
+      },
+      {
+        "id": "C003",
+        "domain": "vaccination",
+        "intent": "vaccination.field_explanation",
+        "query": "What vaccination status value is confirmed from screenshots?"
+      },
+      {
+        "id": "C004",
+        "domain": "livestock",
+        "intent": "livestock.field_explanation",
+        "query": "What etat_elevage values were observed?"
+      },
+      {
+        "id": "C005",
+        "domain": "livestock",
+        "intent": "livestock.field_explanation",
+        "query": "What production values were observed in elevage?"
+      },
+      {
+        "id": "C006",
+        "domain": "cross_entity",
+        "intent": "cross_entity.evidence_scope_check",
+        "query": "Are the observed screenshot values exhaustive enums?"
+      },
+      {
+        "id": "C007",
+        "domain": "animals",
+        "intent": "animal.field_explanation",
+        "query": "Quelles valeurs ont ete observees pour le champ statut dans animals ?"
+      }
+    ],
+    "inferred": [
+      {
+        "id": "I001",
+        "domain": "cross_entity",
+        "intent": "cross_entity.relationship_explanation",
+        "query": "How are animals, vaccinations, and elevage likely connected?"
+      },
+      {
+        "id": "I002",
+        "domain": "animals",
+        "intent": "animal.health_status_difference",
+        "query": "What is the likely difference between etat_sante and statut?"
+      },
+      {
+        "id": "I003",
+        "domain": "vaccination",
+        "intent": "vaccination.schedule_interpretation",
+        "query": "What is date_next likely used for?"
+      },
+      {
+        "id": "I004",
+        "domain": "livestock",
+        "intent": "livestock.capacity_context",
+        "query": "Can capacite and nombre_animaux support occupancy monitoring?"
+      },
+      {
+        "id": "I005",
+        "domain": "livestock",
+        "intent": "livestock.geolocation_context",
+        "query": "How can latitude and longitude help operations?"
+      },
+      {
+        "id": "I006",
+        "domain": "cross_entity",
+        "intent": "cross_entity.multilingual_mapping",
+        "query": "How should the assistant handle French field names with English user questions?"
+      },
+      {
+        "id": "I007",
+        "domain": "vaccination",
+        "intent": "vaccination.schedule_interpretation",
+        "query": "Is date_done likely the completed vaccination date?"
+      },
+      {
+        "id": "I008",
+        "domain": "cross_entity",
+        "intent": "cross_entity.relationship_explanation",
+        "query": "Comment les tables animals, vaccinations et elevage sont-elles probablement reliees ?"
+      }
+    ],
+    "unknown_policy": [
+      {
+        "id": "U001",
+        "domain": "vaccination",
+        "intent": "vaccination.policy_unknown",
+        "query": "What is the official overdue vaccination rule in this project?"
+      },
+      {
+        "id": "U002",
+        "domain": "livestock",
+        "intent": "livestock.field_explanation",
+        "query": "Is etat_elevage officially based on stable, warning, and critical levels?"
+      },
+      {
+        "id": "U003",
+        "domain": "animals",
+        "intent": "animal.listing_request",
+        "query": "Is an animal automatically compliant for sale if statut is For Sale?"
+      },
+      {
+        "id": "U004",
+        "domain": "vaccination",
+        "intent": "vaccination.policy_unknown",
+        "query": "Which status values are mandatory for the vaccination workflow?"
+      },
+      {
+        "id": "U005",
+        "domain": "cross_entity",
+        "intent": "cross_entity.evidence_scope_check",
+        "query": "What are the official numeric thresholds for livestock alerts?"
+      },
+      {
+        "id": "U006",
+        "domain": "vaccination",
+        "intent": "vaccination.policy_unknown",
+        "query": "Quelle est la regle officielle pour definir un vaccin en retard ?"
+      }
+    ]
+  }
+}

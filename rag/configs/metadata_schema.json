@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.1.0",
+  "description": "Canonical metadata model for corpus manifest, chunk generation, retrieval filters, and validation.",
+  "notes": {
+    "unknown_policy_usage": "unknown_policy is a query class or response outcome, not a metadata confidence label."
+  },
+  "required_manifest_fields": [
+    "file",
+    "domain",
+    "document_type",
+    "confidence",
+    "language",
+    "description",
+    "include_in_chunks"
+  ],
+  "optional_manifest_fields": [
+    "evidence_scope"
+  ],
+  "required_chunk_fields": [
+    "chunk_id",
+    "source_file",
+    "domain",
+    "document_type",
+    "confidence",
+    "section",
+    "language",
+    "text"
+  ],
+  "optional_chunk_fields": [
+    "evidence_scope"
+  ],
+  "taxonomies": {
+    "domain": [
+      "animals",
+      "vaccination",
+      "livestock",
+      "cross_entity",
+      "rag_operations"
+    ],
+    "document_type": [
+      "schema_reference",
+      "data_dictionary",
+      "domain_guide",
+      "business_rules",
+      "faq",
+      "chat_examples",
+      "intents_catalog",
+      "glossary",
+      "assumptions_and_gaps",
+      "chunking_strategy",
+      "retrieval_strategy",
+      "roadmap",
+      "evaluation_plan",
+      "metadata_schema",
+      "embedding_config",
+      "manifest",
+      "system_prompt",
+      "query_rewriting",
+      "rag_answer_template",
+      "test_queries",
+      "golden_answers",
+      "retrieval_eval_cases",
+      "route_relevance_cases",
+      "rag_answer_cases",
+      "symfony_backend_plan",
+      "chat_api_contract",
+      "workspace_readme"
+    ],
+    "confidence": [
+      "confirmed",
+      "inferred",
+      "assumed"
+    ],
+    "language": [
+      "fr",
+      "en",
+      "fr-en"
+    ],
+    "evidence_scope": [
+      "observed_sample",
+      "schema_inference",
+      "policy_hypothesis"
+    ]
+  }
+}

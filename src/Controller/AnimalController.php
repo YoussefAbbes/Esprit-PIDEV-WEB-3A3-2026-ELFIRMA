@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Animal;
 use App\Repository\AnimalRepository;
 use App\Repository\LivestockRepository;
+use App\Service\LivestockCapacityEmailAlertService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Vich\UploaderBundle\Handler\UploadHandler;
 
 final class AnimalController extends AbstractController
 {
@@ -21,7 +21,8 @@ final class AnimalController extends AbstractController
         Request $request,
         AnimalRepository $animalRepository,
         LivestockRepository $livestockRepository,
-        ValidatorInterface $validator
+        LivestockCapacityEmailAlertService $capacityEmailAlertService,
+        UploadHandler $uploadHandler
     ): Response
     {
         $formRedirect = [
@@ -37,32 +38,20 @@ final class AnimalController extends AbstractController
             ], $input);
         }
 
-        $errors = $this->validateAnimalInput($input, $livestockRepository);
+        $photoFile = $this->collectAnimalFile($request);
+        $errors = $this->validateAnimalInput($input, $livestockRepository, $photoFile);
         if ($errors !== []) {
             return $this->redirectToAnimalFormWithFieldErrors($formRedirect, $errors, $input);
         }
 
         $payload = $this->toAnimalPayload($input);
-
-        $violations = $validator->validate(
-            (new Animal())
-                ->setTypeAnimal($payload['type_animal'])
-                ->setSexe($payload['sexe'])
-                ->setAge($payload['age'])
-                ->setEtatSante($payload['etat_sante'])
-                ->setStatut($payload['statut'])
-        );
-
-        if (count($violations) > 0) {
-            return $this->redirectToAnimalFormWithFieldErrors(
-                $formRedirect,
-                $this->collectViolationFieldErrors($violations),
-                $input
-            );
+        $animalId = $animalRepository->createAnimal($payload);
+        if ($photoFile !== null) {
+            $animalRepository->saveAnimalPhoto($animalId, $photoFile, $uploadHandler);
         }
 
-        $animalRepository->createAnimal($payload);
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
+        $capacityEmailAlertService->checkAndSendForLivestock($payload['id_elevage']);
 
         return $this->redirectToAnimalList();
     }
@@ -72,7 +61,8 @@ final class AnimalController extends AbstractController
         Request $request,
         AnimalRepository $animalRepository,
         LivestockRepository $livestockRepository,
-        ValidatorInterface $validator
+        LivestockCapacityEmailAlertService $capacityEmailAlertService,
+        UploadHandler $uploadHandler
     ): Response
     {
         $idAnimal = (int) $request->request->get('id_animal', 0);
@@ -105,34 +95,24 @@ final class AnimalController extends AbstractController
             ], $input);
         }
 
-        $errors = $this->validateAnimalInput($input, $livestockRepository);
+        $photoFile = $this->collectAnimalFile($request);
+        $errors = $this->validateAnimalInput($input, $livestockRepository, $photoFile);
         if ($errors !== []) {
             return $this->redirectToAnimalFormWithFieldErrors($formRedirect, $errors, $input);
         }
 
         $payload = $this->toAnimalPayload($input);
 
-        $violations = $validator->validate(
-            (new Animal())
-                ->setTypeAnimal($payload['type_animal'])
-                ->setSexe($payload['sexe'])
-                ->setAge($payload['age'])
-                ->setEtatSante($payload['etat_sante'])
-                ->setStatut($payload['statut'])
-        );
-
-        if (count($violations) > 0) {
-            return $this->redirectToAnimalFormWithFieldErrors(
-                $formRedirect,
-                $this->collectViolationFieldErrors($violations),
-                $input
-            );
-        }
-
         $animalRepository->updateAnimal($idAnimal, $payload);
+        if ($photoFile !== null) {
+            $animalRepository->saveAnimalPhoto($idAnimal, $photoFile, $uploadHandler);
+        }
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
+        $capacityEmailAlertService->checkAndSendForLivestock($payload['id_elevage']);
+
         if ($previousElevageId !== $payload['id_elevage']) {
             $livestockRepository->syncAnimalCount($previousElevageId);
+            $capacityEmailAlertService->checkAndSendForLivestock($previousElevageId);
         }
 
         return $this->redirectToAnimalList();
@@ -142,7 +122,8 @@ final class AnimalController extends AbstractController
     public function delete(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService
     ): Response
     {
         if (!$this->isCsrfTokenValid('animal_delete', (string) $request->request->get('_token', ''))) {
@@ -159,6 +140,7 @@ final class AnimalController extends AbstractController
 
         if ($animalElevageId !== null && $animalElevageId > 0) {
             $livestockRepository->syncAnimalCount($animalElevageId);
+            $capacityEmailAlertService->checkAndSendForLivestock($animalElevageId);
         }
 
         return $this->redirectToAnimalList();
@@ -179,12 +161,18 @@ final class AnimalController extends AbstractController
         ];
     }
 
+    private function collectAnimalFile(Request $request): ?UploadedFile
+    {
+        $file = $request->files->get('photo_file');
+        return $file instanceof UploadedFile ? $file : null;
+    }
+
     /**
      * @param array{id_elevage:string,type_animal:string,sexe:string,age:string,etat_sante:string,statut:string} $input
      *
      * @return array<string,string>
      */
-    private function validateAnimalInput(array $input, LivestockRepository $livestockRepository): array
+    private function validateAnimalInput(array $input, LivestockRepository $livestockRepository, ?UploadedFile $photoFile = null): array
     {
         $errors = [];
 
@@ -226,6 +214,22 @@ final class AnimalController extends AbstractController
             $errors['statut'] = 'Status is required.';
         }
 
+        if ($photoFile !== null) {
+            $mimeType = null;
+            try {
+                $mimeType = $photoFile->getMimeType();
+            } catch (\LogicException $e) {
+                $mimeType = $photoFile->getClientMimeType();
+            }
+
+            if ($mimeType === null || !str_starts_with((string) $mimeType, 'image/')) {
+                $errors['photo_file'] = 'Please upload a valid image file (jpg, png, gif).';
+            }
+            if ($photoFile->getSize() !== null && $photoFile->getSize() > 5_242_880) {
+                $errors['photo_file'] = 'Image size must be 5MB or less.';
+            }
+        }
+
         return $errors;
     }
 
@@ -252,38 +256,6 @@ final class AnimalController extends AbstractController
             'module' => 'animaux-elevages',
             'view' => 'animal',
         ]);
-    }
-
-    /**
-     * @return array<string,string>
-     */
-    private function collectViolationFieldErrors(ConstraintViolationListInterface $violations): array
-    {
-        $errors = [];
-        foreach ($violations as $violation) {
-            $field = $this->normalizeFieldName((string) $violation->getPropertyPath());
-            if ($field === '') {
-                $field = '_form';
-            }
-
-            if (!isset($errors[$field])) {
-                $errors[$field] = $violation->getMessage();
-            }
-        }
-
-        return $errors;
-    }
-
-    private function normalizeFieldName(string $field): string
-    {
-        $field = trim($field);
-        if ($field === '') {
-            return '';
-        }
-
-        $field = preg_replace('/([a-z])([A-Z])/', '$1_$2', $field);
-
-        return strtolower((string) $field);
     }
 
     /**

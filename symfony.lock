@@ -348,6 +348,9 @@
             "branch": "main",
             "version": "5.0",
             "ref": "b272ad4fbfcd45a20e7cbfdc4ad1b0e27a62fd3b"
-        }
+        },
+        "files": [
+            "./config/packages/vich_uploader.yaml"
+        ]
     }
 }
