@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Controller\AdminTwoFactorController;
 
 final class ElfirmaController extends AbstractController
 {
@@ -31,7 +32,7 @@ final class ElfirmaController extends AbstractController
         ],
         'animaux-elevages' => [
             'folder' => 'animaux_levages',
-            'title' => 'Livestock',
+            'title' => 'Livestock & Animals',
         ],
         'categories' => [
             'folder' => 'categories',
@@ -142,6 +143,54 @@ final class ElfirmaController extends AbstractController
         if (!isset(self::MODULES[$module])) {
             throw $this->createNotFoundException(sprintf('Module "%s" was not found.', $module));
         }
+        $moduleMeta = self::MODULES[$module];
+        if ($module === 'employee_maintenances') {
+
+            $session = $request->getSession();
+            $userId = $session->get('user_id');
+
+            if (!$userId) {
+                return $this->redirectToRoute('app_login');
+            }
+
+            $user = $em->getRepository(Utilisateur::class)->find($userId);
+
+            $maintenances = $em->getRepository(\App\Entity\Maintenance::class)
+                ->findBy(['technicien' => $user]);
+
+            return $this->render('elfirma/employee/maintenancesE.html.twig', [
+                'maintenances' => $maintenances,
+                'current_module' => $module,
+                'modules' => self::MODULES,
+            ]);
+        }
+        if ($module === 'utilisateurs') {
+            $session = $request->getSession();
+            if ($session->get('user_role') !== 'admin') {
+                $session->invalidate();
+                return $this->redirectToRoute('app_login');
+            }
+
+            if (!AdminTwoFactorController::hasValidAdminTwoFactor($request)) {
+                return $this->redirectToRoute('app_admin_panel_2fa');
+            }
+        }
+
+        if ($module === 'utilisateurs') {
+    $session = $request->getSession();
+    if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasValidAdminTwoFactor($request)) {
+        $session->invalidate();
+        return $this->redirectToRoute('app_login');
+    }
+}
+
+        if ($module === 'utilisateurs') {
+    $session = $request->getSession();
+    if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasValidAdminTwoFactor($request)) {
+        $session->invalidate();
+        return $this->redirectToRoute('app_login');
+    }
+}
 
         $moduleMeta = self::MODULES[$module];
 

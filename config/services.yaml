@@ -28,3 +28,22 @@ services:
     App\AI\VoiceIntentAi:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    # Configure ProductVideoGeneratorService with the project directory
+    App\Service\ProductVideoGeneratorService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    # Configure FaceEncodingStore with faceid encodings directory
+    App\Service\FaceEncodingStore:
+        arguments:
+            $encodingsDir: '%kernel.project_dir%/var/faceid/encodings'
+
+    # Configure FaceIdClient for Face ID service communication
+    App\Service\FaceIdClient:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $pythonBin: '%env(FACE_ID_PYTHON_BIN)%'
+            $host: '%env(FACE_ID_HOST)%'
+            $port: '%env(int:FACE_ID_PORT)%'
+            $threshold: '%env(float:FACE_ID_THRESHOLD)%'

@@ -7,6 +7,7 @@ use App\Repository\MaintenanceRepository;
 use App\Enum\MaintenancePriorite;
 use App\Enum\MaintenanceStatut;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Utilisateur;
 
 #[ORM\Entity(repositoryClass: MaintenanceRepository::class)]
 #[ORM\Table(name: 'maintenance')]
@@ -41,8 +42,8 @@ class Maintenance
     // ✅ DATE
     #[ORM\Column(type: 'date')]
     #[Assert\NotNull(message: "La date est obligatoire")]
-    #[Assert\LessThanOrEqual("today", message: "Date invalide")]
     private ?\DateTimeInterface $date_m = null;
+
     public function getDateM(): ?\DateTimeInterface
     {
         return $this->date_m;
@@ -132,19 +133,21 @@ class Maintenance
         return $this;
     }
 
-    // ✅ TECHNICIEN
-    #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\NotBlank(message: "Le technicien est obligatoire")]
-    #[Assert\Length(min: 3, max: 100)]
-    private ?string $technicien = null;
-    public function getTechnicien(): ?string
-    {
-        return $this->technicien;
-    }
+// TECHNICIEN
+#[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+#[ORM\JoinColumn(name: "technicien_id", referencedColumnName: "id_u", nullable: false)]
+#[Assert\NotNull(message: "Le technicien est obligatoire")]
+private ?Utilisateur $technicien = null;
 
-    public function setTechnicien(string $technicien): self
-    {
-        $this->technicien = $technicien;
-        return $this;
-    }
+public function getTechnicien(): ?Utilisateur
+{
+    return $this->technicien;
+}
+
+public function setTechnicien(?Utilisateur $technicien): self
+{
+    $this->technicien = $technicien;
+    return $this;
+}
+
 }

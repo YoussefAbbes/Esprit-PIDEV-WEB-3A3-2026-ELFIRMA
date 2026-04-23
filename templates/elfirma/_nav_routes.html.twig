@@ -57,7 +57,7 @@
             icon: "handyman",
             href: "{{ path('app_equipement_index') }}"
         },
-        {
+         {
             label: "Contract Management",
             icon: "contract",
             children: [
@@ -68,9 +68,18 @@
                 {
                     label: "Contracts",
                     href: "{{ path('contrat_page') }}"
+                },
+                {
+                    label: "Meetings",
+                    href: "{{ path('meetings_page') }}"
+                },
+                {
+                    label: "Supplier Analytics",
+                    href: "{{ path('supplier_analytics') }}"
                 }
             ]
         }
+        
     ];
 
     const englishReplacements = [

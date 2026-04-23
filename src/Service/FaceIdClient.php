@@ -45,18 +45,25 @@ class FaceIdClient
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
             curl_close($ch);
 
-            if ($httpCode !== 200) {
-                return ['ok' => false, 'error' => "HTTP {$httpCode}"];
+            if ($curlError) {
+                return ['ok' => false, 'error' => "Connection failed: {$curlError}. Make sure the Face ID service is running."];
             }
 
-            return json_decode($response, true) ?? ['ok' => false, 'error' => 'Invalid response'];
+            if ($httpCode !== 200) {
+                return ['ok' => false, 'error' => "Service returned HTTP {$httpCode}. Please ensure the Face ID service is properly configured."];
+            }
+
+            $decoded = json_decode($response, true);
+            return $decoded ?? ['ok' => false, 'error' => 'Invalid response from service'];
         } catch (\Throwable $e) {
-            return ['ok' => false, 'error' => $e->getMessage()];
+            return ['ok' => false, 'error' => "Error: " . $e->getMessage()];
         }
     }
 }

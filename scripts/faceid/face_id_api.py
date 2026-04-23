@@ -251,8 +251,13 @@ def _download_if_missing(file_path: str, url: str) -> None:
         return
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     print(f"Downloading {os.path.basename(file_path)}...")
-    urllib.request.urlretrieve(url, file_path)
-    print(f"Downloaded to {file_path}")
+    try:
+        # Download with timeout
+        urllib.request.urlretrieve(url, file_path)
+        print(f"Downloaded to {file_path}")
+    except Exception as e:
+        print(f"⚠️ Failed to download {os.path.basename(file_path)}: {e}")
+        print("Will use Haar Cascade fallback for face detection")
 
 
 def create_app(storage_dir: str, models_dir: str, threshold: float) -> Flask:

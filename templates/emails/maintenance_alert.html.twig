@@ -17,16 +17,17 @@
     <div class="container">
         <h1 class="header">⚠️ Alerte Maintenance Critique</h1>
         
-        <p>Bonjour <strong>{{ user }}</strong>,</p>
+        <p>Bonjour <strong>{{ recipientName }}</strong>,</p>
         
         <div class="alert">
             <p>Une maintenance critique a été générée automatiquement pour l'équipement suivant :</p>
         </div>
 
         <div class="info">
-            <p><span class="label">Équipement :</span> {{ equipement }}</p>
-            <p><span class="label">Description :</span> {{ description }}</p>
-            <p><span class="label">Date prévue :</span> {{ date }}</p>
+            <p><span class="label">Équipement :</span> {{ equipementName }}</p>
+            <p><span class="label">Type de maintenance :</span> {{ maintenanceType }}</p>
+            <p><span class="label">Date prévue :</span> {{ maintenanceDate }}</p>
+            <p><span class="label">Technicien assigné :</span> {{ technicianName }}</p>
             <p><span class="label">Priorité :</span> <strong style="color: #dc2626;">URGENTE</strong></p>
         </div>
 
