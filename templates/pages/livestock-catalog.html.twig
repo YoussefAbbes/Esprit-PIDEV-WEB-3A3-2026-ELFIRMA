@@ -5,214 +5,500 @@
 
 {% block stylesheets %}
   {{ parent() }}
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
+    /* ═══════════════════════════════════════════════
+       ROOT & RESET
+    ═══════════════════════════════════════════════ */
     .livestock-catalog-page {
-      --catalog-soft: #f6faf7;
-      --catalog-line: color-mix(in srgb, var(--default-color), transparent 85%);
-      --catalog-card-shadow: 0 14px 34px color-mix(in srgb, #102f20, transparent 90%);
+      --c-forest:   #0d3320;
+      --c-moss:     #1a5c37;
+      --c-fern:     #2d8653;
+      --c-sage:     #86c49a;
+      --c-mist:     #eaf4ed;
+      --c-cream:    #faf8f3;
+      --c-gold:     #c8a84b;
+      --c-gold-lt:  #f0e0a0;
+      --c-ink:      #111a14;
+      --c-smoke:    #6b7c71;
+      --shadow-sm:  0 4px 16px rgba(13,51,32,.09);
+      --shadow-md:  0 14px 40px rgba(13,51,32,.14);
+      --shadow-lg:  0 28px 72px rgba(13,51,32,.20);
+      --r-card:     20px;
+      --r-pill:     999px;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--c-cream);
+      color: var(--c-ink);
     }
 
+    .livestock-catalog-page *,
+    .livestock-catalog-page *::before,
+    .livestock-catalog-page *::after { box-sizing: border-box; }
+
+    /* ═══════════════════════════════════════════════
+       PAGE HERO TITLE
+    ═══════════════════════════════════════════════ */
     .livestock-catalog-page .page-title {
-      padding-top: 95px;
-      padding-bottom: 95px;
-    }
-
-    .catalog-intro .intro-shell {
-      background: linear-gradient(135deg, #ffffff, var(--catalog-soft));
-      border: 1px solid var(--catalog-line);
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: var(--catalog-card-shadow);
-    }
-
-    .catalog-intro .intro-visual {
-      border-radius: 12px;
+      padding-top: 110px;
+      padding-bottom: 110px;
+      position: relative;
       overflow: hidden;
-      border: 1px solid var(--catalog-line);
-      box-shadow: var(--catalog-card-shadow);
-      min-height: 100%;
     }
 
-    .catalog-intro .intro-visual img {
+    .livestock-catalog-page .page-title::after {
+      content: '🐄 🐑 🐔 🐖';
+      position: absolute;
+      right: 8%;
+      bottom: -12px;
+      font-size: 5rem;
+      opacity: .12;
+      letter-spacing: .4em;
+      pointer-events: none;
+      animation: float-icons 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes float-icons {
+      from { transform: translateY(0) rotate(-2deg); }
+      to   { transform: translateY(-18px) rotate(2deg); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       MARQUEE TICKER
+    ═══════════════════════════════════════════════ */
+    .catalog-ticker {
+      background: var(--c-forest);
+      color: var(--c-gold-lt);
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 10px 0;
+    }
+
+    .catalog-ticker-track {
+      display: inline-block;
+      animation: ticker 28s linear infinite;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .catalog-ticker-track span { margin: 0 2.4rem; }
+    .catalog-ticker-track .dot { color: var(--c-gold); opacity: .7; }
+
+    /* ═══════════════════════════════════════════════
+       INTRO SECTION
+    ═══════════════════════════════════════════════ */
+    .catalog-intro-section {
+      padding: 80px 0 60px;
+      background: var(--c-cream);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .catalog-intro-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 85% 40%, rgba(45,134,83,.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 80% at 10% 70%, rgba(200,168,75,.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* floating leaf ornaments */
+    .leaf-ornament {
+      position: absolute;
+      font-size: 2.4rem;
+      opacity: .07;
+      pointer-events: none;
+      animation: leaf-drift 8s ease-in-out infinite alternate;
+    }
+    .leaf-ornament:nth-child(1) { top: 8%;  left: 3%;  animation-delay: 0s;   }
+    .leaf-ornament:nth-child(2) { top: 60%; left: 6%;  animation-delay: 1.5s; font-size: 1.8rem; }
+    .leaf-ornament:nth-child(3) { top: 20%; right: 4%; animation-delay: 3s;   }
+    .leaf-ornament:nth-child(4) { top: 75%; right: 6%; animation-delay: 2s;   font-size: 1.6rem; }
+
+    @keyframes leaf-drift {
+      from { transform: translateY(0) rotate(-5deg) scale(1);   }
+      to   { transform: translateY(-20px) rotate(8deg) scale(1.05); }
+    }
+
+    .intro-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--c-forest) 0%, var(--c-moss) 100%);
+      color: var(--c-gold-lt);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 7px 18px;
+      border-radius: var(--r-pill);
+      margin-bottom: 20px;
+    }
+
+    .intro-headline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 4.5vw, 4rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -.02em;
+      color: var(--c-forest);
+      margin-bottom: 18px;
+    }
+
+    .intro-headline em {
+      font-style: italic;
+      color: var(--c-fern);
+    }
+
+    .intro-headline em {
+      font-style: italic;
+      color: var(--c-fern);
+    }
+
+    .intro-body {
+      color: var(--c-smoke);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 420px;
+      margin-bottom: 28px;
+    }
+
+    /* ── Feature pills ── */
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .feature-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1.5px solid rgba(45,134,83,.18);
+      border-radius: var(--r-pill);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-moss);
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .feature-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-pill .pill-icon { font-size: 1rem; }
+
+    /* ── KPI band ── */
+    .kpi-band {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(160deg, #ffffff 0%, var(--c-mist) 100%);
+      border: 1px solid rgba(45,134,83,.15);
+      border-radius: var(--r-card);
+      padding: 20px 18px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+    .kpi-card::after {
+      content: attr(data-icon);
+      position: absolute;
+      right: 10px; bottom: 6px;
+      font-size: 2.4rem;
+      opacity: .12;
+      pointer-events: none;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--c-smoke);
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--c-forest);
+      line-height: 1;
+    }
+
+    /* ── Intro visual ── */
+    .intro-visual-wrap {
+      border-radius: 28px;
+      overflow: hidden;
+      border: 2px solid rgba(45,134,83,.15);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+
+    .intro-visual-wrap img {
       width: 100%;
       height: 100%;
-      min-height: 320px;
+      min-height: 480px;
       object-fit: cover;
+      object-position: center;
       display: block;
+      transition: transform 6s ease;
     }
 
-    .catalog-intro .content-title {
-      color: var(--accent-color);
-    }
+    .intro-visual-wrap:hover img { transform: scale(1.04); }
 
-    .catalog-intro .kpi-band {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 26px;
-    }
-
-    .catalog-intro .kpi-card {
-      border: 1px solid var(--catalog-line);
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 12px 14px;
-    }
-
-    .catalog-intro .kpi-card span {
-      display: block;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-size: 12px;
-      color: color-mix(in srgb, var(--default-color), transparent 42%);
-      font-weight: 700;
-    }
-
-    .catalog-intro .kpi-card strong {
-      display: block;
-      font-family: var(--heading-font);
-      font-size: 34px;
-      line-height: 1;
-      margin-top: 6px;
-      color: var(--heading-color);
-    }
-
-    .catalog-workbench {
-      background: #fbfdfb;
-    }
-
-    .catalog-workbench .section-title {
-      padding-bottom: 34px;
-    }
-
-    .catalog-workbench .section-title h2 {
-      color: var(--accent-color);
-      font-size: 20px;
-      letter-spacing: 0.04em;
-    }
-
-    .catalog-workbench .content {
-      padding: 0;
-    }
-
-    .catalog-sidebar,
-    .catalog-detail {
-      background: #ffffff;
-      border: 1px solid var(--catalog-line);
+    .intro-visual-badge {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(13,51,32,.85);
+      backdrop-filter: blur(8px);
+      color: #fff;
       border-radius: 14px;
-      padding: 20px;
-      box-shadow: var(--catalog-card-shadow);
-      height: 100%;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(255,255,255,.12);
     }
 
-    .catalog-sidebar h3,
-    .catalog-detail h3 {
-      margin: 0;
-      font-size: 31px;
-      color: var(--heading-color);
+    .intro-visual-badge .badge-emoji { font-size: 1.5rem; }
+
+    /* ═══════════════════════════════════════════════
+       ANIMAL SHOWCASE STRIP
+    ═══════════════════════════════════════════════ */
+    .animal-strip {
+      background: linear-gradient(135deg, var(--c-forest) 0%, var(--c-moss) 100%);
+      padding: 36px 0;
     }
 
-    .catalog-overline {
-      margin: 0 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 12px;
-      color: color-mix(in srgb, var(--default-color), transparent 45%);
+    .animal-strip-inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .animal-card {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding: 18px 22px;
+      text-align: center;
+      min-width: 110px;
+      transition: transform .25s ease, background .25s ease;
+      animation: pop-in .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    .animal-card:hover {
+      background: rgba(255,255,255,.16);
+      transform: translateY(-6px) scale(1.04);
+    }
+
+    @keyframes pop-in {
+      from { opacity: 0; transform: scale(.7) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .animal-card:nth-child(1) { animation-delay: .05s; }
+    .animal-card:nth-child(2) { animation-delay: .12s; }
+    .animal-card:nth-child(3) { animation-delay: .19s; }
+    .animal-card:nth-child(4) { animation-delay: .26s; }
+    .animal-card:nth-child(5) { animation-delay: .33s; }
+    .animal-card:nth-child(6) { animation-delay: .40s; }
+
+    .animal-card-emoji { font-size: 2.6rem; display: block; margin-bottom: 6px; }
+    .animal-card-label {
+      font-size: 11px;
       font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--c-sage);
+    }
+
+    /* ═══════════════════════════════════════════════
+       WORKBENCH SECTION
+    ═══════════════════════════════════════════════ */
+    .catalog-workbench {
+      padding: 64px 0 80px;
+      background: var(--c-cream);
+    }
+
+    .workbench-eyebrow {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .workbench-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 700;
+      color: var(--c-forest);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .workbench-sub {
+      text-align: center;
+      color: var(--c-smoke);
+      font-size: 15px;
+      margin-bottom: 44px;
+    }
+
+    /* ── Sidebar ── */
+    .catalog-sidebar {
+      background: #ffffff;
+      border: 1.5px solid rgba(45,134,83,.13);
+      border-radius: var(--r-card);
+      padding: 28px 24px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 24px;
+    }
+
+    .sidebar-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--c-forest);
+      margin: 0 0 20px;
     }
 
     .catalog-input-label {
       display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
-      color: var(--heading-color);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--c-smoke);
+      margin-bottom: 6px;
     }
 
-    .catalog-input,
-    .catalog-select {
+    .catalog-input, .catalog-select {
       width: 100%;
-      border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%);
-      border-radius: 9px;
-      padding: 10px 12px;
-      font-size: 15px;
-      color: var(--default-color);
-      background: #ffffff;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      border: 1.5px solid rgba(13,51,32,.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--c-ink);
+      background: var(--c-mist);
+      transition: border-color .2s ease, box-shadow .2s ease;
     }
 
-    .catalog-input:focus,
-    .catalog-select:focus {
+    .catalog-input:focus, .catalog-select:focus {
       outline: none;
-      border-color: color-mix(in srgb, var(--accent-color), transparent 35%);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color), transparent 85%);
+      border-color: var(--c-fern);
+      box-shadow: 0 0 0 3px rgba(45,134,83,.15);
+      background: #fff;
     }
 
     .catalog-error {
-      margin-top: 8px;
-      margin-bottom: 0;
-      color: #bd2a2a;
-      font-size: 13px;
+      margin-top: 6px;
+      color: #c0392b;
+      font-size: 12px;
       font-weight: 700;
       display: none;
     }
-
-    .catalog-error.is-visible {
-      display: block;
-    }
+    .catalog-error.is-visible { display: block; }
 
     .catalog-list-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-top: 18px;
-      margin-bottom: 10px;
+      margin: 20px 0 10px;
     }
 
     .catalog-list-head h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--c-forest);
       margin: 0;
-      font-size: 20px;
-      color: var(--heading-color);
     }
 
     .catalog-list-head span {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
-      color: color-mix(in srgb, var(--default-color), transparent 42%);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      color: var(--c-smoke);
+      background: var(--c-mist);
+      padding: 3px 10px;
+      border-radius: var(--r-pill);
     }
 
     .catalog-list {
       display: grid;
-      gap: 10px;
+      gap: 8px;
       max-height: 520px;
-      overflow: auto;
-      padding-right: 4px;
+      overflow-y: auto;
+      padding-right: 2px;
     }
 
+    /* ── Entry card ── */
     .catalog-entry {
       width: 100%;
-      border: 1px solid var(--catalog-line);
-      border-radius: 10px;
-      background: #ffffff;
+      background: var(--c-cream);
+      border: 1.5px solid rgba(13,51,32,.09);
+      border-radius: 12px;
+      padding: 12px 14px;
       text-align: left;
-      padding: 12px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+      transition: all .22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .catalog-entry::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--c-fern);
+      transform: scaleY(0);
+      border-radius: 0 2px 2px 0;
+      transition: transform .22s cubic-bezier(.34,1.56,.64,1);
     }
 
     .catalog-entry:hover {
-      transform: translateY(-2px);
-      border-color: color-mix(in srgb, var(--accent-color), transparent 30%);
-      box-shadow: 0 10px 20px color-mix(in srgb, #102f20, transparent 88%);
+      border-color: rgba(45,134,83,.35);
+      background: #fff;
+      transform: translateX(4px);
+      box-shadow: var(--shadow-sm);
     }
 
+    .catalog-entry:hover::before { transform: scaleY(1); }
+
     .catalog-entry.is-active {
-      border-color: color-mix(in srgb, var(--accent-color), transparent 20%);
-      box-shadow: inset 3px 0 0 var(--accent-color);
-      background: color-mix(in srgb, var(--accent-color), #ffffff 95%);
+      border-color: var(--c-fern);
+      background: #fff;
+      transform: translateX(6px);
+      box-shadow: var(--shadow-md);
     }
+    .catalog-entry.is-active::before { transform: scaleY(1); }
 
     .entry-top {
       display: flex;
@@ -228,175 +514,471 @@
       min-width: 0;
     }
 
-    .entry-number {
-      font-size: 13px;
-      font-weight: 700;
-      color: color-mix(in srgb, var(--default-color), transparent 55%);
-      letter-spacing: 0.05em;
-      flex-shrink: 0;
-    }
+    .entry-emoji { font-size: 1.4rem; flex-shrink: 0; }
 
     .entry-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
-      color: var(--heading-color);
+      color: var(--c-ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .entry-sub {
-      display: block;
-      margin-top: 6px;
-      color: color-mix(in srgb, var(--default-color), transparent 30%);
-      font-size: 14px;
-    }
-
-    .entry-chip,
-    .catalog-chip {
+    .entry-chip {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 75%);
-      border-radius: 999px;
-      padding: 5px 11px;
-      font-size: 12px;
+      gap: 5px;
+      background: var(--c-mist);
+      border: 1px solid rgba(45,134,83,.2);
+      border-radius: var(--r-pill);
+      padding: 3px 10px;
+      font-size: 11px;
       font-weight: 700;
-      color: color-mix(in srgb, var(--accent-color), #000000 22%);
-      background: color-mix(in srgb, var(--accent-color), #ffffff 94%);
+      color: var(--c-moss);
       white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .entry-sub {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--c-smoke);
     }
 
     .catalog-empty {
-      margin: 12px 0 0;
-      border: 1px dashed var(--catalog-line);
-      border-radius: 10px;
-      padding: 12px;
-      color: color-mix(in srgb, var(--default-color), transparent 40%);
-      font-weight: 600;
       display: none;
+      padding: 16px;
+      border: 1.5px dashed rgba(13,51,32,.15);
+      border-radius: 10px;
+      text-align: center;
+      color: var(--c-smoke);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .catalog-empty.is-visible { display: block; }
+
+    /* ── Detail panel ── */
+    .catalog-detail {
+      background: #ffffff;
+      border: 1.5px solid rgba(45,134,83,.13);
+      border-radius: var(--r-card);
+      padding: 32px 30px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
     }
 
-    .catalog-empty.is-visible {
-      display: block;
+    .catalog-detail::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45,134,83,.07), transparent 70%);
+      pointer-events: none;
     }
 
     .detail-header {
       display: flex;
+      align-items: flex-start;
       justify-content: space-between;
-      align-items: start;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .detail-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .detail-animal-icon {
+      width: 4.5rem;
+      height: 4.5rem;
+      border-radius: 18px;
+      background: var(--c-mist);
+      border: 2px solid rgba(45,134,83,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      flex-shrink: 0;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    .catalog-detail:hover .detail-animal-icon { transform: scale(1.1) rotate(-4deg); }
+
+    .detail-overline {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--c-smoke);
+      margin-bottom: 4px;
+    }
+
+    .detail-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--c-forest);
+      margin: 0 0 4px;
+      line-height: 1.1;
     }
 
     .detail-state {
-      margin-top: 6px;
-      margin-bottom: 0;
-      color: color-mix(in srgb, var(--default-color), transparent 25%);
-      font-size: 16px;
+      font-size: 14px;
+      color: var(--c-smoke);
+      margin: 0;
     }
 
+    .detail-production-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--c-forest) 0%, var(--c-moss) 100%);
+      color: var(--c-gold-lt);
+      border-radius: var(--r-pill);
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 6px 20px rgba(13,51,32,.25);
+    }
+
+    .detail-production-chip .prod-emoji { font-size: 1.3rem; }
+
+    /* ── KPI row ── */
     .detail-kpis {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
     }
 
     .detail-kpi {
-      border: 1px solid var(--catalog-line);
-      border-radius: 10px;
-      padding: 12px;
-      background: #ffffff;
+      background: var(--c-mist);
+      border: 1px solid rgba(45,134,83,.12);
+      border-radius: 14px;
+      padding: 16px 14px;
+      text-align: center;
+      transition: transform .2s ease, box-shadow .2s ease;
     }
 
-    .detail-kpi p {
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-size: 12px;
-      color: color-mix(in srgb, var(--default-color), transparent 42%);
+    .detail-kpi:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+
+    .detail-kpi-icon { font-size: 1.6rem; margin-bottom: 6px; }
+
+    .detail-kpi-label {
+      font-size: 11px;
       font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--c-smoke);
+      margin-bottom: 4px;
     }
 
-    .detail-kpi strong {
-      display: block;
-      margin-top: 6px;
-      font-size: 32px;
+    .detail-kpi-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--c-forest);
       line-height: 1;
-      color: var(--heading-color);
-      font-family: var(--heading-font);
     }
 
-    .season-grid .service-item {
-      border: 1px solid var(--catalog-line);
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: none;
-      background: #ffffff;
+    /* ── Occupancy bar ── */
+    .occupancy-track {
+      height: 8px;
+      background: rgba(13,51,32,.1);
+      border-radius: var(--r-pill);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .occupancy-fill {
       height: 100%;
+      border-radius: var(--r-pill);
+      background: linear-gradient(90deg, var(--c-fern) 0%, var(--c-sage) 100%);
+      transition: width .8s cubic-bezier(.34,1.2,.64,1);
     }
 
-    .season-grid .service-item .number {
-      right: 14px;
-      top: 14px;
-      color: color-mix(in srgb, var(--default-color), transparent 78%);
-      font-weight: 600;
+    /* ── Production strip ── */
+    .production-strip-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--c-smoke);
+      margin: 0 0 12px;
     }
 
-    .season-grid .service-item .service-item-content .service-heading {
-      font-size: 24px;
-      margin-bottom: 8px;
-      color: var(--heading-color);
+    .production-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
     }
 
-    .season-grid .service-item .service-item-content p {
-      margin-bottom: 0;
-      color: color-mix(in srgb, var(--default-color), transparent 20%);
+    .prod-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #fff;
+      border: 1.5px solid rgba(45,134,83,.18);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--c-moss);
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s ease;
+    }
+
+    .prod-badge:hover { transform: scale(1.05); }
+    .prod-badge .prod-emoji { font-size: 1.25rem; }
+
+    /* ── Season grid ── */
+    .season-strip-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .season-strip-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--c-smoke);
+    }
+
+    .season-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .season-card {
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .season-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+    .season-card.autumn { background: linear-gradient(135deg, #fff8f0 0%, #fdecd5 100%); border: 1.5px solid rgba(194,100,14,.2); }
+    .season-card.winter { background: linear-gradient(135deg, #f0f7ff 0%, #daeeff 100%); border: 1.5px solid rgba(3,105,161,.2); }
+    .season-card.spring { background: linear-gradient(135deg, #f0fdf5 0%, #d4f5e2 100%); border: 1.5px solid rgba(21,128,61,.22); }
+    .season-card.summer { background: linear-gradient(135deg, #fffcf0 0%, #fef3c5 100%); border: 1.5px solid rgba(180,83,9,.2); }
+
+    .season-card-bg {
+      position: absolute;
+      right: 12px; bottom: 8px;
+      font-size: 3.5rem;
+      opacity: .12;
+      pointer-events: none;
+      transform: rotate(-10deg);
+    }
+
+    .season-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 4px 12px;
+      border-radius: var(--r-pill);
+      margin-bottom: 10px;
+    }
+
+    .season-tag.autumn { background: #fff0df; color: #9a3412; }
+    .season-tag.winter { background: #dbeafe; color: #0369a1; }
+    .season-tag.spring { background: #dcfce7; color: #166534; }
+    .season-tag.summer { background: #fef3c7; color: #b45309; }
+
+    .season-card h5 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .season-card.autumn h5 { color: #7c2d12; }
+    .season-card.winter h5 { color: #0c4a6e; }
+    .season-card.spring h5 { color: #14532d; }
+    .season-card.summer h5 { color: #78350f; }
+
+    .season-card p {
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .season-card.autumn p { color: #9a3412; }
+    .season-card.winter p { color: #0369a1; }
+    .season-card.spring p { color: #166534; }
+    .season-card.summer p { color: #b45309; }
+
+    .catalog-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 26px;
+      flex-wrap: wrap;
+    }
+
+    .catalog-toolbar .tool-copy {
+      max-width: 42rem;
+      color: var(--c-smoke);
       font-size: 15px;
-      line-height: 1.5;
+      line-height: 1.65;
+      margin: 0;
     }
 
+    .catalog-toolbar .tool-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 3.2vw, 3rem);
+      color: var(--c-forest);
+      margin: 0;
+      line-height: 1.05;
+    }
+
+    .catalog-toolbar .tool-title em {
+      color: var(--c-fern);
+      font-style: italic;
+    }
+
+    .season-strip-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       PRODUCTION SHOWCASE
+    ═══════════════════════════════════════════════ */
+    .production-showcase {
+      background: linear-gradient(180deg, var(--c-forest) 0%, #0a2819 100%);
+      padding: 64px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .production-showcase::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 70% at 20% 40%, rgba(45,134,83,.18) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 60% at 80% 70%, rgba(200,168,75,.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .showcase-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 3.2vw, 2.8rem);
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .showcase-sub {
+      text-align: center;
+      color: var(--c-sage);
+      font-size: 14px;
+      margin-bottom: 44px;
+    }
+
+    .prod-showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+
+    .prod-showcase-card {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 18px;
+      padding: 24px 18px;
+      text-align: center;
+      transition: all .25s ease;
+      animation: pop-in .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    .prod-showcase-card:hover {
+      background: rgba(255,255,255,.14);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0,0,0,.3);
+    }
+
+    .prod-showcase-emoji { font-size: 2.8rem; display: block; margin-bottom: 10px; }
+    .prod-showcase-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .prod-showcase-desc { font-size: 11px; color: var(--c-sage); }
+
+    /* delay cascade */
+    .prod-showcase-card:nth-child(1) { animation-delay: .05s; }
+    .prod-showcase-card:nth-child(2) { animation-delay: .10s; }
+    .prod-showcase-card:nth-child(3) { animation-delay: .15s; }
+    .prod-showcase-card:nth-child(4) { animation-delay: .20s; }
+    .prod-showcase-card:nth-child(5) { animation-delay: .25s; }
+    .prod-showcase-card:nth-child(6) { animation-delay: .30s; }
+    .prod-showcase-card:nth-child(7) { animation-delay: .35s; }
+    .prod-showcase-card:nth-child(8) { animation-delay: .40s; }
+    .prod-showcase-card:nth-child(9) { animation-delay: .45s; }
+
+    /* ═══════════════════════════════════════════════
+       AOS-LIKE REVEAL
+    ═══════════════════════════════════════════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
     @media (max-width: 991px) {
-      .catalog-intro .intro-shell {
-        padding: 20px;
-      }
-
-      .catalog-intro .kpi-band,
-      .detail-kpis {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .detail-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      .kpi-band,
+      .detail-kpis { grid-template-columns: repeat(2, 1fr); }
+      .detail-header { flex-direction: column; }
+      .season-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 575px) {
-      .catalog-intro .kpi-band,
-      .detail-kpis {
-        grid-template-columns: 1fr;
-      }
-
+      .kpi-band,
+      .detail-kpis { grid-template-columns: 1fr; }
       .catalog-sidebar,
-      .catalog-detail {
-        padding: 16px;
-      }
-
-      .catalog-sidebar h3,
-      .catalog-detail h3 {
-        font-size: 27px;
-      }
+      .catalog-detail { padding: 20px 16px; }
     }
   </style>
 {% endblock %}
 
 {% block body %}
+
+  {# ── PAGE HERO ── #}
   <div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
     <div class="container position-relative">
       <h1>Livestock Catalog</h1>
-      <p>A premium client view inspired by the Home and About visual identity of EL FIRMA.</p>
+      <p>Premium intelligence · Capacity · Production · Seasonal strategy</p>
       <nav class="breadcrumbs">
         <ol>
           <li><a href="{{ path('app_home') }}">Home</a></li>
@@ -406,390 +988,530 @@
     </div>
   </div>
 
-  <section class="about-3 section catalog-intro">
+  {# ── TICKER ── #}
+  <div class="catalog-ticker">
+    <div class="catalog-ticker-track">
+      <span><i class="fa-solid fa-piggy-bank"></i> Bovin Farm</span><span class="dot">✦</span>
+      <span>🐑 Sheep Farm</span><span class="dot">✦</span>
+      <span>🐔 Poultry Farm</span><span class="dot">✦</span>
+      <span>🥛 Milk Production</span><span class="dot">✦</span>
+      <span>🥚 Egg Production</span><span class="dot">✦</span>
+      <span>🥩 Meat Production</span><span class="dot">✦</span>
+      <span>🧶 Wool Production</span><span class="dot">✦</span>
+      <span>🍯 Honey Production</span><span class="dot">✦</span>
+      <span>EL FIRMA</span><span class="dot">✦</span>
+      <span><i class="fa-solid fa-piggy-bank"></i> Bovin Farm</span><span class="dot">✦</span>
+      <span>🐑 Sheep Farm</span><span class="dot">✦</span>
+      <span>🐔 Poultry Farm</span><span class="dot">✦</span>
+      <span>🥛 Milk Production</span><span class="dot">✦</span>
+      <span>🥚 Egg Production</span><span class="dot">✦</span>
+      <span>🥩 Meat Production</span><span class="dot">✦</span>
+      <span>🧶 Wool Production</span><span class="dot">✦</span>
+      <span>🍯 Honey Production</span><span class="dot">✦</span>
+      <span>EL FIRMA</span><span class="dot">✦</span>
+    </div>
+  </div>
+
+  {# ── INTRO SECTION ── #}
+  <section class="catalog-intro-section">
+    <span class="leaf-ornament">🌿</span>
+    <span class="leaf-ornament">🍃</span>
+    <span class="leaf-ornament">🌱</span>
+    <span class="leaf-ornament">🥚</span>
+
     <div class="container">
-      <div class="intro-shell">
-        <div class="row gy-4 justify-content-between align-items-center">
-          <div class="col-lg-6 order-lg-2" data-aos="zoom-out">
-            <div class="intro-visual">
-              <img src="{{ asset('assets/img/img_sq_1.jpg') }}" alt="Livestock operations overview" class="img-fluid">
-            </div>
+      <div class="row gy-5 align-items-center">
+        <div class="col-lg-6 reveal" data-aos="fade-up">
+          <div class="intro-eyebrow">
+            <span>🌿</span> EL FIRMA · Premium Livestock Intelligence
           </div>
-          <div class="col-lg-5 order-lg-1" data-aos="fade-up" data-aos-delay="120">
-            <h2 class="content-title mb-4">Curated livestock intelligence for clients</h2>
-            <p class="mb-4">
-              This catalog transforms operational records into a polished narrative: capacity, occupancy, productivity, and seasonal strategy in one coherent experience.
-            </p>
-            <ul class="list-unstyled list-check">
-              <li>Quick filtering by type and state</li>
-              <li>Live occupancy and production insights</li>
-              <li>Season-by-season strategic messaging</li>
-            </ul>
-
-            <div class="kpi-band" data-aos="fade-up" data-aos-delay="180">
-              <article class="kpi-card">
-                <span>Total livestock</span>
-                <strong>{{ catalog_summary.total_livestock }}</strong>
-              </article>
-              <article class="kpi-card">
-                <span>Total capacity</span>
-                <strong>{{ catalog_summary.total_capacity }}</strong>
-              </article>
-              <article class="kpi-card">
-                <span>Total animals</span>
-                <strong>{{ catalog_summary.total_animals }}</strong>
-              </article>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section catalog-workbench">
-    <div class="container section-title" data-aos="fade-up">
-      <h2>Livestock Explorer</h2>
-      <p>Structured like Home and About, built for modern client navigation</p>
-    </div>
-
-    <div class="content">
-      <div class="container">
-        <div class="row g-4 align-items-start">
-          <div class="col-lg-4" data-aos="fade-right" data-aos-delay="90">
-            <aside class="catalog-sidebar">
-              <p class="catalog-overline">Search and filters</p>
-              <h3>Catalog list</h3>
-
-              <div class="mt-3">
-                <label for="livestock-search" class="catalog-input-label">Search</label>
-                <input id="livestock-search" class="catalog-input" type="text" maxlength="60" pattern="[A-Za-z0-9À-ÖØ-öø-ÿ\s'\-]+" title="Use letters, numbers, spaces, apostrophes, or hyphens only" placeholder="Search livestock...">
-                <p id="livestock-search-error" class="catalog-error">Search can contain letters, numbers, spaces, apostrophes, and hyphens only.</p>
-              </div>
-
-              <div class="row g-2 mt-2">
-                <div class="col-12">
-                  <label for="livestock-type" class="catalog-input-label">Type</label>
-                  <select id="livestock-type" class="catalog-select">
-                    <option value="">All type</option>
-                  </select>
-                </div>
-                <div class="col-12">
-                  <label for="livestock-state" class="catalog-input-label">State</label>
-                  <select id="livestock-state" class="catalog-select">
-                    <option value="">All state</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="catalog-list-head">
-                <h4>Livestock</h4>
-                <span id="livestock-count">0 items</span>
-              </div>
-
-              <div id="livestock-list" class="catalog-list" aria-live="polite"></div>
-              <p id="livestock-empty" class="catalog-empty">No livestock matches the current filters.</p>
-            </aside>
-          </div>
-
-          <div class="col-lg-8" data-aos="fade-left" data-aos-delay="130">
-            <article class="catalog-detail">
-              <div class="detail-header">
-                <div>
-                  <p class="catalog-overline">Selected livestock</p>
-                  <h3 id="detail-title">Select a livestock</h3>
-                  <p id="detail-state" class="detail-state">State: --</p>
-                </div>
-                <span id="detail-production" class="catalog-chip"><i class="bi bi-flower1"></i> Production: --</span>
-              </div>
-
-              <div class="detail-kpis">
-                <article class="detail-kpi">
-                  <p>Capacity</p>
-                  <strong id="detail-capacity">--</strong>
-                </article>
-                <article class="detail-kpi">
-                  <p>Animals</p>
-                  <strong id="detail-animals">--</strong>
-                </article>
-                <article class="detail-kpi">
-                  <p>Occupancy</p>
-                  <strong id="detail-occupancy">--</strong>
-                </article>
-              </div>
-
-              <div class="row g-3 season-grid">
-                <div class="col-md-6">
-                  <article class="service-item">
-                    <span class="number">01</span>
-                    <div class="service-item-content">
-                      <h4 class="service-heading">Autumn plan</h4>
-                      <p id="season-autumn">Select a livestock to display strategic autumn planning.</p>
-                    </div>
-                  </article>
-                </div>
-                <div class="col-md-6">
-                  <article class="service-item">
-                    <span class="number">02</span>
-                    <div class="service-item-content">
-                      <h4 class="service-heading">Winter stability</h4>
-                      <p id="season-winter">Select a livestock to display winter resilience strategy.</p>
-                    </div>
-                  </article>
-                </div>
-                <div class="col-md-6">
-                  <article class="service-item">
-                    <span class="number">03</span>
-                    <div class="service-item-content">
-                      <h4 class="service-heading">Spring growth</h4>
-                      <p id="season-spring">Select a livestock to display spring growth strategy.</p>
-                    </div>
-                  </article>
-                </div>
-                <div class="col-md-6">
-                  <article class="service-item">
-                    <span class="number">04</span>
-                    <div class="service-item-content">
-                      <h4 class="service-heading">Summer output</h4>
-                      <p id="season-summer">Select a livestock to display summer productivity strategy.</p>
-                    </div>
-                  </article>
-                </div>
-              </div>
+          <h2 class="intro-headline">
+            Curated livestock<br>
+            <em>intelligence</em> for clients
+          </h2>
+          <p class="intro-body">
+            This catalog transforms operational records into a polished narrative — capacity, occupancy, productivity, and seasonal strategy in one coherent experience.
+          </p>
+          <div class="kpi-band">
+            <article class="kpi-card" data-icon="🏠">
+              <div class="kpi-label">Total livestock</div>
+              <div class="kpi-value">{{ catalog_summary.total_livestock }}</div>
+            </article>
+            <article class="kpi-card" data-icon="📦">
+              <div class="kpi-label">Total capacity</div>
+              <div class="kpi-value">{{ catalog_summary.total_capacity }}</div>
+            </article>
+            <article class="kpi-card" data-icon="🐾">
+              <div class="kpi-label">Total animals</div>
+              <div class="kpi-value">{{ catalog_summary.total_animals }}</div>
             </article>
           </div>
         </div>
+
+        <div class="col-lg-6 reveal reveal-delay-2" data-aos="zoom-out">
+          <div class="intro-visual-wrap">
+            <img src="{{ asset('assets/img/livestock-catalog-hero.jpg') }}" alt="Livestock farm overview">
+            <div class="intro-visual-badge">
+              <span class="badge-emoji">🌿</span>
+              <div>
+                <div style="font-size:12px;opacity:.7;font-weight:600;">EL FIRMA Certified</div>
+                <div style="font-size:14px;font-weight:700;">Premium Farm Network</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
+
+  {# ── PRODUCTION SHOWCASE ── #}
+  <section class="production-showcase">
+    <div class="container">
+      <h2 class="showcase-title reveal">All Farm Productions</h2>
+      <p class="showcase-sub reveal reveal-delay-1">Every product our livestock network delivers — from pasture to table</p>
+      <div class="prod-showcase-grid">
+        <div class="prod-showcase-card">
+          <span class="prod-showcase-emoji">🥛</span>
+          <div class="prod-showcase-label">Milk</div>
+          <div class="prod-showcase-desc">Dairy · Cattle</div>
+        </div>
+        <div class="prod-showcase-card">
+          <span class="prod-showcase-emoji">🥚</span>
+          <div class="prod-showcase-label">Eggs</div>
+          <div class="prod-showcase-desc">Poultry · Fresh</div>
+        </div>
+        <div class="prod-showcase-card">
+          <span class="prod-showcase-emoji">🥩</span>
+          <div class="prod-showcase-label">Meat</div>
+          <div class="prod-showcase-desc">Beef · Lamb · Pork</div>
+        </div>
+        <div class="prod-showcase-card">
+          <span class="prod-showcase-emoji">🧶</span>
+          <div class="prod-showcase-label">Wool</div>
+          <div class="prod-showcase-desc">Sheep · Textile</div>
+        </div>
+        <div class="prod-showcase-card">
+          <span class="prod-showcase-emoji">🍯</span>
+          <div class="prod-showcase-label">Honey</div>
+          <div class="prod-showcase-desc">Apiary · Natural</div>
+        </div>
+        <div class="prod-showcase-card">
+          <span class="prod-showcase-emoji">🧀</span>
+          <div class="prod-showcase-label">Cheese</div>
+          <div class="prod-showcase-desc">Goat · Cow · Sheep</div>
+        </div>
+        <div class="prod-showcase-card">
+          <span class="prod-showcase-emoji">🪶</span>
+          <div class="prod-showcase-label">Feathers</div>
+          <div class="prod-showcase-desc">Duck · Goose</div>
+        </div>
+  
+    </div>
+  </section>
+
+  {# ── WORKBENCH ── #}
+  <section class="catalog-workbench">
+    <div class="container">
+      <div class="workbench-eyebrow">
+        <span class="intro-eyebrow">🔎 Livestock Explorer</span>
+      </div>
+      <h2 class="workbench-title">Browse the Catalog</h2>
+      <p class="workbench-sub">Filter, select, and explore each livestock's details and seasonal roadmap</p>
+
+      <div class="row g-4 align-items-start">
+        {# ── SIDEBAR ── #}
+        <div class="col-lg-4 reveal" data-aos="fade-right">
+          <aside class="catalog-sidebar">
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--c-smoke);margin-bottom:6px;">Search & Filter</p>
+            <h3 class="sidebar-title">Catalog list</h3>
+
+            <div class="mb-3">
+              <label for="livestock-search" class="catalog-input-label">Search</label>
+              <input id="livestock-search" class="catalog-input" type="text" maxlength="60"
+                     placeholder="Search by type, state, production…">
+              <p id="livestock-search-error" class="catalog-error">Letters, numbers, spaces and hyphens only.</p>
+            </div>
+
+            <div class="row g-2 mb-2">
+              <div class="col-12">
+                <label for="livestock-type" class="catalog-input-label">Type</label>
+                <select id="livestock-type" class="catalog-select">
+                  <option value="">All types</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label for="livestock-state" class="catalog-input-label">State</label>
+                <select id="livestock-state" class="catalog-select">
+                  <option value="">All states</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="catalog-list-head">
+              <h4>Livestock</h4>
+              <span id="livestock-count">0 items</span>
+            </div>
+
+            <div id="livestock-list" class="catalog-list" aria-live="polite"></div>
+            <p id="livestock-empty" class="catalog-empty">No livestock matches the current filters.</p>
+          </aside>
+        </div>
+
+        {# ── DETAIL PANEL ── #}
+        <div class="col-lg-8 reveal reveal-delay-1" data-aos="fade-left">
+          <article class="catalog-detail">
+
+            <div class="detail-header">
+              <div class="detail-header-left">
+                <div id="detail-animal-icon" class="detail-animal-icon">🥚</div>
+                <div>
+                  <div class="detail-overline">Selected livestock</div>
+                  <h3 id="detail-title" class="detail-title">Select a livestock</h3>
+                  <p id="detail-state" class="detail-state">State: —</p>
+                </div>
+              </div>
+              <div id="detail-production" class="detail-production-chip">
+                <span class="prod-emoji">🥚</span>
+                <span>Production: —</span>
+              </div>
+            </div>
+
+            {# KPIs #}
+            <div class="detail-kpis">
+              <div class="detail-kpi">
+                <div class="detail-kpi-icon">📦</div>
+                <div class="detail-kpi-label">Capacity</div>
+                <div id="detail-capacity" class="detail-kpi-value">—</div>
+              </div>
+              <div class="detail-kpi">
+                <div class="detail-kpi-icon">🐾</div>
+                <div class="detail-kpi-label">Animals</div>
+                <div id="detail-animals" class="detail-kpi-value">—</div>
+              </div>
+              <div class="detail-kpi">
+                <div class="detail-kpi-icon">📈</div>
+                <div class="detail-kpi-label">Occupancy</div>
+                <div id="detail-occupancy" class="detail-kpi-value">—</div>
+              </div>
+            </div>
+
+            {# Occupancy bar #}
+            <div class="occupancy-track mb-4">
+              <div id="detail-occ-bar" class="occupancy-fill" style="width:0%"></div>
+            </div>
+
+            {# Production badges #}
+            <p class="production-strip-title">Production breakdown</p>
+            <div class="production-strip" id="detail-production-strip">
+              <div class="prod-badge"><span class="prod-emoji">🥚</span> Select a livestock</div>
+            </div>
+
+            {# Seasons #}
+            <div class="season-strip-head">
+              <p class="season-strip-title">Seasonal roadmap</p>
+            </div>
+
+            <div class="season-grid">
+              <div class="season-card autumn">
+                <span class="season-card-bg">🍂</span>
+                <span class="season-tag autumn"><i class="bi bi-leaf-fill"></i> Autumn</span>
+                <h5>Autumn plan</h5>
+                <p id="season-autumn">Select a livestock to display the strategic autumn planning.</p>
+              </div>
+              <div class="season-card winter">
+                <span class="season-card-bg">❄️</span>
+                <span class="season-tag winter"><i class="bi bi-snow"></i> Winter</span>
+                <h5>Winter stability</h5>
+                <p id="season-winter">Select a livestock to display winter resilience strategy.</p>
+              </div>
+              <div class="season-card spring">
+                <span class="season-card-bg">🌸</span>
+                <span class="season-tag spring"><i class="bi bi-flower1"></i> Spring</span>
+                <h5>Spring growth</h5>
+                <p id="season-spring">Select a livestock to display spring growth strategy.</p>
+              </div>
+              <div class="season-card summer">
+                <span class="season-card-bg">☀️</span>
+                <span class="season-tag summer"><i class="bi bi-brightness-high-fill"></i> Summer</span>
+                <h5>Summer output</h5>
+                <p id="season-summer">Select a livestock to display summer productivity strategy.</p>
+              </div>
+            </div>
+
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
 {% endblock %}
 
 {% block javascripts %}
   {{ parent() }}
   <script>
-    (function () {
-      const livestockData = {{ livestocks|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
-      if (!Array.isArray(livestockData)) {
+  (function () {
+    /* ══════════════════════════════════════════════
+       ICON MAPS
+    ══════════════════════════════════════════════ */
+    const ANIMAL_ICONS = {
+      // bovine
+      'bovin': '<i class="fa-solid fa-piggy-bank"></i>', 'bovine': '<i class="fa-solid fa-piggy-bank"></i>', 'cattle': '<i class="fa-solid fa-piggy-bank"></i>', 'vache': '<i class="fa-solid fa-piggy-bank"></i>', 'cow': '<i class="fa-solid fa-piggy-bank"></i>',
+      'bovin farm': '<i class="fa-solid fa-piggy-bank"></i>', 'bovine farm': '<i class="fa-solid fa-piggy-bank"></i>', 'cattle farm': '<i class="fa-solid fa-piggy-bank"></i>', 'cattlefarm': '<i class="fa-solid fa-piggy-bank"></i>',
+      // sheep
+      'mouton': '🐑', 'sheep': '🐑', 'sheep farm': '🐑', 'sheepfarm': '🐑',
+      // poultry
+      'poule': '🐔', 'poulet': '🐔', 'poultry': '🐔', 'volaille': '🐔',
+      'poultry farm': '🐔', 'poultryfarm': '🐔',
+      // goat
+      'chèvre': '🐐', 'chevre': '🐐', 'goat': '🐐', 'goat farm': '🐐',
+      // pig
+      'porc': '🐖', 'cochon': '🐖', 'pig': '🐖', 'pig farm': '🐖',
+      // horse
+      'cheval': '🐴', 'horse': '🐴', 'horse farm': '🐴',
+      // bee
+      'abeille': '🐝', 'bee': '🐝', 'apiary': '🐝', 'ruche': '🐝',
+      // duck
+      'canard': '🦆', 'duck': '🦆',
+      // rabbit
+      'lapin': '🐇', 'rabbit': '🐇',
+    };
+
+    const PRODUCTION_ICONS = {
+      'milk':    { emoji: '🥛', label: 'Milk' },
+      'lait':    { emoji: '🥛', label: 'Lait' },
+      'eggs':    { emoji: '🥚', label: 'Eggs' },
+      'oeufs':   { emoji: '🥚', label: 'Œufs' },
+      'œufs':    { emoji: '🥚', label: 'Œufs' },
+      'meat':    { emoji: '🥩', label: 'Meat' },
+      'viande':  { emoji: '🥩', label: 'Viande' },
+      'wool':    { emoji: '🧶', label: 'Wool' },
+      'laine':   { emoji: '🧶', label: 'Laine' },
+      'honey':   { emoji: '🍯', label: 'Honey' },
+      'miel':    { emoji: '🍯', label: 'Miel' },
+      'cheese':  { emoji: '🧀', label: 'Cheese' },
+      'fromage': { emoji: '🧀', label: 'Fromage' },
+      'feathers':{ emoji: '🪶', label: 'Feathers' },
+      'plumes':  { emoji: '🪶', label: 'Plumes' },
+    };
+
+    const resolveAnimal = (type) => {
+      const t = (type || '').trim().toLowerCase();
+      return ANIMAL_ICONS[t] || '🐾';
+    };
+
+    const resolveProduction = (prod) => {
+      const words = (prod || '').toLowerCase().split(/[\s,;/&+]+/);
+      const found = [];
+      for (const w of words) {
+        if (PRODUCTION_ICONS[w]) found.push(PRODUCTION_ICONS[w]);
+      }
+      if (found.length === 0) {
+        return [{ emoji: '🥚', label: prod || 'N/A' }];
+      }
+      return found;
+    };
+
+    /* ══════════════════════════════════════════════
+       DATA
+    ══════════════════════════════════════════════ */
+    const livestockData = {{ livestocks|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+    if (!Array.isArray(livestockData)) return;
+
+    /* ══════════════════════════════════════════════
+       DOM REFS
+    ══════════════════════════════════════════════ */
+    const searchInput     = document.getElementById('livestock-search');
+    const searchError     = document.getElementById('livestock-search-error');
+    const typeFilter      = document.getElementById('livestock-type');
+    const stateFilter     = document.getElementById('livestock-state');
+    const listNode        = document.getElementById('livestock-list');
+    const countNode       = document.getElementById('livestock-count');
+    const emptyNode       = document.getElementById('livestock-empty');
+
+    const detailIcon      = document.getElementById('detail-animal-icon');
+    const detailTitle     = document.getElementById('detail-title');
+    const detailState     = document.getElementById('detail-state');
+    const detailProd      = document.getElementById('detail-production');
+    const detailProdStrip = document.getElementById('detail-production-strip');
+    const detailCapacity  = document.getElementById('detail-capacity');
+    const detailAnimals   = document.getElementById('detail-animals');
+    const detailOccupancy = document.getElementById('detail-occupancy');
+    const detailOccBar    = document.getElementById('detail-occ-bar');
+    const seasonAutumn    = document.getElementById('season-autumn');
+    const seasonWinter    = document.getElementById('season-winter');
+    const seasonSpring    = document.getElementById('season-spring');
+    const seasonSummer    = document.getElementById('season-summer');
+
+    const searchPattern = /^[A-Za-z0-9À-ÖØ-öø-ÿ\s'\-]*$/;
+    let activeId = livestockData.length > 0 ? Number(livestockData[0].id_elevage || 0) : null;
+
+    const normalize = (v) => String(v || '').trim().toLowerCase();
+
+    const occupancyRate = (item) => {
+      const cap = Number(item.capacite || 0);
+      const ani = Number(item.nombre_animaux || 0);
+      return cap > 0 ? (ani / cap) * 100 : 0;
+    };
+
+    const seasonMsg = (season, item, pct) => {
+      const type  = item.type_elevage || 'Livestock';
+      const prod  = item.production   || 'production';
+      const state = item.etat_elevage || 'Unknown';
+      const msgs = {
+        autumn: `🍂 Autumn reserves for ${type} are optimised to secure ${prod} output while occupancy stands at ${pct}. Current state: ${state}. Prepare shelter and stock feed for the cold months ahead.`,
+        winter: `❄️ Winter protocol keeps ${type} stable with controlled ventilation, thermal bedding, and continuity of ${prod} output. Health monitoring and heating plans are critical this season.`,
+        spring: `🌸 Spring cycle boosts resilience through selective nutrition and paddock rotation. A prime window for expansion and renewal of ${type} breeding lines.`,
+        summer: `☀️ Summer plan optimises hydration and heat protection so ${prod} output stays predictable through peak temperatures. Shade structures and fresh water access are top priorities.`,
+      };
+      return msgs[season] || '';
+    };
+
+    /* ══════════════════════════════════════════════
+       RENDER DETAIL
+    ══════════════════════════════════════════════ */
+    const renderDetail = (item) => {
+      if (!item) {
+        detailIcon.innerHTML         = '🥚';
+        detailTitle.textContent     = 'Select a livestock';
+        detailState.textContent     = 'State: —';
+        detailProd.innerHTML        = '<span class="prod-emoji">🥚</span><span>Production: —</span>';
+        detailProdStrip.innerHTML   = '<div class="prod-badge"><span class="prod-emoji">🥚</span> Select a livestock</div>';
+        detailCapacity.textContent  = '—';
+        detailAnimals.textContent   = '—';
+        detailOccupancy.textContent = '—';
+        detailOccBar.style.width    = '0%';
+        seasonAutumn.textContent    = 'Select a livestock to display the strategic autumn planning.';
+        seasonWinter.textContent    = 'Select a livestock to display winter resilience strategy.';
+        seasonSpring.textContent    = 'Select a livestock to display spring growth strategy.';
+        seasonSummer.textContent    = 'Select a livestock to display summer productivity strategy.';
         return;
       }
 
-      const searchInput = document.getElementById('livestock-search');
-      const searchError = document.getElementById('livestock-search-error');
-      const typeFilter = document.getElementById('livestock-type');
-      const stateFilter = document.getElementById('livestock-state');
-      const listNode = document.getElementById('livestock-list');
-      const countNode = document.getElementById('livestock-count');
-      const emptyNode = document.getElementById('livestock-empty');
+      const cap  = Number(item.capacite || 0);
+      const ani  = Number(item.nombre_animaux || 0);
+      const occ  = occupancyRate(item);
+      const pct  = occ.toFixed(1) + '%';
+      const anim = resolveAnimal(item.type_elevage);
+      const prods = resolveProduction(item.production);
 
-      const detailTitle = document.getElementById('detail-title');
-      const detailState = document.getElementById('detail-state');
-      const detailProduction = document.getElementById('detail-production');
-      const detailCapacity = document.getElementById('detail-capacity');
-      const detailAnimals = document.getElementById('detail-animals');
-      const detailOccupancy = document.getElementById('detail-occupancy');
+      // header
+      detailIcon.innerHTML  = anim;
+      detailTitle.textContent = item.type_elevage || 'Livestock';
+      detailState.textContent = 'State: ' + (item.etat_elevage || 'Unknown');
 
-      const seasonAutumn = document.getElementById('season-autumn');
-      const seasonWinter = document.getElementById('season-winter');
-      const seasonSpring = document.getElementById('season-spring');
-      const seasonSummer = document.getElementById('season-summer');
+      // production chip
+      detailProd.innerHTML = `<span class="prod-emoji">${prods[0].emoji}</span><span>${item.production || 'N/A'}</span>`;
 
-      const searchPattern = /^[A-Za-z0-9À-ÖØ-öø-ÿ\s'\-]*$/;
-      let activeId = livestockData.length > 0 ? Number(livestockData[0].id_elevage || 0) : null;
+      // production strip
+      detailProdStrip.innerHTML = prods.map(p =>
+        `<div class="prod-badge"><span class="prod-emoji">${p.emoji}</span>${p.label}</div>`
+      ).join('');
 
-      const normalize = (value) => String(value || '').trim().toLowerCase();
+      // kpis
+      detailCapacity.textContent  = String(cap);
+      detailAnimals.textContent   = String(ani);
+      detailOccupancy.textContent = pct;
+      detailOccBar.style.width    = Math.min(occ, 100).toFixed(1) + '%';
 
-      const occupancyRate = (item) => {
-        const capacity = Number(item.capacite || 0);
-        const animals = Number(item.nombre_animaux || 0);
-        if (capacity <= 0) {
-          return 0;
-        }
+      // seasons
+      seasonAutumn.textContent = seasonMsg('autumn', item, pct);
+      seasonWinter.textContent = seasonMsg('winter', item, pct);
+      seasonSpring.textContent = seasonMsg('spring', item, pct);
+      seasonSummer.textContent = seasonMsg('summer', item, pct);
+    };
 
-        return (animals / capacity) * 100;
-      };
+    /* ══════════════════════════════════════════════
+       FILTER + LIST
+    ══════════════════════════════════════════════ */
+    const filteredData = () => {
+      const term  = normalize(searchInput.value);
+      const type  = normalize(typeFilter.value);
+      const state = normalize(stateFilter.value);
+      return livestockData.filter((item) => {
+        const searchable = [
+          normalize(item.type_elevage),
+          normalize(item.etat_elevage),
+          normalize(item.production),
+          normalize(item.id_elevage),
+        ].join(' ');
+        return (term  === '' || searchable.includes(term))
+            && (type  === '' || normalize(item.type_elevage) === type)
+            && (state === '' || normalize(item.etat_elevage) === state);
+      });
+    };
 
-      const formatSeasonMessage = (season, item, occupancyText) => {
-        const type = item.type_elevage || 'Livestock';
-        const production = item.production || 'production';
-        const state = item.etat_elevage || 'Unknown state';
+    const validateSearch = () => {
+      const valid = searchPattern.test(String(searchInput.value || '').trim());
+      searchError.classList.toggle('is-visible', !valid);
+      return valid;
+    };
 
-        if (season === 'autumn') {
-          return 'Autumn reserves for ' + type + ' are tuned to secure ' + production + ' while occupancy remains around ' + occupancyText + '. Current state: ' + state + '.';
-        }
-        if (season === 'winter') {
-          return 'Winter protocol keeps ' + type + ' stable with controlled ventilation, thermal bedding, and continuity of ' + production + ' output.';
-        }
-        if (season === 'spring') {
-          return 'Spring cycle boosts resilience through selective nutrition and paddock rotation to maintain healthy growth for this operation.';
-        }
-        return 'Summer plan optimizes hydration and heat protection so ' + production + ' output stays predictable through high temperatures.';
-      };
+    const createEntry = (item, index) => {
+      const id     = Number(item.id_elevage || 0);
+      const emoji  = resolveAnimal(item.type_elevage);
+      const prods  = resolveProduction(item.production);
 
-      const renderDetail = (item) => {
-        if (!item) {
-          detailTitle.textContent = 'Select a livestock';
-          detailState.textContent = 'State: --';
-          detailProduction.innerHTML = '<i class="bi bi-flower1"></i> Production: --';
-          detailCapacity.textContent = '--';
-          detailAnimals.textContent = '--';
-          detailOccupancy.textContent = '--';
-          seasonAutumn.textContent = 'Select a livestock to display strategic autumn planning.';
-          seasonWinter.textContent = 'Select a livestock to display winter resilience strategy.';
-          seasonSpring.textContent = 'Select a livestock to display spring growth strategy.';
-          seasonSummer.textContent = 'Select a livestock to display summer productivity strategy.';
-          return;
-        }
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'catalog-entry' + (id === Number(activeId || 0) ? ' is-active' : '');
 
-        const capacity = Number(item.capacite || 0);
-        const animals = Number(item.nombre_animaux || 0);
-        const occupancy = occupancyRate(item);
-        const occupancyText = occupancy.toFixed(1) + '%';
+      btn.innerHTML = `
+        <span class="entry-top">
+          <span class="entry-left">
+            <span class="entry-emoji">${emoji}</span>
+            <span class="entry-title">${item.type_elevage || 'Livestock'}</span>
+          </span>
+          <span class="entry-chip"><span>${prods[0].emoji}</span> ${prods[0].label}</span>
+        </span>
+        <span class="entry-sub">State: ${item.etat_elevage || 'Unknown'} · ${Number(item.nombre_animaux||0)}/${Number(item.capacite||0)} animals</span>
+      `;
 
-        detailTitle.textContent = item.type_elevage || 'Livestock';
-        detailState.textContent = 'State: ' + (item.etat_elevage || 'Unknown');
-        detailProduction.innerHTML = '<i class="bi bi-flower1"></i> Production: ' + (item.production || 'Not specified');
-        detailCapacity.textContent = String(capacity);
-        detailAnimals.textContent = String(animals);
-        detailOccupancy.textContent = occupancyText;
+      btn.addEventListener('click', () => { activeId = id; renderList(); });
+      return btn;
+    };
 
-        seasonAutumn.textContent = formatSeasonMessage('autumn', item, occupancyText);
-        seasonWinter.textContent = formatSeasonMessage('winter', item, occupancyText);
-        seasonSpring.textContent = formatSeasonMessage('spring', item, occupancyText);
-        seasonSummer.textContent = formatSeasonMessage('summer', item, occupancyText);
-      };
+    const renderList = () => {
+      if (!validateSearch()) return;
+      const rows = filteredData();
+      listNode.innerHTML = '';
+      countNode.textContent = rows.length + (rows.length === 1 ? ' item' : ' items');
+      emptyNode.classList.toggle('is-visible', rows.length === 0);
 
-      const filteredData = () => {
-        const term = normalize(searchInput.value);
-        const type = normalize(typeFilter.value);
-        const state = normalize(stateFilter.value);
+      if (rows.length === 0) { activeId = null; renderDetail(null); return; }
 
-        return livestockData.filter((item) => {
-          const itemType = normalize(item.type_elevage);
-          const itemState = normalize(item.etat_elevage);
-          const itemProduction = normalize(item.production);
-          const itemId = normalize(item.id_elevage);
-          const searchable = [itemType, itemState, itemProduction, itemId].join(' ');
+      if (!rows.some(item => Number(item.id_elevage || 0) === Number(activeId || 0))) {
+        activeId = Number(rows[0].id_elevage || 0);
+      }
 
-          const matchesTerm = term === '' || searchable.includes(term);
-          const matchesType = type === '' || itemType === type;
-          const matchesState = state === '' || itemState === state;
+      rows.forEach((item, idx) => listNode.appendChild(createEntry(item, idx)));
 
-          return matchesTerm && matchesType && matchesState;
-        });
-      };
+      const active = rows.find(item => Number(item.id_elevage || 0) === Number(activeId || 0)) || rows[0];
+      renderDetail(active);
+    };
 
-      const validateSearch = () => {
-        const value = String(searchInput.value || '').trim();
-        const isValid = searchPattern.test(value);
+    const hydrateFilters = () => {
+      [...new Set(livestockData.map(i => String(i.type_elevage||'').trim()).filter(Boolean))].sort()
+        .forEach(v => { const o=document.createElement('option'); o.value=v; o.textContent=v; typeFilter.appendChild(o); });
+      [...new Set(livestockData.map(i => String(i.etat_elevage||'').trim()).filter(Boolean))].sort()
+        .forEach(v => { const o=document.createElement('option'); o.value=v; o.textContent=v; stateFilter.appendChild(o); });
+    };
 
-        console.assert(isValid || value === '', 'Invalid livestock search term.');
+    hydrateFilters();
+    renderList();
 
-        if (!isValid) {
-          searchError.classList.add('is-visible');
-          return false;
-        }
+    searchInput.addEventListener('input', renderList);
+    typeFilter.addEventListener('change', renderList);
+    stateFilter.addEventListener('change', renderList);
 
-        searchError.classList.remove('is-visible');
-        return true;
-      };
+    /* ══════════════════════════════════════════════
+       SCROLL REVEAL
+    ══════════════════════════════════════════════ */
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
 
-      const createEntry = (item, index) => {
-        const id = Number(item.id_elevage || 0);
-
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'catalog-entry' + (id === Number(activeId || 0) ? ' is-active' : '');
-
-        const top = document.createElement('span');
-        top.className = 'entry-top';
-
-        const left = document.createElement('span');
-        left.className = 'entry-left';
-
-        const number = document.createElement('span');
-        number.className = 'entry-number';
-        number.textContent = String(index + 1).padStart(2, '0');
-
-        const title = document.createElement('span');
-        title.className = 'entry-title';
-        title.textContent = item.type_elevage || 'Livestock';
-
-        const chip = document.createElement('span');
-        chip.className = 'entry-chip';
-        chip.textContent = item.production || 'No production';
-
-        const sub = document.createElement('span');
-        sub.className = 'entry-sub';
-        sub.textContent = 'State: ' + (item.etat_elevage || 'Unknown');
-
-        left.appendChild(number);
-        left.appendChild(title);
-        top.appendChild(left);
-        top.appendChild(chip);
-
-        button.appendChild(top);
-        button.appendChild(sub);
-
-        button.addEventListener('click', () => {
-          activeId = id;
-          renderList();
-        });
-
-        return button;
-      };
-
-      const renderList = () => {
-        if (!validateSearch()) {
-          return;
-        }
-
-        const rows = filteredData();
-        listNode.innerHTML = '';
-        countNode.textContent = rows.length + (rows.length === 1 ? ' item' : ' items');
-        emptyNode.classList.toggle('is-visible', rows.length === 0);
-
-        if (rows.length === 0) {
-          activeId = null;
-          renderDetail(null);
-          return;
-        }
-
-        if (!rows.some((item) => Number(item.id_elevage || 0) === Number(activeId || 0))) {
-          activeId = Number(rows[0].id_elevage || 0);
-        }
-
-        rows.forEach((item, index) => {
-          listNode.appendChild(createEntry(item, index));
-        });
-
-        const activeItem = rows.find((item) => Number(item.id_elevage || 0) === Number(activeId || 0)) || rows[0];
-        renderDetail(activeItem);
-      };
-
-      const hydrateFilters = () => {
-        const types = [...new Set(livestockData.map((item) => String(item.type_elevage || '').trim()).filter(Boolean))].sort();
-        const states = [...new Set(livestockData.map((item) => String(item.etat_elevage || '').trim()).filter(Boolean))].sort();
-
-        types.forEach((value) => {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = value;
-          typeFilter.appendChild(option);
-        });
-
-        states.forEach((value) => {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = value;
-          stateFilter.appendChild(option);
-        });
-      };
-
-      hydrateFilters();
-      renderList();
-
-      searchInput.addEventListener('input', renderList);
-      typeFilter.addEventListener('change', renderList);
-      stateFilter.addEventListener('change', renderList);
-    })();
+  })();
   </script>
 {% endblock %}

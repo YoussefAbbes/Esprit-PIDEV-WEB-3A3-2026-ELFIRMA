@@ -412,124 +412,162 @@ final class ElfirmaController extends AbstractController
     /**
      * @param list<array{type:string, production:string}> $elevages
      */
-    private function buildLivestockExportPdf(array $elevages, string $generatedAt): string
+   private function buildLivestockExportPdf(array $elevages, string $generatedAt): string
 {
     $rows = array_map(
         static fn (array $item): array => [
             'type' => (string) ($item['type_elevage'] ?? 'N/A'),
             'production' => (string) ($item['production'] ?? 'N/A'),
+            'status' => (string) ($item['etat_elevage'] ?? 'N/A'),
         ],
         $elevages
     );
 
-    // 🔹 Limiter pour éviter scroll
-    $rows = array_slice($rows, 0, 8);
+    // Limite pour éviter débordement
+    $rows = array_slice($rows, 0, 10);
+
+    $total = count($rows);
 
     $content = [];
     $content[] = 'q';
 
-    // Header
-    $content[] = '0.14 0.45 0.19 rg';
-    $content[] = '0 780 595 62 re f';
+    /* ================= HEADER ================= */
+    $content[] = '0.10 0.45 0.20 rg';
+    $content[] = '0 800 595 50 re f';
 
     $content[] = 'BT';
-    $content[] = '/F2 26 Tf';
+    $content[] = '/F2 20 Tf';
     $content[] = '1 1 1 rg';
-    $content[] = '24 810 Td';
-    $content[] = '(' . $this->escapePdfText('EL FIRMA') . ') Tj';
+    $content[] = '25 815 Td';
+    $content[] = '(' . $this->escapePdfText('EL FIRMA - LIVESTOCK REPORT') . ') Tj';
     $content[] = 'ET';
 
     $content[] = 'BT';
-    $content[] = '/F1 11 Tf';
+    $content[] = '/F1 10 Tf';
     $content[] = '1 1 1 rg';
-    $content[] = '450 810 Td';
-    $content[] = '(' . $this->escapePdfText('Export: ' . $generatedAt) . ') Tj';
+    $content[] = '420 815 Td';
+    $content[] = '(' . $this->escapePdfText('Date: ' . $generatedAt) . ') Tj';
     $content[] = 'ET';
 
-    // Title
+    /* ================= TITLE ================= */
     $content[] = 'BT';
-    $content[] = '/F2 22 Tf';
-    $content[] = '0.12 0.39 0.17 rg';
-    $content[] = '24 740 Td';
-    $content[] = '(' . $this->escapePdfText('LIVESTOCK REPORT') . ') Tj';
+    $content[] = '/F2 16 Tf';
+    $content[] = '0.1 0.35 0.15 rg';
+    $content[] = '25 770 Td';
+    $content[] = '(' . $this->escapePdfText('Livestock & Production Overview') . ') Tj';
     $content[] = 'ET';
 
-    // Table settings
-    $tableX = 24;
-    $tableY = 680;
-    $tableW = 547;
-    $headerH = 28;
-    $rowH = 22; // 🔹 réduit
-    $col1W = 290;
+    /* ================= DESCRIPTION (plus aérée) ================= */
+    $description = [
+        'This report summarizes livestock production data.',
+        'It helps monitoring farm performance and animal status.',
+        'All data below is generated automatically from the system.'
+    ];
 
-    // Header row
-    $content[] = '0.18 0.58 0.22 rg';
-    $content[] = sprintf('%d %d %d %d re f', $tableX, $tableY, $tableW, $headerH);
-
-    $content[] = 'BT';
-    $content[] = '/F2 11 Tf';
-    $content[] = '1 1 1 rg';
-    $content[] = sprintf('%d %d Td', $tableX + 10, $tableY + 8);
-    $content[] = '(' . $this->escapePdfText('Type') . ') Tj';
-    $content[] = 'ET';
-
-    $content[] = 'BT';
-    $content[] = '/F2 11 Tf';
-    $content[] = '1 1 1 rg';
-    $content[] = sprintf('%d %d Td', $tableX + $col1W + 10, $tableY + 8);
-    $content[] = '(' . $this->escapePdfText('Production') . ') Tj';
-    $content[] = 'ET';
-
-    // Rows
-    $rowY = $tableY - $rowH;
-    foreach ($rows as $index => $row) {
-
-        if ($index % 2 === 0) {
-            $content[] = '0.93 0.97 0.93 rg';
-        } else {
-            $content[] = '1 1 1 rg';
-        }
-
-        $content[] = sprintf('%d %d %d %d re f', $tableX, $rowY, $tableW, $rowH);
-
+    $y = 750;
+    foreach ($description as $line) {
         $content[] = 'BT';
-        $content[] = '/F1 9 Tf'; // 🔹 police réduite
-        $content[] = '0.16 0.20 0.16 rg';
-        $content[] = sprintf('%d %d Td', $tableX + 10, $rowY + 6);
-        $content[] = '(' . $this->escapePdfText($row['type']) . ') Tj';
+        $content[] = '/F1 10 Tf';
+        $content[] = '0.25 0.25 0.25 rg';
+        $content[] = '25 ' . $y . ' Td';
+        $content[] = '(' . $this->escapePdfText($line) . ') Tj';
         $content[] = 'ET';
 
-        $content[] = 'BT';
-        $content[] = '/F1 9 Tf';
-        $content[] = '0.16 0.20 0.16 rg';
-        $content[] = sprintf('%d %d Td', $tableX + $col1W + 10, $rowY + 6);
-        $content[] = '(' . $this->escapePdfText($row['production']) . ') Tj';
-        $content[] = 'ET';
-
-        $rowY -= $rowH;
+        $y -= 18; // espacement plus propre
     }
 
-    // Footer
-    $content[] = '0.14 0.39 0.17 rg';
-    $content[] = '0 0 595 40 re f';
-
+    /* ================= STATS ================= */
     $content[] = 'BT';
     $content[] = '/F2 11 Tf';
-    $content[] = '1 1 1 rg';
-    $content[] = '20 20 Td';
-    $content[] = '(' . $this->escapePdfText('EL FIRMA') . ') Tj';
+    $content[] = '0.10 0.40 0.10 rg';
+    $content[] = '25 700 Td';
+    $content[] = '(' . $this->escapePdfText("Total Records: $total") . ') Tj';
     $content[] = 'ET';
 
-    // 🔹 Manager modifié
-    $content[] = 'BT';
-    $content[] = '/F1 11 Tf';
-    $content[] = '1 1 1 rg';
-    $content[] = '420 20 Td';
-    $content[] = '(' . $this->escapePdfText('Manager : Ahmed Zouari') . ') Tj';
-    $content[] = 'ET';
+    /* ================= TABLE ================= */
+    $tableX = 25;
+    $tableY = 680;
+    $tableW = 545;
+    $rowH = 30;
 
-    $content[] = 'Q';
+    $col1 = 200;
+    $col2 = 200;
+    $col3 = 145;
 
+    $positions = [
+        $tableX + 10,
+        $tableX + $col1 + 10,
+        $tableX + $col1 + $col2 + 10
+    ];
+
+    /* HEADER TABLE */
+    $content[] = '0.18 0.55 0.22 rg';
+    $content[] = sprintf('%d %d %d %d re f', $tableX, $tableY, $tableW, $rowH);
+
+    $headers = ['Type', 'Production', 'Status'];
+
+    foreach ($headers as $i => $h) {
+        $content[] = 'BT';
+        $content[] = '/F2 11 Tf';
+        $content[] = '1 1 1 rg';
+        $content[] = $positions[$i] . ' ' . ($tableY + 10) . ' Td';
+        $content[] = '(' . $this->escapePdfText($h) . ') Tj';
+        $content[] = 'ET';
+    }
+
+    /* ROWS */
+    $y = $tableY - $rowH;
+
+    foreach ($rows as $i => $row) {
+
+        // alternance couleur
+        $content[] = ($i % 2 === 0)
+            ? '0.95 0.98 0.95 rg'
+            : '1 1 1 rg';
+
+        $content[] = sprintf('%d %d %d %d re f', $tableX, $y, $tableW, $rowH);
+
+        $values = [$row['type'], $row['production'], $row['status']];
+
+        foreach ($values as $j => $val) {
+            $content[] = 'BT';
+            $content[] = '/F1 10 Tf';
+            $content[] = '0.15 0.15 0.15 rg';
+            $content[] = $positions[$j] . ' ' . ($y + 10) . ' Td';
+            $content[] = '(' . $this->escapePdfText($val) . ') Tj';
+            $content[] = 'ET';
+        }
+
+        $y -= $rowH;
+    }
+
+    /* ================= FOOTER ================= */
+   /* ================= FOOTER (remonté) ================= */
+/* ================= FOOTER (beaucoup plus haut) ================= */
+$content[] = '0.10 0.45 0.20 rg';
+
+// 🔥 FOOTER TRÈS HAUT (y = 180)
+$content[] = '0 180 595 60 re f';
+
+$content[] = 'BT';
+$content[] = '/F1 10 Tf';
+$content[] = '1 1 1 rg';
+
+// 🔥 texte très haut
+$content[] = '25 100 Td';
+$content[] = '(' . $this->escapePdfText('EL FIRMA - Farm Management System') . ') Tj';
+$content[] = 'ET';
+
+$content[] = 'BT';
+$content[] = '/F1 10 Tf';
+$content[] = '1 1 1 rg';
+
+// 🔥 manager aligné avec le footer
+$content[] = '400 200 Td';
+$content[] = '(' . $this->escapePdfText('Manager: Ahmed Zouari') . ') Tj';
+$content[] = 'ET';
+
+    /* ================= PDF BUILD ================= */
     $stream = implode("\n", $content);
 
     $objects = [];
