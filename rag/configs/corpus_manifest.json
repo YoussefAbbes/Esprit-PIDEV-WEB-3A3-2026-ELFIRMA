@@ -1,0 +1,297 @@
+{
+  "manifest_version": "2.0.0",
+  "taxonomy_version": "1.1.0",
+  "generated_on": "2026-04-16",
+  "documents": [
+    {
+      "file": "rag/README_RAG.md",
+      "domain": "rag_operations",
+      "document_type": "workspace_readme",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "RAG workspace usage and execution workflow.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/chat_api_contract.json",
+      "domain": "rag_operations",
+      "document_type": "chat_api_contract",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Request, response, and error contract for Symfony-to-Python chat API.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/chunking_strategy.md",
+      "domain": "rag_operations",
+      "document_type": "chunking_strategy",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Heading-aware chunking contract aligned to script behavior.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/corpus_manifest.json",
+      "domain": "rag_operations",
+      "document_type": "manifest",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Machine-readable index of RAG documents and metadata.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/embedding_config.json",
+      "domain": "rag_operations",
+      "document_type": "embedding_config",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Embedding and vector-index local experimentation configuration.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/evaluation_plan.md",
+      "domain": "rag_operations",
+      "document_type": "evaluation_plan",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Evaluation framework with evidence and confidence correctness checks.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/metadata_schema.json",
+      "domain": "rag_operations",
+      "document_type": "metadata_schema",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Canonical metadata schema and taxonomy enums.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/rag_roadmap.md",
+      "domain": "rag_operations",
+      "document_type": "roadmap",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Implementation roadmap from corrected corpus to embedding pipeline.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/retrieval_strategy.md",
+      "domain": "rag_operations",
+      "document_type": "retrieval_strategy",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Metadata-filtered retrieval policy with confidence-aware behavior.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/configs/symfony_backend_plan.md",
+      "domain": "rag_operations",
+      "document_type": "symfony_backend_plan",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Backend-first integration plan for Symfony service and controller wiring.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/corpus/animals_domain.md",
+      "domain": "animals",
+      "document_type": "domain_guide",
+      "confidence": "inferred",
+      "evidence_scope": "schema_inference",
+      "language": "fr-en",
+      "description": "Conservative animals domain guide aligned to current evidence.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/assumptions_and_gaps.md",
+      "domain": "cross_entity",
+      "document_type": "assumptions_and_gaps",
+      "confidence": "confirmed",
+      "evidence_scope": "observed_sample",
+      "language": "fr-en",
+      "description": "Master register of known facts, inferred links, and unknown policy gaps.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/business_rules.md",
+      "domain": "cross_entity",
+      "document_type": "business_rules",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "fr-en",
+      "description": "Split into confirmed structure, inferred logic, and hypothetical policy.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/chat_examples.md",
+      "domain": "cross_entity",
+      "document_type": "chat_examples",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "fr-en",
+      "description": "Conversation examples showing confidence-safe response patterns.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/data_dictionary.md",
+      "domain": "cross_entity",
+      "document_type": "data_dictionary",
+      "confidence": "inferred",
+      "evidence_scope": "schema_inference",
+      "language": "fr-en",
+      "description": "Field-by-field meaning with observed examples and non-exhaustive warnings.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/faq.md",
+      "domain": "cross_entity",
+      "document_type": "faq",
+      "confidence": "inferred",
+      "evidence_scope": "schema_inference",
+      "language": "fr-en",
+      "description": "FAQ answers constrained by confirmed evidence scope.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/glossary.md",
+      "domain": "cross_entity",
+      "document_type": "glossary",
+      "confidence": "inferred",
+      "evidence_scope": "schema_inference",
+      "language": "fr-en",
+      "description": "Confirmed vocabulary versus candidate vocabulary separation.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/intents_catalog.md",
+      "domain": "cross_entity",
+      "document_type": "intents_catalog",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "fr-en",
+      "description": "Intent catalog for conservative domain and policy handling.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/livestock_domain.md",
+      "domain": "livestock",
+      "document_type": "domain_guide",
+      "confidence": "inferred",
+      "evidence_scope": "schema_inference",
+      "language": "fr-en",
+      "description": "Conservative elevage domain guide aligned to observed values.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/schema_reference.md",
+      "domain": "cross_entity",
+      "document_type": "schema_reference",
+      "confidence": "confirmed",
+      "evidence_scope": "observed_sample",
+      "language": "fr-en",
+      "description": "Schema and observed sample values with cautious relationship inference.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/corpus/vaccination_domain.md",
+      "domain": "vaccination",
+      "document_type": "domain_guide",
+      "confidence": "inferred",
+      "evidence_scope": "schema_inference",
+      "language": "fr-en",
+      "description": "Conservative vaccination domain guide with policy-safe wording.",
+      "include_in_chunks": true
+    },
+    {
+      "file": "rag/prompts/query_rewriting.md",
+      "domain": "rag_operations",
+      "document_type": "query_rewriting",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Query rewriting guidance aligned to conservative retrieval.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/prompts/rag_answer_template.md",
+      "domain": "rag_operations",
+      "document_type": "rag_answer_template",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "fr-en",
+      "description": "Grounded answer template for evidence-conservative FR/EN responses.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/prompts/system_rag_assistant.md",
+      "domain": "rag_operations",
+      "document_type": "system_prompt",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "System prompt enforcing confidence-safe RAG answers.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/tests/golden_answers.md",
+      "domain": "rag_operations",
+      "document_type": "golden_answers",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Expected answer essentials for evaluation runs.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/tests/rag_answer_cases.json",
+      "domain": "rag_operations",
+      "document_type": "rag_answer_cases",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "fr-en",
+      "description": "Starter answer-pipeline cases for confirmed, inferred, and unknown_policy outcomes.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/tests/retrieval_eval_cases.json",
+      "domain": "rag_operations",
+      "document_type": "retrieval_eval_cases",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Starter retrieval evaluation cases for domain and confidence routing checks.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/tests/route_relevance_cases.json",
+      "domain": "rag_operations",
+      "document_type": "route_relevance_cases",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "fr-en",
+      "description": "Route-focused retrieval regression pack with realistic farm-domain FR/EN questions.",
+      "include_in_chunks": false
+    },
+    {
+      "file": "rag/tests/sample_queries.json",
+      "domain": "rag_operations",
+      "document_type": "test_queries",
+      "confidence": "assumed",
+      "evidence_scope": "policy_hypothesis",
+      "language": "en",
+      "description": "Confidence-grouped query benchmark set.",
+      "include_in_chunks": false
+    }
+  ]
+}

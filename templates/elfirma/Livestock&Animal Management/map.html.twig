@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Elevages</title>
+    <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
+    <style>
+        .elf-sidebar-toggle,
+        .elf-sidebar-overlay {
+            display: none !important;
+        }
+
+        .map-shell {
+            min-height: calc(100vh - 1.5rem);
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 8.5rem);
+            min-height: 520px;
+            border-radius: 1rem;
+            border: 1px solid #b7d8c2;
+            overflow: hidden;
+        }
+
+        .ol-popup {
+            position: absolute;
+            background: #ffffff;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+            padding: 0.75rem 0.9rem;
+            border-radius: 0.65rem;
+            border: 1px solid #d3ded6;
+            min-width: 220px;
+        }
+
+        .ol-popup:after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #ffffff transparent transparent;
+        }
+
+        .ol-popup-closer {
+            position: absolute;
+            top: 0.2rem;
+            right: 0.45rem;
+            cursor: pointer;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .ol-popup-closer:hover {
+            color: #0f172a;
+        }
+
+        .farm-popup h3 {
+            margin: 0 0 0.5rem;
+            color: #166534;
+            font-size: 0.92rem;
+            font-weight: 800;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 0.2rem;
+        }
+
+        .farm-popup .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.55rem;
+            margin: 0.25rem 0;
+            font-size: 0.75rem;
+        }
+
+        .farm-popup .info-label {
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .farm-popup .info-value {
+            color: #1f2937;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .farm-popup .usage-bar {
+            margin-top: 0.45rem;
+            background: #e2e8f0;
+            border-radius: 999px;
+            height: 0.45rem;
+            overflow: hidden;
+        }
+
+        .farm-popup .usage-fill {
+            height: 100%;
+            border-radius: 999px;
+        }
+
+        .farm-popup .usage-text {
+            text-align: center;
+            margin-top: 0.22rem;
+            font-size: 0.68rem;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen overflow-x-hidden">
+<aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 bg-white border-r border-slate-200 py-8 pr-4 z-40">
+    <div class="px-8 mb-8">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Elfirma</h1>
+        <p class="text-slate-500 text-sm">Gestion Agricole</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Tableau de Bord</a>
+    </nav>
+</aside>
+
+<main class="md:ml-72 p-3 md:p-4">
+    <div class="map-shell mx-auto rounded-2xl border border-emerald-200 bg-white p-3 md:p-4 shadow-sm">
+        <header class="mb-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+                <h2 class="text-2xl md:text-4xl font-black tracking-tight text-emerald-800">Carte des Elevages</h2>
+                <p class="text-slate-600 text-sm md:text-base">Visualisez l'emplacement de vos elevages sur la carte.</p>
+            </div>
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                <div class="flex items-center justify-between gap-5"><span>Total elevages:</span><strong id="totalCount">0</strong></div>
+                <div class="mt-1 flex items-center justify-between gap-5"><span>Avec position:</span><strong id="mappedCount">0</strong></div>
+            </div>
+        </header>
+
+        <div class="relative">
+            <div id="map"></div>
+
+            <div id="legend" class="absolute bottom-4 left-4 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 text-xs shadow-lg z-20">
+                <h4 class="mb-2 text-sm font-black text-slate-800">Legende</h4>
+                <div class="flex items-center gap-2 mb-1.5"><span class="h-3 w-3 rounded-full border border-black/20" style="background:#4CAF50"></span><span>Utilisation &lt; 50%</span></div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="h-3 w-3 rounded-full border border-black/20" style="background:#FF9800"></span><span>Utilisation 50% - 79%</span></div>
+                <div class="flex items-center gap-2"><span class="h-3 w-3 rounded-full border border-black/20" style="background:#F44336"></span><span>Utilisation &gt;= 80%</span></div>
+            </div>
+
+            <div id="loading" class="absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-emerald-300 bg-white px-5 py-4 text-sm font-bold text-emerald-800 shadow-xl">
+                Chargement de la carte...
+            </div>
+
+            <div id="apiWarning" class="hidden absolute top-4 left-1/2 z-30 -translate-x-1/2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 shadow">
+                OpenStreetMap fallback actif.
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer">&times;</a>
+    <div id="popup-content"></div>
+</div>
+
+<script>
+(function () {
+    var rawLivestock = {{ elevages|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+    var maptilerKey = {{ maptiler_api_key|default('')|json_encode|raw }};
+
+    var popupContainer = document.getElementById('popup');
+    var popupContent = document.getElementById('popup-content');
+    var popupCloser = document.getElementById('popup-closer');
+    var loadingEl = document.getElementById('loading');
+    var warningEl = document.getElementById('apiWarning');
+
+    var popupOverlay = new ol.Overlay({
+        element: popupContainer,
+        autoPan: true,
+        autoPanAnimation: { duration: 250 }
+    });
+
+    popupCloser.onclick = function () {
+        popupOverlay.setPosition(undefined);
+        popupCloser.blur();
+        return false;
+    };
+
+    var farmSource = new ol.source.Vector();
+    var farmLayer = new ol.layer.Vector({ source: farmSource });
+
+    var showWarning = function (message) {
+        if (!warningEl) {
+            return;
+        }
+
+        warningEl.textContent = message;
+        warningEl.classList.remove('hidden');
+    };
+
+    var baseLayer;
+    var normalizedKey = String(maptilerKey || '').trim();
+
+    if (normalizedKey !== '' && normalizedKey !== 'YOUR_MAPTILER_API_KEY_HERE') {
+        var maptilerSource = new ol.source.XYZ({
+            url: 'https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=' + encodeURIComponent(normalizedKey),
+            tileSize: 512,
+            maxZoom: 20,
+            attributions: '&copy; MapTiler &copy; OSM',
+            crossOrigin: 'anonymous'
+        });
+
+        baseLayer = new ol.layer.Tile({ source: maptilerSource });
+
+        var fallbackApplied = false;
+        var fallbackToOsm = function () {
+            if (fallbackApplied) {
+                return;
+            }
+
+            fallbackApplied = true;
+            baseLayer.setSource(new ol.source.OSM());
+            showWarning('MapTiler indisponible. OpenStreetMap fallback actif.');
+        };
+
+        maptilerSource.on('tileloaderror', fallbackToOsm);
+    } else {
+        baseLayer = new ol.layer.Tile({ source: new ol.source.OSM() });
+        showWarning('Cle API MapTiler manquante. OpenStreetMap fallback actif.');
+    }
+
+    var map = new ol.Map({
+        target: 'map',
+        overlays: [popupOverlay],
+        layers: [
+            baseLayer,
+            farmLayer
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([9.5375, 33.8869]),
+            zoom: 6
+        })
+    });
+
+    map.once('rendercomplete', function () {
+        if (loadingEl) {
+            loadingEl.style.display = 'none';
+        }
+    });
+
+    map.on('click', function (evt) {
+        var feature = map.forEachFeatureAtPixel(evt.pixel, function (f) { return f; });
+        if (feature) {
+            var coords = feature.getGeometry().getCoordinates();
+            popupContent.innerHTML = feature.get('popupHtml') || '';
+            popupOverlay.setPosition(coords);
+        } else {
+            popupOverlay.setPosition(undefined);
+        }
+    });
+
+    map.on('pointermove', function (evt) {
+        var hit = map.hasFeatureAtPixel(evt.pixel);
+        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+    });
+
+    var mappedCount = 0;
+    var extent = ol.extent.createEmpty();
+
+    for (var i = 0; i < rawLivestock.length; i++) {
+        var farm = rawLivestock[i] || {};
+        var latitude = Number(farm.latitude);
+        var longitude = Number(farm.longitude);
+
+        if (!isFinite(latitude) || !isFinite(longitude) || (latitude === 0 && longitude === 0)) {
+            continue;
+        }
+
+        mappedCount += 1;
+
+        var capacity = Number(farm.capacite) || 0;
+        var animalCount = Number(farm.nombre_animaux) || 0;
+        var usage = capacity > 0 ? (animalCount / capacity) * 100 : 0;
+
+        var markerColor = '#4CAF50';
+        if (usage >= 80) {
+            markerColor = '#F44336';
+        } else if (usage >= 50) {
+            markerColor = '#FF9800';
+        }
+
+        var iconLetter = 'F';
+        var type = String(farm.type_elevage || '').toLowerCase();
+        if (type.indexOf('cattle') >= 0 || type.indexOf('bovin') >= 0) iconLetter = 'B';
+        else if (type.indexOf('sheep') >= 0 || type.indexOf('ovin') >= 0) iconLetter = 'S';
+        else if (type.indexOf('goat') >= 0 || type.indexOf('caprin') >= 0) iconLetter = 'G';
+        else if (type.indexOf('pig') >= 0 || type.indexOf('porc') >= 0) iconLetter = 'P';
+        else if (type.indexOf('poultry') >= 0 || type.indexOf('chicken') >= 0 || type.indexOf('volaille') >= 0) iconLetter = 'C';
+        else if (type.indexOf('horse') >= 0 || type.indexOf('cheval') >= 0) iconLetter = 'H';
+
+        var coord = ol.proj.fromLonLat([longitude, latitude]);
+
+        var popupHtml =
+            '<div class="farm-popup">' +
+            '  <h3>' + escapeHtml(farm.type_elevage) + '</h3>' +
+            '  <div class="info-row"><span class="info-label">Etat :</span><span class="info-value">' + escapeHtml(farm.etat_elevage) + '</span></div>' +
+            '  <div class="info-row"><span class="info-label">Animaux :</span><span class="info-value">' + animalCount + ' / ' + capacity + '</span></div>' +
+            '  <div class="info-row"><span class="info-label">Production :</span><span class="info-value">' + escapeHtml(farm.production) + '</span></div>' +
+            '  <div class="info-row"><span class="info-label">Latitude :</span><span class="info-value">' + latitude.toFixed(6) + '</span></div>' +
+            '  <div class="info-row"><span class="info-label">Longitude :</span><span class="info-value">' + longitude.toFixed(6) + '</span></div>' +
+            '  <div class="usage-bar"><div class="usage-fill" style="width:' + Math.min(usage, 100) + '%; background:' + markerColor + ';"></div></div>' +
+            '  <div class="usage-text" style="color:' + markerColor + ';">' + Math.round(usage) + '% utilise</div>' +
+            '</div>';
+
+        var feature = new ol.Feature({
+            geometry: new ol.geom.Point(coord),
+            popupHtml: popupHtml,
+            farmType: farm.type_elevage || ''
+        });
+
+        feature.setStyle(new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 16,
+                fill: new ol.style.Fill({ color: markerColor }),
+                stroke: new ol.style.Stroke({ color: 'white', width: 3 })
+            }),
+            text: new ol.style.Text({
+                text: iconLetter,
+                fill: new ol.style.Fill({ color: 'white' }),
+                font: 'bold 13px Segoe UI, Arial, sans-serif',
+                offsetY: 1
+            })
+        }));
+
+        farmSource.addFeature(feature);
+        ol.extent.extend(extent, feature.getGeometry().getExtent());
+    }
+
+    var totalCountEl = document.getElementById('totalCount');
+    var mappedCountEl = document.getElementById('mappedCount');
+    if (totalCountEl) {
+        totalCountEl.textContent = String(rawLivestock.length);
+    }
+    if (mappedCountEl) {
+        mappedCountEl.textContent = String(mappedCount);
+    }
+
+    if (mappedCount > 0) {
+        map.getView().fit(extent, { padding: [45, 45, 45, 45], maxZoom: 14 });
+    }
+
+    function escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return '';
+        }
+
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+})();
+</script>
+
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>

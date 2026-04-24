@@ -9,12 +9,20 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\Produit;
+use App\Service\RecommendationService;
 
 final class PanierController extends AbstractController
 {
+    private const EXCHANGE_RATE_API_BASE = 'https://v6.exchangerate-api.com/v6';
+
+    public function __construct(private readonly RecommendationService $recommendationService)
+    {
+    }
+
     #[Route('/panier', name: 'app_panier_index', methods: ['GET'])]
-    public function index(SessionInterface $session, EntityManagerInterface $em): Response
+    public function index(SessionInterface $session, EntityManagerInterface $em, HttpClientInterface $httpClient): Response
     {
         $panier = $session->get('panier', []);
         $panierWithData = [];
@@ -33,9 +41,13 @@ final class PanierController extends AbstractController
             }
         }
 
+        $recommendedProducts = $this->recommendationService->getRecommendationsFromCart(array_keys($panier));
+
         return $this->render('panier_index.html.twig', [
             'items' => $panierWithData,
-            'total' => $total
+            'total' => $total,
+            'tnd_to_eur_rate' => $this->getTndToEurRate($httpClient),
+            'recommended_products' => $recommendedProducts,
         ]);
     }
 
@@ -171,5 +183,34 @@ final class PanierController extends AbstractController
         $totalItems = array_sum($panier);
 
         return new JsonResponse(['count' => $totalItems]);
+    }
+
+    private function getTndToEurRate(HttpClientInterface $httpClient): ?float
+    {
+        $apiKey = $this->getExchangeRateApiKey();
+        if ($apiKey === '') {
+            return null;
+        }
+
+        try {
+            $url = self::EXCHANGE_RATE_API_BASE . '/' . rawurlencode($apiKey) . '/latest/TND';
+            $response = $httpClient->request('GET', $url, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+            ]);
+
+            $data = $response->toArray(false);
+            $rate = (float) ($data['conversion_rates']['EUR'] ?? 0);
+
+            return $rate > 0 ? $rate : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function getExchangeRateApiKey(): string
+    {
+        return trim((string) ($_SERVER['EXCHANGE_RATE_API_KEY'] ?? $_ENV['EXCHANGE_RATE_API_KEY'] ?? ''));
     }
 }

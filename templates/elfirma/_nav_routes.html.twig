@@ -40,6 +40,22 @@
                 {
                     label: "Animals",
                     href: "{{ path('elfirma_animals') }}"
+                },
+                {
+                    label: "Vaccination",
+                    href: "{{ path('elfirma_vaccinations') }}"
+                },
+                {
+                    label: "Map",
+                    href: "{{ path('elfirma_livestock_map') }}"
+                },
+                {
+                    label: "Chatbot",
+                    href: "{{ path('elfirma_chatbot') }}"
+                },
+                {
+                    label: "Conception 3D",
+                    href: "{{ path('elfirma_3d_conception') }}"
                 }
             ]
         },
@@ -54,6 +70,10 @@
                 {
                     label: "Categories",
                     href: "{{ path('elfirma_categories') }}"
+                },
+                {
+                    label: "Orders",
+                    href: "{{ path('app_admin_commandes') }}"
                 }
             ]
         },
@@ -62,7 +82,7 @@
             icon: "handyman",
             href: "{{ path('app_equipement_index') }}"
         },
-        {
+         {
             label: "Contract Management",
             icon: "contract",
             children: [
@@ -73,6 +93,14 @@
                 {
                     label: "Contracts",
                     href: "{{ path('contrat_page') }}"
+                },
+                {
+                    label: "Meetings",
+                    href: "{{ path('meetings_page') }}"
+                },
+                {
+                    label: "Supplier Analytics",
+                    href: "{{ path('supplier_analytics') }}"
                 }
             ]
         },
@@ -94,6 +122,7 @@
                 }
             ]
         }
+        
     ];
 
     const englishReplacements = [
@@ -101,8 +130,8 @@
         ["Tableau de Bord", "Dashboard"],
         ["Utilisateurs", "Users"],
         ["Parcelles & Cultures", "Fields & Crops"],
-        ["Animaux & Élevages", "Livestock & Animals"],
-        ["Animaux & Elevages", "Livestock & Animals"],
+        ["Animaux & Élevages", "Livestock"],
+        ["Animaux & Elevages", "Livestock"],
         ["Produits & Commandes", "Products & Orders"],
         ["Équipements & Maintenance", "Equipment & Maintenance"],
         ["Equipements & Maintenance", "Equipment & Maintenance"],

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livestock Export Report</title>
+    <style>
+        :root {
+            --green-900: #1f6b2f;
+            --green-800: #2a7a35;
+            --green-700: #2f8a3a;
+            --green-100: #eaf5ea;
+            --green-50: #f7fbf7;
+            --line: #2d8a3b;
+            --text: #223126;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #ffffff;
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .report {
+            width: 100%;
+            min-height: 100vh;
+            padding-bottom: 34px;
+        }
+
+        .header {
+            background: linear-gradient(180deg, #236c2f 0%, var(--green-900) 100%);
+            color: #fff;
+            padding: 16px 22px 10px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-brand {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .header-sub {
+            margin-top: 4px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .header-center {
+            text-align: center;
+            font-size: 0;
+        }
+
+        .header-right {
+            text-align: right;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.88);
+        }
+
+        .content {
+            padding: 14px 28px 0;
+        }
+
+        .intro-line {
+            height: 4px;
+            background: #d5ead7;
+            margin: 0 0 12px;
+        }
+
+        .title {
+            margin: 0;
+            color: #1d5f2c;
+            font-size: 29px;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--line);
+            padding-bottom: 4px;
+            display: inline-block;
+        }
+
+        .meta {
+            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.65;
+            color: #39463c;
+        }
+
+        .meta strong {
+            color: #203226;
+        }
+
+        .table-wrap {
+            margin-top: 14px;
+            border: 2px solid var(--line);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: var(--green-700);
+            color: #fff;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        thead th + th {
+            border-left: 2px solid rgba(255,255,255,0.25);
+        }
+
+        tbody td {
+            padding: 9px 12px;
+            font-size: 13px;
+            border-top: 1px solid #e7eee6;
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--green-50);
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #235f2c 0%, #1f5b29 100%);
+            color: #fff;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            font-size: 12px;
+        }
+
+        .footer .muted {
+            color: rgba(255,255,255,0.72);
+            font-size: 11px;
+        }
+
+        .footer .center {
+            text-align: center;
+        }
+
+        .footer .right {
+            text-align: right;
+        }
+
+        .brand-lockup {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-lockup img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            background: rgba(255,255,255,0.14);
+            border-radius: 50%;
+            padding: 4px;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: #fff;
+            }
+
+            .report {
+                min-height: auto;
+            }
+
+            .footer {
+                position: fixed;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report">
+        <header class="header">
+            <div>
+                <div class="header-brand">EL FIRMA</div>
+                <div class="header-sub">Professional Livestock Management</div>
+            </div>
+            <div class="header-center"></div>
+            <div class="header-right">Export: {{ generated_at }}</div>
+        </header>
+
+        <main class="content">
+            <div class="intro-line"></div>
+            <h1 class="title">Livestock Export Report</h1>
+
+            <div class="meta">
+                <div><strong>Export date:</strong> {{ generated_at }}</div>
+                <div>As livestock manager at EL FIRMA, this report summarizes all registered livestock units.</div>
+                <div>For each unit, livestock type and associated production are listed for monitoring and decision-making.</div>
+                <div>This document serves as a practical farm management summary.</div>
+            </div>
+
+            <section class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 55%;">Livestock Type</th>
+                            <th>Production</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in elevages %}
+                            <tr>
+                                <td>{{ item.type_elevage ?: 'N/A' }}</td>
+                                <td>{{ item.production ?: 'N/A' }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="2">No livestock found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <div style="font-size: 11px; color: #7a8478; margin-top: 6px;">
+                Total: {{ total_count }} livestock unit(s) registered
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div>
+                <div style="font-weight: 800;">EL FIRMA</div>
+                <div class="muted">Professional Livestock Management</div>
+            </div>
+            <div class="center">Page 1 / 1</div>
+            <div class="right">
+                <div style="font-weight: 800;">Manager:</div>
+                <div class="muted">{{ manager_name }}</div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        window.print();
+    </script>
+</body>
+</html>

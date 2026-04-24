@@ -1,0 +1,51 @@
+{% if pageCount > 1 %}
+  <nav class="flex items-center justify-center gap-2 py-4" aria-label="Pagination">
+    <!-- First Page -->
+    <div class="hidden sm:block">
+      {% if previous is defined %}
+        <a class="px-3 py-2 bg-primary text-surface font-semibold rounded-lg hover:opacity-90 transition-opacity" href="{{ path(route, knp_pagination_query(query, first, options)) }}" aria-label="First page">«</a>
+      {% else %}
+        <span class="px-3 py-2 bg-surface-container-low text-on-surface-variant font-semibold rounded-lg cursor-not-allowed" aria-hidden="true">«</span>
+      {% endif %}
+    </div>
+
+    <!-- Previous Page -->
+    {% if previous is defined %}
+      <a class="px-3 py-2 bg-primary text-surface font-semibold rounded-lg hover:opacity-90 transition-opacity" rel="prev" href="{{ path(route, knp_pagination_query(query, previous, options)) }}" aria-label="Previous page">Prev</a>
+    {% else %}
+      <span class="px-3 py-2 bg-surface-container-low text-on-surface-variant font-semibold rounded-lg cursor-not-allowed">Prev</span>
+    {% endif %}
+
+    <!-- Page Numbers -->
+    <div class="flex items-center gap-1">
+      {% for page in pagesInRange %}
+        {% if page != current %}
+          <a class="w-10 h-10 flex items-center justify-center bg-surface-container-low text-primary font-semibold rounded-lg hover:bg-surface-container-highest transition-colors" href="{{ path(route, knp_pagination_query(query, page, options)) }}">{{ page }}</a>
+        {% else %}
+          <span class="w-10 h-10 flex items-center justify-center bg-primary text-surface font-semibold rounded-lg" aria-current="page">{{ page }}</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Next Page -->
+    {% if next is defined %}
+      <a class="px-3 py-2 bg-primary text-surface font-semibold rounded-lg hover:opacity-90 transition-opacity" rel="next" href="{{ path(route, knp_pagination_query(query, next, options)) }}" aria-label="Next page">Next</a>
+    {% else %}
+      <span class="px-3 py-2 bg-surface-container-low text-on-surface-variant font-semibold rounded-lg cursor-not-allowed">Next</span>
+    {% endif %}
+
+    <!-- Last Page -->
+    <div class="hidden sm:block">
+      {% if next is defined %}
+        <a class="px-3 py-2 bg-primary text-surface font-semibold rounded-lg hover:opacity-90 transition-opacity" href="{{ path(route, knp_pagination_query(query, last, options)) }}" aria-label="Last page">»</a>
+      {% else %}
+        <span class="px-3 py-2 bg-surface-container-low text-on-surface-variant font-semibold rounded-lg cursor-not-allowed" aria-hidden="true">»</span>
+      {% endif %}
+    </div>
+
+    <!-- Page Info -->
+    <div class="ml-4 text-sm text-on-surface-variant font-semibold">
+      Page <strong class="text-primary">{{ current }}</strong> of <strong class="text-primary">{{ pageCount }}</strong>
+    </div>
+  </nav>
+{% endif %}

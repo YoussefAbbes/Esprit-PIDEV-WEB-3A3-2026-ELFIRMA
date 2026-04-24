@@ -1,0 +1,44 @@
+{% extends 'auth_base.html.twig' %}
+
+{% block title %}Security Check{% endblock %}
+
+{% block content %}
+<div class="auth-brand">
+  <div class="auth-logo-section">
+    <h2>Security Verification</h2>
+    <p>Please confirm you're not a robot</p>
+  </div>
+
+  <div class="auth-features">
+    <div class="auth-feature">
+      <i class="bi bi-shield-check"></i>
+      <span>Your account security is important</span>
+    </div>
+  </div>
+</div>
+
+<div class="auth-form-section">
+  <div class="auth-form-header">
+    <h2>Verify Identity</h2>
+    <p>Complete the captcha to continue</p>
+  </div>
+
+  {% if error is defined and error %}
+    <div style="background-color: #ffebee; border: 1px solid #ef5350; padding: 1rem; border-radius: 6px; color: #d32f2f;">
+      {{ error }}
+    </div>
+  {% endif %}
+
+  <form method="POST" class="auth-form">
+    <div class="form-group" style="text-align:center;">
+      <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+    </div>
+
+    <button type="submit" class="btn-auth">
+      <span>Continue</span>
+    </button>
+  </form>
+</div>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endblock %}

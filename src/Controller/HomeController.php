@@ -4,10 +4,13 @@ namespace App\Controller;
 
 use App\Repository\CultureRepository;
 use App\Repository\ParcelleRepository;
+use App\Repository\AnimalRepository;
+use App\Repository\LivestockRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\EquipementRepository;
 
 final class HomeController extends AbstractController
 {
@@ -72,11 +75,22 @@ final class HomeController extends AbstractController
         return $this->render('pages/testimonials.html.twig');
     }
 
-    #[Route('/blog', name: 'app_blog')]
-    public function blog(): Response
+   #[Route('/blog', name: 'app_blog')]
+    public function blog(EquipementRepository $repo): Response
     {
-        return $this->render('pages/blog.html.twig');
+        $dateLimite = new \DateTime('-4 years');
+
+        $equipements = $repo->createQueryBuilder('e')
+            ->where('e.date_achat <= :date')
+            ->setParameter('date', $dateLimite)
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('pages/blog.html.twig', [
+            'equipements' => $equipements
+        ]);
     }
+
 
     #[Route('/blog/details', name: 'app_blog_details')]
     public function blogDetails(): Response
@@ -88,6 +102,73 @@ final class HomeController extends AbstractController
     public function contact(): Response
     {
         return $this->render('pages/contact.html.twig');
+    }
+
+    #[Route('/livestock-catalog', name: 'app_livestock_catalog', methods: ['GET'])]
+    public function livestockCatalog(LivestockRepository $livestockRepository): Response
+    {
+        $livestocks = $livestockRepository->findAllForManagement();
+
+        $totalCapacity = 0;
+        $totalAnimals = 0;
+
+        foreach ($livestocks as $livestock) {
+            $totalCapacity += (int) ($livestock['capacite'] ?? 0);
+            $totalAnimals += (int) ($livestock['nombre_animaux'] ?? 0);
+        }
+
+        return $this->render('pages/livestock-catalog.html.twig', [
+            'livestocks' => $livestocks,
+            'catalog_summary' => [
+                'total_livestock' => count($livestocks),
+                'total_capacity' => $totalCapacity,
+                'total_animals' => $totalAnimals,
+            ],
+        ]);
+    }
+
+    #[Route('/animals-catalog', name: 'app_animals_catalog', methods: ['GET'])]
+    public function animalsCatalog(
+        AnimalRepository $animalRepository,
+        LivestockRepository $livestockRepository
+    ): Response {
+        $animals = $animalRepository->findAllForManagement();
+        $livestockOptions = $livestockRepository->findOptionsForAnimalForm();
+
+        $livestockLabelsById = [];
+        foreach ($livestockOptions as $option) {
+            $idElevage = (int) ($option['id_elevage'] ?? 0);
+            if ($idElevage <= 0) {
+                continue;
+            }
+
+            $livestockLabelsById[$idElevage] = (string) ($option['type_elevage'] ?? ('Livestock #' . $idElevage));
+        }
+
+        $forSale = 0;
+        $retained = 0;
+
+        foreach ($animals as &$animal) {
+            $idElevage = (int) ($animal['id_elevage'] ?? 0);
+            $animal['livestock_label'] = $livestockLabelsById[$idElevage] ?? ('Livestock #' . $idElevage);
+
+            $status = strtolower(trim((string) ($animal['statut'] ?? '')));
+            if ($status !== '' && (str_contains($status, 'sale') || str_contains($status, 'vente'))) {
+                ++$forSale;
+            } else {
+                ++$retained;
+            }
+        }
+        unset($animal);
+
+        return $this->render('pages/animals-catalog.html.twig', [
+            'animals' => $animals,
+            'catalog_summary' => [
+                'total_animals' => count($animals),
+                'for_sale' => $forSale,
+                'retained' => $retained,
+            ],
+        ]);
     }
 
     #[Route('/contact/submit', name: 'app_contact_submit', methods: ['POST'])]

@@ -1,0 +1,34 @@
+[
+    {
+        "id": 12,
+        "nom": "laits",
+        "description": "Frais Premium",
+        "categorie": "produit",
+        "prix": "56.00",
+        "image": "laits-3e903ba3524f.jfif"
+    },
+    {
+        "id": 11,
+        "nom": "oignon",
+        "description": "Transformé Standard",
+        "categorie": "légume",
+        "prix": "4.00",
+        "image": "oignons-6c8973d34385.jpg"
+    },
+    {
+        "id": 1,
+        "nom": "pomme",
+        "description": "Frais Premium",
+        "categorie": "fruits",
+        "prix": "4.00",
+        "image": "pomme-d0b3b3f21b6c.jfif"
+    },
+    {
+        "id": 10,
+        "nom": "tomate",
+        "description": "Biologique Premium",
+        "categorie": "fruits",
+        "prix": "7.00",
+        "image": "tomate-cd94663e997b.jfif"
+    }
+]

@@ -149,6 +149,8 @@
         <li><a href="{{ path('app_pages_home') }}" class="{% if app.request.get('_route') == 'app_pages_home' %}active{% endif %}">Home</a></li>
         <li><a href="{{ path('app_about') }}" class="{% if app.request.get('_route') == 'app_about' %}active{% endif %}">About Us</a></li>
         <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
+                <li><a href="{{ path('suppliers_list') }}" class="{% if app.request.get('_route') == 'suppliers_list' %}active{% endif %}">Our Suppliers</a></li>
+
         <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
         <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Blog</a></li>
         {% set isParcellesCulturesRoute = app.request.get('_route') == 'app_client_parcelles' or app.request.get('_route') == 'app_client_cultures' or app.request.get('_route') starts with 'parcelle_' or app.request.get('_route') starts with 'culture_' %}
@@ -163,18 +165,46 @@
             <li>
               <a href="{{ path('app_client_cultures') }}" class="{% if app.request.get('_route') == 'app_client_cultures' or app.request.get('_route') starts with 'culture_' %}active{% endif %}">Crops</a>
             </li>
+        {% set livestock_animals_active = app.request.get('_route') in ['app_livestock_catalog', 'app_animals_catalog'] %}
+        <li class="dropdown"><a href="#" class="{{ livestock_animals_active ? 'active' : '' }}"><span>Livestock-Animals</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <ul>
+            <li><a href="{{ path('app_livestock_catalog') }}" class="{% if app.request.get('_route') == 'app_livestock_catalog' %}active{% endif %}">Livestock Catalog</a></li>
+            <li><a href="{{ path('app_animals_catalog') }}" class="{% if app.request.get('_route') == 'app_animals_catalog' %}active{% endif %}">Animals Catalog</a></li>
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
         {% if app.session.get('user_role') == 'admin' %}
-          <li><a href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}" class="nav-admin-link">Admin Panel</a></li>
+  <li><a href="{{ path('app_admin_panel_entry') }}" class="nav-admin-link">Admin Panel</a></li>
+
+        {% elseif app.session.get('user_role') == 'employee' %}
+          <li>
+            <a href="{{ path('employee_panel') }}" class="nav-admin-link">
+              Employee Panel
+            </a>
+          </li>
         {% endif %}
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
 
     {% if app.session.get('user_id') %}
+      {% set panier = app.session.get('panier', []) %}
+      {% set cartCount = 0 %}
+      {% for quantity in panier %}
+        {% set cartCount = cartCount + quantity %}
+      {% endfor %}
       <div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+        <a href="{{ path('app_panier_index') }}" class="btn-cart" title="Cart" aria-label="Cart" style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: linear-gradient(135deg, #166534 0%, #15803d 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 6px 14px rgba(22, 101, 52, 0.3); transition: transform .2s ease, box-shadow .2s ease;">
+          <i class="bi bi-cart3" style="font-size: 1.05rem;"></i>
+          {% if cartCount > 0 %}
+            <span id="cart-badge" style="position: absolute; top: -7px; right: -6px; background: #ef4444; color: white; border-radius: 999px; min-width: 20px; height: 20px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 2px solid white;">
+              {{ cartCount }}
+            </span>
+          {% endif %}
+        </a>
+        <a href="{{ path('app_commandes_index') }}" class="btn-orders" title="My Orders" aria-label="My Orders" style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 6px 14px rgba(13, 148, 136, 0.28); transition: transform .2s ease, box-shadow .2s ease;">
+          <i class="bi bi-receipt" style="font-size: 1.02rem;"></i>
+        </a>
         <span style="color: #116530; font-weight: 600;">{{ app.session.get('user_name') }}</span>
         <a href="{{ path('elfirma_profile') }}" class="btn-profile" title="My Profile" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(17, 101, 48, 0.15);">
           <i class="bi bi-person-fill" style="font-size: 1.3rem;"></i>

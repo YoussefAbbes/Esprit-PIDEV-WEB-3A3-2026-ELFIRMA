@@ -1,9 +1,20 @@
 # This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
+# Files in the packages/ directory configure your dependencies.
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.maptiler_api_key: '%env(MAPTILER_API_KEY)%'
+    rag.python_path: '%env(string:RAG_PYTHON_PATH)%'
+    rag.chat_engine_path: '%env(string:RAG_CHAT_ENGINE_PATH)%'
+    rag.default_top_k: '%env(int:RAG_DEFAULT_TOP_K)%'
+    rag.process_timeout: '%env(float:RAG_PROCESS_TIMEOUT)%'
+    rag.enable_llm: '%env(bool:RAG_ENABLE_LLM)%'
+    rag.llm_provider: '%env(string:RAG_LLM_PROVIDER)%'
+    rag.llm_model: '%env(string:RAG_LLM_MODEL)%'
+    rag.llm_timeout_seconds: '%env(float:RAG_LLM_TIMEOUT_SECONDS)%'
+    rag.llm_max_output_tokens: '%env(int:RAG_LLM_MAX_OUTPUT_TOKENS)%'
+    rag.gemini_api_key: '%env(string:GEMINI_API_KEY)%'
 
 services:
   # default configuration for services in *this* file
@@ -25,3 +36,39 @@ services:
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
+    # Configure AI services with the project directory
+    App\AI\GestureIntentAi:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\AI\VoiceIntentAi:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    # Configure ProductVideoGeneratorService with the project directory
+    App\Service\ProductVideoGeneratorService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    # Configure FaceEncodingStore with faceid encodings directory
+    App\Service\FaceEncodingStore:
+        arguments:
+            $encodingsDir: '%kernel.project_dir%/var/faceid/encodings'
+
+    # Configure FaceIdClient for Face ID service communication
+    App\Service\FaceIdClient:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $pythonBin: '%env(FACE_ID_PYTHON_BIN)%'
+            $host: '%env(FACE_ID_HOST)%'
+            $port: '%env(int:FACE_ID_PORT)%'
+            $threshold: '%env(float:FACE_ID_THRESHOLD)%'
+    App\Service\Tripo3DGenerationService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $apiKey: '%env(string:TRIPO3D_API_KEY)%'
+            $apiBaseUrl: '%env(string:TRIPO3D_API_BASE_URL)%'
+            $timeoutSeconds: '%env(int:TRIPO3D_TIMEOUT)%'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones

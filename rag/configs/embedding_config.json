@@ -1,0 +1,38 @@
+{
+  "config_version": "1.0.0",
+  "provider_strategy": {
+    "primary": "sentence_transformers_local",
+    "optional": [
+      "openai_api",
+      "voyageai_api"
+    ]
+  },
+  "embedding_model": {
+    "primary": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "optional": [
+      "intfloat/multilingual-e5-base"
+    ],
+    "language_note": "Primary model supports multilingual retrieval and is suitable for mixed French/English domain text."
+  },
+  "pipeline_paths": {
+    "chunk_input": "rag/outputs/chunks.jsonl",
+    "embedding_output": "rag/outputs/chunk_embeddings.jsonl",
+    "vector_index_dir": "rag/outputs/vector_index"
+  },
+  "embedding_runtime": {
+    "batch_size": 32,
+    "normalize_vectors": true
+  },
+  "vector_store": {
+    "primary": "local_numpy_cosine",
+    "optional": [
+      "faiss",
+      "qdrant"
+    ],
+    "index_files": {
+      "matrix": "embeddings.npy",
+      "metadata": "metadata.jsonl",
+      "meta": "index_meta.json"
+    }
+  }
+}

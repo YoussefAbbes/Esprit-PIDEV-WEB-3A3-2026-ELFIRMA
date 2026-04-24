@@ -265,6 +265,22 @@
                 <span class="material-symbols-outlined" style="font-size: 28px; color: #16a34a;">filter_alt</span>
                 Filter by category
               </h5>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; padding: 14px; background: linear-gradient(135deg, #ecfeff 0%, #f0fdf4 100%); border: 2px solid #ccfbf1; border-radius: 14px;">
+                <label for="image-search-input" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; border: none; padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">image_search</span>
+                  Choose image
+                </label>
+                <input id="image-search-input" type="file" accept="image/*" style="display: none;">
+                <button id="image-search-btn" type="button" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">auto_awesome</span>
+                  Search by image
+                </button>
+                <button id="image-search-reset-btn" type="button" style="background: #e5e7eb; color: #1f2937; border: 2px solid #d1d5db; padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                  Reset
+                </button>
+                <span id="image-search-file-name" style="font-size: 13px; color: #0f172a; font-weight: 600;"></span>
+              </div>
+              <div id="image-search-status" style="display: none; margin-bottom: 20px; font-size: 14px; font-weight: 700;"></div>
               <div class="category-filters" style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="category-filter active" data-category="all" style="background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); color: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(45, 80, 22, 0.2); font-size: 15px;">
                   ✓ All products
@@ -292,9 +308,9 @@
         {% else %}
           <div class="row g-4" id="products-grid">
             {% for produit in produits %}
-            <div class="col-lg-3 col-md-4 col-sm-6 product-item" data-category="{{ produit.categorie ? produit.categorie.id : 0 }}" data-aos="fade-up" data-aos-delay="100">
-              <div class="product-card" style="border: 2px solid #e8f5e8; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 10px 30px rgba(45, 80, 22, 0.12); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; backdrop-filter: blur(10px); height: 100%;" onclick="openProductDetails({{ produit.idProduit }})">>>
-
+            <div class="col-lg-3 col-md-4 col-sm-6 product-item" data-category="{{ produit.categorie ? produit.categorie.id : 0 }}" data-product-id="{{ produit.idProduit }}" data-aos="fade-up" data-aos-delay="100">
+              <div class="product-card" style="border: 2px solid #e8f5e8; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); box-shadow: 0 10px 30px rgba(45, 80, 22, 0.12); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; backdrop-filter: blur(10px); height: 100%;" onclick="openProductDetails({{ produit.idProduit }})">
+                
                 <!-- Organic certification badge -->
                 <div style="position: absolute; top: 15px; left: 15px; z-index: 10;">
                   <span style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 8px 16px; border-radius: 25px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); backdrop-filter: blur(10px);">
@@ -361,6 +377,16 @@
                     <div>
                       <span style="font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); background-clip: text; -webkit-background-clip: text; color: transparent;">{{ produit.prixUnitaire }}</span>
                       <small style="font-size: 14px; font-weight: 700; color: #6b7280; margin-left: 4px;">DT</small>
+                      <div
+                        class="product-price-eur"
+                        data-product-id="{{ produit.idProduit }}"
+                        data-price-tnd="{{ produit.prixUnitaire }}"
+                        style="font-size: 12px; color: #0f766e; font-weight: 700; margin-top: 3px; {% if tnd_to_eur_rate is not defined or tnd_to_eur_rate is null %}display:none;{% endif %}"
+                      >
+                        {% if tnd_to_eur_rate is defined and tnd_to_eur_rate is not null %}
+                          ~ {{ (produit.prixUnitaire * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR
+                        {% endif %}
+                      </div>
                     </div>
 
                     <div style="display: flex; gap: 8px;">
@@ -461,6 +487,8 @@
     </div>
 
     <script>
+      let tndToEurRate = {{ (tnd_to_eur_rate is defined and tnd_to_eur_rate is not null) ? tnd_to_eur_rate|number_format(6, '.', '') : 'null' }};
+
       // Product data (passed from PHP)
       const productsData = {
         {% for produit in produits %}
@@ -469,6 +497,7 @@
           nom: "{{ produit.nom|e('js') }}",
           type: "{{ typeLabelMap[produit.type]|default(produit.type)|e('js') }}",
           prix: "{{ produit.prixUnitaire }}",
+          prixEur: {{ (tnd_to_eur_rate is defined and tnd_to_eur_rate is not null) ? (produit.prixUnitaire * tnd_to_eur_rate)|number_format(2, '.', '') : 'null' }},
           stock: {{ produit.quantiteStock }},
           qualite: "{{ qualiteLabelMap[produit.qualite]|default(produit.qualite)|e('js') }}",
           statut: "{{ statutLabelMap[produit.statut]|default(produit.statut)|e('js') }}",
@@ -566,6 +595,7 @@
                     <p style="font-size: 52px; font-weight: 900; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); background-clip: text; -webkit-background-clip: text; color: transparent; margin: 0; line-height: 1;">
                       ${product.prix} <span style="font-size: 28px; font-weight: 800; color: #374151;">DT</span>
                     </p>
+                    ${product.prixEur !== null ? `<p style="margin: 8px 0 0 0; font-size: 14px; color: #0f766e; font-weight: 700;">~ ${Number(product.prixEur).toFixed(2)} EUR</p>` : ''}
                   </div>
                   <div style="display: flex; gap: 12px; flex-direction: column; width: 200px;">
                     <button onclick="addToCart(${product.id})" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; padding: 16px 20px; border-radius: 15px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); transform: translateY(0);">
@@ -576,6 +606,10 @@
                       <span class="material-symbols-outlined" style="font-size: 22px;">bolt</span>
                       Order
                     </button>
+                    <button onclick="generateProductVideo(${product.id})" style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: white; border: none; padding: 16px 20px; border-radius: 15px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 25px rgba(234, 88, 12, 0.35); transform: translateY(0);">
+                      <span class="material-symbols-outlined" style="font-size: 22px;">movie</span>
+                      Generate Video
+                    </button>
                   </div>
                 </div>
               </div>
@@ -585,6 +619,52 @@
 
         document.getElementById('productModal').style.display = 'block';
         document.body.style.overflow = 'hidden';
+      }
+
+      function applyExchangeRateOnProducts(rate) {
+        if (rate === null || Number.isNaN(Number(rate))) {
+          return;
+        }
+
+        tndToEurRate = Number(rate);
+
+        Object.keys(productsData).forEach((key) => {
+          const product = productsData[key];
+          const priceTnd = Number(product.prix);
+          product.prixEur = Number.isNaN(priceTnd) ? null : Number((priceTnd * tndToEurRate).toFixed(2));
+        });
+
+        const eurElements = document.querySelectorAll('.product-price-eur');
+        eurElements.forEach((el) => {
+          const priceTnd = Number(el.dataset.priceTnd || '0');
+          if (Number.isNaN(priceTnd)) {
+            return;
+          }
+
+          el.textContent = `~ ${(priceTnd * tndToEurRate).toFixed(2)} EUR`;
+          el.style.display = 'block';
+        });
+      }
+
+      async function loadExchangeRateForShop() {
+        if (tndToEurRate !== null) {
+          applyExchangeRateOnProducts(tndToEurRate);
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/exchange/tnd-eur');
+          if (!response.ok) {
+            return;
+          }
+
+          const result = await response.json();
+          if (result.ok && typeof result.rate === 'number' && result.rate > 0) {
+            applyExchangeRateOnProducts(result.rate);
+          }
+        } catch (error) {
+          console.error('Error loading exchange rate:', error);
+        }
       }
 
       function closeProductDetails() {
@@ -781,7 +861,11 @@
           const result = await response.json();
 
           if (result.success) {
-            showNotification(`Order #${result.order_id} created successfully! Total: ${result.total} DT`, 'success');
+            const totalTnd = Number(result.total);
+            const eurHint = tndToEurRate !== null && !Number.isNaN(totalTnd)
+              ? ` (~ ${(totalTnd * tndToEurRate).toFixed(2)} EUR)`
+              : '';
+            showNotification(`Order #${result.order_id} created successfully! Total: ${result.total} DT${eurHint}`, 'success');
             closeOrderForm();
             // Reload page to refresh stock values
             setTimeout(() => location.reload(), 2000);
@@ -794,23 +878,107 @@
         }
       }
 
+      function generateProductVideo(productId) {
+        if (!productId) {
+          return;
+        }
+
+        window.open(`/product/${productId}/generate-video`, '_blank');
+      }
+
+      function setImageSearchStatus(message, type = 'info') {
+        const statusEl = document.getElementById('image-search-status');
+        if (!statusEl) return;
+
+        const colors = {
+          info: '#0f172a',
+          success: '#166534',
+          error: '#b91c1c',
+        };
+
+        statusEl.textContent = message;
+        statusEl.style.color = colors[type] || colors.info;
+        statusEl.style.display = message ? 'block' : 'none';
+      }
+
+      function resetImageSearchState() {
+        window.imageSearchProductIds = null;
+        window.imageSearchRanking = null;
+
+        const input = document.getElementById('image-search-input');
+        if (input) {
+          input.value = '';
+        }
+
+        const fileName = document.getElementById('image-search-file-name');
+        if (fileName) {
+          fileName.textContent = '';
+        }
+
+        setImageSearchStatus('');
+
+        const activeCategoryBtn = document.querySelector('.category-filter[style*="2d5016"]') || document.querySelector('.category-filter.active');
+        const categoryId = activeCategoryBtn?.dataset?.category || 'all';
+        filterByCategory(categoryId, activeCategoryBtn || null);
+      }
+
+      function applyImageSearchResults(productIds) {
+        const normalizedIds = Array.isArray(productIds)
+          ? productIds.map((id) => String(id)).filter((id) => id !== '0' && id !== '')
+          : [];
+
+        window.imageSearchProductIds = new Set(normalizedIds);
+        window.imageSearchRanking = new Map(normalizedIds.map((id, index) => [id, index]));
+
+        const activeCategoryBtn = document.querySelector('.category-filter[style*="2d5016"]') || document.querySelector('.category-filter.active');
+        const categoryId = activeCategoryBtn?.dataset?.category || 'all';
+        filterByCategory(categoryId, activeCategoryBtn || null);
+      }
+
       // Category filter functions
-      function filterByCategory(categoryId) {
+      function filterByCategory(categoryId, clickedButton = null) {
         const productItems = document.querySelectorAll('.product-item');
         const categoryButtons = document.querySelectorAll('.category-filter');
+        const productsGrid = document.getElementById('products-grid');
+        const imageSet = window.imageSearchProductIds instanceof Set ? window.imageSearchProductIds : null;
+        const ranking = window.imageSearchRanking instanceof Map ? window.imageSearchRanking : null;
 
         // Update buttons
         categoryButtons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        if (clickedButton) {
+          clickedButton.classList.add('active');
+        } else {
+          const matched = Array.from(categoryButtons).find((btn) => btn.dataset.category === categoryId);
+          if (matched) {
+            matched.classList.add('active');
+          }
+        }
+
+        const visibleItems = [];
 
         // Filter products
         productItems.forEach(item => {
-          if (categoryId === 'all' || item.dataset.category === categoryId) {
+          const matchesCategory = categoryId === 'all' || item.dataset.category === categoryId;
+          const productId = String(item.dataset.productId || '');
+          const matchesImage = imageSet === null ? true : imageSet.has(productId);
+
+          if (matchesCategory && matchesImage) {
             item.style.display = 'block';
+            visibleItems.push(item);
           } else {
             item.style.display = 'none';
           }
         });
+
+        if (productsGrid && ranking) {
+          visibleItems
+            .sort((a, b) => {
+              const aRank = ranking.has(String(a.dataset.productId || '')) ? ranking.get(String(a.dataset.productId || '')) : 999999;
+              const bRank = ranking.has(String(b.dataset.productId || '')) ? ranking.get(String(b.dataset.productId || '')) : 999999;
+              return aRank - bRank;
+            })
+            .forEach((item) => productsGrid.appendChild(item));
+        }
       }
 
       // Show notification function
@@ -886,8 +1054,394 @@
         }
       }
 
+      function initVoiceCatalogAssistant() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const synth = window.speechSynthesis;
+        const hasVoice = !!SpeechRecognition && !!synth;
+        let isListening = false;
+        let networkRetryCount = 0;
+        let restartOnEnd = false;
+        let manualStop = false;
+        let resumeAfterSpeech = false;
+        let recognition = null;
+        let isRecognitionStarting = false;
+
+        const voiceBtn = document.createElement('button');
+        voiceBtn.type = 'button';
+        voiceBtn.id = 'voice-catalog-fab';
+        voiceBtn.style.cssText = `
+          position: fixed;
+          left: 20px;
+          bottom: 24px;
+          width: 58px;
+          height: 58px;
+          border-radius: 50%;
+          border: none;
+          background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+          color: #ffffff;
+          z-index: 1200;
+          box-shadow: 0 12px 24px rgba(15, 118, 110, 0.35);
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        `;
+        voiceBtn.innerHTML = '<span class="material-symbols-outlined">mic</span>';
+        voiceBtn.title = hasVoice ? 'Voice assistant for catalog' : 'Voice assistant not supported on this browser';
+        document.body.appendChild(voiceBtn);
+
+        const voiceStatus = document.createElement('div');
+        voiceStatus.id = 'voice-catalog-status';
+        voiceStatus.style.cssText = `
+          position: fixed;
+          left: 20px;
+          bottom: 92px;
+          z-index: 1200;
+          max-width: 320px;
+          padding: 8px 12px;
+          border-radius: 10px;
+          background: rgba(15, 23, 42, 0.9);
+          color: #fff;
+          font-size: 13px;
+          line-height: 1.35;
+          display: none;
+        `;
+        document.body.appendChild(voiceStatus);
+
+        function showVoiceStatus(message, isError = false, withSpeech = false) {
+          voiceStatus.textContent = message;
+          voiceStatus.style.background = isError ? 'rgba(185,28,28,.95)' : 'rgba(15,23,42,.9)';
+          voiceStatus.style.display = 'block';
+
+          if (withSpeech) {
+            speak(message);
+          }
+
+          setTimeout(() => {
+            voiceStatus.style.display = 'none';
+          }, 3200);
+        }
+
+        function openVoiceFallbackPrompt() {
+          const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande (ex: je veux acheter pomme).');
+          if (typeof typed === 'string' && typed.trim() !== '') {
+            handleVoiceCommand(typed.trim());
+          }
+        }
+
+        function speak(message) {
+          if (!synth) {
+            return;
+          }
+
+          if (isListening && recognition) {
+            resumeAfterSpeech = true;
+            manualStop = false;
+            try {
+              recognition.stop();
+            } catch (_error) {
+              // ignore
+            }
+          }
+
+          synth.cancel();
+          const utt = new SpeechSynthesisUtterance(message);
+          utt.lang = 'fr-FR';
+          utt.rate = 1;
+          utt.onend = function () {
+            if (resumeAfterSpeech && restartOnEnd && !manualStop) {
+              resumeAfterSpeech = false;
+              setTimeout(() => {
+                startRecognitionSafely(true);
+              }, 220);
+            }
+          };
+          synth.speak(utt);
+        }
+
+        function listVisibleProducts() {
+          const items = Array.from(document.querySelectorAll('.product-item'));
+          const visible = items.filter((item) => item.style.display !== 'none');
+          if (visible.length === 0) {
+            speak('Aucun produit visible actuellement.');
+            return;
+          }
+
+          const names = visible.slice(0, 6).map((item) => item.querySelector('h3')?.textContent?.trim()).filter(Boolean);
+          speak(`J'ai trouve ${visible.length} produits visibles. Exemples: ${names.join(', ')}.`);
+        }
+
+        function filterByVoiceQuery(query) {
+          const normalizeVoiceText = (value) => (value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+
+          const term = normalizeVoiceText(query);
+          const productItems = document.querySelectorAll('.product-item');
+          let count = 0;
+
+          productItems.forEach((item) => {
+            const name = normalizeVoiceText(item.querySelector('h3')?.textContent || '');
+            const match = term === '' || name.includes(term);
+            item.style.display = match ? 'block' : 'none';
+            if (match) {
+              count++;
+            }
+          });
+
+          const section = document.getElementById('products');
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+
+          speak(`${count} produits correspondent a ${query}.`);
+        }
+
+        async function executeVoiceActions(actions) {
+          if (!Array.isArray(actions)) {
+            return;
+          }
+
+          for (const action of actions) {
+            if (!action || typeof action !== 'object') {
+              continue;
+            }
+
+            if (action.type === 'read_visible_products') {
+              listVisibleProducts();
+              continue;
+            }
+
+            if (action.type === 'filter_products') {
+              filterByVoiceQuery(String(action.query || ''));
+              continue;
+            }
+
+            if (action.type === 'open_product_details') {
+              const productId = Number(action.product_id || 0);
+              if (productId > 0) {
+                openProductDetails(productId);
+              }
+              continue;
+            }
+
+            if (action.type === 'add_to_cart') {
+              const productId = Number(action.product_id || 0);
+              if (productId > 0) {
+                await addToCart(productId, 1);
+              }
+              continue;
+            }
+
+            if (action.type === 'add_to_cart_then_checkout') {
+              const productId = Number(action.product_id || 0);
+              if (productId > 0) {
+                await addToCart(productId, 1);
+                window.location.href = '{{ path('app_commande_create') }}';
+                break;
+              }
+              continue;
+            }
+
+            if (action.type === 'navigate') {
+              const url = String(action.url || '');
+              if (url !== '') {
+                window.location.href = url;
+              }
+            }
+          }
+        }
+
+        async function handleVoiceCommand(rawText) {
+          try {
+            const response = await fetch('{{ path('app_api_ai_voice_command') }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                context: 'catalog',
+                transcript: rawText,
+              }),
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+              showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+              return;
+            }
+
+            await executeVoiceActions(data.actions || []);
+            if (typeof data.speak === 'string' && data.speak !== '') {
+              speak(data.speak);
+            }
+          } catch (_error) {
+            showVoiceStatus('Service vocal temporairement indisponible pendant la commande vocale.', true, true);
+          }
+        }
+
+        if (!hasVoice) {
+          voiceBtn.style.opacity = '0.65';
+          voiceBtn.addEventListener('click', function () {
+            showVoiceStatus('La reconnaissance vocale n\'est pas supportee sur ce navigateur.', true);
+          });
+          return;
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        function startRecognitionSafely(quiet = false) {
+          if (isListening || isRecognitionStarting) {
+            return;
+          }
+
+          try {
+            isRecognitionStarting = true;
+            recognition.start();
+            restartOnEnd = false;
+            voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            if (!quiet) {
+              // Ne pas parler ici: la synthese coupe l'ecoute juste apres le start.
+              showVoiceStatus('Je vous ecoute... dites le nom du produit a chercher.', false, false);
+            }
+          } catch (_error) {
+            isRecognitionStarting = false;
+            showVoiceStatus('Impossible de demarrer le micro.', true);
+          }
+        }
+
+        recognition.onstart = function () {
+          isRecognitionStarting = false;
+          isListening = true;
+        };
+
+        recognition.onresult = function (event) {
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            if (!result.isFinal) {
+              continue;
+            }
+            const transcript = result?.[0]?.transcript || '';
+            if (transcript) {
+              networkRetryCount = 0;
+              manualStop = true;
+              restartOnEnd = false;
+              handleVoiceCommand(transcript);
+            }
+          }
+        };
+
+        recognition.onerror = function (event) {
+          const code = event?.error || 'unknown';
+          isRecognitionStarting = false;
+          isListening = false;
+
+          if (code === 'not-allowed' || code === 'service-not-allowed') {
+            restartOnEnd = false;
+            showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site.', true);
+            return;
+          }
+
+          if (code === 'audio-capture') {
+            restartOnEnd = false;
+            showVoiceStatus('Aucun micro detecte ou accessible.', true);
+            return;
+          }
+
+          if (code === 'network') {
+            if (networkRetryCount < 1) {
+              networkRetryCount++;
+              showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+              setTimeout(() => {
+                if (restartOnEnd && !manualStop) {
+                  startRecognitionSafely(true);
+                }
+              }, 500 + networkRetryCount * 350);
+
+              return;
+            }
+
+            restartOnEnd = false;
+            showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
+            openVoiceFallbackPrompt();
+            return;
+          }
+
+          if (code === 'no-speech') {
+            showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+            return;
+          }
+
+          if (code !== 'aborted') {
+            showVoiceStatus('Erreur vocale: ' + code, true);
+          }
+        };
+
+        recognition.onend = function () {
+          isRecognitionStarting = false;
+          isListening = false;
+          voiceBtn.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
+        };
+
+        async function ensureMicroPermission() {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return true;
+          }
+
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach((t) => t.stop());
+
+            return true;
+          } catch (_error) {
+            showVoiceStatus('Micro non autorise. Activez l\'acces micro du navigateur.', true);
+
+            return false;
+          }
+        }
+
+        voiceBtn.addEventListener('click', async function () {
+          if (isListening || isRecognitionStarting) {
+            manualStop = true;
+            restartOnEnd = false;
+            isRecognitionStarting = false;
+            recognition.stop();
+            isListening = false;
+            showVoiceStatus('Ecoute arretee.', false, false);
+
+            return;
+          }
+
+          const allowed = await ensureMicroPermission();
+          if (!allowed) {
+            return;
+          }
+
+          try {
+            networkRetryCount = 0;
+            manualStop = false;
+            restartOnEnd = false;
+            resumeAfterSpeech = false;
+            synth.cancel();
+            startRecognitionSafely();
+          } catch (_error) {
+            showVoiceStatus('Impossible de demarrer le micro.', true);
+          }
+        });
+
+        showVoiceStatus('Assistant vocal catalogue actif.', false, true);
+      }
+
       // Load cart item count on page load
       document.addEventListener('DOMContentLoaded', async function() {
+        await loadExchangeRateForShop();
+
         const quickOrderForm = document.getElementById('quickOrderForm');
         if (quickOrderForm) {
           quickOrderForm.addEventListener('submit', submitQuickOrder);
@@ -910,11 +1464,74 @@
           console.error('Error loading cart count:', error);
         }
 
+        initVoiceCatalogAssistant();
+
+        const imageSearchInput = document.getElementById('image-search-input');
+        const imageSearchButton = document.getElementById('image-search-btn');
+        const imageSearchResetButton = document.getElementById('image-search-reset-btn');
+        const imageSearchFileName = document.getElementById('image-search-file-name');
+
+        if (imageSearchInput && imageSearchFileName) {
+          imageSearchInput.addEventListener('change', function() {
+            const file = this.files && this.files[0] ? this.files[0] : null;
+            imageSearchFileName.textContent = file ? `Selected: ${file.name}` : '';
+          });
+        }
+
+        if (imageSearchButton && imageSearchInput) {
+          imageSearchButton.addEventListener('click', async function() {
+            const file = imageSearchInput.files && imageSearchInput.files[0] ? imageSearchInput.files[0] : null;
+            if (!file) {
+              setImageSearchStatus('Please choose an image first.', 'error');
+              return;
+            }
+
+            setImageSearchStatus('Analyzing image and finding similar products...', 'info');
+            imageSearchButton.disabled = true;
+
+            try {
+              const formData = new FormData();
+              formData.append('image', file);
+
+              const response = await fetch('{{ path('app_api_product_image_search') }}', {
+                method: 'POST',
+                body: formData,
+              });
+
+              const result = await response.json();
+              if (!response.ok || !result.ok) {
+                setImageSearchStatus(result.message || 'Image search failed.', 'error');
+                return;
+              }
+
+              applyImageSearchResults(result.product_ids || []);
+
+              const count = Number(result.count || 0);
+              if (count > 0) {
+                setImageSearchStatus(`${count} similar product(s) found.`, 'success');
+              } else {
+                setImageSearchStatus('No similar product found. Try another image.', 'error');
+              }
+            } catch (error) {
+              console.error('Image search error:', error);
+              setImageSearchStatus('Image search unavailable right now.', 'error');
+            } finally {
+              imageSearchButton.disabled = false;
+            }
+          });
+        }
+
+        if (imageSearchResetButton) {
+          imageSearchResetButton.addEventListener('click', function() {
+            resetImageSearchState();
+          });
+        }
+
         // Add events for category filters
         const categoryFilters = document.querySelectorAll('.category-filter');
         categoryFilters.forEach(filter => {
           filter.addEventListener('click', function() {
-            filterByCategory(this.dataset.category);
+            filterByCategory(this.dataset.category, this);
           });
         });
       });
@@ -1562,4 +2179,94 @@
         </div>
       </div>
     </section><!-- /Call To Action Section -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="{{ asset('assets/js/gesture_assistant.js') }}?v=3"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (!window.GestureAssistant) {
+          return;
+        }
+
+        function getVisibleProductIdByGesture(gesture) {
+          const visibleItems = Array.from(document.querySelectorAll('.product-item')).filter((item) => item.style.display !== 'none');
+          if (visibleItems.length === 0) {
+            return 0;
+          }
+
+          const gestureIndexMap = {
+            point: 0,
+            index: 0,
+            one_finger: 0,
+            two_fingers: 1,
+            victory: 1,
+            three_fingers: 2,
+            four_fingers: 3,
+            five_fingers: 4,
+          };
+
+          const targetIndex = gestureIndexMap[gesture] ?? 0;
+          const target = visibleItems[targetIndex] || visibleItems[0];
+          const buttonWithId = target.querySelector('[data-product-id]');
+          const id = Number(buttonWithId?.dataset?.productId || 0);
+          if (id > 0) {
+            return id;
+          }
+
+          const productKeys = Object.keys(productsData || {});
+          return Number(productKeys[targetIndex] || productKeys[0] || 0);
+        }
+
+        window.GestureAssistant.create({
+          id: 'catalog',
+          autoSpeak: true,
+          onGesture: async function (gesture) {
+            const productId = getVisibleProductIdByGesture(gesture);
+
+            try {
+              const response = await fetch('{{ path('app_api_ai_gesture_command') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ context: 'catalog', gesture: gesture, product_id: productId })
+              });
+
+              const data = await response.json();
+              if (!response.ok || !data.ok) {
+                return data.speak || 'Commande gestes non reconnue.';
+              }
+
+              const actions = Array.isArray(data.actions) ? data.actions : [];
+              for (const action of actions) {
+                if (!action || typeof action !== 'object') continue;
+
+                if (action.type === 'read_visible_products') {
+                  const count = Array.from(document.querySelectorAll('.product-item')).filter((item) => item.style.display !== 'none').length;
+                  return count > 0 ? `Il y a ${count} produits visibles.` : 'Aucun produit visible.';
+                }
+
+                if (action.type === 'open_product_details') {
+                  openProductDetails(Number(action.product_id || 0));
+                }
+
+                if (action.type === 'add_to_cart') {
+                  await addToCart(Number(action.product_id || 0), 1);
+                }
+
+                if (action.type === 'navigate') {
+                  const url = String(action.url || '');
+                  if (url !== '') {
+                    window.location.href = url;
+                  }
+                }
+              }
+
+              return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+            } catch (_error) {
+              return 'Service gestes temporairement indisponible.';
+            }
+          }
+        });
+      });
+    </script>
 {% endblock %}

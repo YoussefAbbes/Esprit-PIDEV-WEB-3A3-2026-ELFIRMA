@@ -8,6 +8,10 @@ use Doctrine\Common\Collections\Collection;
 use App\Repository\ProduitRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
+#[Vich\Uploadable]
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 #[ORM\Table(name: 'produit')]
@@ -150,9 +154,15 @@ class Produit
     }
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Assert\NotBlank(message: 'Product image is required.')]
     #[Assert\Length(max: 255, maxMessage: 'Image name cannot exceed {{ limit }} characters.')]
     private ?string $image = null;
+
+    #[Vich\UploadableField(mapping: 'produit_images', fileNameProperty: 'image')]
+    #[Assert\File(maxSize: '5M', mimeTypes: ['image/png','image/jpeg','image/jpg','image/webp'], mimeTypesMessage: 'Please upload a valid image (png, jpg, jpeg, webp).')]
+    private ?File $imageFile = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     public function getImage(): ?string
     {
@@ -163,6 +173,25 @@ class Produit
     {
         $this->image = $image;
         return $this;
+    }
+
+    public function setImageFile(?File $file = null): self
+    {
+        $this->imageFile = $file;
+        if (null !== $file) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+        return $this;
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 
     #[ORM\Column(type: 'string', length: 20, nullable: true, options: ['default' => 'Disponible'])]
