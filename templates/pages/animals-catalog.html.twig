@@ -110,6 +110,145 @@
       color: var(--heading-color);
     }
 
+    .animal-intro .animal-catalog-hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid rgba(45, 134, 83, 0.14);
+      background:
+        radial-gradient(circle at top right, rgba(45, 134, 83, 0.08), transparent 36%),
+        radial-gradient(circle at bottom left, rgba(200, 168, 75, 0.08), transparent 38%),
+        linear-gradient(135deg, #ffffff 0%, #f7fbf8 100%);
+      box-shadow: 0 28px 72px rgba(13, 51, 32, 0.18);
+      padding: 24px;
+    }
+
+    .animal-intro .animal-catalog-hero::before {
+      content: "";
+      position: absolute;
+      inset: auto -80px -80px auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45, 134, 83, 0.14) 0%, rgba(45, 134, 83, 0) 68%);
+      pointer-events: none;
+    }
+
+    .animal-intro .animal-hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 4.6vw, 4.3rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      color: #0d3320;
+      margin: 0;
+    }
+
+    .animal-intro .animal-hero-title em {
+      color: #2d8653;
+      font-style: italic;
+    }
+
+    .animal-intro .animal-hero-copy {
+      color: #6b7c71;
+      line-height: 1.75;
+      font-size: 15px;
+      max-width: 44rem;
+      margin-top: 16px;
+    }
+
+    .animal-intro .animal-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .animal-intro .animal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(45, 134, 83, 0.18);
+      background: #ffffff;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1f5f3f;
+      box-shadow: 0 6px 18px rgba(13, 51, 32, 0.08);
+    }
+
+    .animal-intro .animal-hero-image {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      min-height: 360px;
+      border: 1px solid rgba(45, 134, 83, 0.16);
+      box-shadow: 0 28px 72px rgba(13, 51, 32, 0.18);
+    }
+
+    .animal-intro .animal-hero-image img {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+
+    .animal-intro .animal-hero-chip {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      background: rgba(13, 51, 32, 0.86);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 18px 40px rgba(13, 51, 32, 0.12);
+    }
+
+    .animal-intro .animal-hero-chip .chip-emoji {
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .animal-intro .animal-hero-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .animal-intro .animal-mini-kpi {
+      border-radius: 18px;
+      border: 1px solid rgba(45, 134, 83, 0.14);
+      background: linear-gradient(160deg, #ffffff 0%, #f2faf4 100%);
+      padding: 16px 14px;
+      box-shadow: 0 6px 18px rgba(13, 51, 32, 0.08);
+    }
+
+    .animal-intro .animal-mini-kpi span {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+      color: #6b7c71;
+    }
+
+    .animal-intro .animal-mini-kpi strong {
+      display: block;
+      margin-top: 6px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem;
+      line-height: 1;
+      color: #0d3320;
+    }
+
     .animal-workbench {
       background:
         linear-gradient(180deg, #f8fcfa 0%, #f2f8f3 34%, #fff9f1 100%);
@@ -569,6 +708,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .animal-intro .animal-hero-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .detail-header {
         flex-direction: column;
         align-items: flex-start;
@@ -578,6 +721,10 @@
     @media (max-width: 575px) {
       .animal-intro .kpi-band,
       .detail-metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .animal-intro .animal-hero-kpis {
         grid-template-columns: 1fr;
       }
 
@@ -598,39 +745,48 @@
   <section class="about-3 section animal-intro">
     <div class="container">
       <div class="intro-shell">
-        <div class="row gy-4 justify-content-between align-items-center">
-          <div class="col-lg-6 order-lg-2" data-aos="zoom-out">
-            <div class="intro-visual">
-              <img src="{{ asset('assets/img/farm-animals-real.jpg') }}" alt="Real farm animals photo with sheep and chickens" class="img-fluid">
+        <section class="animal-catalog-hero">
+          <div class="row gy-4 justify-content-between align-items-center">
+            <div class="col-lg-6 order-lg-2" data-aos="zoom-out">
+              <div class="animal-hero-image">
+                <img src="{{ asset('assets/img/farm-animals-real.jpg') }}" alt="Livestock overview" class="img-fluid">
+                <div class="animal-hero-chip">
+                  <span class="chip-emoji">🌿</span>
+                  <div>
+                    <div style="font-size:12px;opacity:.72;font-weight:600;">EL FIRMA Certified</div>
+                    <div style="font-size:14px;font-weight:800;">Premium Farm Network</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-up" data-aos-delay="120">
+              <h2 class="animal-hero-title">Curated animal<br><em>intelligence</em> for clients</h2>
+              <p class="animal-hero-copy">
+                This catalog transforms animal records into a polished narrative: gender, health, age, status, and seasonal strategy in one coherent experience.
+              </p>
+              <div class="animal-pill-row">
+                <span class="animal-pill">🔍 Smart filtering</span>
+                <span class="animal-pill">📊 Live health</span>
+                <span class="animal-pill">🌦️ Seasonal view</span>
+                <span class="animal-pill">🧬 DNA clues</span>
+              </div>
+              <div class="animal-hero-kpis">
+                <article class="animal-mini-kpi">
+                  <span>Total animals</span>
+                  <strong>{{ catalog_summary.total_animals }}</strong>
+                </article>
+                <article class="animal-mini-kpi">
+                  <span>Healthy</span>
+                  <strong id="catalog-healthy-count">0</strong>
+                </article>
+                <article class="animal-mini-kpi">
+                  <span>For sale</span>
+                  <strong>{{ catalog_summary.for_sale }}</strong>
+                </article>
+              </div>
             </div>
           </div>
-          <div class="col-lg-5 order-lg-1" data-aos="fade-up" data-aos-delay="120">
-            <h2 class="content-title mb-4">Creative Animal Storyboard by Livestock</h2>
-            <p class="mb-4">
-              A cleaner and more expressive view of each animal profile, focused on health, behavior, and traceability in a premium interface.
-            </p>
-            <ul class="list-unstyled list-check">
-              <li>Fast search by type, status, and livestock</li>
-              <li>Detailed profile with clear operational data</li>
-              <li>Four narrative cards fully focused on the selected animal</li>
-            </ul>
-
-            <div class="kpi-band" data-aos="fade-up" data-aos-delay="180">
-              <article class="kpi-card">
-                <span>Total animals</span>
-                <strong>{{ catalog_summary.total_animals }}</strong>
-              </article>
-              <article class="kpi-card sale">
-                <span>For Sale</span>
-                <strong>{{ catalog_summary.for_sale }}</strong>
-              </article>
-              <article class="kpi-card retained">
-                <span>Retained</span>
-                <strong>{{ catalog_summary.retained }}</strong>
-              </article>
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
   </section>
@@ -767,6 +923,15 @@
       const animalsData = {{ animals|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
       if (!Array.isArray(animalsData)) {
         return;
+      }
+
+      const healthyCountNode = document.getElementById('catalog-healthy-count');
+      if (healthyCountNode) {
+        const healthyCount = animalsData.filter((item) => {
+          const health = String(item && item.etat_sante ? item.etat_sante : '').trim().toLowerCase();
+          return health.includes('healthy') || health.includes('sain');
+        }).length;
+        healthyCountNode.textContent = String(healthyCount);
       }
 
       const searchInput = document.getElementById('animal-search');

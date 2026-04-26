@@ -1,0 +1,1257 @@
+{
+  "generated_at": "2026-04-16T03:51:19.562316+00:00",
+  "cases_file": "C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258\\rag\\tests\\route_relevance_cases.json",
+  "config_file": "C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258\\rag\\configs\\embedding_config.json",
+  "settings": {
+    "top_k": 5,
+    "rerank_pool_size": 20,
+    "min_score": -1.0,
+    "max_cases": 0
+  },
+  "aggregate_metrics": {
+    "top1_domain": {
+      "hits": 15,
+      "total": 15,
+      "rate": 1.0
+    },
+    "topk_domain": {
+      "hits": 15,
+      "total": 15,
+      "rate": 1.0
+    },
+    "top1_document_type": {
+      "hits": 12,
+      "total": 15,
+      "rate": 0.8
+    },
+    "topk_document_type": {
+      "hits": 14,
+      "total": 15,
+      "rate": 0.9333
+    },
+    "confidence_preference": {
+      "hits": 14,
+      "total": 15,
+      "rate": 0.9333
+    },
+    "unknown_policy_routing": {
+      "hits": 3,
+      "total": 3,
+      "rate": 1.0
+    },
+    "route_expected_match": {
+      "hits": 11,
+      "total": 15,
+      "rate": 0.7333
+    },
+    "top1_preferred_document_type": {
+      "hits": 14,
+      "total": 15,
+      "rate": 0.9333
+    },
+    "topk_preferred_document_type": {
+      "hits": 15,
+      "total": 15,
+      "rate": 1.0
+    },
+    "deprioritized_pushed_down": {
+      "hits": 15,
+      "total": 15,
+      "rate": 1.0
+    },
+    "top1_deprioritized_avoidance": {
+      "hits": 15,
+      "total": 15,
+      "rate": 1.0
+    }
+  },
+  "route_distribution": {
+    "field_definition": 7,
+    "observed_value_lookup": 3,
+    "structural_relationship": 2,
+    "policy_unknown": 1,
+    "example_request": 2
+  },
+  "route_quality_summary": [
+    {
+      "route": "observed_value_lookup",
+      "cases": 3,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 1.0,
+      "expected_route_match_rate": 1.0,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 1.0
+    },
+    {
+      "route": "example_request",
+      "cases": 2,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 1.0,
+      "expected_route_match_rate": 1.0,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 1.0
+    },
+    {
+      "route": "structural_relationship",
+      "cases": 2,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 1.0,
+      "expected_route_match_rate": 1.0,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 1.0
+    },
+    {
+      "route": "policy_unknown",
+      "cases": 1,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 1.0,
+      "expected_route_match_rate": 1.0,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 1.0
+    },
+    {
+      "route": "field_definition",
+      "cases": 7,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 0.8571,
+      "expected_route_match_rate": 0.4286,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 0.8571
+    }
+  ],
+  "best_routes": [
+    {
+      "route": "observed_value_lookup",
+      "cases": 3,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 1.0,
+      "expected_route_match_rate": 1.0,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 1.0
+    },
+    {
+      "route": "example_request",
+      "cases": 2,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 1.0,
+      "expected_route_match_rate": 1.0,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 1.0
+    }
+  ],
+  "worst_routes": [
+    {
+      "route": "field_definition",
+      "cases": 7,
+      "topk_preferred_doc_type_rate": 1.0,
+      "deprioritized_pushed_down_rate": 1.0,
+      "avoid_deprioritized_top1_rate": 1.0,
+      "route_quality_score": 0.8571,
+      "expected_route_match_rate": 0.4286,
+      "expected_domain_topk_hit_rate": 1.0,
+      "expected_document_type_topk_hit_rate": 0.8571
+    }
+  ],
+  "error_categories": {
+    "no_results": 0,
+    "domain_miss_topk": 0,
+    "document_type_miss_topk": 1,
+    "confidence_preference_miss": 1,
+    "unknown_policy_route_miss": 0,
+    "route_detection_miss": 4,
+    "preferred_doc_type_miss_topk": 0,
+    "deprioritized_not_pushed_down": 0,
+    "deprioritized_leaked_top1": 0
+  },
+  "common_document_type_misses": {
+    "expected_document_type_miss_topk": [
+      {
+        "name": "business_rules",
+        "count": 1
+      },
+      {
+        "name": "assumptions_and_gaps",
+        "count": 1
+      }
+    ],
+    "route_preferred_type_miss_topk": []
+  },
+  "common_reranking_misses": [],
+  "case_results": [
+    {
+      "id": "RR001",
+      "query": "What does etat_sante mean in the animals table?",
+      "query_class": "inferred",
+      "expected_route": "field_definition",
+      "detected_route": "field_definition",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 5
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide > inferred_from_schema",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.7249,
+          "raw_score": 0.6249,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/data_dictionary.md",
+          "section": "Data Dictionary - Evidence Aligned > Table: animals",
+          "document_type": "data_dictionary",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.7082,
+          "raw_score": 0.5882,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.6873,
+          "raw_score": 0.5873,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR002",
+      "query": "Que veut dire statut dans animals ?",
+      "query_class": "inferred",
+      "expected_route": "field_definition",
+      "detected_route": "field_definition",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 5
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.6516,
+          "raw_score": 0.5516,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/livestock_domain.md",
+          "section": "Livestock Domain (Elevage) - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "livestock",
+          "confidence": "inferred",
+          "score": 0.634,
+          "raw_score": 0.534,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide > inferred_from_schema",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.5966,
+          "raw_score": 0.4966,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR003",
+      "query": "Define capacite in elevage records.",
+      "query_class": "inferred",
+      "expected_route": "field_definition",
+      "detected_route": "field_definition",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 4
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/livestock_domain.md",
+          "section": "Livestock Domain (Elevage) - Evidence Aligned Guide > inferred_from_schema",
+          "document_type": "domain_guide",
+          "domain": "livestock",
+          "confidence": "inferred",
+          "score": 0.5029,
+          "raw_score": 0.4029,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/livestock_domain.md",
+          "section": "Livestock Domain (Elevage) - Evidence Aligned Guide > Monitoring Questions Supported By Current Evidence",
+          "document_type": "domain_guide",
+          "domain": "livestock",
+          "confidence": "inferred",
+          "score": 0.463,
+          "raw_score": 0.363,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/livestock_domain.md",
+          "section": "Livestock Domain (Elevage) - Evidence Aligned Guide > confirmed_from_screenshot",
+          "document_type": "domain_guide",
+          "domain": "livestock",
+          "confidence": "inferred",
+          "score": 0.4583,
+          "raw_score": 0.3583,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR101",
+      "query": "Which vaccination status values are currently observed?",
+      "query_class": "confirmed",
+      "expected_route": "observed_value_lookup",
+      "detected_route": "observed_value_lookup",
+      "preferred_document_types": [
+        "data_dictionary",
+        "faq",
+        "schema_reference"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 4
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q5: What value was observed for vaccinations.status?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.8878,
+          "raw_score": 0.7778,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/vaccination_domain.md",
+          "section": "Vaccination Domain - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "vaccination",
+          "confidence": "inferred",
+          "score": 0.6719,
+          "raw_score": 0.6719,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q1: What data domains are confirmed right now?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.6571,
+          "raw_score": 0.5471,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR102",
+      "query": "Quelles valeurs observees existent pour etat_elevage ?",
+      "query_class": "confirmed",
+      "expected_route": "observed_value_lookup",
+      "detected_route": "observed_value_lookup",
+      "preferred_document_types": [
+        "data_dictionary",
+        "faq",
+        "schema_reference"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 5
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q7: What values were observed for elevage.etat_elevage?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.7063,
+          "raw_score": 0.5963,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q4: What values were observed for animals.statut?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.6678,
+          "raw_score": 0.5578,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q3: What values were observed for animals.type_animal?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.6279,
+          "raw_score": 0.5179,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR103",
+      "query": "Show observed sample values for animals.sexe",
+      "query_class": "confirmed",
+      "expected_route": "observed_value_lookup",
+      "detected_route": "observed_value_lookup",
+      "preferred_document_types": [
+        "data_dictionary",
+        "faq",
+        "schema_reference"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 3
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q3: What values were observed for animals.type_animal?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.8028,
+          "raw_score": 0.6928,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q4: What values were observed for animals.statut?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.7629,
+          "raw_score": 0.6529,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/schema_reference.md",
+          "section": "Schema Reference - Evidence Aligned (Animals, Vaccination, Elevage) > confirmed_from_screenshot > Table: animals",
+          "document_type": "schema_reference",
+          "domain": "cross_entity",
+          "confidence": "confirmed",
+          "score": 0.7059,
+          "raw_score": 0.6359,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR201",
+      "query": "How are animals linked to elevage and vaccinations?",
+      "query_class": "inferred",
+      "expected_route": "structural_relationship",
+      "detected_route": "field_definition",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": false,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": false,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 3
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q10: How are animals and vaccinations connected?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.7449,
+          "raw_score": 0.6649,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/schema_reference.md",
+          "section": "Schema Reference - Evidence Aligned (Animals, Vaccination, Elevage)",
+          "document_type": "schema_reference",
+          "domain": "cross_entity",
+          "confidence": "confirmed",
+          "score": 0.6787,
+          "raw_score": 0.6787,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide > inferred_from_schema",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.6699,
+          "raw_score": 0.5699,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR202",
+      "query": "Comment relier utilisateur, contrat et elevage ?",
+      "query_class": "inferred",
+      "expected_route": "structural_relationship",
+      "detected_route": "structural_relationship",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "schema_reference"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 3
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/schema_reference.md",
+          "section": "Schema Reference - Evidence Aligned (Animals, Vaccination, Elevage) > assumed_business_rule",
+          "document_type": "schema_reference",
+          "domain": "cross_entity",
+          "confidence": "confirmed",
+          "score": 0.396,
+          "raw_score": 0.296,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/schema_reference.md",
+          "section": "Schema Reference - Evidence Aligned (Animals, Vaccination, Elevage) > Entity Data Flow (Conservative)",
+          "document_type": "schema_reference",
+          "domain": "cross_entity",
+          "confidence": "confirmed",
+          "score": 0.3862,
+          "raw_score": 0.2862,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide > assumed_business_rule",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.3794,
+          "raw_score": 0.2944,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR203",
+      "query": "What relationship connects elevage location fields to animal records?",
+      "query_class": "inferred",
+      "expected_route": "structural_relationship",
+      "detected_route": "structural_relationship",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "schema_reference"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 5
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.7584,
+          "raw_score": 0.6734,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/schema_reference.md",
+          "section": "Schema Reference - Evidence Aligned (Animals, Vaccination, Elevage) > Entity Data Flow (Conservative)",
+          "document_type": "schema_reference",
+          "domain": "cross_entity",
+          "confidence": "confirmed",
+          "score": 0.7542,
+          "raw_score": 0.6542,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide > inferred_from_schema",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.7431,
+          "raw_score": 0.6581,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR301",
+      "query": "What is the official rule for overdue vaccination alerts?",
+      "query_class": "unknown_policy",
+      "expected_route": "policy_unknown",
+      "detected_route": "policy_unknown",
+      "preferred_document_types": [
+        "assumptions_and_gaps",
+        "business_rules",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": false,
+        "unknown_policy_routing_hit": true,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 4
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/assumptions_and_gaps.md",
+          "section": "Assumptions And Gaps - Master Alignment Register > 4) unknowns_to_confirm",
+          "document_type": "assumptions_and_gaps",
+          "domain": "cross_entity",
+          "confidence": "confirmed",
+          "score": 0.664,
+          "raw_score": 0.554,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q5: What value was observed for vaccinations.status?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.634,
+          "raw_score": 0.564,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/vaccination_domain.md",
+          "section": "Vaccination Domain - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "vaccination",
+          "confidence": "inferred",
+          "score": 0.6115,
+          "raw_score": 0.6115,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR302",
+      "query": "Quelle est la politique officielle pour un elevage critique ?",
+      "query_class": "unknown_policy",
+      "expected_route": "policy_unknown",
+      "detected_route": "field_definition",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": false,
+        "topk_document_type_hit": false,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": true,
+        "route_expected_match": false,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 5
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/livestock_domain.md",
+          "section": "Livestock Domain (Elevage) - Evidence Aligned Guide > Scope",
+          "document_type": "domain_guide",
+          "domain": "livestock",
+          "confidence": "inferred",
+          "score": 0.4807,
+          "raw_score": 0.3807,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q12: Can the assistant provide strict overdue policy now?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.4779,
+          "raw_score": 0.3979,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/livestock_domain.md",
+          "section": "Livestock Domain (Elevage) - Evidence Aligned Guide > assumed_business_rule",
+          "document_type": "domain_guide",
+          "domain": "livestock",
+          "confidence": "inferred",
+          "score": 0.4497,
+          "raw_score": 0.3497,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR303",
+      "query": "Is there a mandated quarantine duration after a missed vaccine?",
+      "query_class": "unknown_policy",
+      "expected_route": "policy_unknown",
+      "detected_route": "field_definition",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": true,
+        "route_expected_match": false,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 5
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant > Q5: What value was observed for vaccinations.status?",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.6596,
+          "raw_score": 0.5796,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/vaccination_domain.md",
+          "section": "Vaccination Domain - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "vaccination",
+          "confidence": "inferred",
+          "score": 0.6286,
+          "raw_score": 0.5286,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/vaccination_domain.md",
+          "section": "Vaccination Domain - Evidence Aligned Guide > Scope",
+          "document_type": "domain_guide",
+          "domain": "vaccination",
+          "confidence": "inferred",
+          "score": 0.5641,
+          "raw_score": 0.4641,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR401",
+      "query": "Give me an example response for explaining etat_sante to a farmer.",
+      "query_class": "assumed",
+      "expected_route": "example_request",
+      "detected_route": "example_request",
+      "preferred_document_types": [
+        "chat_examples",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": false,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": false,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 4
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/glossary.md",
+          "section": "Glossary - Confirmed vs Candidate Vocabulary > Purpose",
+          "document_type": "glossary",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.5334,
+          "raw_score": 0.5334,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/faq.md",
+          "section": "FAQ - Evidence Aligned Farm Assistant",
+          "document_type": "faq",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.5245,
+          "raw_score": 0.4445,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/chat_examples.md",
+          "section": "Chat Examples - Conservative Answering Style > Beginner Examples",
+          "document_type": "chat_examples",
+          "domain": "cross_entity",
+          "confidence": "assumed",
+          "score": 0.5121,
+          "raw_score": 0.4121,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR402",
+      "query": "Donne un exemple de reponse prudente pour une regle vaccine inconnue.",
+      "query_class": "assumed",
+      "expected_route": "example_request",
+      "detected_route": "example_request",
+      "preferred_document_types": [
+        "chat_examples",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": true,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 3
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/chat_examples.md",
+          "section": "Chat Examples - Conservative Answering Style > Advanced Examples > Example A1",
+          "document_type": "chat_examples",
+          "domain": "cross_entity",
+          "confidence": "assumed",
+          "score": 0.7455,
+          "raw_score": 0.6455,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/chat_examples.md",
+          "section": "Chat Examples - Conservative Answering Style > Beginner Examples > Example B2",
+          "document_type": "chat_examples",
+          "domain": "cross_entity",
+          "confidence": "assumed",
+          "score": 0.6811,
+          "raw_score": 0.5811,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/vaccination_domain.md",
+          "section": "Vaccination Domain - Evidence Aligned Guide",
+          "document_type": "domain_guide",
+          "domain": "vaccination",
+          "confidence": "inferred",
+          "score": 0.6646,
+          "raw_score": 0.6646,
+          "boost": 0.0
+        }
+      ]
+    },
+    {
+      "id": "RR403",
+      "query": "Provide a sample chatbot answer comparing statut and etat_sante.",
+      "query_class": "assumed",
+      "expected_route": "example_request",
+      "detected_route": "field_definition",
+      "preferred_document_types": [
+        "data_dictionary",
+        "domain_guide",
+        "faq"
+      ],
+      "deprioritized_document_types": [
+        "chat_examples",
+        "intents_catalog"
+      ],
+      "metrics": {
+        "top1_domain_hit": true,
+        "topk_domain_hit": true,
+        "top1_document_type_hit": true,
+        "topk_document_type_hit": true,
+        "confidence_preference_hit": true,
+        "unknown_policy_routing_hit": null,
+        "route_expected_match": false,
+        "top1_preferred_doc_type_hit": true,
+        "topk_preferred_doc_type_hit": true,
+        "deprioritized_pushed_down": true,
+        "top1_deprioritized_hit": false
+      },
+      "retrieval_debug": {
+        "candidate_count": 122,
+        "rerank_pool_size": 20,
+        "reranking_applied": true,
+        "order_changed": true,
+        "adjustments_applied": 5
+      },
+      "top_results": [
+        {
+          "rank": 1,
+          "source_file": "rag/corpus/data_dictionary.md",
+          "section": "Data Dictionary - Evidence Aligned > Similar Concepts Clarified > etat_sante vs statut (animals)",
+          "document_type": "data_dictionary",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.5833,
+          "raw_score": 0.4633,
+          "boost": 0.0
+        },
+        {
+          "rank": 2,
+          "source_file": "rag/corpus/animals_domain.md",
+          "section": "Animals Domain - Evidence Aligned Guide > inferred_from_schema",
+          "document_type": "domain_guide",
+          "domain": "animals",
+          "confidence": "inferred",
+          "score": 0.4756,
+          "raw_score": 0.3756,
+          "boost": 0.0
+        },
+        {
+          "rank": 3,
+          "source_file": "rag/corpus/data_dictionary.md",
+          "section": "Data Dictionary - Evidence Aligned",
+          "document_type": "data_dictionary",
+          "domain": "cross_entity",
+          "confidence": "inferred",
+          "score": 0.4698,
+          "raw_score": 0.3498,
+          "boost": 0.0
+        }
+      ]
+    }
+  ]
+}

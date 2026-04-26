@@ -59,7 +59,6 @@
         "twig/twig": "^2.12|^3.0",
         "vich/uploader-bundle": "^2.9",
         "willdurand/geocoder-bundle": "^6.0"
-        "vich/uploader-bundle": "^2.9"
     },
     "config": {
         "allow-plugins": {

@@ -659,6 +659,22 @@
   const generatedPdfPath = document.getElementById('generatedPdfPath');
   const extractedTextInput = document.getElementById('extractedTextInput');
 
+  async function parseJsonSafely(response, actionName) {
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+    const rawBody = await response.text();
+
+    if (!contentType.includes('application/json')) {
+      const preview = rawBody.slice(0, 120).replace(/\s+/g, ' ').trim();
+      throw new Error(`${actionName} returned non-JSON response: ${preview}`);
+    }
+
+    try {
+      return JSON.parse(rawBody);
+    } catch (e) {
+      throw new Error(`${actionName} returned invalid JSON`);
+    }
+  }
+
   // Tab switching
   pdfTabBtn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -760,7 +776,7 @@
         body: formData
       });
 
-      const data = await response.json();
+      const data = await parseJsonSafely(response, 'Image to PDF');
       extractingIndicator.classList.add('hidden');
 
       if (data.success) {
@@ -792,7 +808,7 @@
 
       Swal.fire({
         title: 'Error',
-        text: 'An error occurred while extracting text',
+        text: error.message || 'An error occurred while extracting text',
         icon: 'error',
         confirmButtonColor: '#0a2200'
       });
@@ -1021,7 +1037,7 @@
         body: formData
       });
 
-      const data = await response.json();
+      const data = await parseJsonSafely(response, 'Create contract');
 
       if (data.success) {
         Swal.fire({
@@ -1145,7 +1161,7 @@
         body: formData
       });
 
-      const data = await response.json();
+      const data = await parseJsonSafely(response, 'Update contract');
 
       if (data.success) {
         Swal.fire({
@@ -1205,7 +1221,7 @@
         body: formData
       });
 
-      const data = await response.json();
+      const data = await parseJsonSafely(response, 'Delete contract');
 
       if (data.success) {
         Swal.fire({

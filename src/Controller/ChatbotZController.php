@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-final class ChatbotController extends AbstractController
+final class ChatbotZController extends AbstractController
 {
     #[Route('/api/chat', name: 'api_chat', methods: ['POST'])]
     public function chat(

@@ -14,12 +14,13 @@ final class ApiPasswordController extends AbstractController
     #[Route('/api/password/suggest', name: 'app_api_password_suggest', methods: ['GET'])]
     public function suggest(HttpClientInterface $httpClient): JsonResponse
     {
-        $fallbackPassword = $this->generateLocalPassword(7);
+        $targetLength = random_int(4, 6);
+        $fallbackPassword = $this->generateLocalPassword($targetLength);
 
         try {
             $response = $httpClient->request('GET', 'https://passwordwolf.com/api/', [
                 'query' => [
-                    'length' => 7,
+                    'length' => $targetLength,
                     'upper' => 'on',
                     'lower' => 'on',
                     'numbers' => 'on',
@@ -56,7 +57,7 @@ final class ApiPasswordController extends AbstractController
     {
         $length = strlen($password);
 
-        if ($length < 6 || $length > 7) {
+        if ($length < 4 || $length > 6) {
             return false;
         }
 

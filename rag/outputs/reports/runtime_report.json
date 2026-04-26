@@ -1,0 +1,37 @@
+{
+  "generated_at_utc": "2026-04-16T02:53:20.217243+00:00",
+  "workspace_root": "C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258",
+  "python": {
+    "version": "3.12.10",
+    "executable": "C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258\\.venv\\Scripts\\python.exe",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "virtual_env": ""
+  },
+  "core_package_versions": {
+    "numpy": "2.4.4",
+    "sentence-transformers": "5.4.1",
+    "transformers": "5.5.4",
+    "torch": "2.11.0",
+    "huggingface_hub": "1.10.2",
+    "tokenizers": "0.22.2",
+    "safetensors": "0.7.0"
+  },
+  "doctor": {
+    "command": [
+      "C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258\\.venv\\Scripts\\python.exe",
+      "C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258\\rag\\scripts\\doctor.py",
+      "--config",
+      "C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258\\rag\\configs\\embedding_config.json"
+    ],
+    "exit_code": 0,
+    "summary": {
+      "PASS": 18,
+      "WARN": 0,
+      "FAIL": 0,
+      "Overall": "PASS"
+    },
+    "stdout": "RAG Runtime Doctor\n==================\n[PASS] python_version: 3.12.10 (required >= 3.10)\n[PASS] python_interpreter: using project venv: C:\\Users\\msi\\Desktop\\symfony-agriculturefinale-20260410-0258\\.venv\\Scripts\\python.exe\n[PASS] virtual_env: VIRTUAL_ENV is not set, but interpreter path matches project venv\n[PASS] core_package_versions: numpy=2.4.4, sentence-transformers=5.4.1, transformers=5.5.4, torch=2.11.0, huggingface_hub=1.10.2, tokenizers=0.22.2, safetensors=0.7.0\n[PASS] import:numpy: installed version=2.4.4\n[PASS] import:sentence_transformers: installed version=5.4.1\n[PASS] import:transformers: installed version=5.5.4\n[PASS] import:torch: installed version=2.11.0+cpu\n[PASS] import:huggingface_hub: installed version=1.10.2\n[PASS] import:tokenizers: installed version=0.22.2\n[PASS] import:safetensors: installed version=0.7.0\n[PASS] embedding_config: loaded rag/configs/embedding_config.json\n[PASS] model_load: loaded model 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'\n[PASS] artifact:chunks_jsonl: found rag/outputs/chunks.jsonl (75591 bytes)\n[PASS] artifact:chunk_embeddings_jsonl: found rag/outputs/chunk_embeddings.jsonl (1105777 bytes)\n[PASS] artifact:vector_matrix: found rag/outputs/vector_index/embeddings.npy (187520 bytes)\n[PASS] artifact:vector_metadata: found rag/outputs/vector_index/metadata.jsonl (77799 bytes)\n[PASS] artifact:vector_meta: found rag/outputs/vector_index/index_meta.json (328 bytes)\n\nSummary\n-------\nPASS: 18\nWARN: 0\nFAIL: 0\nOverall: PASS\n",
+    "stderr": "Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n\nLoading weights:   0%|          | 0/199 [00:00<?, ?it/s]\nLoading weights: 100%|##########| 199/199 [00:00<00:00, 13001.85it/s]\n\u001b[1mBertModel LOAD REPORT\u001b[0m from: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2\nKey                     | Status     |  | \n------------------------+------------+--+-\nembeddings.position_ids | UNEXPECTED |  | \n\nNotes:\n- UNEXPECTED:\tcan be ignored when loading from different task/architecture; not ok if you expect identical arch.\n"
+  },
+  "runtime_ready": true
+}

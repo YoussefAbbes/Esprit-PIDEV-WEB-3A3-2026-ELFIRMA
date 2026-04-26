@@ -2,7 +2,8 @@
 
 namespace App\Service;
 
-use TCPDF;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ContractPdfService
 {
@@ -11,113 +12,64 @@ class ContractPdfService
      */
     public function generateContractPdf(array $data): string
     {
-        // Create new PDF document
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+                $supplierName = $this->escape((string) ($data['supplier_name'] ?? 'N/A'));
+                $startDate = $this->escape($this->formatDate((string) ($data['date_debut'] ?? '')));
+                $endDate = $this->escape($this->formatDate((string) ($data['date_fin'] ?? '')));
+                $type = $this->escape(ucfirst((string) ($data['type'] ?? 'N/A')));
+                $status = $this->escape((string) ($data['statut'] ?? 'N/A'));
+                $generatedDate = $this->escape(date('d/m/Y'));
 
-        // Set document properties
-        $pdf->SetCreator('Elfirma');
-        $pdf->SetAuthor('Elfirma Agriculture');
-        $pdf->SetTitle('Contract Agreement');
+                $html = <<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: DejaVu Sans, Arial, sans-serif; color: #111; margin: 24px; }
+        .brand { text-align: center; color: #116530; font-size: 30px; font-weight: 700; }
+        .subtitle { text-align: center; color: #4f6b38; margin-top: 4px; font-size: 12px; }
+        .divider { border-bottom: 2px solid #116530; margin: 12px 0 16px; }
+        h1 { text-align: center; color: #116530; font-size: 22px; margin: 0 0 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { border: 1px solid #d9e3d2; padding: 8px; font-size: 12px; text-align: left; }
+        th { background: #f0f5eb; }
+        .terms-title { margin-top: 14px; color: #116530; font-size: 14px; font-weight: 700; }
+        .terms { font-size: 12px; line-height: 1.5; }
+        .footer { margin-top: 18px; border-top: 1px solid #116530; padding-top: 8px; text-align: center; color: #4f6b38; font-size: 10px; }
+    </style>
+</head>
+<body>
+    <div class="brand">ELFIRMA</div>
+    <div class="subtitle">Agriculture Supplier Management</div>
+    <div class="divider"></div>
+    <h1>CONTRACT AGREEMENT</h1>
 
-        // Remove default header and footer
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
+    <table>
+        <tr><th>Field</th><th>Details</th></tr>
+        <tr><td>Supplier Name</td><td>{$supplierName}</td></tr>
+        <tr><td>Contract Start Date</td><td>{$startDate}</td></tr>
+        <tr><td>Contract End Date</td><td>{$endDate}</td></tr>
+        <tr><td>Contract Type</td><td>{$type}</td></tr>
+        <tr><td>Status</td><td>{$status}</td></tr>
+        <tr><td>Generated Date</td><td>{$generatedDate}</td></tr>
+    </table>
 
-        // Set margins
-        $pdf->SetMargins(15, 15, 15);
+    <div class="terms-title">Contract Terms</div>
+    <p class="terms">
+        This contract establishes the terms and conditions between Elfirma and the supplier named above.
+        Both parties agree to adhere to the specified dates, contract type, and status outlined in this agreement.
+        This document serves as an official record of the contract initiation.
+    </p>
 
-        // Add page
-        $pdf->AddPage();
+    <div class="footer">
+        Elfirma (c) 2026 - All Rights Reserved<br>
+        This is an electronically generated document.
+    </div>
+</body>
+</html>
+HTML;
 
-        // Set font for header
-        $pdf->SetFont('Helvetica', 'B', 24);
-        $pdf->SetTextColor(16, 101, 48); // Elfirma green (#116530)
-
-        // Header
-        $pdf->Cell(0, 15, 'ELFIRMA', 0, 1, 'C');
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(79, 107, 56); // Darker green
-        $pdf->Cell(0, 5, 'Agriculture Supplier Management', 0, 1, 'C');
-        $pdf->Ln(5);
-
-        // Line separator
-        $pdf->SetDrawColor(16, 101, 48);
-        $pdf->SetLineWidth(0.5);
-        $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-        $pdf->Ln(3);
-
-        // Title
-        $pdf->SetFont('Helvetica', 'B', 16);
-        $pdf->SetTextColor(16, 101, 48);
-        $pdf->Cell(0, 10, 'CONTRACT AGREEMENT', 0, 1, 'C');
-        $pdf->Ln(2);
-
-        // Contract details
-        $pdf->SetFont('Helvetica', '', 11);
-        $pdf->SetTextColor(0, 0, 0);
-
-        // Contract info table
-        $tableData = [
-            ['Field', 'Details'],
-            ['Supplier Name', $data['supplier_name'] ?? 'N/A'],
-            ['Contract Start Date', $this->formatDate($data['date_debut'] ?? '')],
-            ['Contract End Date', $this->formatDate($data['date_fin'] ?? '')],
-            ['Contract Type', ucfirst($data['type'] ?? 'N/A')],
-            ['Status', $data['statut'] ?? 'N/A'],
-            ['Generated Date', date('d/m/Y')],
-        ];
-
-        // Table styling
-        $pdf->SetFillColor(240, 245, 235); // Light green background
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetFont('Helvetica', 'B', 10);
-
-        // Header row
-        $pdf->Cell(70, 8, $tableData[0][0], 1, 0, 'L', true);
-        $pdf->Cell(105, 8, $tableData[0][1], 1, 1, 'L', true);
-
-        // Data rows
-        $pdf->SetFont('Helvetica', '', 10);
-        $fill = false;
-        for ($i = 1; $i < count($tableData); $i++) {
-            if ($fill) {
-                $pdf->SetFillColor(250, 252, 246);
-            } else {
-                $pdf->SetFillColor(255, 255, 255);
-            }
-            $pdf->Cell(70, 8, $tableData[$i][0], 1, 0, 'L', $fill);
-            $pdf->Cell(105, 8, $tableData[$i][1], 1, 1, 'L', $fill);
-            $fill = !$fill;
-        }
-
-        $pdf->Ln(5);
-
-        // Terms section
-        $pdf->SetFont('Helvetica', 'B', 11);
-        $pdf->SetTextColor(16, 101, 48);
-        $pdf->Cell(0, 8, 'Contract Terms', 0, 1);
-
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->MultiCell(0, 5,
-            "This contract establishes the terms and conditions between Elfirma and the supplier named above. Both parties agree to adhere to the specified dates, contract type, and status as outlined in this agreement. This document serves as an official record of the contract initiation."
-        );
-
-        $pdf->Ln(10);
-
-        // Footer line
-        $pdf->SetDrawColor(16, 101, 48);
-        $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-        $pdf->Ln(3);
-
-        // Footer text
-        $pdf->SetFont('Helvetica', '', 8);
-        $pdf->SetTextColor(79, 107, 56);
-        $pdf->Cell(0, 5, 'Elfirma © 2026 - All Rights Reserved', 0, 1, 'C');
-        $pdf->Cell(0, 5, 'This is an electronically generated document', 0, 1, 'C');
-
-        // Return PDF as string
-        return $pdf->Output('', 'S');
+                return $this->renderPdfFromHtml($html);
     }
 
     /**
@@ -125,123 +77,77 @@ class ContractPdfService
      */
     public function generatePdfFromExtractedText(array $data): string
     {
-        // Create new PDF document
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+                $supplierName = $this->escape((string) ($data['supplier_name'] ?? 'N/A'));
+                $extractedText = (string) ($data['extracted_text'] ?? 'No text content');
+                if (trim($extractedText) === '') {
+                        $extractedText = 'No text content';
+                }
+                $safeExtractedText = nl2br($this->escape($extractedText));
+                $extractedAt = $this->escape(date('d/m/Y H:i:s'));
 
-        // Set document properties
-        $pdf->SetCreator('Elfirma');
-        $pdf->SetAuthor('Elfirma Agriculture');
-        $pdf->SetTitle('Extracted Contract Document');
+                $html = <<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: DejaVu Sans, Arial, sans-serif; color: #111; margin: 24px; }
+        .brand { text-align: center; color: #116530; font-size: 30px; font-weight: 700; }
+        .subtitle { text-align: center; color: #4f6b38; margin-top: 4px; font-size: 12px; }
+        .divider { border-bottom: 2px solid #116530; margin: 12px 0 16px; }
+        h1 { text-align: center; color: #116530; font-size: 22px; margin: 0 0 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { border: 1px solid #d9e3d2; padding: 8px; font-size: 12px; text-align: left; }
+        th { background: #f0f5eb; }
+        .content-title { margin-top: 14px; color: #116530; font-size: 14px; font-weight: 700; }
+        .content-box { border: 1px solid #d9e3d2; background: #fff; padding: 10px; font-size: 12px; line-height: 1.5; min-height: 180px; }
+        .footer { margin-top: 18px; border-top: 1px solid #116530; padding-top: 8px; text-align: center; color: #4f6b38; font-size: 10px; }
+    </style>
+</head>
+<body>
+    <div class="brand">ELFIRMA</div>
+    <div class="subtitle">Agriculture Supplier Management</div>
+    <div class="divider"></div>
+    <h1>EXTRACTED CONTRACT DOCUMENT</h1>
 
-        // Remove default header and footer
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
+    <table>
+        <tr><th>Label</th><th>Value</th></tr>
+        <tr><td>Extraction Date</td><td>{$extractedAt}</td></tr>
+        <tr><td>Supplier Name</td><td>{$supplierName}</td></tr>
+    </table>
 
-        // Set margins
-        $pdf->SetMargins(15, 15, 15);
+    <div class="content-title">Extracted Content</div>
+    <div class="content-box">{$safeExtractedText}</div>
 
-        // Add page
-        $pdf->AddPage();
+    <div class="footer">
+        Elfirma (c) 2026 - All Rights Reserved<br>
+        This document was generated from extracted image content.
+    </div>
+</body>
+</html>
+HTML;
 
-        // Set font for header
-        $pdf->SetFont('Helvetica', 'B', 24);
-        $pdf->SetTextColor(16, 101, 48); // Elfirma green (#116530)
-
-        // Header
-        $pdf->Cell(0, 15, 'ELFIRMA', 0, 1, 'C');
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(79, 107, 56); // Darker green
-        $pdf->Cell(0, 5, 'Agriculture Supplier Management', 0, 1, 'C');
-        $pdf->Ln(5);
-
-        // Line separator
-        $pdf->SetDrawColor(16, 101, 48);
-        $pdf->SetLineWidth(0.5);
-        $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-        $pdf->Ln(3);
-
-        // Title
-        $pdf->SetFont('Helvetica', 'B', 16);
-        $pdf->SetTextColor(16, 101, 48);
-        $pdf->Cell(0, 10, 'EXTRACTED CONTRACT DOCUMENT', 0, 1, 'C');
-        $pdf->Ln(2);
-
-        // Document metadata
-        $pdf->SetFont('Helvetica', 'B', 11);
-        $pdf->SetTextColor(16, 101, 48);
-        $pdf->Cell(0, 8, 'Document Information', 0, 1);
-
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetFillColor(240, 245, 235);
-
-        // Information table
-        $infoTable = [
-            ['Label', 'Value'],
-            ['Extraction Date', date('d/m/Y H:i:s')],
-            ['Supplier Name', $data['supplier_name'] ?? 'N/A'],
-        ];
-
-        $pdf->SetFont('Helvetica', 'B', 10);
-        $pdf->Cell(70, 8, $infoTable[0][0], 1, 0, 'L', true);
-        $pdf->Cell(105, 8, $infoTable[0][1], 1, 1, 'L', true);
-
-        $pdf->SetFont('Helvetica', '', 10);
-        $fill = false;
-        for ($i = 1; $i < count($infoTable); $i++) {
-            if ($fill) {
-                $pdf->SetFillColor(250, 252, 246);
-            } else {
-                $pdf->SetFillColor(255, 255, 255);
-            }
-            $pdf->Cell(70, 8, $infoTable[$i][0], 1, 0, 'L', $fill);
-            $pdf->Cell(105, 8, $infoTable[$i][1], 1, 1, 'L', $fill);
-            $fill = !$fill;
-        }
-
-        $pdf->Ln(8);
-
-        // Extracted content section
-        $pdf->SetFont('Helvetica', 'B', 11);
-        $pdf->SetTextColor(16, 101, 48);
-        $pdf->Cell(0, 8, 'Extracted Content', 0, 1);
-
-        // Content box
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetDrawColor(16, 101, 48);
-        $pdf->SetFillColor(255, 255, 255);
-        $pdf->SetLineWidth(0.3);
-
-        // Draw border for content
-        $startY = $pdf->GetY();
-        $contentHeight = 100; // Approximate height for content
-
-        // Extract text content
-        $extractedText = $data['extracted_text'] ?? 'No text content';
-        if (empty($extractedText)) {
-            $extractedText = 'No text content';
-        }
-
-        // Add extracted text with word wrapping
-        $pdf->MultiCell(0, 5, $extractedText, 1);
-
-        $pdf->Ln(5);
-
-        // Footer line
-        $pdf->SetDrawColor(16, 101, 48);
-        $pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-        $pdf->Ln(3);
-
-        // Footer text
-        $pdf->SetFont('Helvetica', '', 8);
-        $pdf->SetTextColor(79, 107, 56);
-        $pdf->Cell(0, 5, 'Elfirma © 2026 - All Rights Reserved', 0, 1, 'C');
-        $pdf->Cell(0, 5, 'This document was generated from extracted image content', 0, 1, 'C');
-
-        // Return PDF as string
-        return $pdf->Output('', 'S');
+                return $this->renderPdfFromHtml($html);
     }
+
+        private function renderPdfFromHtml(string $html): string
+        {
+                $options = new Options();
+                $options->set('isRemoteEnabled', false);
+                $options->set('defaultFont', 'DejaVu Sans');
+
+                $dompdf = new Dompdf($options);
+                $dompdf->loadHtml($html);
+                $dompdf->setPaper('A4', 'portrait');
+                $dompdf->render();
+
+                return $dompdf->output();
+        }
+
+        private function escape(string $value): string
+        {
+                return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        }
 
     /**
      * Format date from YYYY-MM-DD to DD/MM/YYYY

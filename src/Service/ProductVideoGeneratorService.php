@@ -156,6 +156,11 @@ final class ProductVideoGeneratorService
             return $configured;
         }
 
+        $venvCandidate = $this->projectDir . DIRECTORY_SEPARATOR . '.venv' . DIRECTORY_SEPARATOR . 'Scripts' . DIRECTORY_SEPARATOR . 'python.exe';
+        if (is_file($venvCandidate)) {
+            return $venvCandidate;
+        }
+
         $localAppData = getenv('LOCALAPPDATA');
         if (is_string($localAppData) && $localAppData !== '') {
             $candidate = $localAppData . DIRECTORY_SEPARATOR . 'Programs' . DIRECTORY_SEPARATOR . 'Python' . DIRECTORY_SEPARATOR . 'Python312' . DIRECTORY_SEPARATOR . 'python.exe';

@@ -193,6 +193,8 @@ final class AnimalController extends AbstractController
 
         if ($input['sexe'] === '') {
             $errors['sexe'] = 'Gender is required.';
+        } elseif (!in_array($input['sexe'], ['Male', 'Female', 'Undetermined'], true)) {
+            $errors['sexe'] = 'Invalid gender selected.';
         }
 
         if ($input['age'] === '') {
@@ -208,10 +210,14 @@ final class AnimalController extends AbstractController
 
         if ($input['etat_sante'] === '') {
             $errors['etat_sante'] = 'Health status is required.';
+        } elseif (!preg_match('/^[\p{L}\s]+$/u', $input['etat_sante'])) {
+            $errors['etat_sante'] = 'Health status can contain letters and spaces only.';
         }
 
         if ($input['statut'] === '') {
             $errors['statut'] = 'Status is required.';
+        } elseif (!preg_match('/^[\p{L}\s]+$/u', $input['statut'])) {
+            $errors['statut'] = 'Status can contain letters and spaces only.';
         }
 
         if ($photoFile !== null) {

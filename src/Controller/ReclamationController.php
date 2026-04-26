@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 
 final class ReclamationController extends AbstractController
@@ -298,53 +300,36 @@ final class ReclamationController extends AbstractController
                 ]);
             }
 
-            // Build email HTML content
-            $emailContent = sprintf(
-                '<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
-                    <div style="background-color: #f5f5dc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                        <h2 style="color: #116530; margin: 0; font-size: 24px;">Response to Your Complaint</h2>
-                        <p style="color: #666; margin: 8px 0 0 0;">Complaint ID: <strong>#%s</strong></p>
-                    </div>
+            $fromEmail = (string) ($_ENV['MAILER_FROM'] ?? $_SERVER['MAILER_FROM'] ?? 'islem.souid@esprit.tn');
+            $alternateMailerDsn = (string) ($_ENV['MAILER_DSN_OTHER'] ?? $_SERVER['MAILER_DSN_OTHER'] ?? '');
 
-                    <div style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #116530; border-radius: 4px; margin-bottom: 20px;">
-                        <h3 style="color: #0a2200; margin-top: 0;">Your Complaint: %s</h3>
-                        <p style="color: #555; margin: 10px 0;">%s</p>
-                    </div>
+            // When an alternate SMTP transport is configured, prefer it for complaint replies.
+            if ($alternateMailerDsn !== '' && str_contains($alternateMailerDsn, 'smtp.gmail.com')) {
+                $fromEmail = 'fethizouabi190@gmail.com';
+            }
 
-                    <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 20px;">
-                        <h3 style="color: #0a2200; margin-top: 0;">Our Response:</h3>
-                        <p style="color: #333; white-space: pre-wrap; line-height: 1.8;">%s</p>
-                    </div>
+            $emailHtml = $this->renderView('emails/complaint_reply.html.twig', [
+                'complaintId' => $complaintId,
+                'complaintTitle' => (string) $complaint->getTitreU(),
+                'complaintDescription' => (string) $complaint->getDescriptionU(),
+                'replyMessage' => $replyMessage,
+                'recipientName' => trim((string) ($user->getNomU() . ' ' . $user->getPrenomU())),
+                'recipientEmail' => (string) $user->getEmailU(),
+            ]);
 
-                    <div style="background-color: #f5f5dc; padding: 15px; border-radius: 4px; text-align: center;">
-                        <p style="color: #666; font-size: 14px; margin: 0;">
-                            Thank you for bringing this to our attention.<br>
-                            If you have any further questions, please reply to this email.
-                        </p>
-                    </div>
-
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #999;">
-                        <p style="margin: 5px 0;">
-                            <strong>El Firma Agriculture Team</strong><br>
-                            rue cheikh taieb sayala, La marsa, 2070 TUN<br>
-                            Email: <a href="mailto:elfirma@gmail.com" style="color: #116530; text-decoration: none;">elfirma@gmail.com</a>
-                        </p>
-                    </div>
-                </div>',
-                $complaintId,
-                htmlspecialchars($complaint->getTitreU()),
-                htmlspecialchars($complaint->getDescriptionU()),
-                htmlspecialchars($replyMessage)
-            );
-
-            // Send email
             $email = (new Email())
-                ->from($_ENV['MAILER_FROM'] ?? 'noreply@elfirma.tn')
+                ->from($fromEmail)
                 ->to($user->getEmailU())
                 ->subject('Re: ' . $complaint->getTitreU() . ' - Complaint Response')
-                ->html($emailContent);
+                ->html($emailHtml);
 
-            $mailer->send($email);
+            if ($alternateMailerDsn !== '') {
+                $alternateTransport = Transport::fromDsn($alternateMailerDsn);
+                $alternateMailer = new Mailer($alternateTransport);
+                $alternateMailer->send($email);
+            } else {
+                $mailer->send($email);
+            }
 
             // Update complaint status to "responded"
             $complaint->setStatutU('responded');

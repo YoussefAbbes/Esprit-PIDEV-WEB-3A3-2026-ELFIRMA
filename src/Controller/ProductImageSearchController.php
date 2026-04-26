@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class ProductImageSearchController extends AbstractController
@@ -40,6 +41,20 @@ final class ProductImageSearchController extends AbstractController
 
         $projectDir = (string) $this->getParameter('kernel.project_dir');
         $produits = $em->getRepository(Produit::class)->findBy(['statut' => 'Disponible']);
+
+        $clipMatches = $this->searchByClipPython((string) $imageFile->getPathname(), $produits, $projectDir);
+        if ($clipMatches !== null) {
+            return new JsonResponse([
+                'ok' => true,
+                'count' => count($clipMatches),
+                'product_ids' => array_values(array_map(static fn (array $row): int => (int) $row['id'], $clipMatches)),
+                'results' => $clipMatches,
+                'mode' => 'clip',
+                'message' => count($clipMatches) > 0
+                    ? 'CLIP image similarity search completed.'
+                    : 'No visually similar product found.',
+            ]);
+        }
 
         $querySignature = $this->extractImageSignature((string) $imageFile->getPathname());
         if ($querySignature === []) {
@@ -96,7 +111,125 @@ final class ProductImageSearchController extends AbstractController
             'count' => count($matches),
             'product_ids' => array_values(array_map(static fn (array $row): int => (int) $row['id'], $matches)),
             'results' => $matches,
+            'mode' => 'histogram',
         ]);
+    }
+
+    /**
+     * @param list<Produit> $produits
+     *
+     * @return list<array{id:int,name:string,similarity:float}>|null
+     */
+    private function searchByClipPython(string $queryImagePath, array $produits, string $projectDir): ?array
+    {
+        $scriptPath = $projectDir . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'recommender' . DIRECTORY_SEPARATOR . 'image_clip_search.py';
+        if (!is_file($scriptPath)) {
+            return null;
+        }
+
+        $productsPayload = [];
+        foreach ($produits as $produit) {
+            if (!$produit instanceof Produit) {
+                continue;
+            }
+
+            $imageName = trim((string) ($produit->getImage() ?? ''));
+            if ($imageName === '') {
+                continue;
+            }
+
+            $imagePath = $projectDir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'produits' . DIRECTORY_SEPARATOR . $imageName;
+            if (!is_file($imagePath) || !is_readable($imagePath)) {
+                continue;
+            }
+
+            $productsPayload[] = [
+                'id' => (int) ($produit->getIdProduit() ?? 0),
+                'name' => (string) ($produit->getNom() ?? ''),
+                'image_path' => $imagePath,
+            ];
+        }
+
+        if ($productsPayload === []) {
+            return [];
+        }
+
+        $payloadFile = tempnam(sys_get_temp_dir(), 'clip_search_payload_');
+        if (!is_string($payloadFile) || $payloadFile === '') {
+            return null;
+        }
+
+        $payloadJson = json_encode([
+            'query_image' => $queryImagePath,
+            'products' => $productsPayload,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if (!is_string($payloadJson) || $payloadJson === '' || @file_put_contents($payloadFile, $payloadJson) === false) {
+            @unlink($payloadFile);
+
+            return null;
+        }
+
+        try {
+            $python = $this->resolvePythonBinary($projectDir);
+            $process = new Process([$python, $scriptPath, '--payload-file', $payloadFile], $projectDir);
+            // First CLIP run can take several minutes while Hugging Face model files are downloaded.
+            $process->setTimeout(900);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                return null;
+            }
+
+            $output = trim($process->getOutput());
+            if ($output === '') {
+                return null;
+            }
+
+            $decoded = json_decode($output, true);
+            if (!is_array($decoded) || !($decoded['ok'] ?? false)) {
+                return null;
+            }
+
+            $results = $decoded['results'] ?? [];
+            if (!is_array($results)) {
+                return [];
+            }
+
+            $matches = [];
+            foreach ($results as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+
+                $id = (int) ($row['id'] ?? 0);
+                if ($id <= 0) {
+                    continue;
+                }
+
+                $matches[] = [
+                    'id' => $id,
+                    'name' => (string) ($row['name'] ?? ''),
+                    'similarity' => round((float) ($row['similarity'] ?? 0.0), 4),
+                ];
+            }
+
+            return array_slice($matches, 0, 24);
+        } catch (\Throwable) {
+            return null;
+        } finally {
+            @unlink($payloadFile);
+        }
+    }
+
+    private function resolvePythonBinary(string $projectDir): string
+    {
+        $venvPython = $projectDir . DIRECTORY_SEPARATOR . '.venv' . DIRECTORY_SEPARATOR . 'Scripts' . DIRECTORY_SEPARATOR . 'python.exe';
+        if (is_file($venvPython)) {
+            return $venvPython;
+        }
+
+        return 'python';
     }
 
     /**

@@ -1457,13 +1457,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 <script data-turbo="false">
-if (typeof symbols === 'undefined') {
-    var symbols = {
+const symbols = window.symbols || {
     TND: "د.ت",
     USD: "$",
     EUR: "€",
     AUD: "A$"
 };
+window.symbols = symbols;
 
 function convertPrices() {
     let currency = document.getElementById("currencySelect").value;
@@ -1506,7 +1506,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("currencySelect")
         ?.addEventListener("change", convertPrices);
 });
-}
 </script>
 
 <script data-turbo="false">

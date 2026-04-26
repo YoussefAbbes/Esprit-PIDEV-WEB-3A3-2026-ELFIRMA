@@ -498,7 +498,12 @@ final class ChatbotEngineService
             $username = 'chatbot';
         }
 
-        $environment = [
+        $inheritedEnvironment = getenv();
+        if (!\is_array($inheritedEnvironment)) {
+            $inheritedEnvironment = [];
+        }
+
+        $environment = array_merge($inheritedEnvironment, [
             // Prevent inherited shell/web variables from forcing a broken Python module path.
             'PYTHONHOME' => false,
             'PYTHONPATH' => false,
@@ -510,7 +515,7 @@ final class ChatbotEngineService
             'USERNAME' => $username,
             'USER' => $username,
             'RAG_ENABLE_LLM' => $this->enableLlm ? '1' : '0',
-        ];
+        ]);
 
         $provider = trim($this->llmProvider);
         if ($provider !== '') {

@@ -75,6 +75,16 @@ class SupplierAnalyticsController extends AbstractController
                     // Convert sentiment_breakdown from {Positive, Neutral, Negative} to {positive%, neutral%, negative%}
                     $sentiments = $supplier['sentiment_breakdown'] ?? [];
                     $total_senti = array_sum($sentiments);
+                    $normalizedComplaints = $this->normalizeComplaints($supplier['top_complaints'] ?? null);
+
+                    if (empty($normalizedComplaints)) {
+                        $normalizedComplaints = $this->buildDerivedComplaints(
+                            (float) ($supplier['avg_stars'] ?? 0),
+                            (int) ($supplier['total_reviews'] ?? 0),
+                            $sentiments,
+                            $supplier['top_keywords'] ?? []
+                        );
+                    }
                     
                     $results[] = [
                         'supplier_id'    => $supplier['supplier_id'] ?? 0,
@@ -87,7 +97,7 @@ class SupplierAnalyticsController extends AbstractController
                             'negative' => $total_senti > 0 ? round(($sentiments['Negative'] ?? 0) / $total_senti * 100) : 0,
                         ],
                         'star_distribution' => $supplier['star_distribution'] ?? [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0],
-                        'top_complaints' => $supplier['top_complaints'] ?? [],
+                        'top_complaints' => $normalizedComplaints,
                         'top_keywords' => $supplier['top_keywords'] ?? [],
                         'health' => [
                             'label' => $supplier['health']['label'] ?? 'Unknown',
@@ -105,5 +115,81 @@ class SupplierAnalyticsController extends AbstractController
                 'error' => 'AI service unavailable: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Accepts possible shapes from AI response and returns {label => count}.
+     */
+    private function normalizeComplaints(mixed $rawComplaints): array
+    {
+        if (!is_array($rawComplaints)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($rawComplaints as $key => $value) {
+            if (is_string($key)) {
+                $count = is_numeric($value) ? (int) $value : 1;
+                if ($count > 0) {
+                    $normalized[$key] = $count;
+                }
+                continue;
+            }
+
+            if (is_string($value) && trim($value) !== '') {
+                $label = trim($value);
+                $normalized[$label] = ($normalized[$label] ?? 0) + 1;
+            }
+        }
+
+        arsort($normalized);
+
+        return $normalized;
+    }
+
+    /**
+     * Fallback issue extraction when top_complaints is empty.
+     */
+    private function buildDerivedComplaints(float $avgStars, int $totalReviews, array $sentiments, mixed $keywords): array
+    {
+        if ($totalReviews <= 0) {
+            return [];
+        }
+
+        $derived = [];
+
+        $negativeCount = (int) ($sentiments['Negative'] ?? 0);
+        $negativePct = $totalReviews > 0 ? ($negativeCount / $totalReviews) * 100 : 0;
+
+        if ($avgStars < 3.0) {
+            $derived['Low overall satisfaction'] = max(1, (int) round((3.0 - $avgStars) * 2));
+        }
+
+        if ($negativePct >= 30) {
+            $derived['Frequent negative feedback'] = max(1, (int) round($negativeCount));
+        }
+
+        $keywordList = is_array($keywords) ? $keywords : [];
+        $joinedKeywords = strtolower(implode(' ', array_map('strval', $keywordList)));
+
+        if ($joinedKeywords !== '') {
+            if (preg_match('/delay|late|slow|retard|lent/', $joinedKeywords)) {
+                $derived['Delivery delays'] = ($derived['Delivery delays'] ?? 0) + 1;
+            }
+            if (preg_match('/quality|damaged|broken|qualite|defect/', $joinedKeywords)) {
+                $derived['Product quality concerns'] = ($derived['Product quality concerns'] ?? 0) + 1;
+            }
+            if (preg_match('/price|expensive|cost|cher/', $joinedKeywords)) {
+                $derived['Pricing complaints'] = ($derived['Pricing complaints'] ?? 0) + 1;
+            }
+            if (preg_match('/support|response|service|communication/', $joinedKeywords)) {
+                $derived['Customer service issues'] = ($derived['Customer service issues'] ?? 0) + 1;
+            }
+        }
+
+        arsort($derived);
+
+        return array_slice($derived, 0, 3, true);
     }
 }

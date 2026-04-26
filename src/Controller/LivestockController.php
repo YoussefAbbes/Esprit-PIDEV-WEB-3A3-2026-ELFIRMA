@@ -22,13 +22,21 @@ final class LivestockController extends AbstractController
     public function create(Request $request, LivestockRepository $livestockRepository): Response
     {
         $input = $this->collectLivestockInput($request);
+        $formRedirect = [
+            'module' => 'animaux-elevages',
+            'view' => 'livestock',
+            'add' => '1',
+        ];
 
         if (!$this->isCsrfTokenValid('livestock_create', (string)$request->request->get('_token'))) {
-            return $this->redirectToLivestockList();
+            return $this->redirectToLivestockFormWithFieldErrors($formRedirect, [
+                '_form' => 'Session expired. Please try again.',
+            ], $input);
         }
 
-        if ($this->validateLivestockInput($input) !== []) {
-            return $this->redirectToLivestockList();
+        $errors = $this->validateLivestockInput($input);
+        if ($errors !== []) {
+            return $this->redirectToLivestockFormWithFieldErrors($formRedirect, $errors, $input);
         }
 
         $livestockRepository->createLivestock($this->toLivestockPayload($input));
@@ -47,15 +55,30 @@ final class LivestockController extends AbstractController
     ): Response {
         $id = (int)$request->request->get('id_elevage');
         $input = $this->collectLivestockInput($request);
+        $formRedirect = [
+            'module' => 'animaux-elevages',
+            'view' => 'livestock',
+        ];
 
-        if ($id <= 0) return $this->redirectToLivestockList();
-
-        if (!$this->isCsrfTokenValid('livestock_update', (string)$request->request->get('_token'))) {
-            return $this->redirectToLivestockList();
+        if ($id > 0) {
+            $formRedirect['edit'] = (string) $id;
         }
 
-        if ($this->validateLivestockInput($input) !== []) {
-            return $this->redirectToLivestockList();
+        if ($id <= 0) {
+            return $this->redirectToLivestockFormWithFieldErrors($formRedirect, [
+                '_form' => 'Invalid livestock.',
+            ], $input);
+        }
+
+        if (!$this->isCsrfTokenValid('livestock_update', (string)$request->request->get('_token'))) {
+            return $this->redirectToLivestockFormWithFieldErrors($formRedirect, [
+                '_form' => 'Session expired. Please try again.',
+            ], $input);
+        }
+
+        $errors = $this->validateLivestockInput($input);
+        if ($errors !== []) {
+            return $this->redirectToLivestockFormWithFieldErrors($formRedirect, $errors, $input);
         }
 
         $livestockRepository->updateLivestock(
@@ -181,7 +204,56 @@ final class LivestockController extends AbstractController
 
     private function validateLivestockInput(array $input): array
     {
-        return [];
+        $errors = [];
+
+        if ($input['type_elevage'] === '') {
+            $errors['type_elevage'] = 'Type is required.';
+        } elseif (!preg_match('/^[\p{L}\s]+$/u', $input['type_elevage'])) {
+            $errors['type_elevage'] = 'Type can contain letters and spaces only.';
+        }
+
+        if ($input['etat_elevage'] === '') {
+            $errors['etat_elevage'] = 'State is required.';
+        }
+
+        if ($input['capacite'] === '') {
+            $errors['capacite'] = 'Capacity is required.';
+        } else {
+            $capacity = filter_var($input['capacite'], FILTER_VALIDATE_INT, [
+                'options' => ['min_range' => 0],
+            ]);
+
+            if ($capacity === false) {
+                $errors['capacite'] = 'Capacity must be a whole number greater than or equal to 0.';
+            }
+        }
+
+        if ($input['production'] === '') {
+            $errors['production'] = 'Production is required.';
+        } elseif (!preg_match('/^[\p{L}\s]+$/u', $input['production'])) {
+            $errors['production'] = 'Production can contain letters and spaces only.';
+        }
+
+        if ($input['latitude'] === '' || $input['longitude'] === '') {
+            $errors['location'] = 'Please select a location on the map.';
+            return $errors;
+        }
+
+        $latitude = filter_var($input['latitude'], FILTER_VALIDATE_FLOAT);
+        $longitude = filter_var($input['longitude'], FILTER_VALIDATE_FLOAT);
+
+        if ($latitude === false || $longitude === false) {
+            $errors['location'] = 'Location coordinates are invalid.';
+            return $errors;
+        }
+
+        if ($latitude < -90 || $latitude > 90) {
+            $errors['location'] = 'Latitude must be between -90 and 90.';
+        } elseif ($longitude < -180 || $longitude > 180) {
+            $errors['location'] = 'Longitude must be between -180 and 180.';
+        }
+
+        return $errors;
     }
 
     private function toLivestockPayload(array $input): array
@@ -202,5 +274,20 @@ final class LivestockController extends AbstractController
             'module' => 'animaux-elevages',
             'view'   => 'livestock'
         ]);
+    }
+
+    /**
+     * @param array{module:string,view:string,add?:string,edit?:string} $routeParams
+     * @param array<string,string> $fieldErrors
+     * @param array<string,string> $input
+     */
+    private function redirectToLivestockFormWithFieldErrors(array $routeParams, array $fieldErrors, array $input): Response
+    {
+        if ($fieldErrors !== []) {
+            $this->addFlash('form_errors', $fieldErrors);
+        }
+        $this->addFlash('form_input', $input);
+
+        return $this->redirectToRoute('elfirma_page', $routeParams);
     }
 }

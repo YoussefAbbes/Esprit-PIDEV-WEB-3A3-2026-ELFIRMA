@@ -47,10 +47,8 @@ if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasVali
             $adminCount++;
         }
 
-        // =========================
-        // QR CODE GENERATION
-        // =========================
-       $profileUrl = 'http://192.168.43.23:8000/elfirma/user/' . $user->getIdU() . '/profile';
+        // Build a public profile URL for QR code scanning.
+      $profileUrl = 'http://10.227.117.82:8000/elfirma/user/' . $user->getIdU() . '/profile';
 
         $user->qrCode = $this->generateQrCode($profileUrl);
     }

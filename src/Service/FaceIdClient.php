@@ -2,8 +2,6 @@
 
 namespace App\Service;
 
-use Symfony\Component\Process\Process;
-
 class FaceIdClient
 {
     private string $host;

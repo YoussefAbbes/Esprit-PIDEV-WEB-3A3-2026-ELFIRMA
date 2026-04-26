@@ -50,7 +50,9 @@ final class CropRecommendationService
         } catch (\Throwable $exception) {
             $fallback = $this->recommendFromProfiles($features, $metadata);
             $fallback["inference_mode"] = "fallback";
-            $fallback["fallback_reason"] = $exception->getMessage();
+            $fallback["fallback_reason"] = $this->sanitizeUtf8(
+                $exception->getMessage(),
+            );
 
             return $fallback;
         }
@@ -166,8 +168,8 @@ final class CropRecommendationService
                 "%s: %s",
                 implode(" ", $prefix),
                 trim($process->getErrorOutput()) !== ""
-                    ? trim($process->getErrorOutput())
-                    : trim($process->getOutput()),
+                    ? $this->sanitizeUtf8(trim($process->getErrorOutput()))
+                    : $this->sanitizeUtf8(trim($process->getOutput())),
             );
         }
 
@@ -182,17 +184,55 @@ final class CropRecommendationService
     private function buildPythonCommands(): array
     {
         $commands = [];
+        $seen = [];
+
+        $add = static function (array $command) use (&$commands, &$seen): void {
+            $key = implode("\u0000", $command);
+            if (isset($seen[$key])) {
+                return;
+            }
+
+            $seen[$key] = true;
+            $commands[] = $command;
+        };
 
         $custom = trim((string) ($this->mlPythonBin ?? ""));
         if ($custom !== "") {
-            $commands[] = preg_split('/\s+/', $custom) ?: [$custom];
+            $add(preg_split('/\s+/', $custom) ?: [$custom]);
         }
 
-        $commands[] = ["python3"];
-        $commands[] = ["python"];
-        $commands[] = ["py", "-3"];
+        foreach ($this->discoverLocalPythonBinaries() as $pythonBin) {
+            $add([$pythonBin]);
+        }
+
+        $add(["python3"]);
+        $add(["python"]);
+        $add(["py", "-3"]);
 
         return $commands;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private function discoverLocalPythonBinaries(): array
+    {
+        $candidates = [
+            $this->absolutePath('.venv/Scripts/python.exe'),
+            $this->absolutePath('venv/Scripts/python.exe'),
+            $this->absolutePath('ai_service/ai_service/.venv/Scripts/python.exe'),
+            $this->absolutePath('.venv/bin/python3'),
+            $this->absolutePath('venv/bin/python3'),
+        ];
+
+        $result = [];
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                $result[] = $candidate;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -232,6 +272,28 @@ final class CropRecommendationService
         return rtrim($this->projectDir, DIRECTORY_SEPARATOR)
             . DIRECTORY_SEPARATOR
             . str_replace("/", DIRECTORY_SEPARATOR, $relative);
+    }
+
+    private function sanitizeUtf8(string $value): string
+    {
+        if ($value === "") {
+            return $value;
+        }
+
+        if (function_exists("mb_check_encoding") && mb_check_encoding($value, "UTF-8")) {
+            return $value;
+        }
+
+        if (function_exists("mb_convert_encoding")) {
+            return mb_convert_encoding($value, "UTF-8", "UTF-8, ISO-8859-1, Windows-1252");
+        }
+
+        $converted = @iconv("Windows-1252", "UTF-8//IGNORE", $value);
+        if ($converted !== false) {
+            return $converted;
+        }
+
+        return preg_replace('/[^\x09\x0A\x0D\x20-\x7E]/', '', $value) ?? "";
     }
 
     /**

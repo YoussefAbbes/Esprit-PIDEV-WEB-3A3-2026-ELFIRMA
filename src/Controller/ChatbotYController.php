@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[Route("/api/chatbot")]
-final class ChatbotController extends AbstractController
+final class ChatbotYController extends AbstractController
 {
     /**
      * LM Studio OpenAI-compatible endpoint.

@@ -135,6 +135,34 @@
 @media (max-width: 480px) {
   #hdrNotifPanel { width: calc(100vw - 24px); right: -4px; }
 }
+
+.hdr-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0b3b8f 0%, #1d4ed8 100%);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hdr-admin-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
+  color: #fff;
+}
+
+@media (max-width: 1199.98px) {
+  .hdr-admin-btn {
+    display: none;
+  }
+}
 </style>
 
 <header id="header" class="header d-flex align-items-center position-relative">
@@ -173,28 +201,59 @@
           </ul>
         </li>
         <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
-        {% if app.session.get('user_role') == 'admin' %}
-  <li><a href="{{ path('app_admin_panel_entry') }}" class="nav-admin-link">Admin Panel</a></li>
-
-        {% elseif app.session.get('user_role') == 'employee' %}
-          <li>
-            <a href="{{ path('employee_panel') }}" class="nav-admin-link">
-              Employee Panel
-            </a>
-          </li>
-        {% endif %}
+    
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
-
+   
     {% if app.session.get('user_id') %}
       {% set panier = app.session.get('panier', []) %}
       {% set cartCount = 0 %}
       {% for quantity in panier %}
         {% set cartCount = cartCount + quantity %}
       {% endfor %}
-      <div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
-        <a href="{{ path('app_panier_index') }}" class="btn-cart" title="Cart" aria-label="Cart" style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: linear-gradient(135deg, #166534 0%, #15803d 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 6px 14px rgba(22, 101, 52, 0.3); transition: transform .2s ease, box-shadow .2s ease;">
+<div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+
+  {# ── Admin / Employee Panel Button ── #}
+  {% if app.session.get('user_role') == 'admin' %}
+    <a href="{{ path('app_admin_panel_entry') }}"
+       title="Admin Panel"
+       style="
+         display: inline-flex; align-items: center; gap: 6px;
+         padding: 7px 14px; border-radius: 10px;
+         background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+         color: #fff; text-decoration: none;
+         font-size: 0.78rem; font-weight: 800; letter-spacing: 0.02em;
+         box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+         transition: transform 0.2s ease, box-shadow 0.2s ease;
+         white-space: nowrap;
+       "
+       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(37,99,235,0.45)'"
+       onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(37,99,235,0.35)'"
+    >
+      <i class="bi bi-shield-lock-fill" style="font-size:0.9rem;"></i>
+      Admin
+    </a>
+  {% elseif app.session.get('user_role') == 'employee' %}
+    <a href="{{ path('employee_panel') }}"
+       title="Employee Panel"
+       style="
+         display: inline-flex; align-items: center; gap: 6px;
+         padding: 7px 14px; border-radius: 10px;
+         background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+         color: #fff; text-decoration: none;
+         font-size: 0.78rem; font-weight: 800; letter-spacing: 0.02em;
+         box-shadow: 0 4px 14px rgba(5,150,105,0.35);
+         transition: transform 0.2s ease, box-shadow 0.2s ease;
+         white-space: nowrap;
+       "
+       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(5,150,105,0.45)'"
+       onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(5,150,105,0.35)'"
+    >
+      <i class="bi bi-person-badge-fill" style="font-size:0.9rem;"></i>
+      Employee
+    </a>
+  {% endif %}        <a href="{{ path('app_panier_index') }}" class="btn-cart" title="Cart" aria-label="Cart" style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: linear-gradient(135deg, #166534 0%, #15803d 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 6px 14px rgba(22, 101, 52, 0.3); transition: transform .2s ease, box-shadow .2s ease;">
           <i class="bi bi-cart3" style="font-size: 1.05rem;"></i>
           {% if cartCount > 0 %}
             <span id="cart-badge" style="position: absolute; top: -7px; right: -6px; background: #ef4444; color: white; border-radius: 999px; min-width: 20px; height: 20px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 2px solid white;">

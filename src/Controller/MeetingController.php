@@ -15,21 +15,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 
 final class MeetingController extends AbstractController
 {
-    #[Route('/elfirma/meetings', name: 'meetings_page', methods: ['GET'])]
+    #[Route("/elfirma/meetings", name: "meetings_page", methods: ["GET"])]
     public function page(
         EntityManagerInterface $entityManager,
-        MeetingColorService $colorService
+        MeetingColorService $colorService,
     ): Response {
         $meetingRepo = $entityManager->getRepository(Meeting::class);
         $fournisseurRepo = $entityManager->getRepository(Fournisseur::class);
 
-        $now = new \DateTime('now');
-        $currentMonth = (int)$now->format('m');
-        $currentYear = (int)$now->format('Y');
+        $now = new \DateTime("now");
+        $currentMonth = (int) $now->format("m");
+        $currentYear = (int) $now->format("Y");
 
         // Get all meetings for current month
         $meetings = $meetingRepo->findByMonth($currentYear, $currentMonth);
@@ -42,94 +44,107 @@ final class MeetingController extends AbstractController
         // Calculate statistics
         $totalMeetings = count($meetingRepo->findAll());
 
-        return $this->render('elfirma/meetings.html.twig', [
-            'meetings' => $meetings,
-            'suppliers' => $allSuppliers,
-            'currentMonth' => $currentMonth,
-            'currentYear' => $currentYear,
-            'stats' => [
-                'total' => $totalMeetings,
-                'upcoming' => $upcomingCount,
-                'past' => $pastCount,
+        return $this->render("elfirma/meetings.html.twig", [
+            "meetings" => $meetings,
+            "suppliers" => $allSuppliers,
+            "currentMonth" => $currentMonth,
+            "currentYear" => $currentYear,
+            "stats" => [
+                "total" => $totalMeetings,
+                "upcoming" => $upcomingCount,
+                "past" => $pastCount,
             ],
-            'module_meta' => [
-                'folder' => 'meetings',
-                'title' => 'Meeting Management',
+            "module_meta" => [
+                "folder" => "meetings",
+                "title" => "Meeting Management",
             ],
-            'current_module' => 'meetings',
+            "current_module" => "meetings",
         ]);
     }
 
-    #[Route('/elfirma/meetings/data', name: 'meetings_data', methods: ['GET'])]
+    #[Route("/elfirma/meetings/data", name: "meetings_data", methods: ["GET"])]
     public function getMeetingsData(
         Request $request,
         EntityManagerInterface $entityManager,
-        MeetingColorService $colorService
+        MeetingColorService $colorService,
     ): JsonResponse {
         $meetingRepo = $entityManager->getRepository(Meeting::class);
-        $year = $request->query->getInt('year');
-        $month = $request->query->getInt('month');
-        $supplierId = $request->query->getInt('supplier_id');
+        $year = $request->query->getInt("year");
+        $month = $request->query->getInt("month");
+        $supplierId = $request->query->getInt("supplier_id");
 
         $meetings = $meetingRepo->findByMonth($year, $month);
 
         if ($supplierId) {
-            $meetings = array_filter($meetings, function (Meeting $m) use ($supplierId) {
+            $meetings = array_filter($meetings, function (Meeting $m) use (
+                $supplierId,
+            ) {
                 return $m->getFournisseur()?->getIdF() == $supplierId;
             });
         }
 
         $data = array_map(function (Meeting $meeting) use ($colorService) {
             $supplier = $meeting->getFournisseur();
-            $isUpcoming = $meeting->getMeetingDatetime() > new \DateTime('now');
+            $isUpcoming = $meeting->getMeetingDatetime() > new \DateTime("now");
 
             return [
-                'id' => $meeting->getId(),
-                'supplier_id' => $supplier?->getIdF(),
-                'supplier_name' => $supplier?->getTypeF() ?? 'Unknown',
-                'meeting_link' => $meeting->getMeetingLink(),
-                'datetime' => $meeting->getMeetingDatetime()->format('Y-m-d H:i'),
-                'time' => $meeting->getMeetingDatetime()->format('H:i'),
-                'day' => (int)$meeting->getMeetingDatetime()->format('d'),
-                'status' => $isUpcoming ? 'upcoming' : 'past',
-                'color' => $colorService->getColorForSupplier($supplier?->getIdF() ?? 0),
+                "id" => $meeting->getId(),
+                "supplier_id" => $supplier?->getIdF(),
+                "supplier_name" => $supplier?->getTypeF() ?? "Unknown",
+                "meeting_link" => $meeting->getMeetingLink(),
+                "datetime" => $meeting
+                    ->getMeetingDatetime()
+                    ->format("Y-m-d H:i"),
+                "time" => $meeting->getMeetingDatetime()->format("H:i"),
+                "day" => (int) $meeting->getMeetingDatetime()->format("d"),
+                "status" => $isUpcoming ? "upcoming" : "past",
+                "color" => $colorService->getColorForSupplier(
+                    $supplier?->getIdF() ?? 0,
+                ),
             ];
         }, $meetings);
 
-        return new JsonResponse(['success' => true, 'data' => $data]);
+        return new JsonResponse(["success" => true, "data" => $data]);
     }
 
-    #[Route('/elfirma/meeting/reschedule', name: 'meeting_reschedule', methods: ['POST'])]
+    #[
+        Route(
+            "/elfirma/meeting/reschedule",
+            name: "meeting_reschedule",
+            methods: ["POST"],
+        ),
+    ]
     public function rescheduleMeeting(
         Request $request,
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
-        \Twig\Environment $twig
+        \Twig\Environment $twig,
     ): JsonResponse {
         $errors = [];
-        $meetingId = $request->request->get('meeting_id');
-        $newDateTime = $request->request->get('new_datetime');
+        $meetingId = $request->request->get("meeting_id");
+        $newDateTime = $request->request->get("new_datetime");
 
         if (!$meetingId) {
-            $errors['general'] = 'Meeting ID is required';
+            $errors["general"] = "Meeting ID is required";
         }
 
         if (!$newDateTime) {
-            $errors['datetime'] = 'New date and time are required';
+            $errors["datetime"] = "New date and time are required";
         } else {
             try {
                 $dateTime = new \DateTime($newDateTime);
-                $now = new \DateTime('now');
+                $now = new \DateTime("now");
                 if ($dateTime <= $now) {
-                    $errors['datetime'] = 'New date and time must be in the future';
+                    $errors["datetime"] =
+                        "New date and time must be in the future";
                 }
             } catch (\Exception $e) {
-                $errors['datetime'] = 'Invalid date and time format';
+                $errors["datetime"] = "Invalid date and time format";
             }
         }
 
         if (!empty($errors)) {
-            return new JsonResponse(['success' => false, 'errors' => $errors]);
+            return new JsonResponse(["success" => false, "errors" => $errors]);
         }
 
         try {
@@ -137,7 +152,10 @@ final class MeetingController extends AbstractController
             $meeting = $meetingRepo->find($meetingId);
 
             if (!$meeting) {
-                return new JsonResponse(['success' => false, 'message' => 'Meeting not found']);
+                return new JsonResponse([
+                    "success" => false,
+                    "message" => "Meeting not found",
+                ]);
             }
 
             $oldDateTime = $meeting->getMeetingDatetime();
@@ -147,46 +165,62 @@ final class MeetingController extends AbstractController
             // Send updated invitation email
             $supplier = $meeting->getFournisseur();
             try {
-                $emailContent = $twig->render('emails/meeting_invitation.html.twig', [
-                    'supplierName' => $supplier->getTypeF(),
-                    'meetingDateTime' => $meeting->getMeetingDatetime(),
-                    'meetingLink' => $meeting->getMeetingLink(),
-                ]);
+                $emailContent = $twig->render(
+                    "emails/meeting_invitation.html.twig",
+                    [
+                        "supplierName" => $supplier->getTypeF(),
+                        "meetingDateTime" => $meeting->getMeetingDatetime(),
+                        "meetingLink" => $meeting->getMeetingLink(),
+                    ],
+                );
 
                 $email = new Email();
-                $email->from($_ENV['MAILER_FROM'] ?? 'noreply@elfirma.tn')
+                $email
+                    ->from($_ENV["MAILER_FROM"] ?? "noreply@elfirma.tn")
                     ->to($supplier->getEmailF())
-                    ->subject('Meeting Rescheduled - Elfirma')
+                    ->subject("Meeting Rescheduled - Elfirma")
                     ->html($emailContent);
 
                 $mailer->send($email);
             } catch (\Exception $e) {
-                error_log('Failed to send rescheduled meeting email: ' . $e->getMessage());
+                error_log(
+                    "Failed to send rescheduled meeting email: " .
+                        $e->getMessage(),
+                );
             }
 
             return new JsonResponse([
-                'success' => true,
-                'message' => 'Meeting rescheduled successfully'
+                "success" => true,
+                "message" => "Meeting rescheduled successfully",
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
-                'success' => false,
-                'message' => 'Error rescheduling meeting: ' . $e->getMessage()
+                "success" => false,
+                "message" => "Error rescheduling meeting: " . $e->getMessage(),
             ]);
         }
     }
 
-    #[Route('/elfirma/meeting/delete-notify', name: 'meeting_delete_notify', methods: ['POST'])]
+    #[
+        Route(
+            "/elfirma/meeting/delete-notify",
+            name: "meeting_delete_notify",
+            methods: ["POST"],
+        ),
+    ]
     public function deleteMeetingWithNotification(
         Request $request,
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
-        \Twig\Environment $twig
+        \Twig\Environment $twig,
     ): JsonResponse {
-        $meetingId = $request->request->get('meeting_id');
+        $meetingId = $request->request->get("meeting_id");
 
         if (!$meetingId) {
-            return new JsonResponse(['success' => false, 'message' => 'Meeting ID is required']);
+            return new JsonResponse([
+                "success" => false,
+                "message" => "Meeting ID is required",
+            ]);
         }
 
         try {
@@ -194,7 +228,10 @@ final class MeetingController extends AbstractController
             $meeting = $meetingRepo->find($meetingId);
 
             if (!$meeting) {
-                return new JsonResponse(['success' => false, 'message' => 'Meeting not found']);
+                return new JsonResponse([
+                    "success" => false,
+                    "message" => "Meeting not found",
+                ]);
             }
 
             $supplier = $meeting->getFournisseur();
@@ -202,20 +239,50 @@ final class MeetingController extends AbstractController
 
             // Send cancellation email
             try {
-                $emailContent = $twig->render('emails/meeting_cancellation.html.twig', [
-                    'supplierName' => $supplier->getTypeF(),
-                    'meetingDateTime' => $meetingDateTime,
-                ]);
+                $emailContent = $twig->render(
+                    "emails/meeting_cancellation.html.twig",
+                    [
+                        "supplierName" => $supplier->getTypeF(),
+                        "meetingDateTime" => $meetingDateTime,
+                    ],
+                );
+
+                $fromEmail =
+                    (string) ($_ENV["MAILER_FROM"] ??
+                        ($_SERVER["MAILER_FROM"] ?? "islem.souid@esprit.tn"));
+                $alternateMailerDsn =
+                    (string) ($_ENV["MAILER_DSN_OTHER"] ??
+                        ($_SERVER["MAILER_DSN_OTHER"] ?? ""));
+
+                // Same transport strategy as complaint reply: prefer alternate SMTP when configured.
+                if (
+                    $alternateMailerDsn !== "" &&
+                    str_contains($alternateMailerDsn, "smtp.gmail.com")
+                ) {
+                    $fromEmail = "fethizouabi190@gmail.com";
+                }
 
                 $email = new Email();
-                $email->from($_ENV['MAILER_FROM'] ?? 'noreply@elfirma.tn')
+                $email
+                    ->from($fromEmail)
                     ->to($supplier->getEmailF())
-                    ->subject('Meeting Cancelled - Elfirma')
+                    ->subject("Meeting Cancelled - Elfirma")
                     ->html($emailContent);
 
-                $mailer->send($email);
+                if ($alternateMailerDsn !== "") {
+                    $alternateTransport = Transport::fromDsn(
+                        $alternateMailerDsn,
+                    );
+                    $alternateMailer = new Mailer($alternateTransport);
+                    $alternateMailer->send($email);
+                } else {
+                    $mailer->send($email);
+                }
             } catch (\Exception $e) {
-                error_log('Failed to send meeting cancellation email: ' . $e->getMessage());
+                error_log(
+                    "Failed to send meeting cancellation email: " .
+                        $e->getMessage(),
+                );
             }
 
             // Delete meeting
@@ -223,28 +290,37 @@ final class MeetingController extends AbstractController
             $entityManager->flush();
 
             return new JsonResponse([
-                'success' => true,
-                'message' => 'Meeting cancelled and supplier has been notified'
+                "success" => true,
+                "message" => "Meeting cancelled and supplier has been notified",
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
-                'success' => false,
-                'message' => 'Error deleting meeting: ' . $e->getMessage()
+                "success" => false,
+                "message" => "Error deleting meeting: " . $e->getMessage(),
             ]);
         }
     }
 
-    #[Route('/elfirma/meeting/resend-invitation', name: 'meeting_resend_invitation', methods: ['POST'])]
+    #[
+        Route(
+            "/elfirma/meeting/resend-invitation",
+            name: "meeting_resend_invitation",
+            methods: ["POST"],
+        ),
+    ]
     public function resendInvitation(
         Request $request,
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
-        \Twig\Environment $twig
+        \Twig\Environment $twig,
     ): JsonResponse {
-        $meetingId = $request->request->get('meeting_id');
+        $meetingId = $request->request->get("meeting_id");
 
         if (!$meetingId) {
-            return new JsonResponse(['success' => false, 'message' => 'Meeting ID is required']);
+            return new JsonResponse([
+                "success" => false,
+                "message" => "Meeting ID is required",
+            ]);
         }
 
         try {
@@ -252,43 +328,56 @@ final class MeetingController extends AbstractController
             $meeting = $meetingRepo->find($meetingId);
 
             if (!$meeting) {
-                return new JsonResponse(['success' => false, 'message' => 'Meeting not found']);
+                return new JsonResponse([
+                    "success" => false,
+                    "message" => "Meeting not found",
+                ]);
             }
 
             $supplier = $meeting->getFournisseur();
 
             // Send invitation email
-            $emailContent = $twig->render('emails/meeting_invitation.html.twig', [
-                'supplierName' => $supplier->getTypeF(),
-                'meetingDateTime' => $meeting->getMeetingDatetime(),
-                'meetingLink' => $meeting->getMeetingLink(),
-            ]);
+            $emailContent = $twig->render(
+                "emails/meeting_invitation.html.twig",
+                [
+                    "supplierName" => $supplier->getTypeF(),
+                    "meetingDateTime" => $meeting->getMeetingDatetime(),
+                    "meetingLink" => $meeting->getMeetingLink(),
+                ],
+            );
 
             $email = new Email();
-            $email->from($_ENV['MAILER_FROM'] ?? 'noreply@elfirma.tn')
+            $email
+                ->from($_ENV["MAILER_FROM"] ?? "noreply@elfirma.tn")
                 ->to($supplier->getEmailF())
-                ->subject('Meeting Invitation - Elfirma')
+                ->subject("Meeting Invitation - Elfirma")
                 ->html($emailContent);
 
             $mailer->send($email);
 
             return new JsonResponse([
-                'success' => true,
-                'message' => 'Invitation email sent successfully'
+                "success" => true,
+                "message" => "Invitation email sent successfully",
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
-                'success' => false,
-                'message' => 'Error sending invitation: ' . $e->getMessage()
+                "success" => false,
+                "message" => "Error sending invitation: " . $e->getMessage(),
             ]);
         }
     }
 
-    #[Route('/elfirma/meeting/export-google/{id}', name: 'meeting_export_google', methods: ['GET'])]
+    #[
+        Route(
+            "/elfirma/meeting/export-google/{id}",
+            name: "meeting_export_google",
+            methods: ["GET"],
+        ),
+    ]
     public function exportToGoogleCalendar(
         int $id,
         EntityManagerInterface $entityManager,
-        GoogleCalendarUrlService $calendarService
+        GoogleCalendarUrlService $calendarService,
     ): JsonResponse {
         try {
             $meetingRepo = $entityManager->getRepository(Meeting::class);
@@ -296,21 +385,22 @@ final class MeetingController extends AbstractController
 
             if (!$meeting) {
                 return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Meeting not found'
+                    "success" => false,
+                    "message" => "Meeting not found",
                 ]);
             }
 
             $calendarUrl = $calendarService->generateEventUrl($meeting);
 
             return new JsonResponse([
-                'success' => true,
-                'calendar_url' => $calendarUrl
+                "success" => true,
+                "calendar_url" => $calendarUrl,
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
-                'success' => false,
-                'message' => 'Error generating calendar URL: ' . $e->getMessage()
+                "success" => false,
+                "message" =>
+                    "Error generating calendar URL: " . $e->getMessage(),
             ]);
         }
     }

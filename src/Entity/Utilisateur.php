@@ -9,12 +9,12 @@ use App\Repository\UtilisateurRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-#[ORM\Table(name: 'utilisateur')]
+#[ORM\Table(name: "utilisateur")]
 class Utilisateur
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: "integer")]
     private ?int $id_u = null;
 
     public function getIdU(): ?int
@@ -22,12 +22,14 @@ class Utilisateur
         return $this->id_u;
     }
 
-    #[ORM\Column(type: 'string', length: 50, nullable: true)]
-    #[Assert\NotBlank(message: 'Last name is required')]
-    #[Assert\Length(
-        max: 10,
-        maxMessage: 'Last name must not exceed 10 characters'
-    )]
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    #[Assert\NotBlank(message: "Last name is required")]
+    #[
+        Assert\Length(
+            max: 10,
+            maxMessage: "Last name must not exceed 10 characters",
+        ),
+    ]
     private ?string $nom_u = null;
 
     public function getNomU(): ?string
@@ -41,12 +43,14 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 50, nullable: true)]
-    #[Assert\NotBlank(message: 'First name is required')]
-    #[Assert\Length(
-        max: 10,
-        maxMessage: 'First name must not exceed 10 characters'
-    )]
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    #[Assert\NotBlank(message: "First name is required")]
+    #[
+        Assert\Length(
+            max: 10,
+            maxMessage: "First name must not exceed 10 characters",
+        ),
+    ]
     private ?string $prenom_u = null;
 
     public function getPrenomU(): ?string
@@ -60,9 +64,9 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    #[Assert\NotBlank(message: 'Email is required')]
-    #[Assert\Email(message: 'Email is not valid')]
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    #[Assert\NotBlank(message: "Email is required")]
+    #[Assert\Email(message: "Email is not valid")]
     private ?string $email_u = null;
 
     public function getEmailU(): ?string
@@ -76,14 +80,16 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    #[Assert\NotBlank(message: 'Password is required')]
-    #[Assert\Length(
-        min: 3,
-        max: 7,
-        minMessage: 'Password must be at least 3 characters',
-        maxMessage: 'Password must not exceed 7 characters'
-    )]
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    #[Assert\NotBlank(message: "Password is required")]
+    #[
+        Assert\Length(
+            min: 3,
+            max: 7,
+            minMessage: "Password must be at least 3 characters",
+            maxMessage: "Password must not exceed 7 characters",
+        ),
+    ]
     private ?string $mot_de_passe_u = null;
 
     public function getMotDePasseU(): ?string
@@ -97,12 +103,14 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 30, nullable: true)]
-    #[Assert\NotBlank(message: 'Please select a valid role')]
-    #[Assert\Choice(
-        choices: ['employee', 'client'],
-        message: 'Please select a valid role'
-    )]
+    #[ORM\Column(type: "string", length: 30, nullable: true)]
+    #[Assert\NotBlank(message: "Please select a valid role")]
+    #[
+        Assert\Choice(
+            choices: ["employee", "client"],
+            message: "Please select a valid role",
+        ),
+    ]
     private ?string $role_u = null;
 
     public function getRoleU(): ?string
@@ -116,8 +124,15 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true, options: ['default' => 'default.JPG'])]
-    private ?string $image_u = 'default.JPG';
+    #[
+        ORM\Column(
+            type: "string",
+            length: 255,
+            nullable: true,
+            options: ["default" => "default.JPG"],
+        ),
+    ]
+    private ?string $image_u = "default.JPG";
 
     public function getImageU(): ?string
     {
@@ -130,8 +145,15 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true, options: ['default' => 'default_face.png'])]
-    private ?string $photo_face = 'default_face.png';
+    #[
+        ORM\Column(
+            type: "string",
+            length: 255,
+            nullable: true,
+            options: ["default" => "default_face.png"],
+        ),
+    ]
+    private ?string $photo_face = "default_face.png";
 
     public function getPhotoFace(): ?string
     {
@@ -144,7 +166,7 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(type: "datetime", options: ["default" => "CURRENT_TIMESTAMP"])]
     private ?\DateTimeInterface $date_creation_u = null;
 
     public function getDateCreationU(): ?\DateTimeInterface
@@ -158,7 +180,41 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'utilisateur')]
+    #[ORM\Column(type: "blob", nullable: true)]
+    private mixed $fingerprintTemplate = null;
+
+    public function getFingerprintTemplate(): mixed
+    {
+        return $this->fingerprintTemplate;
+    }
+
+    public function setFingerprintTemplate(mixed $fingerprintTemplate): self
+    {
+        $this->fingerprintTemplate = $fingerprintTemplate;
+        return $this;
+    }
+
+    #[
+        ORM\Column(
+            type: "integer",
+            options: ["unsigned" => true],
+            nullable: true,
+        ),
+    ]
+    private ?int $fingerprintLength = 0;
+
+    public function getFingerprintLength(): ?int
+    {
+        return $this->fingerprintLength;
+    }
+
+    public function setFingerprintLength(?int $fingerprintLength): self
+    {
+        $this->fingerprintLength = $fingerprintLength;
+        return $this;
+    }
+
+    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: "utilisateur")]
     private Collection $reclamations;
 
     public function __construct()

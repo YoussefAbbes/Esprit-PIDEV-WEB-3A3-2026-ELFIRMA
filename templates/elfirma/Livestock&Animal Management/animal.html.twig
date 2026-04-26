@@ -330,8 +330,15 @@
 
         .animal-stats-band {
             border-radius: 26px;
-            background: linear-gradient(135deg, var(--animal-forest) 0%, var(--animal-moss) 100%);
-            box-shadow: var(--animal-shadow-lg);
+            border: 1px solid #a7f3d0;
+            background: #edf3ee;
+            box-shadow: var(--animal-shadow-sm);
+        }
+
+        .animal-stats-hero {
+            border-radius: 24px;
+            background: linear-gradient(to right, #065f46, #047857, #059669);
+            box-shadow: 0 10px 28px rgba(13, 51, 32, 0.16);
         }
 
         .elf-sidebar-toggle,
@@ -436,87 +443,16 @@
 
 <main class="md:ml-72 min-h-screen p-3 md:p-4">
     <div class="max-w-7xl mx-auto">
-        <section class="animal-catalog-hero mb-4 p-4 md:p-6">
-            <div class="grid gap-6 lg:grid-cols-2 lg:items-center">
-                <div class="space-y-5">
-                    <div class="animal-hero-badge">Premium Animal Intelligence</div>
-                    <div>
-                        <h2 class="animal-hero-title">Curated animal<br><em>intelligence</em> for clients</h2>
-                        <p class="animal-hero-copy mt-4">
-                            This catalog transforms animal records into a polished narrative: gender, health, age, status, and seasonal strategy in one coherent experience.
-                        </p>
-                    </div>
-                    <div class="animal-pill-row">
-                        <span class="animal-pill">🔍 Smart filtering</span>
-                        <span class="animal-pill">📊 Live health</span>
-                        <span class="animal-pill">🌦️ Seasonal view</span>
-                        <span class="animal-pill">🧬 DNA clues</span>
-                    </div>
-                    <div class="animal-hero-kpis">
-                        <article class="animal-mini-kpi">
-                            <span>Total animals</span>
-                            <strong>{{ animals|length }}</strong>
-                        </article>
-                        <article class="animal-mini-kpi">
-                            <span>Healthy</span>
-                            <strong>{{ animal_stats.healthy_animals|default(0) }}</strong>
-                        </article>
-                        <article class="animal-mini-kpi">
-                            <span>For sale</span>
-                            <strong id="animal-for-sale-stat-hero">{{ animal_stats.for_sale_animals|default(0) }}</strong>
-                        </article>
-                    </div>
-                </div>
-
-                <div class="animal-hero-image">
-                    <img src="{{ asset('assets/img/farm-animals-real.jpg') }}" alt="Livestock overview">
-                    <div class="animal-hero-chip">
-                        <span class="chip-emoji">🌿</span>
-                        <div>
-                            <div style="font-size:12px;opacity:.72;font-weight:600;">EL FIRMA Certified</div>
-                            <div style="font-size:14px;font-weight:800;">Premium Farm Network</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <div class="animal-ticker mb-4 rounded-full">
-            <div class="animal-ticker-track">
-                <span>Animal records</span><span class="dot">✦</span>
-                <span>Health insights</span><span class="dot">✦</span>
-                <span>Gender detection</span><span class="dot">✦</span>
-                <span>Production stats</span><span class="dot">✦</span>
-                <span>EL FIRMA</span><span class="dot">✦</span>
-                <span>Animal records</span><span class="dot">✦</span>
-                <span>Health insights</span><span class="dot">✦</span>
-                <span>Gender detection</span><span class="dot">✦</span>
-                <span>Production stats</span><span class="dot">✦</span>
-                <span>EL FIRMA</span><span class="dot">✦</span>
-            </div>
-        </div>
-
-        <div class="animal-ribbon mb-4 rounded-3xl">
-            <div class="animal-ribbon-inner">
-                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐄</span><div class="animal-ribbon-label">Bovin</div></div>
-                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐑</span><div class="animal-ribbon-label">Sheep</div></div>
-                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐔</span><div class="animal-ribbon-label">Poultry</div></div>
-                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐐</span><div class="animal-ribbon-label">Goat</div></div>
-                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐖</span><div class="animal-ribbon-label">Pig</div></div>
-                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🦆</span><div class="animal-ribbon-label">Duck</div></div>
-            </div>
-        </div>
-
-        <section class="animal-stats-band rounded-3xl p-4 md:p-5 text-white">
+        <section class="animal-stats-band rounded-3xl p-4 md:p-5">
             <div class="mb-3 px-1 flex items-center justify-between gap-2">
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-black tracking-tight text-white">Animal Management</h2>
-                    <p class="text-emerald-100/90 text-sm md:text-base">Welcome to Animal Management</p>
+                    <h2 class="text-2xl md:text-3xl font-black tracking-tight text-emerald-800">Animal Management</h2>
+                    <p class="text-slate-600 text-sm md:text-base">Welcome to Animal Management</p>
                 </div>
-                <span class="text-sm text-emerald-100/90">{{ animals|length }} animal(s)</span>
+                <span class="text-sm text-slate-600">{{ animals|length }} animal(s)</span>
             </div>
 
-            <section class="mb-4 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 md:p-5 shadow-lg">
+            <section class="animal-stats-hero mb-4 p-4 md:p-5 text-white">
                 <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                     <div>
                         <h3 class="text-2xl md:text-3xl font-black tracking-tight">Animal Statistics</h3>
@@ -550,8 +486,6 @@
             </section>
 
             <section class="animal-catalog-workbench mb-4">
-                <h4 class="animal-workbench-title">Browse the Animals</h4>
-                <p class="animal-workbench-sub">Filter, sort, and inspect each animal profile with a premium editorial layout.</p>
                 <div class="flex flex-wrap gap-2">
                     <button type="button" class="js-animal-stats-tab rounded-xl border border-emerald-500 bg-white px-4 py-2.5 text-base font-bold text-emerald-700 shadow-sm" data-tab="status">Status Distribution</button>
                     <button type="button" class="js-animal-stats-tab rounded-xl border border-transparent bg-slate-100 px-4 py-2.5 text-base font-bold text-slate-600" data-tab="health">Health</button>
