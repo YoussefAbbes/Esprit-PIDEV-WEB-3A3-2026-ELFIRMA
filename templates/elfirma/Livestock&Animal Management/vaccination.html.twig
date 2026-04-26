@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaccination Calendar</title>
+    <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .elf-sidebar-toggle,
+        .elf-sidebar-overlay {
+            display: none !important;
+        }
+
+        .vac-kpi {
+            border: 2px solid #39a845;
+            background: linear-gradient(135deg, #f8fff8 0%, #d4efd7 100%);
+            box-shadow: 0 10px 24px -20px rgba(17, 101, 48, 0.7);
+        }
+
+        .vac-board {
+            border: 1px solid #d6e3d8;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 20px 38px -34px rgba(15, 72, 35, 0.5);
+        }
+
+        .vac-table-scroll {
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .vac-table-scroll::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .vac-table-scroll::-webkit-scrollbar-thumb {
+            background: #c5d4c8;
+            border-radius: 999px;
+        }
+
+        .vac-day {
+            border-radius: 0.8rem;
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .vac-day:hover {
+            background: #edf8ef;
+            transform: translateY(-1px);
+        }
+
+        .vac-day.is-today {
+            border: 1px solid #71c879;
+            color: #157030;
+            font-weight: 800;
+        }
+
+        .vac-day.is-selected {
+            background: #228636;
+            color: #ffffff;
+            font-weight: 900;
+            box-shadow: 0 8px 18px -12px rgba(19, 115, 47, 0.8);
+        }
+
+        .vac-day.has-event::after {
+            content: '';
+            display: block;
+            width: 0.36rem;
+            height: 0.36rem;
+            border-radius: 999px;
+            margin: 0.22rem auto 0;
+            background: #30a24a;
+        }
+
+        .vac-action-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid;
+            border-radius: 0.75rem;
+            background: #fff;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .vac-action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .vac-action-btn.edit {
+            border-color: #5ab868;
+            color: #2d9652;
+        }
+
+        .vac-action-btn.delete {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .vac-action-btn.edit:hover {
+            box-shadow: 0 9px 20px -14px rgba(45, 150, 82, 0.85);
+        }
+
+        .vac-action-btn.delete:hover {
+            box-shadow: 0 9px 20px -14px rgba(239, 68, 68, 0.85);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen overflow-x-hidden">
+<aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 bg-white border-r border-slate-200 py-8 pr-4 z-40">
+    <div class="px-8 mb-8">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Elfirma</h1>
+        <p class="text-slate-500 text-sm">Gestion Agricole</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Tableau de Bord</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Utilisateurs</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Parcelles & Cultures</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full bg-slate-900 text-white" href="#">Animaux & Elevages</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Produits & Commandes</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Equipements & Maintenance</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Fournisseurs & Contrats</a>
+        <a class="flex items-center px-8 py-3 rounded-r-full" href="#">Reclamations</a>
+    </nav>
+</aside>
+
+<main class="md:ml-72 min-h-screen p-3 md:p-4">
+    <div class="max-w-7xl mx-auto">
+        <section class="rounded-2xl border border-emerald-200 bg-[#edf3ee] p-3 md:p-4 shadow-sm">
+            <div class="mb-4 px-1 flex items-start justify-between gap-3">
+                <div>
+                    <h2 class="text-2xl md:text-4xl font-black tracking-tight text-emerald-800 flex items-center gap-3">
+                        <span class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-emerald-100 text-emerald-700">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><path d="m4 20 5-5"/><path d="m14.5 4.5 5 5"/><path d="M9.5 14.5 19 5"/><path d="M11 7l6 6"/></svg>
+                        </span>
+                        Vaccination Calendar
+                    </h2>
+                    <p class="text-slate-600 text-sm md:text-xl mt-1">Health Monitoring - Protocols - Alerts</p>
+                </div>
+                <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=vaccination&add=1"
+                   class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white mt-1"
+                   title="Add Vaccination" aria-label="Add Vaccination">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="w-5 h-5" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                </a>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="mb-3 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="mb-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{{ message }}</div>
+            {% endfor %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <article class="vac-kpi rounded-2xl p-4">
+                    <p class="text-emerald-800 text-3xl font-black">Total</p>
+                    <p class="text-emerald-700 text-5xl font-black mt-2">{{ vaccination_stats.total_vaccinations|default(0) }}</p>
+                </article>
+                <article class="vac-kpi rounded-2xl p-4">
+                    <p class="text-emerald-800 text-3xl font-black">Upcoming (7 days)</p>
+                    <p class="text-emerald-700 text-5xl font-black mt-2">{{ vaccination_stats.upcoming_vaccinations|default(0) }}</p>
+                </article>
+            </div>
+
+            <div class="mb-3 flex flex-col lg:flex-row lg:items-center gap-3">
+                <form id="vaccination-search-form" method="get" action="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}" class="w-full lg:max-w-sm">
+                    <input type="hidden" name="view" value="vaccination">
+                    <input id="vaccination-search-input" name="search" value="{{ search_term|default('') }}" type="text" autocomplete="off" placeholder="Search vaccine..." class="w-full rounded-full border-2 border-slate-300 bg-white px-5 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                </form>
+                <select id="vaccination-animal-filter" class="w-full lg:w-52 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                    <option value="">All Animals</option>
+                </select>
+                <span id="vaccination-count-text" class="text-slate-600 text-sm lg:text-base italic">{{ vaccinations|length }} vaccination(s)</span>
+            </div>
+            <p id="vaccination-search-error" class="mb-3 text-sm text-red-600 font-semibold {{ search_error is defined and search_error ? '' : 'hidden' }}">{{ search_error|default('Search can contain letters and spaces only') }}</p>
+
+            <section class="grid grid-cols-1 xl:grid-cols-12 gap-3">
+                <article class="vac-board xl:col-span-5">
+                    <header class="bg-[#1f7b2c] text-white px-4 py-3 flex items-center justify-between gap-2">
+                        <button id="vac-prev-month" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 hover:bg-white/30">&#8249;</button>
+                        <p id="vac-current-month" class="text-2xl font-black tracking-wide">April 2026</p>
+                        <div class="flex items-center gap-2">
+                            <button id="vac-next-month" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 hover:bg-white/30">&#8250;</button>
+                            <button id="vac-today" type="button" class="inline-flex px-3 h-8 items-center justify-center rounded-lg bg-[#7fc66f] text-white text-sm font-bold">Today</button>
+                        </div>
+                    </header>
+                    <div class="p-3 md:p-4">
+                        <div class="grid grid-cols-7 gap-1 text-center text-sm md:text-base text-emerald-700 font-bold mb-2">
+                            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        </div>
+                        <div id="vac-calendar-grid" class="grid grid-cols-7 gap-1 text-center text-sm md:text-base min-h-[320px]"></div>
+                    </div>
+                </article>
+
+                <article class="vac-board xl:col-span-7">
+                    <header class="bg-[#2b8f35] text-white px-4 py-3">
+                        <h3 class="text-2xl font-black">Vaccination Schedule</h3>
+                    </header>
+                    <div class="vac-table-scroll">
+                        <table id="vaccination-table" class="w-full text-sm min-w-[730px] border-separate border-spacing-0">
+                            <thead>
+                            <tr class="bg-[#2b8f35] text-white">
+                                <th class="py-3 px-3 border-r border-emerald-300/60 text-left">Animal</th>
+                                <th class="py-3 px-3 border-r border-emerald-300/60 text-left">Vaccine</th>
+                                <th class="py-3 px-3 border-r border-emerald-300/60 text-left">Vaccination</th>
+                                <th class="py-3 px-3 border-r border-emerald-300/60 text-left">Next Vac...</th>
+                                <th class="py-3 px-3 border-r border-emerald-300/60 text-left">Notes</th>
+                                <th class="py-3 px-3 text-center">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="vaccination-table-body">
+                            {% for item in vaccinations %}
+                                {% set isOverdue = item.date_next is not empty and item.date_next < 'now'|date('Y-m-d') %}
+                                <tr class="hover:bg-emerald-50/35 transition-colors" data-row="vaccination" data-animal="{{ item.animal_type|default('')|e('html_attr') }}" data-next-date="{{ item.date_next|default('')|e('html_attr') }}">
+                                    <td class="py-3 px-3 border-b border-r border-emerald-100 font-semibold text-slate-800">{{ item.animal_type }}</td>
+                                    <td class="py-3 px-3 border-b border-r border-emerald-100 text-slate-700">{{ item.vaccine_name }}</td>
+                                    <td class="py-3 px-3 border-b border-r border-emerald-100 text-slate-700">{{ item.date_done ? item.date_done|date('d/m/Y') : '--' }}</td>
+                                    <td class="py-3 px-3 border-b border-r border-emerald-100 font-bold {{ isOverdue ? 'text-red-600' : 'text-emerald-700' }}">{{ item.date_next ? item.date_next|date('d/m/Y') : '--' }}</td>
+                                    <td class="py-3 px-3 border-b border-r border-emerald-100 text-slate-700 max-w-[180px] truncate" title="{{ item.notes|default('') }}">{{ item.notes|default('--') }}</td>
+                                    <td class="py-3 px-3 border-b border-emerald-100">
+                                        <div class="flex items-center justify-center gap-3">
+                                            <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=vaccination&edit={{ item.id_vaccination }}" class="vac-action-btn edit" title="Edit">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                                            </a>
+                                            <form method="post" action="{{ path('vaccination_delete') }}" class="js-delete-form" data-delete-label="{{ item.animal_type|default('Vaccination')|e('html_attr') }} - {{ item.vaccine_name|default('')|e('html_attr') }}">
+                                                <input type="hidden" name="id_vaccination" value="{{ item.id_vaccination }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('vaccination_delete') }}">
+                                                <button type="submit" class="vac-action-btn delete" title="Delete">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="6" class="py-6 px-3 text-slate-500 text-center border-b border-emerald-100">No vaccination found.</td></tr>
+                            {% endfor %}
+                                <tr id="vaccination-no-results" class="hidden"><td colspan="6" class="py-6 px-3 text-slate-500 text-center border-b border-emerald-100">No matching vaccination found.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+
+            {% if show_add_vaccination_form or edit_vaccination %}
+                {% set is_edit_mode = edit_vaccination is not null %}
+                {% set flash_form_errors = app.flashes('form_errors') %}
+                {% set form_errors = flash_form_errors is not empty ? flash_form_errors|last : {} %}
+                {% set flash_form_input = app.flashes('form_input') %}
+                {% set form_input = flash_form_input is not empty ? flash_form_input|last : {} %}
+
+                {% set current_animal = form_input.id_animal is defined ? form_input.id_animal : (is_edit_mode ? edit_vaccination.id_animal : null) %}
+                {% set current_vaccine_name = form_input.vaccine_name is defined ? form_input.vaccine_name : (is_edit_mode ? edit_vaccination.vaccine_name : '') %}
+                {% set current_date_done = form_input.date_done is defined ? form_input.date_done : (is_edit_mode ? (edit_vaccination.date_done ? edit_vaccination.date_done|date('Y-m-d') : '') : '') %}
+                {% set current_date_next = form_input.date_next is defined ? form_input.date_next : (is_edit_mode ? (edit_vaccination.date_next ? edit_vaccination.date_next|date('Y-m-d') : '') : '') %}
+                {% set current_notes = form_input.notes is defined ? form_input.notes : (is_edit_mode ? edit_vaccination.notes : '') %}
+                {% set current_status = form_input.status is defined ? form_input.status : (is_edit_mode ? (edit_vaccination.status ?: 'Scheduled') : 'Scheduled') %}
+
+                <div class="fixed inset-0 z-[120] bg-slate-900/35 backdrop-blur-[1px] flex items-start justify-center pt-4 md:pt-8 pb-3 px-2 md:px-3 overflow-y-auto">
+                    <div class="w-full max-w-2xl rounded-2xl border-2 border-emerald-600 bg-[#cfe3cf] shadow-2xl">
+                        <div class="p-4 md:p-5">
+                            <div class="flex items-center justify-end">
+                                <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=vaccination" class="text-slate-800 hover:text-slate-900 text-3xl leading-none" aria-label="Close">&times;</a>
+                            </div>
+
+                            <h3 class="text-center text-xl md:text-2xl font-black tracking-wide text-emerald-800">{{ is_edit_mode ? 'EDIT VACCINATION' : 'CREATE NEW VACCINATION' }}</h3>
+                            <div class="h-px bg-emerald-300 mt-3 mb-4"></div>
+
+                            {% if form_errors._form is defined %}
+                                <p class="mb-3 text-sm text-red-600 font-semibold">{{ form_errors._form }}</p>
+                            {% endif %}
+
+                            <form method="post" action="{{ path(is_edit_mode ? 'vaccination_update' : 'vaccination_create') }}" class="space-y-3">
+                                <input type="hidden" name="_token" value="{{ csrf_token(is_edit_mode ? 'vaccination_update' : 'vaccination_create') }}">
+                                {% if is_edit_mode %}
+                                    <input type="hidden" name="id_vaccination" value="{{ edit_vaccination.id_vaccination }}">
+                                {% endif %}
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Animal:</label>
+                                    <div class="md:col-span-4">
+                                        <select name="id_animal" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            {% for animal in animal_options %}
+                                                <option value="{{ animal.id_animal }}" {{ current_animal is not null and current_animal == animal.id_animal ? 'selected' : '' }}>{{ animal.type_animal }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if form_errors.id_animal is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.id_animal }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Vaccine:</label>
+                                    <input name="vaccine_name" value="{{ current_vaccine_name }}" placeholder="Ex: Brucellosis" class="md:col-span-4 rounded-xl border-2 border-emerald-600 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    {% if form_errors.vaccine_name is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.vaccine_name }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Vaccination Date:</label>
+                                    <input type="date" name="date_done" value="{{ current_date_done }}" class="md:col-span-4 rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    {% if form_errors.date_done is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.date_done }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Next Date:</label>
+                                    <input type="date" name="date_next" value="{{ current_date_next }}" class="md:col-span-4 rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    {% if form_errors.date_next is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.date_next }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Status:</label>
+                                    <div class="md:col-span-4">
+                                        <select name="status" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            {% for status_option in ['Scheduled', 'Done', 'Overdue'] %}
+                                                <option value="{{ status_option }}" {{ current_status == status_option ? 'selected' : '' }}>{{ status_option }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if form_errors.status is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.status }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-start gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold pt-2">Notes:</label>
+                                    <textarea name="notes" rows="3" class="md:col-span-4 rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Optional notes">{{ current_notes }}</textarea>
+                                    {% if form_errors.notes is defined %}
+                                        <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.notes }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="pt-2 flex items-center justify-center">
+                                    <button type="submit" class="h-11 w-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_8px_18px_-8px_rgba(16,127,61,0.65)] flex items-center justify-center" title="Save">
+                                        {% if is_edit_mode %}
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                                        {% else %}
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+
+<div id="delete-confirm-modal" class="fixed inset-0 z-[130] hidden items-center justify-center p-3 bg-black/35">
+    <div class="w-full max-w-md rounded-2xl shadow-2xl border-2 border-red-500 bg-red-50">
+        <div class="p-4 md:p-5 text-center">
+            <h3 class="text-2xl md:text-3xl font-black text-red-700">Confirm Deletion</h3>
+            <div class="mt-3 h-px bg-red-300"></div>
+            <p id="delete-modal-title" class="mt-5 text-lg md:text-xl text-red-700 font-bold">Delete vaccination</p>
+            <p class="mt-2 text-red-600">This action cannot be undone.</p>
+            <div class="mt-6 flex items-center justify-center gap-4">
+                <button id="delete-modal-confirm" type="button" class="vac-action-btn delete" title="Delete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+                <button id="delete-modal-cancel" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-slate-400 hover:bg-slate-500 text-white" title="Cancel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="w-5 h-5" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const rows = Array.from(document.querySelectorAll('[data-row="vaccination"]'));
+    const noResultsRow = document.getElementById('vaccination-no-results');
+    const animalFilter = document.getElementById('vaccination-animal-filter');
+    const countText = document.getElementById('vaccination-count-text');
+    const modal = document.getElementById('delete-confirm-modal');
+    const modalTitle = document.getElementById('delete-modal-title');
+    const confirmDeleteBtn = document.getElementById('delete-modal-confirm');
+    const cancelDeleteBtn = document.getElementById('delete-modal-cancel');
+
+    const today = new Date();
+    let activeMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const monthTitle = document.getElementById('vac-current-month');
+    const calendarGrid = document.getElementById('vac-calendar-grid');
+    const prevMonthBtn = document.getElementById('vac-prev-month');
+    const nextMonthBtn = document.getElementById('vac-next-month');
+    const todayBtn = document.getElementById('vac-today');
+
+    const normalize = function (value) {
+        return String(value || '').trim().toLowerCase();
+    };
+
+    const formatDateKey = function (date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    };
+
+    const eventDates = new Set(rows.map(function (row) {
+        return row.dataset.nextDate || '';
+    }).filter(Boolean));
+
+    const buildAnimalFilter = function () {
+        if (!animalFilter) {
+            return;
+        }
+
+        const options = Array.from(new Set(rows.map(function (row) {
+            return row.dataset.animal || '';
+        }).filter(Boolean))).sort();
+
+        options.forEach(function (animal) {
+            const option = document.createElement('option');
+            option.value = animal;
+            option.textContent = animal;
+            animalFilter.appendChild(option);
+        });
+    };
+
+    const applyFilters = function () {
+        const selectedAnimal = normalize(animalFilter ? animalFilter.value : '');
+        let visibleCount = 0;
+
+        rows.forEach(function (row) {
+            const matchesAnimal = selectedAnimal === '' || normalize(row.dataset.animal) === selectedAnimal;
+            row.classList.toggle('hidden', !matchesAnimal);
+            if (matchesAnimal) {
+                visibleCount += 1;
+            }
+        });
+
+        if (countText) {
+            countText.textContent = visibleCount + ' vaccination(s)';
+        }
+
+        if (noResultsRow) {
+            noResultsRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
+        }
+    };
+
+    const renderCalendar = function () {
+        if (!calendarGrid || !monthTitle) {
+            return;
+        }
+
+        monthTitle.textContent = activeMonth.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
+
+        calendarGrid.innerHTML = '';
+
+        const year = activeMonth.getFullYear();
+        const month = activeMonth.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const firstWeekday = (firstDay.getDay() + 6) % 7;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstWeekday; i += 1) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'h-12';
+            calendarGrid.appendChild(placeholder);
+        }
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+            const current = new Date(year, month, day);
+            const key = formatDateKey(current);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'vac-day h-12 font-semibold text-slate-700';
+            button.textContent = String(day);
+
+            if (key === formatDateKey(today)) {
+                button.classList.add('is-today');
+            }
+
+            if (key === formatDateKey(selectedDate)) {
+                button.classList.add('is-selected');
+            }
+
+            if (eventDates.has(key)) {
+                button.classList.add('has-event');
+            }
+
+            button.addEventListener('click', function () {
+                selectedDate = current;
+                renderCalendar();
+            });
+
+            calendarGrid.appendChild(button);
+        }
+    };
+
+    if (prevMonthBtn) {
+        prevMonthBtn.addEventListener('click', function () {
+            activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1);
+            renderCalendar();
+        });
+    }
+
+    if (nextMonthBtn) {
+        nextMonthBtn.addEventListener('click', function () {
+            activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1);
+            renderCalendar();
+        });
+    }
+
+    if (todayBtn) {
+        todayBtn.addEventListener('click', function () {
+            activeMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            renderCalendar();
+        });
+    }
+
+    if (animalFilter) {
+        animalFilter.addEventListener('change', applyFilters);
+    }
+
+    const deleteForms = document.querySelectorAll('.js-delete-form');
+    let pendingDeleteForm = null;
+
+    const closeDeleteModal = function () {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        pendingDeleteForm = null;
+    };
+
+    deleteForms.forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            pendingDeleteForm = form;
+
+            if (modalTitle) {
+                modalTitle.textContent = 'Delete: ' + (form.dataset.deleteLabel || 'Vaccination');
+            }
+
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        });
+    });
+
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function () {
+            if (pendingDeleteForm) {
+                pendingDeleteForm.submit();
+            }
+        });
+    }
+
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+    }
+
+    if (modal) {
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                closeDeleteModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+
+    buildAnimalFilter();
+    applyFilters();
+    renderCalendar();
+})();
+</script>
+
+{{ include('elfirma/_nav_routes.html.twig') }}
+</body>
+</html>

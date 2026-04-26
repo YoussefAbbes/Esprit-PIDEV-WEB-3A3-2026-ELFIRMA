@@ -7,36 +7,81 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Dompdf\Dompdf;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\Produit;
 use App\Entity\Commande;
 use App\Entity\Categorie;
+use App\Service\ProductVideoGeneratorService;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ProductController extends AbstractController
 {
+    private const OPENWEATHER_API_BASE = 'https://api.openweathermap.org/data/2.5/weather';
+
+    private const TUNISIA_REGIONS = [
+        'Tunis' => 'Tunis,TN',
+        'Ariana' => 'Ariana,TN',
+        'Ben Arous' => 'Ben Arous,TN',
+        'Manouba' => 'Manouba,TN',
+        'Nabeul' => 'Nabeul,TN',
+        'Sousse' => 'Sousse,TN',
+        'Monastir' => 'Monastir,TN',
+        'Mahdia' => 'Mahdia,TN',
+        'Sfax' => 'Sfax,TN',
+        'Kairouan' => 'Kairouan,TN',
+        'Bizerte' => 'Bizerte,TN',
+        'Beja' => 'Beja,TN',
+        'Jendouba' => 'Jendouba,TN',
+        'Le Kef' => 'Kef,TN',
+        'Siliana' => 'Siliana,TN',
+        'Zaghouan' => 'Zaghouan,TN',
+        'Kasserine' => 'Kasserine,TN',
+        'Sidi Bouzid' => 'Sidi Bouzid,TN',
+        'Gabes' => 'Gabes,TN',
+        'Medenine' => 'Medenine,TN',
+        'Tataouine' => 'Tataouine,TN',
+        'Gafsa' => 'Gafsa,TN',
+        'Tozeur' => 'Tozeur,TN',
+        'Kebili' => 'Kebili,TN',
+    ];
+
     #[Route('/elfirma/produits', name: 'elfirma_products', methods: ['GET'])]
-    public function adminIndex(Request $request, EntityManagerInterface $em): Response
+    public function adminIndex(Request $request, EntityManagerInterface $em, HttpClientInterface $httpClient): Response
     {
         $q = trim((string) $request->query->get('q', ''));
         $categoryFilter = trim((string) $request->query->get('category', ''));
         $statusFilter = trim((string) $request->query->get('status', ''));
         $sort = (string) $request->query->get('sort', 'id-desc');
+        $selectedRegion = trim((string) $request->query->get('meteo_region', 'Tunis'));
 
-        $produits = $em->getRepository(Produit::class)->findAll();
-        $produits = $this->filterAndSortProducts($produits, $q, $categoryFilter, $statusFilter, $sort);
+        if (!array_key_exists($selectedRegion, self::TUNISIA_REGIONS)) {
+            $selectedRegion = 'Tunis';
+        }
+
+        $allProduits = $em->getRepository(Produit::class)->findAll();
+        $produits = $this->filterAndSortProducts($allProduits, $q, $categoryFilter, $statusFilter, $sort);
         $categories = $em->getRepository(Categorie::class)->findBy([], ['nom' => 'ASC']);
 
         $stats = $this->buildProductStats($produits);
         $chartData = $this->buildProductChartData($produits);
+        $weatherOverview = $this->fetchTunisiaWeatherOverview($selectedRegion, $httpClient);
+        $stockAlertData = $this->buildStockAlertData($allProduits);
+        $stockAlertStats = $this->buildStockAlertStats($allProduits, $stockAlertData);
 
         return $this->render('elfirma/produits.html.twig', [
             'produits' => $produits,
             'categories' => $categories,
             'product_stats' => $stats,
             'product_chart_data' => $chartData,
+            'stock_alert_data' => $stockAlertData,
+            'stock_alert_stats' => $stockAlertStats,
+            'weather_overview' => $weatherOverview,
+            'weather_regions' => array_keys(self::TUNISIA_REGIONS),
+            'weather_selected_region' => $selectedRegion,
             'filters' => [
                 'q' => $q,
                 'category' => $categoryFilter,
@@ -58,7 +103,7 @@ final class ProductController extends AbstractController
         $produits = $this->filterAndSortProducts($produits, $q, $categoryFilter, $statusFilter, $sort);
         $stats = $this->buildProductStats($produits);
 
-        return $this->render('elfirma/products_report_print.html.twig', [
+        $html = $this->renderView('elfirma/products_report_print.html.twig', [
             'produits' => $produits,
             'stats' => $stats,
             'generated_at' => (new \DateTimeImmutable())->format('d/m/Y H:i:s'),
@@ -68,6 +113,18 @@ final class ProductController extends AbstractController
                 'status' => $statusFilter,
                 'sort' => $sort,
             ],
+        ]);
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $pdfContent = $dompdf->output();
+
+        return new Response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="produits.pdf"',
         ]);
     }
 
@@ -96,16 +153,7 @@ final class ProductController extends AbstractController
         $dateProduction = $this->parseDateValue($formData['date_production']);
         $dateExpiration = $this->parseDateValue($formData['date_expiration']);
 
-        $imageFilename = null;
         $imageFile = $request->files->get('image');
-        if ($imageFile instanceof UploadedFile) {
-            $imageFilename = $this->buildUploadFilename($imageFile, $slugger);
-            try {
-                $imageFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/produits', $imageFilename);
-            } catch (\Throwable $e) {
-                $errors['image'][] = 'Unable to upload product image.';
-            }
-        }
 
         $produit = new Produit();
         $produit->setNom($formData['nom']);
@@ -117,7 +165,9 @@ final class ProductController extends AbstractController
         $produit->setDateProduction($dateProduction);
         $produit->setDateExpiration($dateExpiration);
         $produit->setCategorie($categorie);
-        $produit->setImage($imageFilename);
+        if ($imageFile instanceof UploadedFile) {
+            $produit->setImageFile($imageFile);
+        }
 
         $this->appendEntityValidationErrors($errors, $validator->validate($produit));
 
@@ -142,6 +192,56 @@ final class ProductController extends AbstractController
         }
 
         return $this->redirectToRoute('elfirma_products');
+    }
+
+    #[Route('/elfirma/produit/{id}/restock', name: 'produit_restock', methods: ['POST'])]
+    public function restockProduit(int $id, Request $request, EntityManagerInterface $em): Response
+    {
+        $produit = $em->getRepository(Produit::class)->find($id);
+        if (!$produit) {
+            $this->addFlash('error', 'Product not found for restock.');
+
+            return $this->redirectToRoute('elfirma_products');
+        }
+
+        $qtyRaw = trim((string) $request->request->get('quantity_add', '0'));
+        $quantityToAdd = filter_var($qtyRaw, FILTER_VALIDATE_INT);
+
+        if ($quantityToAdd === false || $quantityToAdd <= 0) {
+            $this->addFlash('error', 'Restock quantity must be a positive integer.');
+
+            return $this->redirectToRoute('elfirma_products', [
+                'q' => trim((string) $request->request->get('q', '')),
+                'category' => trim((string) $request->request->get('category', '')),
+                'status' => trim((string) $request->request->get('status', '')),
+                'sort' => trim((string) $request->request->get('sort', 'id-desc')),
+                'meteo_region' => trim((string) $request->request->get('meteo_region', 'Tunis')),
+            ]);
+        }
+
+        $newStock = (int) ($produit->getQuantiteStock() ?? 0) + (int) $quantityToAdd;
+        $produit->setQuantiteStock($newStock);
+
+        if ($this->isProductExpired($produit)) {
+            $produit->setStatut('Expiré');
+        } else {
+            $produit->setStatut($newStock <= 0 ? 'Rupture' : 'Disponible');
+        }
+
+        try {
+            $em->flush();
+            $this->addFlash('success', sprintf('Stock updated for %s (+%d).', (string) $produit->getNom(), (int) $quantityToAdd));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Unable to update stock right now.');
+        }
+
+        return $this->redirectToRoute('elfirma_products', [
+            'q' => trim((string) $request->request->get('q', '')),
+            'category' => trim((string) $request->request->get('category', '')),
+            'status' => trim((string) $request->request->get('status', '')),
+            'sort' => trim((string) $request->request->get('sort', 'id-desc')),
+            'meteo_region' => trim((string) $request->request->get('meteo_region', 'Tunis')),
+        ]);
     }
 
     #[Route('/elfirma/produit/edit/{id}', name: 'produit_edit', methods: ['POST'])]
@@ -180,13 +280,8 @@ final class ProductController extends AbstractController
 
         $imageFile = $request->files->get('image');
         if ($imageFile instanceof UploadedFile) {
-            $imageFilename = $this->buildUploadFilename($imageFile, $slugger);
-            try {
-                $imageFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/produits', $imageFilename);
-                $formData['image'] = $imageFilename;
-            } catch (\Throwable $e) {
-                $errors['image'][] = 'Unable to upload product image.';
-            }
+            $produit->setImageFile($imageFile);
+            $formData['image'] = $produit->getImage() ?? $formData['image'];
         }
 
         $produit->setNom($formData['nom']);
@@ -198,7 +293,9 @@ final class ProductController extends AbstractController
         $produit->setDateProduction($dateProduction);
         $produit->setDateExpiration($dateExpiration);
         $produit->setCategorie($categorie);
-        $produit->setImage($formData['image'] !== '' ? $formData['image'] : null);
+        if ($formData['image'] !== '') {
+            $produit->setImage($formData['image']);
+        }
 
         $this->appendEntityValidationErrors($errors, $validator->validate($produit));
 
@@ -412,6 +509,56 @@ final class ProductController extends AbstractController
         }
 
         return new JsonResponse($data);
+    }
+
+    #[Route('/product/{id}/generate-video', name: 'app_product_generate_video', methods: ['GET'])]
+    public function generateVideo(int $id, EntityManagerInterface $em, ProductVideoGeneratorService $videoGenerator): Response
+    {
+        $produit = $em->getRepository(Produit::class)->find($id);
+        if (!$produit instanceof Produit) {
+            throw $this->createNotFoundException('Product not found');
+        }
+
+        $quality = (string) ($produit->getQualite() ?? 'Standard');
+        $productionDate = $produit->getDateProduction()?->format('d/m/Y') ?? 'Non renseignee';
+        $expirationDate = $produit->getDateExpiration()?->format('d/m/Y') ?? 'Non renseignee';
+        $price = number_format((float) ($produit->getPrixUnitaire() ?? 0), 2, '.', '');
+
+        $description = sprintf(
+            '%s. Categorie %s. Stock disponible %d unite(s).',
+            (string) ($produit->getType() ?? 'Produit agricole'),
+            (string) ($produit->getCategorie()?->getNom() ?? 'non precisee'),
+            (int) ($produit->getQuantiteStock() ?? 0)
+        );
+
+        $ttsText = sprintf(
+            'Produit %s. Qualite %s. Date de production %s. Date d expiration %s. Prix %s dinars tunisiens.',
+            (string) ($produit->getNom() ?? 'Produit'),
+            $quality,
+            $productionDate,
+            $expirationDate,
+            $price
+        );
+
+        $result = $videoGenerator->generate([
+            'id' => (int) ($produit->getIdProduit() ?? 0),
+            'name' => (string) ($produit->getNom() ?? 'Produit'),
+            'description' => $description,
+            'price' => $price,
+            'quality' => $quality,
+            'production_date' => $productionDate,
+            'expiration_date' => $expirationDate,
+            'tts_text' => $ttsText,
+            'image' => (string) ($produit->getImage() ?? ''),
+        ]);
+
+        return $this->render('product/video_result.html.twig', [
+            'produit' => $produit,
+            'video_url' => $result['video_url'] ?? null,
+            'generator_message' => (string) ($result['message'] ?? ''),
+            'generator_ok' => (bool) ($result['ok'] ?? false),
+            'generator_stdout' => (string) ($result['stdout'] ?? ''),
+        ]);
     }
 //C’est une fonction utilitaire de conversion,pas la validation métier finale (la validation est surtout dans l’entité).
     private function parseDateValue(string $value): ?\DateTimeInterface
@@ -736,5 +883,227 @@ final class ProductController extends AbstractController
         }
 
         return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $normalized);
+    }
+
+    /**
+     * @return array{ok:bool,region:string,temp_c:float,humidity:int,description:string,icon:string,recommendation_title:string,recommendation_message:string,error:?string,updated_at:string}
+     */
+    private function fetchTunisiaWeatherOverview(string $region, HttpClientInterface $httpClient): array
+    {
+        $fallback = [
+            'ok' => false,
+            'region' => $region,
+            'temp_c' => 0.0,
+            'humidity' => 0,
+            'description' => '-',
+            'icon' => '',
+            'recommendation_title' => 'Weather assistant is temporarily unavailable',
+            'recommendation_message' => 'Weather data cannot be loaded right now. Please try again in a moment.',
+            'error' => null,
+            'updated_at' => (new \DateTimeImmutable())->format('d/m/Y H:i:s'),
+        ];
+
+        $apiKey = $this->getOpenWeatherApiKey();
+        if ($apiKey === '') {
+            $fallback['recommendation_title'] = 'Weather configuration required';
+            $fallback['recommendation_message'] = 'Add your OpenWeather key in .env.local to enable weather-based recommendations.';
+            return $fallback;
+        }
+
+        $query = self::TUNISIA_REGIONS[$region] ?? self::TUNISIA_REGIONS['Tunis'];
+
+        try {
+            $response = $httpClient->request('GET', self::OPENWEATHER_API_BASE, [
+                'query' => [
+                    'q' => $query,
+                    'appid' => $apiKey,
+                    'units' => 'metric',
+                    'lang' => 'en',
+                ],
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $data = $response->toArray(false);
+
+            $apiCod = (string) ($data['cod'] ?? '200');
+            $apiMessage = (string) ($data['message'] ?? '');
+
+            if ($statusCode >= 400 || ($apiCod !== '' && $apiCod !== '200')) {
+                $fallback['recommendation_title'] = 'OpenWeather activation in progress';
+                $fallback['recommendation_message'] = 'Your API key may need a few minutes to activate. Please retry shortly.';
+
+                if ($apiMessage !== '') {
+                    $fallback['error'] = ucfirst($apiMessage) . '.';
+                }
+
+                return $fallback;
+            }
+
+            if (!isset($data['main']['temp'], $data['main']['humidity'])) {
+                return $fallback;
+            }
+
+            $temp = (float) ($data['main']['temp'] ?? 0.0);
+            $humidity = (int) ($data['main']['humidity'] ?? 0);
+            $description = (string) ($data['weather'][0]['description'] ?? '-');
+            $icon = (string) ($data['weather'][0]['icon'] ?? '');
+
+            $recommendation = $this->buildWeatherRecommendation($temp, $humidity);
+
+            return [
+                'ok' => true,
+                'region' => $region,
+                'temp_c' => round($temp, 1),
+                'humidity' => $humidity,
+                'description' => $description,
+                'icon' => $icon,
+                'recommendation_title' => $recommendation['title'],
+                'recommendation_message' => $recommendation['message'],
+                'error' => null,
+                'updated_at' => (new \DateTimeImmutable())->format('d/m/Y H:i:s'),
+            ];
+        } catch (\Throwable $e) {
+            $fallback['error'] = 'Weather service connection is currently unavailable.';
+
+            return $fallback;
+        }
+    }
+
+    /**
+     * @return array{title:string,message:string}
+     */
+    private function buildWeatherRecommendation(float $temperature, int $humidity): array
+    {
+        if ($temperature >= 35 && $humidity <= 50) {
+            return [
+                'title' => 'Very hot and dry conditions',
+                'message' => 'Recommended focus: watermelon, melon, tomatoes, cucumbers, and hydration-related products. Highlight irrigation and mulching solutions as well.',
+            ];
+        }
+
+        if ($temperature >= 30 && $humidity > 50) {
+            return [
+                'title' => 'Hot and humid weather',
+                'message' => 'Recommended focus: fresh fruits, leafy vegetables, preservation products, and ventilated packaging. Increase rotation for sensitive stock.',
+            ];
+        }
+
+        if ($temperature >= 20 && $temperature < 30) {
+            return [
+                'title' => 'Balanced conditions',
+                'message' => 'Good time to diversify: citrus, seasonal vegetables, aromatic herbs, and premium local products.',
+            ];
+        }
+
+        return [
+            'title' => 'Cool weather',
+            'message' => 'Recommended focus: potatoes, onions, carrots, root vegetables, and long shelf-life products.',
+        ];
+    }
+
+    private function getOpenWeatherApiKey(): string
+    {
+        return trim((string) ($_SERVER['OPENWEATHER_API_KEY'] ?? $_ENV['OPENWEATHER_API_KEY'] ?? ''));
+    }
+
+    /**
+     * @param list<Produit> $products
+     *
+     * @return list<array{id:int,name:string,stock:int,status:string,category:string,expires_on:?string,is_expired:bool,alert_level:string}>
+     */
+    private function buildStockAlertData(array $products): array
+    {
+        $alerts = [];
+        $lowStockThreshold = 20;
+
+        foreach ($products as $product) {
+            $stock = (int) ($product->getQuantiteStock() ?? 0);
+            $status = (string) ($product->getStatut() ?? '');
+            $isExpired = $this->isProductExpired($product) || mb_strtolower($status) === 'expiré' || mb_strtolower($status) === 'expired';
+            $isOutOfStock = $stock <= 0 || mb_strtolower($status) === 'rupture' || mb_strtolower($status) === 'out of stock';
+            $isLow = !$isOutOfStock && $stock <= $lowStockThreshold;
+
+            if (!$isExpired && !$isOutOfStock && !$isLow) {
+                continue;
+            }
+
+            $alerts[] = [
+                'id' => (int) ($product->getIdProduit() ?? 0),
+                'name' => (string) ($product->getNom() ?? '-'),
+                'stock' => $stock,
+                'status' => $status,
+                'category' => (string) ($product->getCategorie()?->getNom() ?? 'Uncategorized'),
+                'expires_on' => $product->getDateExpiration()?->format('d/m/Y'),
+                'is_expired' => $isExpired,
+                'alert_level' => ($isExpired || $isOutOfStock) ? 'critical' : 'warning',
+            ];
+        }
+
+        usort($alerts, static function (array $a, array $b): int {
+            $rankA = $a['alert_level'] === 'critical' ? 0 : 1;
+            $rankB = $b['alert_level'] === 'critical' ? 0 : 1;
+
+            if ($rankA !== $rankB) {
+                return $rankA <=> $rankB;
+            }
+
+            return ((int) $a['stock']) <=> ((int) $b['stock']);
+        });
+
+        return $alerts;
+    }
+
+    /**
+     * @param list<Produit> $products
+     * @param list<array{id:int,name:string,stock:int,status:string,category:string,expires_on:?string,is_expired:bool,alert_level:string}> $alertData
+     *
+     * @return array{expired_count:int,non_expired_count:int,low_stock_count:int,out_of_stock_count:int,alert_total:int}
+     */
+    private function buildStockAlertStats(array $products, array $alertData): array
+    {
+        $expiredCount = 0;
+        $outOfStockCount = 0;
+        $lowStockCount = 0;
+
+        foreach ($products as $product) {
+            $stock = (int) ($product->getQuantiteStock() ?? 0);
+            $status = mb_strtolower((string) ($product->getStatut() ?? ''));
+            $isExpired = $this->isProductExpired($product) || $status === 'expiré' || $status === 'expired';
+            $isOut = $stock <= 0 || $status === 'rupture' || $status === 'out of stock';
+            $isLow = !$isOut && $stock <= 20;
+
+            if ($isExpired) {
+                $expiredCount++;
+            }
+
+            if ($isOut) {
+                $outOfStockCount++;
+            } elseif ($isLow) {
+                $lowStockCount++;
+            }
+        }
+
+        return [
+            'expired_count' => $expiredCount,
+            'non_expired_count' => max(0, count($products) - $expiredCount),
+            'low_stock_count' => $lowStockCount,
+            'out_of_stock_count' => $outOfStockCount,
+            'alert_total' => count($alertData),
+        ];
+    }
+
+    private function isProductExpired(Produit $product): bool
+    {
+        $expirationDate = $product->getDateExpiration();
+        if (!$expirationDate instanceof \DateTimeInterface) {
+            return false;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        return $expirationDate < $today;
     }
 }

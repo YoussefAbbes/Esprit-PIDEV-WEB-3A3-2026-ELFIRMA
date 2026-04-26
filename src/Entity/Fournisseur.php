@@ -143,10 +143,14 @@ class Fournisseur
     #[ORM\OneToMany(mappedBy: 'fournisseur', targetEntity: Meeting::class)]
     private Collection $meetings;
 
+    #[ORM\OneToMany(mappedBy: 'fournisseur', targetEntity: Rating::class)]
+    private Collection $ratings;
+
     public function __construct()
     {
         $this->contrats = new ArrayCollection();
         $this->meetings = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getContrats(): Collection
@@ -176,5 +180,48 @@ class Fournisseur
     public function getMeetings(): Collection
     {
         return $this->meetings;
+    }
+
+    public function addMeetings(Meeting $meeting): self
+    {
+        if (!$this->meetings->contains($meeting)) {
+            $this->meetings[] = $meeting;
+            $meeting->setFournisseur($this);
+        }
+        return $this;
+    }
+
+    public function removeMeetings(Meeting $meeting): self
+    {
+        if ($this->meetings->removeElement($meeting)) {
+            if ($meeting->getFournisseur() === $this) {
+                $meeting->setFournisseur(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(Rating $rating): self
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings[] = $rating;
+            $rating->setFournisseur($this);
+        }
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): self
+    {
+        if ($this->ratings->removeElement($rating)) {
+            if ($rating->getFournisseur() === $this) {
+                $rating->setFournisseur(null);
+            }
+        }
+        return $this;
     }
 }

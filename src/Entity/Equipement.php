@@ -121,4 +121,3 @@ class Equipement
         return $this;
     }
 }
-

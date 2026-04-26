@@ -1,0 +1,167 @@
+{# Meeting Invitation Email Template #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #43682b;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #43682b;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #666;
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .meeting-details {
+            background-color: #f9f9f9;
+            border-left: 4px solid #43682b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .detail-row {
+            margin: 12px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #43682b;
+            min-width: 120px;
+            margin-right: 10px;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .meeting-link-box {
+            background-color: #e8f5e9;
+            border: 2px solid #43682b;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .meeting-link-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .meeting-link {
+            display: inline-block;
+            background-color: #43682b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .meeting-link:hover {
+            background-color: #2d4620;
+        }
+        .footer {
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📹 Meeting Invitation</h1>
+            <p>Elfirma - Agricultural Management Platform</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                <p>Hello <strong>{{ supplierName }}</strong>,</p>
+                <p>You have been invited to a video meeting. Please find the meeting details below:</p>
+            </div>
+
+            <!-- Meeting Details -->
+            <div class="meeting-details">
+                <div class="detail-row">
+                    <span class="icon">📅</span>
+                    <div>
+                        <div class="detail-label">Date & Time:</div>
+                        <div class="detail-value">{{ meetingDateTime|date('F d, Y') }} at {{ meetingDateTime|date('H:i') }}</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="icon">🔗</span>
+                    <div>
+                        <div class="detail-label">Meeting Link:</div>
+                        <div class="detail-value"><a href="{{ meetingLink }}" style="color: #43682b; text-decoration: none;">{{ meetingLink }}</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Join Meeting Button -->
+            <div class="meeting-link-box">
+                <div class="meeting-link-label">Click below to join the meeting:</div>
+                <a href="{{ meetingLink }}" class="meeting-link">Join Meeting Now</a>
+            </div>
+
+            <!-- Instructions -->
+            <div style="margin-top: 20px; padding: 15px; background-color: #fafafa; border-radius: 4px;">
+                <p style="color: #666; font-size: 14px; margin: 0;">
+                    <strong>💡 Tip:</strong> Please click the link a few minutes before the meeting start time to ensure your device is ready.
+                    You may need to enable camera and microphone permissions in your browser.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>This is an automated message from Elfirma - Agricultural Management Platform</p>
+            <p>© 2026 Elfirma. All rights reserved.</p>
+            <p>If you have any questions, please contact support.</p>
+        </div>
+    </div>
+</body>
+</html>

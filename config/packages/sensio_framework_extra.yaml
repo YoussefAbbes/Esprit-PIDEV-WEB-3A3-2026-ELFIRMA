@@ -1,0 +1,2 @@
+# Disabled because sensio/framework-extra-bundle is not installed in the
+# merged dependency set. Re-enable after installing the bundle.

@@ -1,0 +1,8 @@
+bazinga_geocoder:
+  providers:
+    nominatim:
+      factory: Bazinga\GeocoderBundle\ProviderFactory\NominatimFactory
+      aliases: [ geocoder.nominatim ]
+      options:
+        root_url: 'https://nominatim.openstreetmap.org'
+        user_agent: 'ELFIRMA-GeoAnalytics/1.0'

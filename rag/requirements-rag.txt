@@ -1,0 +1,16 @@
+# Human-facing core runtime overview (non-locking).
+# This file is for readability and quick orientation.
+# Reproducible runtime install target:
+#   python -m pip install -r rag/requirements-lock.txt
+#
+# This file lists core packages used by ML/retrieval scripts.
+# It is not a portable/reproducible lockfile.
+numpy>=2.4
+sentence-transformers>=5.4
+transformers>=5.5
+torch>=2.11
+huggingface_hub>=1.10
+tokenizers>=0.22
+safetensors>=0.7
+scikit-learn>=1.8
+scipy>=1.17

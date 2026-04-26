@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+  <title>Elfirma - Meeting Management</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#f5f5dc",
+            "outline-variant": "#c3c9b9",
+            "surface-container-highest": "#e4e4cc",
+            "error": "#ba1a1a",
+            "on-surface": "#1b1d0e",
+            "on-surface-variant": "#43493d",
+            "on-secondary": "#ffffff",
+            "background": "#fbfbe2",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "surface-container": "#efefd7",
+            "surface-variant": "#e4e4cc",
+            "surface": "#fbfbe2",
+            "on-primary-container": "#7ca560",
+            "secondary-fixed": "#ffdbc9",
+            "primary": "#0a2200",
+            "secondary": "#934b19",
+            "primary-container": "#173901",
+            "surface": "#fbfbe2"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      font-family: 'Open Sans', sans-serif;
+    }
+    h1, h2, h3, .headline {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="h-screen w-72 fixed left-0 top-0 bg-surface-container-low text-primary flex flex-col py-8 pr-4 font-headline font-semibold z-40">
+  <div class="px-8 mb-8">
+    <h1 class="text-3xl font-black tracking-tighter text-primary">Elfirma</h1>
+    <p class="text-xs font-label text-on-surface-variant uppercase tracking-widest opacity-70">Farm Management</p>
+  </div>
+  <nav class="flex-grow space-y-1">
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span>Dashboard</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">group</span>
+      <span>Users</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">agriculture</span>
+      <span>Fields & Crops</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">pets</span>
+      <span>Livestock</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">shopping_basket</span>
+      <span>Products & Orders</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">handyman</span>
+      <span>Equipment & Maintenance</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 bg-primary text-surface rounded-r-full shadow-lg opacity-100 transition-opacity" href="#">
+      <span class="material-symbols-outlined">contract</span>
+      <span>Suppliers & Contract Management</span>
+    </a>
+    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
+      <span class="material-symbols-outlined">report_problem</span>
+      <span>Claims</span>
+    </a>
+  </nav>
+  <div class="px-8 mt-auto pt-8 flex flex-col gap-2">
+    <button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform">
+      <span class="material-symbols-outlined">add</span>
+      <span>New Season</span>
+    </button>
+    <div class="pt-6 border-t border-outline-variant/20 flex flex-col gap-1">
+      <a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+        <span class="material-symbols-outlined">help</span>
+        <span class="text-sm">Help</span>
+      </a>
+      <a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-error transition-colors" href="#">
+        <span class="material-symbols-outlined">logout</span>
+        <span class="text-sm">Logout</span>
+      </a>
+    </div>
+  </div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-72 flex-grow min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-30 bg-surface/70 backdrop-blur-xl flex justify-between items-center w-full px-12 py-6 font-headline font-bold tracking-tight">
+  <div class="flex items-center gap-6 flex-grow">
+    <div class="relative w-96">
+      <input id="meetingSearchInput" class="w-full bg-surface-container-low border-none rounded-full py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search meetings..." type="text"/>
+      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button class="p-3 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
+      <span class="material-symbols-outlined text-primary">notifications</span>
+    </button>
+    <button class="p-3 rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
+      <span class="material-symbols-outlined text-primary">settings</span>
+    </button>
+    <div class="h-10 w-10 rounded-full bg-primary-container overflow-hidden">
+      <img alt="Admin Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATRPrH2ofAa1hmXCfNXooPqxZvn_uLQCZfMKfy9SjEItdcLRuf5M3lG9mfplqGk0IE61ON1TvFJT9xnMKCcRD9sEnE-qiMUDfajGCso6fnT6s8bVYqAAc3RPb8zVxVEGm86MAjM3NqmgTPFcZJtuOiDUL9Pl3Y-JCdwPaAEQoJCcqnEpw4l1EsB2ElUEPM-XJsbg_IHrqPMDrvbmFBqmzpjjDWGCR86rlu9W4TymkMCZ9-oe8cABzpZ5q6TfdJXJpksbWEVKXmv3ta"/>
+    </div>
+  </div>
+</header>
+
+<!-- Page Content -->
+<div class="px-12 py-8 space-y-12">
+  <!-- Hero Header & Actions -->
+  <div class="flex justify-between items-end">
+    <div>
+      <h2 class="text-5xl font-black text-primary tracking-tighter mb-2">Meeting Management</h2>
+      <p class="text-on-surface-variant max-w-xl text-lg">Schedule, track, and manage all your supplier meetings in one place.</p>
+    </div>
+  </div>
+
+  <!-- Meeting Statistics Section -->
+  <div class="relative overflow-hidden rounded-3xl border border-[#dce3cf] bg-gradient-to-br from-[#f6fbe8] via-[#eef6e1] to-[#ecf2d9] p-6 lg:p-8 shadow-[0_20px_50px_-32px_rgba(18,59,18,0.6)] mb-8">
+    <div class="pointer-events-none absolute -top-14 -right-14 h-52 w-52 rounded-full bg-[#9ac75f]/25 blur-3xl"></div>
+    <div class="pointer-events-none absolute -bottom-10 -left-10 h-44 w-44 rounded-full bg-[#2d5016]/15 blur-2xl"></div>
+
+    <div class="relative z-10 mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="inline-flex items-center gap-2 rounded-full border border-[#bad19a] bg-[#f9fde6] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#2d5016]">
+          <span class="material-symbols-outlined text-sm">analytics</span>
+          Meeting Analytics
+        </p>
+        <h3 class="mt-3 text-2xl lg:text-3xl font-black tracking-tight text-[#0a2200]">Meetings Overview</h3>
+        <p class="mt-1 text-sm text-[#355025]">Key metrics and status distribution of your scheduled meetings.</p>
+      </div>
+    </div>
+
+    <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Chart Container -->
+      <div class="rounded-2xl bg-white/95 border border-[#dce7cd] p-6 shadow-sm">
+        <h4 class="text-sm font-bold uppercase tracking-wide text-[#4f6b38] mb-4">Meeting Status</h4>
+        <div class="h-64 relative">
+          <canvas id="meetingStatusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="stats-appear rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Total Meetings</p>
+          <p class="mt-2 text-3xl font-black text-[#123b12]" id="totalMeetingCount">{{ stats.total }}</p>
+          <p class="mt-1 text-xs text-[#5e6f4f]">All meetings</p>
+        </div>
+        <div class="stats-appear delay-1 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Upcoming</p>
+          <p class="mt-2 text-3xl font-black text-blue-600" id="upcomingMeetingCount">{{ stats.upcoming }}</p>
+          <p class="mt-1 text-xs text-[#5e6f4f]">Scheduled soon</p>
+        </div>
+        <div class="stats-appear delay-2 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">Completed</p>
+          <p class="mt-2 text-3xl font-black text-emerald-600" id="completedMeetingCount">{{ stats.past }}</p>
+          <p class="mt-1 text-xs text-[#5e6f4f]">Past meetings</p>
+        </div>
+        <div class="stats-appear delay-3 rounded-2xl bg-white/90 border border-[#dce7cd] p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-wide text-[#4f6b38]">This Month</p>
+          <p class="mt-2 text-3xl font-black text-orange-600" id="thisMonthMeetingCount">{{ meetings|length }}</p>
+          <p class="mt-1 text-xs text-[#5e6f4f]">Current month</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meetings Table -->
+  <section>
+    <div class="mb-8 flex items-center justify-between">
+      <h3 class="text-2xl font-bold text-primary flex items-center gap-3">
+        <span class="material-symbols-outlined text-secondary">videocam</span>
+        All Meetings
+      </h3>
+    </div>
+
+    <!-- Search Filter -->
+    <div class="relative w-full mb-6">
+      <input id="meetingTableSearchInput" class="w-full bg-surface-container-low border-2 border-surface-variant rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Search meetings by supplier, date, status..."/>
+      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+    </div>
+
+    <div class="rounded-2xl border border-outline-variant/20 overflow-hidden bg-surface shadow-lg">
+      <table class="w-full">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant/20">
+            <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">Supplier</th>
+            <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">Date & Time</th>
+            <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">Status</th>
+            <th class="px-6 py-4 text-left font-bold text-sm uppercase tracking-wider text-on-surface-variant">Meeting Link</th>
+            <th class="px-6 py-4 text-center font-bold text-sm uppercase tracking-wider text-on-surface-variant">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/10">
+          {% if meetings|length > 0 %}
+            {% for meeting in meetings %}
+            {% set supplier = meeting.getFournisseur() %}
+            {% set isUpcoming = meeting.getMeetingDatetime() > 'now'|date('Y-m-d H:i:s') %}
+            <tr class="meeting-row hover:bg-surface-container-low/50 transition-colors"
+                data-meeting-id="{{ meeting.getId() }}"
+                data-supplier="{{ supplier.getTypeF()|default('N/A')|lower }}"
+                data-status="{{ isUpcoming ? 'upcoming' : 'past' }}">
+              <td class="px-6 py-5 text-on-surface font-semibold text-sm">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary">business</span>
+                  </div>
+                  <div>
+                    <p class="font-bold">{{ supplier.getTypeF()|default('N/A') }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ supplier.getEmailF()|default('N/A') }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-5 text-on-surface-variant text-sm">
+                <div class="flex flex-col">
+                  <p class="font-semibold text-on-surface">{{ meeting.getMeetingDatetime()|date('d M, Y') }}</p>
+                  <p class="text-xs text-on-surface-variant">{{ meeting.getMeetingDatetime()|date('H:i') }}</p>
+                </div>
+              </td>
+              <td class="px-6 py-5">
+                {% if isUpcoming %}
+                  <span class="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
+                    <span class="material-symbols-outlined text-lg">schedule</span>
+                    Upcoming
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
+                    <span class="material-symbols-outlined text-lg">check_circle</span>
+                    Completed
+                  </span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-5">
+                <a href="{{ meeting.getMeetingLink() }}" target="_blank" class="text-primary font-bold hover:opacity-70 transition-opacity flex items-center gap-1 inline-flex">
+                  <span class="material-symbols-outlined">link</span>
+                  Join Jitsi
+                </a>
+              </td>
+              <td class="px-6 py-5 text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button class="view-meeting-btn p-2.5 hover:bg-primary/10 rounded-lg transition-all text-primary hover:shadow-md"
+                          data-meeting-id="{{ meeting.getId() }}"
+                          data-supplier="{{ supplier.getTypeF() }}"
+                          data-email="{{ supplier.getEmailF() }}"
+                          data-datetime="{{ meeting.getMeetingDatetime()|date('Y-m-d H:i') }}"
+                          data-link="{{ meeting.getMeetingLink() }}"
+                          data-status="{{ isUpcoming ? 'upcoming' : 'past' }}"
+                          type="button" title="View details">
+                    <span class="material-symbols-outlined">info</span>
+                  </button>
+                  <button class="reschedule-meeting-btn p-2.5 hover:bg-blue-100 rounded-lg transition-all text-blue-600 hover:shadow-md"
+                          data-meeting-id="{{ meeting.getId() }}"
+                          data-datetime="{{ meeting.getMeetingDatetime()|date('Y-m-d\TH:i') }}"
+                          type="button" title="Reschedule meeting"
+                          {% if not isUpcoming %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                    <span class="material-symbols-outlined">edit_calendar</span>
+                  </button>
+                  <button class="resend-invitation-btn p-2.5 hover:bg-orange-100 rounded-lg transition-all text-orange-600 hover:shadow-md"
+                          data-meeting-id="{{ meeting.getId() }}"
+                          data-supplier="{{ supplier.getTypeF() }}"
+                          data-datetime="{{ meeting.getMeetingDatetime()|date('d M, Y H:i') }}"
+                          type="button" title="Resend invitation">
+                    <span class="material-symbols-outlined">mail</span>
+                  </button>
+                  <button class="delete-meeting-btn p-2.5 hover:bg-red-100 rounded-lg transition-all text-red-600 hover:shadow-md"
+                          data-meeting-id="{{ meeting.getId() }}"
+                          data-supplier="{{ supplier.getTypeF() }}"
+                          type="button" title="Delete meeting">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                  <button class="export-calendar-btn p-1.5 hover:bg-primary/10 rounded transition-all text-primary hover:shadow-md"
+                          data-meeting-id="{{ meeting.getId() }}"
+                          data-supplier="{{ supplier.getTypeF() }}"
+                          type="button" title="Export to Google Calendar">
+                    <span class="material-symbols-outlined text-base">arrow_outward</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5" class="px-6 py-12 text-center">
+                <span class="material-symbols-outlined text-6xl text-primary/20 mb-4 block">videocam</span>
+                <p class="text-on-surface-variant text-lg font-semibold">No meetings scheduled</p>
+                <p class="text-on-surface-variant/60 mt-2">Schedule a new meeting from the Suppliers page.</p>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="w-full py-6 mt-auto flex justify-between items-center px-12 border-t border-outline-variant/15 bg-surface text-primary font-body text-sm tracking-wide">
+  <span class="text-on-surface-variant">Elfirma © 2026</span>
+  <div class="flex gap-8">
+    <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Technical Support</a>
+    <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Legal Notice</a>
+    <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy</a>
+  </div>
+</footer>
+</main>
+
+<!-- View Details Modal -->
+<div id="viewMeetingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Meeting Details</h2>
+        <p class="text-sm text-on-surface-variant mt-1">View and manage meeting information</p>
+      </div>
+      <button class="closeModal p-2 rounded-full hover:bg-surface-container-highest transition-colors" data-modal="viewMeetingModal">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <div class="p-8 space-y-6">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <p class="text-sm font-semibold text-on-surface-variant mb-2">Supplier</p>
+          <p id="detailSupplier" class="text-2xl font-bold text-primary"></p>
+          <p id="detailEmail" class="text-sm text-on-surface-variant mt-1"></p>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-on-surface-variant mb-2">Status</p>
+          <p id="detailStatus" class="inline-flex items-center gap-1 px-4 py-2 rounded-full font-bold"></p>
+        </div>
+      </div>
+
+      <div class="border-t border-outline-variant/20 pt-6">
+        <p class="text-sm font-semibold text-on-surface-variant mb-3">Meeting Information</p>
+        <div class="space-y-3 bg-surface-container-low p-4 rounded-lg">
+          <div>
+            <span class="text-sm text-on-surface-variant">📅 Date & Time:</span>
+            <p id="detailDateTime" class="text-lg font-semibold text-on-surface mt-1"></p>
+          </div>
+          <div>
+            <span class="text-sm text-on-surface-variant">🔗 Meeting Link:</span>
+            <a id="detailLink" href="#" target="_blank" class="text-primary font-bold hover:opacity-70 transition-opacity block mt-1">Open in Jitsi</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-6 border-t border-outline-variant/20">
+        <button class="closeModal flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors" data-modal="viewMeetingModal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] rounded-2xl shadow-2xl max-w-2xl w-full mx-4">
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2]">
+      <div>
+        <h2 class="text-3xl font-black text-primary">Reschedule Meeting</h2>
+        <p class="text-sm text-on-surface-variant mt-1">Choose a new date and time</p>
+      </div>
+      <button class="closeModal p-2 rounded-full hover:bg-surface-container-highest transition-colors" data-modal="rescheduleModal">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <form id="rescheduleForm" class="p-8 space-y-6" onsubmit="submitReschedule(event)">
+      <div>
+        <label class="block font-semibold text-primary mb-2">Current Date & Time</label>
+        <p id="currentDateTime" class="text-gray-800 font-semibold bg-surface-container-low p-3 rounded-lg"></p>
+      </div>
+
+      <div>
+        <label for="newDateTime" class="block font-semibold text-primary mb-2">New Date & Time</label>
+        <input type="datetime-local" id="newDateTime" name="new_datetime" class="w-full px-4 py-3 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl focus:border-primary focus:outline-none transition-colors" required>
+        <small class="text-on-surface-variant mt-1 block">Must be in the future</small>
+      </div>
+
+      <div class="flex gap-4 pt-6 border-t border-outline-variant/20">
+        <button type="button" class="closeModal flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors" data-modal="rescheduleModal">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-6 py-3 bg-primary text-surface font-semibold rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">save</span>
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Resend Invitation Modal -->
+<div id="resendModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] rounded-2xl shadow-2xl max-w-md w-full mx-4">
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2]">
+      <h2 class="text-3xl font-black text-primary">Resend Invitation</h2>
+      <button class="closeModal p-2 rounded-full hover:bg-surface-container-highest transition-colors" data-modal="resendModal">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <div class="p-8 space-y-4">
+      <p class="text-on-surface">📧 <strong>Send meeting invitation email to supplier?</strong></p>
+      <div id="resendInfo" class="bg-surface-container-low border border-outline-variant/20 rounded-lg p-3 text-sm space-y-2">
+        <div><span class="text-on-surface-variant">Supplier:</span> <span id="resendSupplier" class="font-bold"></span></div>
+        <div><span class="text-on-surface-variant">Date & Time:</span> <span id="resendDateTime" class="font-bold"></span></div>
+      </div>
+
+      <div class="flex gap-3 pt-6 border-t border-outline-variant/20">
+        <button type="button" class="closeModal flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors" data-modal="resendModal">
+          Cancel
+        </button>
+        <button type="button" onclick="submitResendInvitation()" class="flex-1 px-6 py-3 bg-primary text-surface font-semibold rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">send</span>
+          Send Email
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  <div class="bg-[#fbfbe2] rounded-2xl shadow-2xl max-w-md w-full mx-4">
+    <div class="sticky top-0 flex justify-between items-center p-8 border-b border-outline-variant/20 bg-[#fbfbe2]">
+      <h2 class="text-3xl font-black text-error">Delete Meeting</h2>
+      <button class="closeModal p-2 rounded-full hover:bg-surface-container-highest transition-colors" data-modal="deleteModal">
+        <span class="material-symbols-outlined text-2xl text-on-surface">close</span>
+      </button>
+    </div>
+
+    <div class="p-8 space-y-4">
+      <p class="text-on-surface">⚠️ <strong>Are you sure you want to delete this meeting?</strong></p>
+      <p class="text-on-surface-variant text-sm">
+        The supplier will be notified about the cancellation via email. This action cannot be undone.
+      </p>
+
+      <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+        <p class="text-sm text-red-800"><strong>Notification:</strong> An email will be sent to <span id="deleteSupplier"></span> to inform them about the cancellation.</p>
+      </div>
+
+      <div class="flex gap-3 pt-6 border-t border-outline-variant/20">
+        <button type="button" class="closeModal flex-1 px-6 py-3 bg-surface-container-highest text-primary font-semibold rounded-xl hover:opacity-80 transition-colors" data-modal="deleteModal">
+          Keep It
+        </button>
+        <button type="button" onclick="submitDelete()" class="flex-1 px-6 py-3 bg-error text-on-error font-semibold rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">delete</span>
+          Delete & Notify
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Script -->
+{% include 'elfirma/_nav_routes.html.twig' %}
+
+<script>
+let currentMeetingId = null;
+
+// Close modal handlers
+document.querySelectorAll('.closeModal').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const modalId = this.getAttribute('data-modal');
+    document.getElementById(modalId).classList.add('hidden');
+  });
+});
+
+// View Meeting Details
+document.querySelectorAll('.view-meeting-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    currentMeetingId = this.getAttribute('data-meeting-id');
+    document.getElementById('detailSupplier').textContent = this.getAttribute('data-supplier');
+    document.getElementById('detailEmail').textContent = '📧 ' + this.getAttribute('data-email');
+    document.getElementById('detailDateTime').textContent = this.getAttribute('data-datetime');
+    document.getElementById('detailLink').href = this.getAttribute('data-link');
+
+    const status = this.getAttribute('data-status');
+    const statusEl = document.getElementById('detailStatus');
+    if (status === 'upcoming') {
+      statusEl.innerHTML = '<span class="material-symbols-outlined text-lg">schedule</span> Upcoming';
+      statusEl.className = 'inline-flex items-center gap-1 px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold';
+    } else {
+      statusEl.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> Completed';
+      statusEl.className = 'inline-flex items-center gap-1 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 font-bold';
+    }
+
+    document.getElementById('viewMeetingModal').classList.remove('hidden');
+  });
+});
+
+// Reschedule Meeting
+document.querySelectorAll('.reschedule-meeting-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    if (this.disabled) return;
+    currentMeetingId = this.getAttribute('data-meeting-id');
+    document.getElementById('currentDateTime').textContent = this.getAttribute('data-datetime');
+    document.getElementById('newDateTime').value = '';
+    document.getElementById('rescheduleModal').classList.remove('hidden');
+  });
+});
+
+function submitReschedule(event) {
+  event.preventDefault();
+  const newDateTime = document.getElementById('newDateTime').value;
+
+  fetch('{{ path("meeting_reschedule") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `meeting_id=${currentMeetingId}&new_datetime=${newDateTime}`
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire('Success!', 'Meeting rescheduled successfully. Notification sent to supplier.', 'success').then(() => {
+        location.reload();
+      });
+    } else {
+      Swal.fire('Error', data.message || 'Unable to reschedule meeting', 'error');
+    }
+  });
+}
+
+// Resend Invitation
+document.querySelectorAll('.resend-invitation-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    currentMeetingId = this.getAttribute('data-meeting-id');
+    document.getElementById('resendSupplier').textContent = this.getAttribute('data-supplier');
+    document.getElementById('resendDateTime').textContent = this.getAttribute('data-datetime');
+    document.getElementById('resendModal').classList.remove('hidden');
+  });
+});
+
+function submitResendInvitation() {
+  fetch('{{ path("meeting_resend_invitation") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `meeting_id=${currentMeetingId}`
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire('Sent!', 'Invitation email sent successfully to supplier.', 'success').then(() => {
+        document.getElementById('resendModal').classList.add('hidden');
+      });
+    } else {
+      Swal.fire('Error', data.message, 'error');
+    }
+  });
+}
+
+// Delete Meeting
+document.querySelectorAll('.delete-meeting-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    currentMeetingId = this.getAttribute('data-meeting-id');
+    document.getElementById('deleteSupplier').textContent = this.getAttribute('data-supplier');
+    document.getElementById('deleteModal').classList.remove('hidden');
+  });
+});
+
+function submitDelete() {
+  fetch('{{ path("meeting_delete_notify") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `meeting_id=${currentMeetingId}`
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire('Deleted!', 'Meeting cancelled and supplier has been notified.', 'success').then(() => {
+        location.reload();
+      });
+    } else {
+      Swal.fire('Error', data.message, 'error');
+    }
+  });
+}
+
+// Export to Google Calendar
+document.querySelectorAll('.export-calendar-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const meetingId = this.getAttribute('data-meeting-id');
+    const supplier = this.getAttribute('data-supplier');
+
+    fetch(`{{ path("meeting_export_google", {"id": 0}) }}`.replace('/0', '/' + meetingId))
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          window.open(data.calendar_url, '_blank', 'width=800,height=600');
+          Swal.fire('Opened!', 'Google Calendar has been opened. Add the event to your calendar.', 'success');
+        } else {
+          Swal.fire('Error', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error', 'Unable to export to Google Calendar', 'error');
+        console.error('Export error:', error);
+      });
+  });
+});
+
+// Search functionality
+document.getElementById('meetingTableSearchInput').addEventListener('keyup', function() {
+  const searchTerm = this.value.toLowerCase();
+  document.querySelectorAll('.meeting-row').forEach(row => {
+    const supplier = row.getAttribute('data-supplier');
+    const status = row.getAttribute('data-status');
+    if (supplier.includes(searchTerm) || status.includes(searchTerm)) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+});
+
+// Chart initialization
+const ctx = document.getElementById('meetingStatusChart');
+if (ctx) {
+  const upcoming = parseInt(document.getElementById('upcomingMeetingCount').textContent);
+  const completed = parseInt(document.getElementById('completedMeetingCount').textContent);
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Upcoming', 'Completed'],
+      datasets: [{
+        data: [upcoming, completed],
+        backgroundColor: ['#3b82f6', '#10b981'],
+        borderColor: ['#1e40af', '#059669'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

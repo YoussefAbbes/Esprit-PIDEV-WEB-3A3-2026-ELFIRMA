@@ -1,0 +1,60 @@
+{% extends 'auth_base.html.twig' %}
+
+{% block title %}Admin Verification - EL FIRMA{% endblock %}
+
+{% block content %}
+  <div class="auth-brand">
+    <div class="auth-logo-section">
+      <h2>Admin Security Check</h2>
+      <p>Scan once with Microsoft Authenticator, then enter the 6-digit code to continue.</p>
+    </div>
+
+    <div class="auth-features">
+      <div class="auth-feature">
+        <i class="bi bi-shield-lock"></i>
+        <span>Admin access requires a second factor</span>
+      </div>
+      <div class="auth-feature">
+        <i class="bi bi-phone"></i>
+        <span>Use Microsoft Authenticator on your phone</span>
+      </div>
+      <div class="auth-feature">
+        <i class="bi bi-clock"></i>
+        <span>Codes refresh every 30 seconds</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-form-section">
+    <div class="auth-form-header">
+      <h2>Two-Factor Verification</h2>
+      <p>Account: {{ authenticator_label }}</p>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin-bottom: 1rem;">
+      <img src="{{ qr_data_uri }}" alt="Authenticator QR" style="width: 260px; height: 260px; border-radius: 12px; border: 1px solid #d4dfd4; background: #fff; padding: 8px;">
+    </div>
+
+    <p style="text-align:center; color:#4b5563; margin-bottom:1rem;">If you already scanned this QR before, just enter the code below.</p>
+
+    <form method="POST" action="{{ path('app_admin_panel_2fa') }}" class="auth-form" style="max-width: 420px;">
+      <div class="form-group">
+        <label for="code">Authenticator Code</label>
+        <input
+          type="text"
+          id="code"
+          name="code"
+          class="form-control"
+          placeholder="123456"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          required
+          autocomplete="one-time-code"
+        >
+      </div>
+
+      <button type="submit" class="btn-auth"><span>Verify and Open Admin Panel</span></button>
+    </form>
+  </div>
+{% endblock %}

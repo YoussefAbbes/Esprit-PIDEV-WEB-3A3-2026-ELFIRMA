@@ -5,9 +5,335 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Animal Management</title>
     <link rel="stylesheet" href="{{ asset('styles/elfirma-theme.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --animal-forest: #0d3320;
+            --animal-moss: #1a5c37;
+            --animal-fern: #2d8653;
+            --animal-sage: #86c49a;
+            --animal-mist: #eaf4ed;
+            --animal-cream: #faf8f3;
+            --animal-ink: #111a14;
+            --animal-smoke: #6b7c71;
+            --animal-shadow-sm: 0 6px 18px rgba(13, 51, 32, 0.08);
+            --animal-shadow-md: 0 18px 40px rgba(13, 51, 32, 0.12);
+            --animal-shadow-lg: 0 28px 72px rgba(13, 51, 32, 0.18);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(45, 134, 83, 0.08) 0%, transparent 32%),
+                linear-gradient(180deg, #f7fbf8 0%, #eef5ef 100%);
+            color: var(--animal-ink);
+        }
+
+        .animal-catalog-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            border: 1px solid rgba(45, 134, 83, 0.14);
+            background:
+                radial-gradient(circle at top right, rgba(45, 134, 83, 0.08), transparent 36%),
+                radial-gradient(circle at bottom left, rgba(200, 168, 75, 0.08), transparent 38%),
+                linear-gradient(135deg, #ffffff 0%, #f7fbf8 100%);
+            box-shadow: var(--animal-shadow-lg);
+        }
+
+        .animal-catalog-hero::before {
+            content: "";
+            position: absolute;
+            inset: auto -80px -80px auto;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(45, 134, 83, 0.14) 0%, rgba(45, 134, 83, 0) 68%);
+            pointer-events: none;
+        }
+
+        .animal-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 7px 16px;
+            background: linear-gradient(135deg, var(--animal-forest) 0%, var(--animal-moss) 100%);
+            color: #f1f8f3;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            box-shadow: var(--animal-shadow-sm);
+        }
+
+        .animal-hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.4rem, 4.6vw, 4.3rem);
+            line-height: 1.02;
+            letter-spacing: -0.03em;
+            color: var(--animal-forest);
+            margin: 0;
+        }
+
+        .animal-hero-title em {
+            color: var(--animal-fern);
+            font-style: italic;
+        }
+
+        .animal-hero-copy {
+            color: var(--animal-smoke);
+            line-height: 1.75;
+            font-size: 15px;
+            max-width: 44rem;
+        }
+
+        .animal-pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .animal-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(45, 134, 83, 0.18);
+            background: #ffffff;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--animal-moss);
+            box-shadow: var(--animal-shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .animal-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--animal-shadow-md);
+        }
+
+        .animal-hero-image {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            min-height: 360px;
+            border: 1px solid rgba(45, 134, 83, 0.16);
+            box-shadow: var(--animal-shadow-lg);
+        }
+
+        .animal-hero-image img {
+            width: 100%;
+            height: 100%;
+            min-height: 360px;
+            object-fit: cover;
+            object-position: center center;
+            display: block;
+            transition: transform 6s ease;
+        }
+
+        .animal-catalog-hero:hover .animal-hero-image img {
+            transform: scale(1.04);
+        }
+
+        .animal-hero-chip {
+            position: absolute;
+            left: 18px;
+            bottom: 18px;
+            background: rgba(13, 51, 32, 0.86);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(8px);
+            box-shadow: var(--animal-shadow-md);
+        }
+
+        .animal-hero-chip .chip-emoji {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .animal-hero-kpis {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .animal-mini-kpi {
+            border-radius: 18px;
+            border: 1px solid rgba(45, 134, 83, 0.14);
+            background: linear-gradient(160deg, #ffffff 0%, #f2faf4 100%);
+            padding: 16px 14px;
+            box-shadow: var(--animal-shadow-sm);
+        }
+
+        .animal-mini-kpi span {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 800;
+            color: var(--animal-smoke);
+        }
+
+        .animal-mini-kpi strong {
+            display: block;
+            margin-top: 6px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            line-height: 1;
+            color: var(--animal-forest);
+        }
+
+        .animal-ticker {
+            background: var(--animal-forest);
+            color: #f3f8f4;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 10px 0;
+        }
+
+        .animal-ticker-track {
+            display: inline-block;
+            animation: animal-ticker-move 26s linear infinite;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .animal-ticker-track span { margin: 0 2rem; }
+        .animal-ticker-track .dot { color: var(--animal-sage); opacity: 0.85; }
+
+        @keyframes animal-ticker-move {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .animal-ribbon {
+            background: linear-gradient(135deg, var(--animal-forest) 0%, var(--animal-moss) 100%);
+            padding: 26px 0;
+        }
+
+        .animal-ribbon-inner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animal-ribbon-card {
+            min-width: 112px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            text-align: center;
+            padding: 16px 18px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .animal-ribbon-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255,255,255,0.14);
+        }
+
+        .animal-ribbon-emoji {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 6px;
+            line-height: 1;
+        }
+
+        .animal-ribbon-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 800;
+            color: #cfe8d4;
+        }
+
+        .animal-catalog-workbench {
+            padding: 66px 0 80px;
+            background: linear-gradient(180deg, #f6faf7 0%, #eef5ef 100%);
+        }
+
+        .animal-workbench-title {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--animal-forest);
+            font-size: clamp(2rem, 3vw, 3rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .animal-workbench-sub {
+            text-align: center;
+            color: var(--animal-smoke);
+            margin-bottom: 34px;
+        }
+
+        .animal-sidebar,
+        .animal-detail-panel {
+            border-radius: 24px;
+            border: 1px solid rgba(45, 134, 83, 0.14);
+            background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(245,250,246,0.98) 100%);
+            box-shadow: var(--animal-shadow-md);
+        }
+
+        .animal-sidebar {
+            padding: 24px;
+            position: sticky;
+            top: 22px;
+        }
+
+        .animal-detail-panel {
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .animal-detail-panel::before {
+            content: "";
+            position: absolute;
+            top: -42px;
+            right: -42px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(45, 134, 83, 0.08) 0%, rgba(45, 134, 83, 0) 70%);
+            pointer-events: none;
+        }
+
+        .animal-list-item {
+            border-radius: 14px;
+            border: 1px solid rgba(45, 134, 83, 0.12);
+            background: #fff;
+            box-shadow: var(--animal-shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .animal-list-item:hover {
+            transform: translateX(3px);
+            border-color: rgba(45, 134, 83, 0.3);
+            box-shadow: var(--animal-shadow-md);
+        }
+
+        .animal-stats-band {
+            border-radius: 26px;
+            background: linear-gradient(135deg, var(--animal-forest) 0%, var(--animal-moss) 100%);
+            box-shadow: var(--animal-shadow-lg);
+        }
+
         .elf-sidebar-toggle,
         .elf-sidebar-overlay {
             display: none !important;
@@ -72,9 +398,25 @@
                 transform: scale(0.88);
             }
         }
+
+        @media (max-width: 991px) {
+            .animal-hero-kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .animal-sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .animal-hero-kpis {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-600 min-h-screen overflow-x-hidden">
+<body class="bg-slate-50 text-slate-900 min-h-screen overflow-x-hidden">
 <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 bg-white border-r border-slate-200 py-8 pr-4 z-40">
     <div class="px-8 mb-8">
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">Elfirma</h1>
@@ -94,16 +436,87 @@
 
 <main class="md:ml-72 min-h-screen p-3 md:p-4">
     <div class="max-w-7xl mx-auto">
-        <section class="rounded-2xl border border-emerald-200 bg-[#edf3ee] p-3 md:p-4 shadow-sm">
+        <section class="animal-catalog-hero mb-4 p-4 md:p-6">
+            <div class="grid gap-6 lg:grid-cols-2 lg:items-center">
+                <div class="space-y-5">
+                    <div class="animal-hero-badge">Premium Animal Intelligence</div>
+                    <div>
+                        <h2 class="animal-hero-title">Curated animal<br><em>intelligence</em> for clients</h2>
+                        <p class="animal-hero-copy mt-4">
+                            This catalog transforms animal records into a polished narrative: gender, health, age, status, and seasonal strategy in one coherent experience.
+                        </p>
+                    </div>
+                    <div class="animal-pill-row">
+                        <span class="animal-pill">🔍 Smart filtering</span>
+                        <span class="animal-pill">📊 Live health</span>
+                        <span class="animal-pill">🌦️ Seasonal view</span>
+                        <span class="animal-pill">🧬 DNA clues</span>
+                    </div>
+                    <div class="animal-hero-kpis">
+                        <article class="animal-mini-kpi">
+                            <span>Total animals</span>
+                            <strong>{{ animals|length }}</strong>
+                        </article>
+                        <article class="animal-mini-kpi">
+                            <span>Healthy</span>
+                            <strong>{{ animal_stats.healthy_animals|default(0) }}</strong>
+                        </article>
+                        <article class="animal-mini-kpi">
+                            <span>For sale</span>
+                            <strong id="animal-for-sale-stat-hero">{{ animal_stats.for_sale_animals|default(0) }}</strong>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="animal-hero-image">
+                    <img src="{{ asset('assets/img/farm-animals-real.jpg') }}" alt="Livestock overview">
+                    <div class="animal-hero-chip">
+                        <span class="chip-emoji">🌿</span>
+                        <div>
+                            <div style="font-size:12px;opacity:.72;font-weight:600;">EL FIRMA Certified</div>
+                            <div style="font-size:14px;font-weight:800;">Premium Farm Network</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="animal-ticker mb-4 rounded-full">
+            <div class="animal-ticker-track">
+                <span>Animal records</span><span class="dot">✦</span>
+                <span>Health insights</span><span class="dot">✦</span>
+                <span>Gender detection</span><span class="dot">✦</span>
+                <span>Production stats</span><span class="dot">✦</span>
+                <span>EL FIRMA</span><span class="dot">✦</span>
+                <span>Animal records</span><span class="dot">✦</span>
+                <span>Health insights</span><span class="dot">✦</span>
+                <span>Gender detection</span><span class="dot">✦</span>
+                <span>Production stats</span><span class="dot">✦</span>
+                <span>EL FIRMA</span><span class="dot">✦</span>
+            </div>
+        </div>
+
+        <div class="animal-ribbon mb-4 rounded-3xl">
+            <div class="animal-ribbon-inner">
+                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐄</span><div class="animal-ribbon-label">Bovin</div></div>
+                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐑</span><div class="animal-ribbon-label">Sheep</div></div>
+                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐔</span><div class="animal-ribbon-label">Poultry</div></div>
+                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐐</span><div class="animal-ribbon-label">Goat</div></div>
+                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🐖</span><div class="animal-ribbon-label">Pig</div></div>
+                <div class="animal-ribbon-card"><span class="animal-ribbon-emoji">🦆</span><div class="animal-ribbon-label">Duck</div></div>
+            </div>
+        </div>
+
+        <section class="animal-stats-band rounded-3xl p-4 md:p-5 text-white">
             <div class="mb-3 px-1 flex items-center justify-between gap-2">
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-black tracking-tight text-emerald-800">Animal Management</h2>
-                    <p class="text-slate-600 text-sm md:text-base">Welcome to Animal Management</p>
+                    <h2 class="text-2xl md:text-3xl font-black tracking-tight text-white">Animal Management</h2>
+                    <p class="text-emerald-100/90 text-sm md:text-base">Welcome to Animal Management</p>
                 </div>
-                <span class="text-sm text-slate-600">{{ animals|length }} animal(s)</span>
+                <span class="text-sm text-emerald-100/90">{{ animals|length }} animal(s)</span>
             </div>
 
-            <section class="mb-4 rounded-2xl bg-gradient-to-r from-emerald-900 via-emerald-700 to-emerald-600 text-white p-4 md:p-5 shadow-lg">
+            <section class="mb-4 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 md:p-5 shadow-lg">
                 <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                     <div>
                         <h3 class="text-2xl md:text-3xl font-black tracking-tight">Animal Statistics</h3>
@@ -113,22 +526,22 @@
                 </div>
 
                 <div class="mt-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm">
+                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm shadow-sm">
                         <p class="text-emerald-100 text-sm font-semibold">Total Animals</p>
                         <p id="animal-total-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none">{{ animal_stats.total_animals|default(0) }}</p>
                         <p class="mt-2 text-xs text-emerald-100/90">registered animals</p>
                     </article>
-                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm">
+                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm shadow-sm">
                         <p class="text-emerald-100 text-sm font-semibold">Healthy</p>
                         <p id="animal-healthy-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none text-amber-300">{{ animal_stats.healthy_animals|default(0) }}</p>
                         <p class="mt-2 text-xs text-emerald-100/90">animals in good health</p>
                     </article>
-                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm">
+                    <article class="rounded-2xl border border-emerald-300/35 bg-white/15 p-4 backdrop-blur-sm shadow-sm">
                         <p class="text-emerald-100 text-sm font-semibold">Sick / Treatment</p>
                         <p id="animal-sick-treatment-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none">0</p>
                         <p class="mt-2 text-xs text-emerald-100/90">need attention</p>
                     </article>
-                    <article class="rounded-2xl border border-red-300/45 bg-amber-900/35 p-4 backdrop-blur-sm">
+                    <article class="rounded-2xl border border-red-300/45 bg-amber-900/35 p-4 backdrop-blur-sm shadow-sm">
                         <p class="text-amber-100 text-sm font-semibold">For Sale</p>
                         <p id="animal-for-sale-stat" class="mt-2 text-3xl md:text-4xl font-black leading-none text-rose-200">0</p>
                         <p class="mt-2 text-xs text-amber-100/90">animals for sale</p>
@@ -136,7 +549,9 @@
                 </div>
             </section>
 
-            <section class="mb-4">
+            <section class="animal-catalog-workbench mb-4">
+                <h4 class="animal-workbench-title">Browse the Animals</h4>
+                <p class="animal-workbench-sub">Filter, sort, and inspect each animal profile with a premium editorial layout.</p>
                 <div class="flex flex-wrap gap-2">
                     <button type="button" class="js-animal-stats-tab rounded-xl border border-emerald-500 bg-white px-4 py-2.5 text-base font-bold text-emerald-700 shadow-sm" data-tab="status">Status Distribution</button>
                     <button type="button" class="js-animal-stats-tab rounded-xl border border-transparent bg-slate-100 px-4 py-2.5 text-base font-bold text-slate-600" data-tab="health">Health</button>
@@ -179,11 +594,12 @@
             </div>
             <p id="animal-search-error" class="mb-3 text-sm text-red-600 font-semibold {{ search_error is defined and search_error ? '' : 'hidden' }}">{{ search_error|default('Search can contain letters and spaces only') }}</p>
 
-            <section class="rounded-xl border border-slate-300 bg-white shadow-sm overflow-hidden">
+            <section class="animal-detail-panel rounded-xl border border-slate-300 bg-white shadow-sm overflow-hidden">
                 <div class="overflow-auto">
                     <table id="animal-table" class="w-full text-sm min-w-[760px] border-separate border-spacing-0">
                         <thead>
                         <tr class="bg-emerald-500">
+                            <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0">Photo</th>
                             <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="type" data-sort-type="text">Type <span class="sort-indicator" data-sort-indicator="type">&uarr;&darr;</span></button></th>
                             <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="gender" data-sort-type="text">Gender <span class="sort-indicator" data-sort-indicator="gender">&uarr;&darr;</span></button></th>
                             <th class="py-3 px-3 border-r border-emerald-400/80 last:border-r-0"><button type="button" class="table-sort-btn js-animal-sort" data-sort-key="age" data-sort-type="number">Age <span class="sort-indicator" data-sort-indicator="age">&uarr;&darr;</span></button></th>
@@ -197,6 +613,13 @@
                             {% set sexe = item.sexe|default('')|lower %}
                             {% set health = item.etat_sante|default('')|lower %}
                             <tr class="hover:bg-emerald-50/35 transition-colors" data-row="animal" data-type="{{ item.type_animal|default('')|e('html_attr') }}" data-gender="{{ item.sexe|default('')|e('html_attr') }}" data-age="{{ item.age|default(0) }}" data-health="{{ item.etat_sante|default('')|e('html_attr') }}" data-status="{{ item.statut|default('')|e('html_attr') }}">
+                                <td class="py-3 px-3 border-b border-r border-emerald-100">
+                                    {% if item.photo_name is defined and item.photo_name %}
+                                        <img src="{{ asset('/uploads/animals/' ~ item.photo_name) }}" alt="Photo de {{ item.type_animal }}" class="h-14 w-14 rounded-xl object-cover" loading="lazy">
+                                    {% else %}
+                                        <span class="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-500 text-xs uppercase">No photo</span>
+                                    {% endif %}
+                                </td>
                                 <td class="py-3 px-3 font-semibold text-slate-800 border-b border-r border-emerald-100">{{ item.type_animal }}</td>
                                 <td class="py-3 px-3 font-semibold border-b border-r border-emerald-100 {{ sexe == 'male' ? 'text-blue-600' : (sexe == 'female' ? 'text-pink-600' : 'text-slate-700') }}">
                                     <span class="inline-flex items-center gap-1.5">
@@ -245,7 +668,7 @@
 
                 {% set current_farm = form_input.id_elevage is defined ? form_input.id_elevage : (is_edit_animal_mode ? edit_animal.id_elevage : null) %}
                 {% set current_type_animal = form_input.type_animal is defined ? form_input.type_animal : (is_edit_animal_mode ? edit_animal.type_animal : '') %}
-                {% set current_sexe = form_input.sexe is defined ? form_input.sexe : (is_edit_animal_mode ? edit_animal.sexe : 'Male') %}
+                {% set current_sexe = form_input.sexe is defined ? form_input.sexe : (is_edit_animal_mode ? edit_animal.sexe : 'Undetermined') %}
                 {% set current_age = form_input.age is defined ? form_input.age : (is_edit_animal_mode ? edit_animal.age : '') %}
                 {% set current_etat_sante = form_input.etat_sante is defined ? form_input.etat_sante : (is_edit_animal_mode ? edit_animal.etat_sante : 'Healthy') %}
                 {% set current_statut = form_input.statut is defined ? form_input.statut : (is_edit_animal_mode ? edit_animal.statut : 'Retained') %}
@@ -270,7 +693,7 @@
                 {% endfor %}
 
                 <div class="fixed inset-0 z-[120] bg-slate-900/35 backdrop-blur-[1px] flex items-start justify-center pt-4 md:pt-8 pb-3 px-2 md:px-3 overflow-y-auto">
-                    <div class="management-form-modal w-full max-w-2xl min-h-[70vh] md:min-h-[74vh] max-h-[96vh] overflow-y-auto rounded-2xl border-2 border-emerald-600 bg-[#cfe3cf] shadow-2xl">
+                    <div class="management-form-modal w-full max-w-2xl min-h-[70vh] md:min-h-[74vh] max-h-[96vh] overflow-y-auto rounded-3xl border border-emerald-500/40 bg-[#e6f0e6] shadow-2xl">
                         <div class="p-4 md:p-5">
                             <div class="flex items-center justify-end">
                                 <a href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}?view=animal" class="text-slate-800 hover:text-slate-900 text-3xl leading-none" aria-label="Close">&times;</a>
@@ -288,17 +711,290 @@
                                 </span>
                                 <span>{{ is_edit_animal_mode ? 'EDIT ANIMAL' : 'CREATE NEW ANIMAL' }}</span>
                             </h3>
-                            <div class="h-px bg-emerald-300 mt-3 mb-4"></div>
+                            <div class="h-px bg-emerald-300/80 mt-3 mb-4"></div>
 
                             {% if form_errors._form is defined %}
                                 <p class="mb-3 text-sm text-red-600 font-semibold">{{ form_errors._form }}</p>
                             {% endif %}
 
-                            <form method="post" action="{{ path(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}" class="space-y-3">
+                            <form method="post" action="{{ path(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}" enctype="multipart/form-data" class="space-y-3" data-dna-detect-url="{{ path('livestock_dna_detect') }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token(is_edit_animal_mode ? 'animal_update' : 'animal_create') }}">
                                 {% if is_edit_animal_mode %}
                                     <input type="hidden" name="id_animal" value="{{ edit_animal.id_animal }}">
                                 {% endif %}
+                                <div class="rounded-2xl border border-emerald-300 bg-white/80 p-3 md:p-4 shadow-sm">
+                                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                        <div>
+                                            <h4 class="text-emerald-800 font-black text-base md:text-lg">DNA gender detection</h4>
+                                            <p class="text-sm text-slate-600">Use the selected visual clues to generate a deterministic DNA-like sequence when Gender is Undetermined.</p>
+                                        </div>
+                                        <button type="button" id="dna-detect-btn" class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-sm transition-colors hover:bg-emerald-800" aria-label="Detect DNA" title="Detect DNA">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="h-6 w-6" aria-hidden="true">
+                                                <path d="M6 3c4 4 8 4 12 0"/>
+                                                <path d="M6 21c4-4 8-4 12 0"/>
+                                                <path d="M8 7h8"/>
+                                                <path d="M8 17h8"/>
+                                                <path d="M10 3v18"/>
+                                                <path d="M14 3v18"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div id="dna-detect-result" class="mt-3 hidden rounded-2xl border border-emerald-200 bg-white p-4 shadow-md text-sm text-slate-700">
+                                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                            <div>
+                                                <p class="font-black text-emerald-800 text-base">Detection result</p>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span id="dna-detect-result-badge" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide bg-slate-100 text-slate-700">Undetermined</span>
+                                                <button type="button" id="dna-edit-btn" class="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50">
+                                                    Edit clues
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 grid grid-cols-1 gap-2">
+                                            <div class="rounded-xl bg-emerald-50 p-3 border border-emerald-100">
+                                                <p class="text-[11px] uppercase tracking-[0.18em] text-emerald-700 font-bold">Detected gender</p>
+                                                <p id="dna-detect-result-gender" class="mt-1 font-bold text-slate-900">Undetermined</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                            <pre id="dna-detect-result-sequence" class="whitespace-pre-wrap break-all font-mono text-[0.88rem] leading-6 text-slate-800">No analysis yet.</pre>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="dna-input-panel" class="rounded-2xl border border-emerald-200 bg-white/70 p-3 md:p-4 shadow-md space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Body silhouette</span>
+                                            <select id="bio-body-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose silhouette</option>
+                                                <option value="fine">Fine</option>
+                                                <option value="slender">Slender</option>
+                                                <option value="balanced">Balanced</option>
+                                                <option value="broad">Broad</option>
+                                                <option value="very broad">Very broad</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Neck / shoulders</span>
+                                            <select id="bio-neck-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose profile</option>
+                                                <option value="fine">Fine</option>
+                                                <option value="moderate">Moderate</option>
+                                                <option value="thick">Thick</option>
+                                                <option value="very thick">Very thick</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Secondary traits</span>
+                                            <select id="bio-secondary-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose trait</option>
+                                                <option value="none">None obvious</option>
+                                                <option value="small">Small</option>
+                                                <option value="moderate">Moderate</option>
+                                                <option value="marked">Marked</option>
+                                                <option value="prominent">Prominent</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div id="bio-panel-poultry" class="bio-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Comb size</span>
+                                            <select id="bio-poultry-comb-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose comb</option>
+                                                <option value="flat">Flat</option>
+                                                <option value="small">Small</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="large">Large</option>
+                                                <option value="very large">Very large</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Wattle size</span>
+                                            <select id="bio-poultry-wattle-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose wattle</option>
+                                                <option value="none">None</option>
+                                                <option value="small">Small</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="large">Large</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Tail feathers</span>
+                                            <select id="bio-poultry-tail-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose tail</option>
+                                                <option value="short">Short</option>
+                                                <option value="rounded">Rounded</option>
+                                                <option value="arched">Arched</option>
+                                                <option value="streaming">Streaming</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div id="bio-panel-bovin" class="bio-panel hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Horn buds / horns</span>
+                                            <select id="bio-bovin-horns-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose horns</option>
+                                                <option value="none">None</option>
+                                                <option value="small buds">Small buds</option>
+                                                <option value="visible buds">Visible buds</option>
+                                                <option value="developed horns">Developed horns</option>
+                                                <option value="asymmetrical">Asymmetrical</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Neck thickness</span>
+                                            <select id="bio-bovin-neck-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose neck</option>
+                                                <option value="fine">Fine</option>
+                                                <option value="moderate">Moderate</option>
+                                                <option value="thick">Thick</option>
+                                                <option value="very thick">Very thick</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Pelvic width</span>
+                                            <select id="bio-bovin-pelvis-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose pelvis</option>
+                                                <option value="narrow">Narrow</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="wide">Wide</option>
+                                                <option value="very wide">Very wide</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div id="bio-panel-sheep" class="bio-panel hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Horn curl</span>
+                                            <select id="bio-sheep-horn-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose horn curl</option>
+                                                <option value="none">None</option>
+                                                <option value="small">Small</option>
+                                                <option value="curved">Curved</option>
+                                                <option value="spiraled">Spiraled</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Neck / shoulder profile</span>
+                                            <select id="bio-sheep-neck-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose profile</option>
+                                                <option value="fine">Fine</option>
+                                                <option value="moderate">Moderate</option>
+                                                <option value="thick">Thick</option>
+                                                <option value="broad">Broad</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Tail / rump profile</span>
+                                            <select id="bio-sheep-tail-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose tail</option>
+                                                <option value="tight">Tight</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="broad">Broad</option>
+                                                <option value="notable">Notable</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div id="bio-panel-pig" class="bio-panel hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Body frame</span>
+                                            <select id="bio-pig-body-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose frame</option>
+                                                <option value="fine">Fine</option>
+                                                <option value="balanced">Balanced</option>
+                                                <option value="broad">Broad</option>
+                                                <option value="very broad">Very broad</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Belly line</span>
+                                            <select id="bio-pig-belly-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose belly</option>
+                                                <option value="tight">Tight</option>
+                                                <option value="flat">Flat</option>
+                                                <option value="rounded">Rounded</option>
+                                                <option value="heavy">Heavy</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Snout / head</span>
+                                            <select id="bio-pig-head-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose profile</option>
+                                                <option value="fine">Fine</option>
+                                                <option value="moderate">Moderate</option>
+                                                <option value="thick">Thick</option>
+                                                <option value="heavy">Heavy</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div id="bio-panel-other" class="bio-panel hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">General frame</span>
+                                            <select id="bio-other-frame-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose frame</option>
+                                                <option value="fine">Fine</option>
+                                                <option value="balanced">Balanced</option>
+                                                <option value="broad">Broad</option>
+                                                <option value="very broad">Very broad</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Proportion</span>
+                                            <select id="bio-other-proportion-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose proportion</option>
+                                                <option value="compact">Compact</option>
+                                                <option value="balanced">Balanced</option>
+                                                <option value="elongated">Elongated</option>
+                                                <option value="robust">Robust</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Visible traits</span>
+                                            <select id="bio-other-traits-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose traits</option>
+                                                <option value="none">None obvious</option>
+                                                <option value="small">Small</option>
+                                                <option value="moderate">Moderate</option>
+                                                <option value="marked">Marked</option>
+                                                <option value="prominent">Prominent</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Genital visibility</span>
+                                            <select id="bio-genital-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose visibility</option>
+                                                <option value="not visible">Not visible</option>
+                                                <option value="uncertain">Uncertain</option>
+                                                <option value="partially visible">Partially visible</option>
+                                                <option value="visible">Visible</option>
+                                            </select>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-xs uppercase tracking-wide text-slate-500 font-bold">Behavior / posture</span>
+                                            <select id="bio-behavior-select" class="js-bio-input mt-1 w-full rounded-xl border-2 border-emerald-300 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                                <option value="">Choose behavior</option>
+                                                <option value="calm">Calm</option>
+                                                <option value="alert">Alert</option>
+                                                <option value="territorial">Territorial</option>
+                                                <option value="restless">Restless</option>
+                                                <option value="mounting">Mounting</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <p class="mt-3 text-xs text-slate-500">Choose uncertain visual clues only. These help estimate sex without using obvious features like milk production.</p>
+                                </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
                                     <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Farm:</label>
@@ -320,7 +1016,10 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
                                     <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Animal Type:</label>
-                                    <input name="type_animal" value="{{ current_type_animal }}" placeholder="Ex: Cow, Sheep, Goat..." class="md:col-span-4 rounded-xl border-2 border-emerald-600 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <div class="md:col-span-4">
+                                        <input id="animal-type-input" name="type_animal" value="{{ current_type_animal }}" placeholder="Ex: poultry, bovin, sheep, pig, goat" class="w-full rounded-xl border-2 border-emerald-600 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                        <p class="mt-2 text-xs text-slate-600">Detailed clues for poultry, bovin, and sheep. General clues for other livestock.</p>
+                                    </div>
                                     {% if form_errors.type_animal is defined %}
                                         <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.type_animal }}</p>
                                     {% endif %}
@@ -329,7 +1028,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
                                     <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Gender:</label>
                                     <div class="md:col-span-4">
-                                        <select name="sexe" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                        <select id="animal-gender-select" name="sexe" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
                                             {% for gender_option in gender_options %}
                                                 <option value="{{ gender_option }}" {{ current_sexe == gender_option ? 'selected' : '' }}>{{ gender_option }}</option>
                                             {% endfor %}
@@ -374,6 +1073,20 @@
                                     {% if form_errors.statut is defined %}
                                         <p class="md:col-span-4 md:col-start-3 text-sm text-red-600">{{ form_errors.statut }}</p>
                                     {% endif %}
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+                                    <label class="md:col-span-2 text-emerald-800 text-base md:text-lg font-bold">Photo:</label>
+                                    <div class="md:col-span-4">
+                                        <input type="file" name="photo_file" accept="image/*" class="w-full rounded-xl border-2 border-emerald-400 bg-white px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                        {% if form_errors.photo_file is defined %}
+                                            <p class="mt-2 text-sm text-red-600">{{ form_errors.photo_file }}</p>
+                                        {% endif %}
+                                        {% if is_edit_animal_mode and edit_animal.photo_name is defined and edit_animal.photo_name %}
+                                            <p class="mt-2 text-sm text-slate-700">Photo actuelle :</p>
+                                            <img src="{{ asset('/uploads/animals/' ~ edit_animal.photo_name) }}" alt="Current animal photo" class="mt-2 h-20 w-20 rounded-xl object-cover border border-slate-300">
+                                        {% endif %}
+                                    </div>
                                 </div>
 
                                 <div class="pt-1 flex items-center justify-center gap-4">
@@ -897,6 +1610,163 @@
         applyFilters();
         renderTabVisualState();
         refreshStatistics();
+    }
+
+    const dnaForm = document.querySelector('form[data-dna-detect-url]');
+    const dnaButton = document.getElementById('dna-detect-btn');
+    const dnaResultBox = document.getElementById('dna-detect-result');
+    const dnaResultBadge = document.getElementById('dna-detect-result-badge');
+    const dnaResultGender = document.getElementById('dna-detect-result-gender');
+    const dnaResultSequence = document.getElementById('dna-detect-result-sequence');
+    const dnaEditButton = document.getElementById('dna-edit-btn');
+    const dnaInputPanel = document.getElementById('dna-input-panel');
+    const animalGenderSelect = document.getElementById('animal-gender-select');
+    const animalTypeInput = document.getElementById('animal-type-input');
+    const bioPanels = Array.from(document.querySelectorAll('.bio-panel'));
+    const bioControls = Array.from(document.querySelectorAll('.js-bio-input'));
+
+    if (dnaForm && dnaButton && dnaResultBox && dnaResultBadge && dnaResultGender && dnaResultSequence && dnaEditButton && dnaInputPanel && animalGenderSelect && animalTypeInput && bioPanels.length > 0 && bioControls.length > 0) {
+        const detectUrl = dnaForm.dataset.dnaDetectUrl || '';
+
+        const normalizeType = function (value) {
+            const normalized = normalize(value);
+
+            if (['poultry', 'poule', 'poulet', 'chicken', 'hen', 'rooster'].includes(normalized)) {
+                return 'poultry';
+            }
+            if (['bovin', 'cow', 'cattle', 'bull', 'vache'].includes(normalized)) {
+                return 'bovin';
+            }
+            if (['sheep', 'mouton', 'ram', 'ewe', 'brebis'].includes(normalized)) {
+                return 'sheep';
+            }
+            if (['pig', 'cochon', 'porc', 'swine', 'boar', 'sow'].includes(normalized)) {
+                return 'pig';
+            }
+
+            return normalized !== '' ? 'other' : '';
+        };
+
+        const getActiveType = function () {
+            return normalizeType(animalTypeInput.value);
+        };
+
+        const setPanelVisibility = function () {
+            const activeType = getActiveType();
+            const isUndetermined = normalize(animalGenderSelect.value) === 'undetermined';
+
+            bioPanels.forEach(function (panel) {
+                panel.classList.add('hidden');
+            });
+
+            if (!isUndetermined || !activeType) {
+                dnaInputPanel.classList.add('hidden');
+                return;
+            }
+
+            dnaInputPanel.classList.remove('hidden');
+            const panel = document.getElementById('bio-panel-' + activeType);
+            if (panel) {
+                panel.classList.remove('hidden');
+            }
+        };
+
+        const collectBioChoices = function () {
+            const activePanel = document.getElementById('bio-panel-' + getActiveType());
+            const choiceMap = {};
+            if (activePanel) {
+                activePanel.querySelectorAll('select.js-bio-input').forEach(function (select) {
+                    choiceMap[select.id] = select.value;
+                });
+            }
+
+            choiceMap.bioBody = document.getElementById('bio-body-select') ? document.getElementById('bio-body-select').value : '';
+            choiceMap.bioNeck = document.getElementById('bio-neck-select') ? document.getElementById('bio-neck-select').value : '';
+            choiceMap.bioSecondary = document.getElementById('bio-secondary-select') ? document.getElementById('bio-secondary-select').value : '';
+            choiceMap.bioGenital = document.getElementById('bio-genital-select') ? document.getElementById('bio-genital-select').value : '';
+            choiceMap.bioBehavior = document.getElementById('bio-behavior-select') ? document.getElementById('bio-behavior-select').value : '';
+
+            return choiceMap;
+        };
+
+        const renderDetection = function (payload) {
+            if (!payload || payload.success !== true) {
+                dnaResultBox.classList.remove('hidden');
+                dnaResultBadge.textContent = 'Undetermined';
+                dnaResultBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide bg-slate-100 text-slate-700';
+                dnaResultGender.textContent = 'Undetermined';
+                dnaResultSequence.textContent = '';
+                animalGenderSelect.value = 'Undetermined';
+                setPanelVisibility();
+                return;
+            }
+
+            dnaResultBox.classList.remove('hidden');
+            const sexLabel = payload.sex || 'Undetermined';
+            const detectedLabel = payload.detected_gender || 'Undetermined';
+            const sequence = String(payload.dna_sequence || '');
+
+            dnaResultBadge.textContent = sexLabel;
+            dnaResultBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ' + (sexLabel === 'Male' ? 'bg-blue-100 text-blue-700' : (sexLabel === 'Female' ? 'bg-pink-100 text-pink-700' : 'bg-slate-100 text-slate-700'));
+            dnaResultGender.textContent = detectedLabel;
+            dnaResultSequence.textContent = sequence;
+
+            animalGenderSelect.value = sexLabel === 'Male' ? 'Male' : (sexLabel === 'Female' ? 'Female' : 'Undetermined');
+            setPanelVisibility();
+        };
+
+        const runDetection = async function () {
+            const bioChoices = collectBioChoices();
+            const type = normalizeType(animalTypeInput.value);
+            const currentGender = normalize(animalGenderSelect.value);
+
+            if (!type) {
+                dnaResultBox.classList.remove('hidden');
+                return;
+            }
+
+            if (currentGender !== '' && currentGender !== 'undetermined') {
+                dnaResultBox.classList.remove('hidden');
+                return;
+            }
+
+            dnaButton.disabled = true;
+            dnaResultBox.classList.remove('hidden');
+
+            try {
+                const query = new URLSearchParams({
+                    type: type,
+                    body: bioChoices.bioBody,
+                    neck: bioChoices.bioNeck,
+                    secondary: bioChoices.bioSecondary,
+                    genital: bioChoices.bioGenital,
+                    behavior: bioChoices.bioBehavior,
+                    panel_data: JSON.stringify(bioChoices),
+                });
+
+                const response = await fetch(detectUrl + '?' + query.toString(), {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                });
+                const payload = await response.json();
+                renderDetection(payload);
+            } catch (error) {
+                dnaResultBox.classList.remove('hidden');
+            } finally {
+                dnaButton.disabled = false;
+            }
+        };
+
+        dnaButton.addEventListener('click', runDetection);
+        animalTypeInput.addEventListener('input', setPanelVisibility);
+        animalGenderSelect.addEventListener('change', setPanelVisibility);
+        dnaEditButton.addEventListener('click', function () {
+            animalGenderSelect.value = 'Undetermined';
+            setPanelVisibility();
+            dnaInputPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        setPanelVisibility();
+
     }
 
     const modal = document.getElementById('delete-confirm-modal');

@@ -6,10 +6,13 @@ namespace App\Controller;
 
 use App\Repository\AnimalRepository;
 use App\Repository\LivestockRepository;
+use App\Service\LivestockCapacityEmailAlertService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Vich\UploaderBundle\Handler\UploadHandler;
 
 final class AnimalController extends AbstractController
 {
@@ -17,7 +20,9 @@ final class AnimalController extends AbstractController
     public function create(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService,
+        UploadHandler $uploadHandler
     ): Response
     {
         $formRedirect = [
@@ -33,15 +38,20 @@ final class AnimalController extends AbstractController
             ], $input);
         }
 
-        $errors = $this->validateAnimalInput($input, $livestockRepository);
+        $photoFile = $this->collectAnimalFile($request);
+        $errors = $this->validateAnimalInput($input, $livestockRepository, $photoFile);
         if ($errors !== []) {
             return $this->redirectToAnimalFormWithFieldErrors($formRedirect, $errors, $input);
         }
 
         $payload = $this->toAnimalPayload($input);
+        $animalId = $animalRepository->createAnimal($payload);
+        if ($photoFile !== null) {
+            $animalRepository->saveAnimalPhoto($animalId, $photoFile, $uploadHandler);
+        }
 
-        $animalRepository->createAnimal($payload);
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
+        $capacityEmailAlertService->checkAndSendForLivestock($payload['id_elevage']);
 
         return $this->redirectToAnimalList();
     }
@@ -50,7 +60,9 @@ final class AnimalController extends AbstractController
     public function update(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService,
+        UploadHandler $uploadHandler
     ): Response
     {
         $idAnimal = (int) $request->request->get('id_animal', 0);
@@ -83,7 +95,8 @@ final class AnimalController extends AbstractController
             ], $input);
         }
 
-        $errors = $this->validateAnimalInput($input, $livestockRepository);
+        $photoFile = $this->collectAnimalFile($request);
+        $errors = $this->validateAnimalInput($input, $livestockRepository, $photoFile);
         if ($errors !== []) {
             return $this->redirectToAnimalFormWithFieldErrors($formRedirect, $errors, $input);
         }
@@ -91,9 +104,15 @@ final class AnimalController extends AbstractController
         $payload = $this->toAnimalPayload($input);
 
         $animalRepository->updateAnimal($idAnimal, $payload);
+        if ($photoFile !== null) {
+            $animalRepository->saveAnimalPhoto($idAnimal, $photoFile, $uploadHandler);
+        }
         $livestockRepository->syncAnimalCount($payload['id_elevage']);
+        $capacityEmailAlertService->checkAndSendForLivestock($payload['id_elevage']);
+
         if ($previousElevageId !== $payload['id_elevage']) {
             $livestockRepository->syncAnimalCount($previousElevageId);
+            $capacityEmailAlertService->checkAndSendForLivestock($previousElevageId);
         }
 
         return $this->redirectToAnimalList();
@@ -103,7 +122,8 @@ final class AnimalController extends AbstractController
     public function delete(
         Request $request,
         AnimalRepository $animalRepository,
-        LivestockRepository $livestockRepository
+        LivestockRepository $livestockRepository,
+        LivestockCapacityEmailAlertService $capacityEmailAlertService
     ): Response
     {
         if (!$this->isCsrfTokenValid('animal_delete', (string) $request->request->get('_token', ''))) {
@@ -120,6 +140,7 @@ final class AnimalController extends AbstractController
 
         if ($animalElevageId !== null && $animalElevageId > 0) {
             $livestockRepository->syncAnimalCount($animalElevageId);
+            $capacityEmailAlertService->checkAndSendForLivestock($animalElevageId);
         }
 
         return $this->redirectToAnimalList();
@@ -140,12 +161,18 @@ final class AnimalController extends AbstractController
         ];
     }
 
+    private function collectAnimalFile(Request $request): ?UploadedFile
+    {
+        $file = $request->files->get('photo_file');
+        return $file instanceof UploadedFile ? $file : null;
+    }
+
     /**
      * @param array{id_elevage:string,type_animal:string,sexe:string,age:string,etat_sante:string,statut:string} $input
      *
      * @return array<string,string>
      */
-    private function validateAnimalInput(array $input, LivestockRepository $livestockRepository): array
+    private function validateAnimalInput(array $input, LivestockRepository $livestockRepository, ?UploadedFile $photoFile = null): array
     {
         $errors = [];
 
@@ -185,6 +212,22 @@ final class AnimalController extends AbstractController
 
         if ($input['statut'] === '') {
             $errors['statut'] = 'Status is required.';
+        }
+
+        if ($photoFile !== null) {
+            $mimeType = null;
+            try {
+                $mimeType = $photoFile->getMimeType();
+            } catch (\LogicException $e) {
+                $mimeType = $photoFile->getClientMimeType();
+            }
+
+            if ($mimeType === null || !str_starts_with((string) $mimeType, 'image/')) {
+                $errors['photo_file'] = 'Please upload a valid image file (jpg, png, gif).';
+            }
+            if ($photoFile->getSize() !== null && $photoFile->getSize() > 5_242_880) {
+                $errors['photo_file'] = 'Image size must be 5MB or less.';
+            }
         }
 
         return $errors;

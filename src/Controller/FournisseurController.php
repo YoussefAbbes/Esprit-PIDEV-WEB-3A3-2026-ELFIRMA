@@ -6,21 +6,53 @@ namespace App\Controller;
 
 use App\Entity\Fournisseur;
 use App\Entity\Contrat;
+use App\Entity\Meeting;
+use App\Entity\Rating;
+use App\Service\JitsiMeetingService;
+use App\Service\GeocodingService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 final class FournisseurController extends AbstractController
 {
     #[Route('/elfirma/fournisseurs-contrats', name: 'fournisseur_page', methods: ['GET'], priority: 10)]
-    public function page(EntityManagerInterface $entityManager): Response
+    public function page(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
         $fournisseurRepo = $entityManager->getRepository(Fournisseur::class);
         $contratRepo = $entityManager->getRepository(Contrat::class);
+
+        $supplierSort = (string) $request->query->get('supplierSort', 'type-asc');
+        $allowedSupplierSort = [
+            'type-asc' => ['f.type_f', 'ASC'],
+            'type-desc' => ['f.type_f', 'DESC'],
+            'status' => ['f.statut_f', 'ASC'],
+        ];
+
+        if (!isset($allowedSupplierSort[$supplierSort])) {
+            $supplierSort = 'type-asc';
+        }
+
+        [$supplierSortField, $supplierSortDirection] = $allowedSupplierSort[$supplierSort];
+
+        $supplierQueryBuilder = $fournisseurRepo->createQueryBuilder('f')
+            ->orderBy($supplierSortField, $supplierSortDirection)
+            ->addOrderBy('f.id_f', 'DESC');
+
         $allSuppliers = $fournisseurRepo->findAll();
+        $suppliers = $paginator->paginate(
+            $supplierQueryBuilder,
+            max(1, (int) $request->query->get('supplierPage', 1)),
+            10,
+            ['pageParameterName' => 'supplierPage']
+        );
+
         $allContracts = $contratRepo->findAll();
 
         // Calculate supplier statistics by status
@@ -72,8 +104,10 @@ final class FournisseurController extends AbstractController
         }
 
         return $this->render('elfirma/fournisseurs_contrats.html.twig', [
-            'suppliers' => $allSuppliers,
+            'suppliers' => $suppliers,
             'contracts' => $allContracts,
+            'supplierSort' => $supplierSort,
+            'contractSort' => 'date-desc',
             'supplierStats' => [
                 'active' => $activeCount,
                 'inactive' => $inactiveCount,
@@ -293,6 +327,16 @@ final class FournisseurController extends AbstractController
                 ]);
             }
 
+            // Delete related meetings first
+            foreach ($fournisseur->getMeetings() as $meeting) {
+                $entityManager->remove($meeting);
+            }
+
+            // Delete related ratings
+            foreach ($fournisseur->getRatings() as $rating) {
+                $entityManager->remove($rating);
+            }
+
             // Delete the supplier
             $entityManager->remove($fournisseur);
             $entityManager->flush();
@@ -306,6 +350,241 @@ final class FournisseurController extends AbstractController
                 'success' => false,
                 'message' => 'Error deleting supplier: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    #[Route('/elfirma/meeting/schedule', name: 'elfirma_schedule_meeting', methods: ['POST'])]
+    public function scheduleMeeting(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+        JitsiMeetingService $jitsiMeetingService,
+        \Twig\Environment $twig
+    ): JsonResponse {
+        $errors = [];
+
+        // Get form data
+        $supplierId = $request->request->get('supplier_id', '');
+        $meetingDateTime = $request->request->get('meeting_datetime', '');
+
+        // Validate supplier ID
+        if (empty($supplierId)) {
+            $errors['general'] = 'Supplier ID is required';
+        }
+
+        // Validate meeting datetime
+        if (empty($meetingDateTime)) {
+            $errors['datetime'] = 'Meeting date and time are required';
+        } else {
+            try {
+                $dateTime = new \DateTime($meetingDateTime);
+                $now = new \DateTime('now');
+                if ($dateTime <= $now) {
+                    $errors['datetime'] = 'Meeting date and time must be in the future';
+                }
+            } catch (\Exception $e) {
+                $errors['datetime'] = 'Invalid date and time format';
+            }
+        }
+
+        if (!empty($errors)) {
+            return new JsonResponse([
+                'success' => false,
+                'errors' => $errors
+            ]);
+        }
+
+        try {
+            // Find supplier
+            $fournisseurRepo = $entityManager->getRepository(Fournisseur::class);
+            $supplier = $fournisseurRepo->find($supplierId);
+
+            if (!$supplier) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Supplier not found'
+                ]);
+            }
+
+            // Check if supplier has email
+            if (empty($supplier->getEmailF())) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Supplier does not have an email address'
+                ]);
+            }
+
+            // Generate Jitsi Meeting room and URL
+            $dateTime = new \DateTime($meetingDateTime);
+            $roomId = $jitsiMeetingService->generateMeetingRoomId((int) $supplierId, $dateTime);
+            $meetingLink = $jitsiMeetingService->getMeetingUrl($roomId);
+
+            // Create meeting entity
+            $meeting = new Meeting();
+            $meeting->setFournisseur($supplier);
+            $meeting->setMeetingLink($meetingLink);
+            $meeting->setMeetingDatetime($dateTime);
+            $meeting->setCreatedAt(new \DateTime('now'));
+
+            // Save to database
+            $entityManager->persist($meeting);
+            $entityManager->flush();
+
+            // Send email
+            $emailSent = false;
+            $emailError = null;
+            try {
+                $emailContent = $twig->render('emails/meeting_invitation.html.twig', [
+                    'supplierName' => $supplier->getTypeF(),
+                    'meetingDateTime' => $meeting->getMeetingDatetime(),
+                    'meetingLink' => $meetingLink,
+                ]);
+
+                $email = new Email();
+                $email->from($_ENV['MAILER_FROM'] ?? 'noreply@elfirma.tn')
+                    ->to($supplier->getEmailF())
+                    ->subject('Meeting Invitation - Elfirma')
+                    ->html($emailContent);
+
+                $mailer->send($email);
+                $emailSent = true;
+            } catch (\Exception $e) {
+                // Log email error but don't fail the request
+                $emailError = $e->getMessage();
+                error_log('Failed to send meeting email: ' . $emailError);
+            }
+
+            $response = [
+                'success' => true,
+                'message' => $emailSent
+                    ? 'Meeting scheduled and email sent successfully'
+                    : 'Meeting scheduled. Email delivery pending.',
+                'meeting_id' => $meeting->getId(),
+                'meeting_link' => $meetingLink,
+                'email_sent' => $emailSent
+            ];
+
+            if ($emailError) {
+                $response['email_error'] = $emailError;
+            }
+
+            return new JsonResponse($response);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Error scheduling meeting: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    #[Route('/api/supplier/{id}/ratings-data', name: 'supplier_ratings_data', methods: ['GET'])]
+    public function getSupplierRatingsData(
+        int $id,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        try {
+            $supplier = $entityManager->getRepository(Fournisseur::class)->find($id);
+            if (!$supplier) {
+                return new JsonResponse(['success' => false, 'message' => 'Supplier not found']);
+            }
+
+            $ratingRepo = $entityManager->getRepository(Rating::class);
+            $ratings = $ratingRepo->findBySupplierOrderedByDate($id);
+            $averageRating = $ratingRepo->getAverageRating($id);
+            $totalCount = $ratingRepo->countBySupplier($id);
+            $ratingStats = $ratingRepo->getRatingStats($id);
+
+            // Format ratings for response
+            $formattedRatings = [];
+            foreach ($ratings as $rating) {
+                $createdAt = $rating->getCreatedAt();
+                $now = new \DateTime();
+                $interval = $now->diff($createdAt);
+
+                // Format date as relative time
+                if ($interval->days == 0) {
+                    if ($interval->h == 0) {
+                        $relativeDate = $interval->i . ' minutes ago';
+                    } else {
+                        $relativeDate = $interval->h . ' hours ago';
+                    }
+                } elseif ($interval->days == 1) {
+                    $relativeDate = '1 day ago';
+                } elseif ($interval->days < 7) {
+                    $relativeDate = $interval->days . ' days ago';
+                } elseif ($interval->days < 30) {
+                    $weeks = floor($interval->days / 7);
+                    $relativeDate = $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
+                } else {
+                    $relativeDate = $createdAt->format('d M, Y');
+                }
+
+                $formattedRatings[] = [
+                    'id' => $rating->getIdRating(),
+                    'stars' => $rating->getNumberOfStars(),
+                    'comment' => $rating->getComment(),
+                    'user_id' => $rating->getUserId(),
+                    'date' => $relativeDate,
+                    'created_at' => $createdAt->format('Y-m-d H:i:s')
+                ];
+            }
+
+            // Format star stats
+            $stats = [];
+            for ($i = 5; $i >= 1; $i--) {
+                $count = 0;
+                foreach ($ratingStats as $stat) {
+                    if ($stat['stars'] == $i) {
+                        $count = $stat['count'];
+                        break;
+                    }
+                }
+                $stats[] = [
+                    'stars' => $i,
+                    'count' => $count,
+                    'percentage' => $totalCount > 0 ? round(($count / $totalCount) * 100) : 0
+                ];
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'supplier_name' => $supplier->getTypeF(),
+                'average_rating' => $averageRating ? round($averageRating, 1) : 0,
+                'total_reviews' => $totalCount,
+                'ratings' => $formattedRatings,
+                'star_distribution' => $stats
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Error fetching ratings: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    #[Route('/api/geocode-address', name: 'api_geocode_address', methods: ['POST'])]
+    public function geocodeAddress(Request $request, GeocodingService $geocodingService): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $address = $data['address'] ?? '';
+
+            if (empty(trim($address))) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Address is required'
+                ], 400);
+            }
+
+            $result = $geocodingService->geocodeAddress($address);
+
+            return new JsonResponse($result);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Error geocoding address: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

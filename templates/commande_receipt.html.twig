@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recu Paiement - Commande #{{ commande.idCommande }}</title>
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #475569;
+            --brand-a: #0f766e;
+            --brand-b: #16a34a;
+            --line: #dbeafe;
+            --paper: #ffffff;
+            --bg: #f0fdfa;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", "Open Sans", sans-serif;
+            color: var(--ink);
+            background: radial-gradient(circle at 20% -10%, #ccfbf1 0%, #f8fafc 55%, #eef2ff 100%);
+            padding: 28px 14px;
+        }
+
+        .page {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            background: linear-gradient(135deg, var(--brand-a) 0%, var(--brand-b) 100%);
+            box-shadow: 0 10px 18px rgba(22, 163, 74, 0.25);
+        }
+
+        .btn-secondary {
+            background: #334155;
+            box-shadow: none;
+        }
+
+        .receipt {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+            position: relative;
+        }
+
+        .receipt::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(145deg, rgba(34,197,94,0.05) 0%, rgba(20,184,166,0.02) 45%, rgba(255,255,255,0) 70%);
+        }
+
+        .hero {
+            padding: 24px;
+            color: #f0fdfa;
+            background: linear-gradient(135deg, #115e59 0%, #15803d 100%);
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -95px;
+            top: -85px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,.2) 0%, rgba(255,255,255,0) 72%);
+        }
+
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .brand-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.95);
+            border: 2px solid rgba(255,255,255,.35);
+            object-fit: contain;
+            padding: 6px;
+        }
+
+        .brand-name {
+            font-weight: 800;
+            letter-spacing: .04em;
+            font-size: 15px;
+            text-transform: uppercase;
+            color: #ecfeff;
+            opacity: 0.97;
+        }
+
+        .brand-tagline {
+            margin: 0;
+            font-size: 12px;
+            color: rgba(236,254,255,.9);
+            letter-spacing: .04em;
+        }
+
+        .hero h1 {
+            margin: 0 0 6px 0;
+            font-size: 28px;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .paid-pill {
+            border: 1px solid rgba(255,255,255,0.45);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            background: rgba(255,255,255,0.12);
+        }
+
+        .content {
+            padding: 22px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .card {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px;
+            background: #fff;
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 17px;
+            font-weight: 700;
+            color: #0b3b2e;
+        }
+
+        .total {
+            border: 1px solid #bbf7d0;
+            background: #f0fdf4;
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total strong {
+            font-size: 30px;
+            color: #166534;
+        }
+
+        .foot {
+            padding: 16px 22px 24px;
+            color: #64748b;
+            font-size: 13px;
+            border-top: 1px dashed #cbd5e1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .no-print { display: block; }
+
+        @media (max-width: 740px) {
+            .hero { flex-direction: column; }
+            .grid { grid-template-columns: 1fr; }
+            .total { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+            .page {
+                max-width: none;
+                margin: 0;
+            }
+            .receipt {
+                box-shadow: none;
+                border: 1px solid #d1d5db;
+                border-radius: 0;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="toolbar no-print">
+        <button class="btn" type="button" onclick="window.print()">Imprimer</button>
+        {% if is_download|default(false) == false %}
+            <a class="btn btn-secondary" href="{{ path('app_commande_show', {id: commande.idCommande}) }}" style="text-decoration:none;">Retour</a>
+        {% endif %}
+    </div>
+
+    <section class="receipt">
+        <header class="hero">
+            <div>
+                <div class="brand-row">
+                    <img class="brand-logo" src="{{ receipt_logo_data_uri|default(asset('assets/img/logo.png')) }}" alt="Logo EL FIRMA">
+                    <div>
+                        <div class="brand-name">EL FIRMA</div>
+                        <p class="brand-tagline">Agriculture durable et intelligente</p>
+                    </div>
+                </div>
+                <h1>Recu de Paiement</h1>
+                <p>Commande #{{ commande.idCommande }} - EL FIRMA</p>
+            </div>
+            <div class="paid-pill">Paiement confirme</div>
+        </header>
+
+        <div class="content">
+            <div class="grid">
+                <div class="card">
+                    <div class="label">Client</div>
+                    <div class="value">{{ commande.nomClient }}</div>
+                </div>
+                <div class="card">
+                    <div class="label">Date paiement</div>
+                    <div class="value">{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y H:i') : '-' }}</div>
+                </div>
+                <div class="card">
+                    <div class="label">Adresse livraison</div>
+                    <div class="value">{{ commande.adresseLivraison ?: 'Non renseignee' }}</div>
+                </div>
+                <div class="card">
+                    <div class="label">Mode paiement</div>
+                    <div class="value">{{ commande.modePaiement }}</div>
+                </div>
+                <div class="card">
+                    <div class="label">Statut paiement</div>
+                    <div class="value">{{ commande.statutPaiement }}</div>
+                </div>
+                <div class="card">
+                    <div class="label">Produit</div>
+                    <div class="value">{{ commande.produit ? commande.produit.nom : 'Produit supprime' }}</div>
+                </div>
+            </div>
+
+            <div class="total">
+                <div>
+                    <div class="label">Montant regle</div>
+                    <div class="value">Quantite: {{ commande.quantite }}</div>
+                </div>
+                <div style="text-align: right;">
+                    <strong>{{ commande.prixTotal|number_format(2, '.', ' ') }} DT</strong>
+                    {% if tnd_to_eur_rate is not null %}
+                        <div style="margin-top: 6px; color: #0f766e; font-weight: 700; font-size: 14px;">~ {{ (commande.prixTotal * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <footer class="foot">
+            Ce document sert de preuve de paiement de la commande. Vous pouvez l'imprimer en cliquant sur le bouton Imprimer.
+        </footer>
+    </section>
+</div>
+</body>
+</html>

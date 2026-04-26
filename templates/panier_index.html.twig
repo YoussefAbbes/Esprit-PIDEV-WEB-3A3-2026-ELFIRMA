@@ -58,7 +58,10 @@
                                             </div>
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
-                                            <span style="font-size: 18px; font-weight: 700; color: #16a34a;">{{ item.produit.prixUnitaire }} DT</span>
+                                            <span style="font-size: 18px; font-weight: 700; color: #16a34a;" data-unit-price-tnd="{{ item.produit.prixUnitaire }}">{{ item.produit.prixUnitaire|number_format(2, '.', ' ') }} DT</span>
+                                            {% if tnd_to_eur_rate is not null %}
+                                                <div style="font-size: 12px; color: #0f766e; font-weight: 600; margin-top: 4px;">~ {{ (item.produit.prixUnitaire * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                            {% endif %}
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                             <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -72,7 +75,10 @@
                                             </div>
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: right; vertical-align: middle;">
-                                            <span id="subtotal-{{ item.produit.idProduit }}" style="font-size: 20px; font-weight: 800; color: #16a34a;">{{ item.subtotal }} DT</span>
+                                            <span id="subtotal-{{ item.produit.idProduit }}" style="font-size: 20px; font-weight: 800; color: #16a34a;" data-subtotal-tnd="{{ item.subtotal }}">{{ item.subtotal|number_format(2, '.', ' ') }} DT</span>
+                                            {% if tnd_to_eur_rate is not null %}
+                                                <div id="subtotal-eur-{{ item.produit.idProduit }}" style="font-size: 12px; color: #0f766e; font-weight: 600; margin-top: 4px;">~ {{ (item.subtotal * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                                            {% endif %}
                                         </td>
                                         <td style="border: none; padding: 20px 15px; text-align: center; vertical-align: middle;">
                                             <button onclick="removeFromCart({{ item.produit.idProduit }})" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
@@ -114,7 +120,7 @@
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                             <span style="color: #6b7280;">Sous-total:</span>
-                            <span id="cart-subtotal" style="font-weight: 600;">{{ total }} DT</span>
+                            <span id="cart-subtotal" style="font-weight: 600;">{{ total|number_format(2, '.', ' ') }} DT</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                             <span style="color: #6b7280;">Livraison:</span>
@@ -123,8 +129,11 @@
                         <hr style="border: none; border-top: 2px solid #f3f4f6; margin: 20px 0;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total:</span>
-                            <span id="cart-total" style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total }} DT</span>
+                            <span id="cart-total" style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ total|number_format(2, '.', ' ') }} DT</span>
                         </div>
+                        {% if tnd_to_eur_rate is not null %}
+                            <div id="cart-total-eur" style="text-align: right; margin-top: 6px; color: #0f766e; font-size: 13px; font-weight: 700;">~ {{ (total * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
+                        {% endif %}
                     </div>
 
                     <a href="{{ path('app_commande_create') }}" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 15px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; text-align: center; display: block; margin-bottom: 15px;">
@@ -139,12 +148,42 @@
                     </div>
                 </div>
             </div>
+
+            {% if recommended_products is defined and recommended_products is not empty %}
+            <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px;">
+                <div style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); padding: 20px; color: white;">
+                    <h5 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        Recommandés pour vous
+                    </h5>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.9;">Basé sur les achats effectués ensemble.</p>
+                </div>
+                <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+                    {% for product in recommended_products|slice(0, 5) %}
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid #ecfeff; background: #f0fdfa; border-radius: 10px; padding: 10px;">
+                            <div style="min-width: 0;">
+                                <div style="font-weight: 700; color: #134e4a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.nom }}</div>
+                                <div style="font-size: 12px; color: #0f766e;">{{ product.prixUnitaire|number_format(2, '.', ' ') }} DT</div>
+                            </div>
+                            <button type="button" onclick="addRecommendedToCart({{ product.idProduit }})" style="background: #0d9488; color: white; border: none; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;">
+                                Ajouter
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="{{ asset('assets/js/gesture_assistant.js') }}?v=3"></script>
 <script>
+const tndToEurRate = {{ tnd_to_eur_rate is not null ? tnd_to_eur_rate|number_format(6, '.', '') : 'null' }};
+
 async function updateQuantity(productId, newQuantity) {
     if (newQuantity < 0) return;
     
@@ -171,11 +210,20 @@ async function updateQuantity(productId, newQuantity) {
                 
                 // Calculer le nouveau sous-total
                 const row = document.querySelector(`tr[data-product-id="${productId}"]`);
-                const priceText = row.querySelector('td:nth-child(2) span').textContent;
-                const price = parseFloat(priceText.replace(' DT', ''));
+                const unitPriceEl = row.querySelector('[data-unit-price-tnd]');
+                const price = parseFloat(unitPriceEl.dataset.unitPriceTnd || '0');
                 const newSubtotal = price * newQuantity;
                 
-                document.getElementById('subtotal-' + productId).textContent = newSubtotal + ' DT';
+                const subtotalEl = document.getElementById('subtotal-' + productId);
+                subtotalEl.dataset.subtotalTnd = newSubtotal.toFixed(2);
+                subtotalEl.textContent = `${newSubtotal.toFixed(2)} DT`;
+
+                if (tndToEurRate !== null) {
+                    const subtotalEurEl = document.getElementById('subtotal-eur-' + productId);
+                    if (subtotalEurEl) {
+                        subtotalEurEl.textContent = `~ ${(newSubtotal * tndToEurRate).toFixed(2)} EUR`;
+                    }
+                }
                 
                 // Recalculer le total
                 calculateTotal();
@@ -218,8 +266,8 @@ async function removeFromCart(productId) {
     }
 }
 
-async function clearCart() {
-    if (!confirm('Voulez-vous vraiment vider votre panier ?')) {
+async function clearCart(skipConfirm = false) {
+    if (!skipConfirm && !confirm('Voulez-vous vraiment vider votre panier ?')) {
         return;
     }
 
@@ -249,12 +297,606 @@ function calculateTotal() {
     const subtotalElements = document.querySelectorAll('[id^="subtotal-"]');
     
     subtotalElements.forEach(element => {
-        const subtotal = parseFloat(element.textContent.replace(' DT', ''));
+        const subtotal = parseFloat(element.dataset.subtotalTnd || '0');
         total += subtotal;
     });
     
-    document.getElementById('cart-subtotal').textContent = total + ' DT';
-    document.getElementById('cart-total').textContent = total + ' DT';
+    document.getElementById('cart-subtotal').textContent = `${total.toFixed(2)} DT`;
+    document.getElementById('cart-total').textContent = `${total.toFixed(2)} DT`;
+
+    if (tndToEurRate !== null) {
+        const totalEurEl = document.getElementById('cart-total-eur');
+        if (totalEurEl) {
+            totalEurEl.textContent = `~ ${(total * tndToEurRate).toFixed(2)} EUR`;
+        }
+    }
 }
+
+async function addRecommendedToCart(productId) {
+    try {
+        const response = await fetch('/api/panier/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantite: 1
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            location.reload();
+            return;
+        }
+
+        alert(result.error || 'Impossible d\'ajouter ce produit');
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de l\'ajout au panier');
+    }
+}
+
+function initVoiceCartAssistant() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const synth = window.speechSynthesis;
+    const hasVoice = !!SpeechRecognition && !!synth;
+    let isListening = false;
+    let isRecognitionStarting = false;
+    let networkRetryCount = 0;
+    let manualStop = false;
+    let restartOnEnd = false;
+    let textFallbackArmed = false;
+
+    const voiceBtn = document.createElement('button');
+    voiceBtn.type = 'button';
+    voiceBtn.id = 'voice-cart-fab';
+    voiceBtn.style.cssText = `
+        position: fixed;
+        left: 20px;
+        bottom: 24px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+        color: #ffffff;
+        z-index: 1200;
+        box-shadow: 0 12px 24px rgba(15, 118, 110, 0.35);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    voiceBtn.innerHTML = '<span class="material-symbols-outlined">mic</span>';
+    document.body.appendChild(voiceBtn);
+
+    const voiceStatus = document.createElement('div');
+    voiceStatus.id = 'voice-cart-status';
+    voiceStatus.style.cssText = `
+        position: fixed;
+        left: 20px;
+        bottom: 92px;
+        z-index: 1200;
+        max-width: 320px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: rgba(15,23,42,.9);
+        color: #fff;
+        font-size: 13px;
+        line-height: 1.35;
+        display: none;
+    `;
+    document.body.appendChild(voiceStatus);
+
+    function showVoiceStatus(message, isError = false, withSpeech = false) {
+        voiceStatus.textContent = message;
+        voiceStatus.style.display = 'block';
+        voiceStatus.style.background = isError ? 'rgba(185,28,28,.95)' : 'rgba(15,23,42,.9)';
+        if (withSpeech) {
+            speak(message);
+        }
+        setTimeout(() => {
+            voiceStatus.style.display = 'none';
+        }, 3200);
+    }
+
+    function openVoiceFallbackPrompt() {
+        const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande panier. Ex: lire panier');
+        if (typeof typed === 'string' && typed.trim() !== '') {
+            handleVoiceCommand(typed.trim());
+        }
+    }
+
+    function speak(message) {
+        if (!synth) return;
+        synth.cancel();
+        const utt = new SpeechSynthesisUtterance(message);
+        utt.lang = 'fr-FR';
+        utt.rate = 1;
+        synth.speak(utt);
+    }
+
+    function normalizeText(value) {
+        return (value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function extractSpokenNumber(text) {
+        const normalized = normalizeText(text);
+        const digitMatch = normalized.match(/\b(\d{1,4})\b/);
+        if (digitMatch) {
+            return Number(digitMatch[1]);
+        }
+
+        const wordMap = {
+            zero: 0,
+            un: 1,
+            une: 1,
+            deux: 2,
+            trois: 3,
+            quatre: 4,
+            cinq: 5,
+            six: 6,
+            sept: 7,
+            huit: 8,
+            neuf: 9,
+            dix: 10,
+        };
+
+        for (const [word, number] of Object.entries(wordMap)) {
+            if (new RegExp(`\\b${word}\\b`, 'i').test(normalized)) {
+                return number;
+            }
+        }
+
+        return null;
+    }
+
+    function findCartRowFromText(text) {
+        const rows = Array.from(document.querySelectorAll('tr[data-product-id]'));
+        if (rows.length === 0) {
+            return null;
+        }
+
+        if (rows.length === 1) {
+            return rows[0];
+        }
+
+        const normalized = normalizeText(text);
+        const matched = rows.find((row) => {
+            const name = normalizeText(row.querySelector('h6')?.textContent || '');
+            return name !== '' && normalized.includes(name);
+        });
+
+        return matched || rows[0];
+    }
+
+    function hasAnyToken(text, tokens) {
+        const normalized = normalizeText(text);
+        return tokens.some((token) => normalized.includes(token));
+    }
+
+    function tryExecuteLocalCartCommand(rawText) {
+        const text = normalizeText(rawText);
+        if (text === '') {
+            return false;
+        }
+
+        const wantsClearCart =
+            (hasAnyToken(text, ['vider', 'vide', 'supprimer tout', 'effacer']) && hasAnyToken(text, ['panier']))
+            || hasAnyToken(text, ['panier vide']);
+
+        if (wantsClearCart) {
+            clearCart(true);
+            showVoiceStatus('Panier vide.', false, true);
+            return true;
+        }
+
+        const wantsCheckout =
+            (hasAnyToken(text, ['passer', 'ouvre', 'ouvrir', 'aller']) && hasAnyToken(text, ['command', 'checkout']))
+            || hasAnyToken(text, ['passer la commande', 'passer commande', 'je passe commande', 'commander']);
+
+        if (wantsCheckout) {
+            window.location.href = '{{ path('app_commande_create') }}';
+            return true;
+        }
+
+        const wantsSetQty = hasAnyToken(text, ['quantite', 'mettre', 'fixer', 'regler', 'change']);
+        if (wantsSetQty) {
+            const qty = extractSpokenNumber(text);
+            const row = findCartRowFromText(text);
+            if (qty !== null && row) {
+                const productId = Number(row.dataset.productId || 0);
+                if (productId > 0) {
+                    updateQuantity(productId, Math.max(0, qty));
+                    showVoiceStatus(`Quantite mise a ${qty}.`, false, true);
+                    return true;
+                }
+            }
+        }
+
+        if (hasAnyToken(text, ['augment', 'augmente', 'plus', 'incremente', 'zid'])) {
+            const row = findCartRowFromText(text);
+            if (row) {
+                const productId = Number(row.dataset.productId || 0);
+                const currentQty = Number(row.querySelector('[id^="qty-"]')?.textContent || 0);
+                if (productId > 0) {
+                    updateQuantity(productId, Math.max(0, currentQty + 1));
+                    showVoiceStatus('Quantite augmentee.', false, true);
+                    return true;
+                }
+            }
+        }
+
+        if (hasAnyToken(text, ['diminu', 'diminue', 'reduire', 'moins', 'decremente', 'na9es', 'naqes'])) {
+            const row = findCartRowFromText(text);
+            if (row) {
+                const productId = Number(row.dataset.productId || 0);
+                const currentQty = Number(row.querySelector('[id^="qty-"]')?.textContent || 0);
+                if (productId > 0) {
+                    updateQuantity(productId, Math.max(0, currentQty - 1));
+                    showVoiceStatus('Quantite diminuee.', false, true);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    function findRowByName(needle) {
+        const target = normalize(needle);
+        if (!target) return null;
+
+        const rows = Array.from(document.querySelectorAll('tr[data-product-id]'));
+        return rows.find((row) => {
+            const name = normalize(row.querySelector('h6')?.textContent || '');
+            return name.includes(target);
+        }) || null;
+    }
+
+    function readCartSummary() {
+        const rows = Array.from(document.querySelectorAll('tr[data-product-id]'));
+        if (rows.length === 0) {
+            speak('Votre panier est vide.');
+            return;
+        }
+
+        const names = rows.slice(0, 5).map((row) => row.querySelector('h6')?.textContent?.trim()).filter(Boolean);
+        const total = document.getElementById('cart-total')?.textContent?.trim() || '';
+        speak(`Votre panier contient ${rows.length} produits. ${names.join(', ')}. Total ${total}.`);
+    }
+
+    function executeVoiceActions(actions) {
+        if (!Array.isArray(actions)) {
+            return;
+        }
+
+        actions.forEach((action) => {
+            if (!action || typeof action !== 'object') {
+                return;
+            }
+
+            if (action.type === 'read_cart_summary') {
+                readCartSummary();
+                return;
+            }
+
+            if (action.type === 'update_cart_quantity_delta') {
+                const productId = Number(action.product_id || 0);
+                const delta = Number(action.delta || 0);
+                const row = document.querySelector(`tr[data-product-id="${productId}"]`);
+                if (!row) {
+                    return;
+                }
+                const currentQty = parseInt(row.querySelector('[id^="qty-"]')?.textContent || '0', 10);
+                updateQuantity(productId, Math.max(0, currentQty + delta));
+                return;
+            }
+
+            if (action.type === 'update_cart_quantity_set') {
+                const productId = Number(action.product_id || 0);
+                const quantity = Math.max(0, Number(action.quantity || 0));
+                if (productId > 0) {
+                    updateQuantity(productId, quantity);
+                }
+                return;
+            }
+
+            if (action.type === 'remove_from_cart') {
+                const productId = Number(action.product_id || 0);
+                if (productId > 0) {
+                    removeFromCart(productId);
+                }
+                return;
+            }
+
+            if (action.type === 'clear_cart') {
+                clearCart(true);
+                return;
+            }
+
+            if (action.type === 'navigate') {
+                const url = String(action.url || '');
+                if (url !== '') {
+                    window.location.href = url;
+                }
+            }
+        });
+    }
+
+    async function handleVoiceCommand(rawText) {
+        if (tryExecuteLocalCartCommand(rawText)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ path('app_api_ai_voice_command') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    context: 'cart',
+                    transcript: rawText,
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+                return;
+            }
+
+            executeVoiceActions(data.actions || []);
+            if (typeof data.speak === 'string' && data.speak !== '') {
+                speak(data.speak);
+            }
+        } catch (_error) {
+            showVoiceStatus('Service vocal temporairement indisponible pendant la commande vocale.', true, true);
+        }
+    }
+
+    if (!hasVoice) {
+        voiceBtn.style.opacity = '0.65';
+        voiceBtn.title = 'Voice assistant not supported on this browser';
+        voiceBtn.addEventListener('click', function () {
+            showVoiceStatus('La reconnaissance vocale n\'est pas supportee par ce navigateur.', true);
+        });
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    function startRecognitionSafely(quiet = false) {
+        if (isListening || isRecognitionStarting) {
+            return;
+        }
+
+        try {
+            isRecognitionStarting = true;
+            recognition.start();
+            restartOnEnd = false;
+            voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            if (!quiet) {
+                showVoiceStatus('Je vous ecoute... dites votre commande panier.', false, false);
+            }
+        } catch (_error) {
+            isRecognitionStarting = false;
+            showVoiceStatus('Impossible de demarrer le micro.', true);
+        }
+    }
+
+    recognition.onstart = function () {
+        isRecognitionStarting = false;
+        isListening = true;
+    };
+
+    recognition.onresult = function (event) {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            if (!result.isFinal) {
+                continue;
+            }
+
+            const transcript = result?.[0]?.transcript || '';
+            if (transcript) {
+                networkRetryCount = 0;
+                textFallbackArmed = false;
+                manualStop = true;
+                restartOnEnd = false;
+                handleVoiceCommand(transcript);
+            }
+        }
+    };
+
+    recognition.onerror = function (event) {
+        const code = event?.error || 'unknown';
+        isRecognitionStarting = false;
+        isListening = false;
+
+        if (code === 'not-allowed' || code === 'service-not-allowed') {
+            restartOnEnd = false;
+            showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site.', true);
+            return;
+        }
+
+        if (code === 'audio-capture') {
+            restartOnEnd = false;
+            showVoiceStatus('Aucun micro detecte ou accessible.', true);
+            return;
+        }
+
+        if (code === 'network') {
+            if (networkRetryCount < 1) {
+                networkRetryCount++;
+                showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+                setTimeout(() => {
+                    startRecognitionSafely(true);
+                }, 550);
+
+                return;
+            }
+
+            restartOnEnd = false;
+            textFallbackArmed = true;
+            showVoiceStatus('Service vocal navigateur indisponible. Recliquez micro pour mode texte.', true, false);
+            return;
+        }
+
+        if (code === 'no-speech') {
+            showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+            return;
+        }
+
+        if (code !== 'aborted') {
+            showVoiceStatus('Erreur vocale: ' + code, true);
+        }
+    };
+
+    recognition.onend = function () {
+        isRecognitionStarting = false;
+        isListening = false;
+        voiceBtn.style.background = 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)';
+    };
+
+    async function ensureMicroPermission() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return true;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach((t) => t.stop());
+
+            return true;
+        } catch (_error) {
+            showVoiceStatus('Micro non autorise. Activez l\'acces micro du navigateur.', true);
+
+            return false;
+        }
+    }
+
+    voiceBtn.addEventListener('click', async function () {
+        if (textFallbackArmed) {
+            textFallbackArmed = false;
+            openVoiceFallbackPrompt();
+
+            return;
+        }
+
+        if (isListening || isRecognitionStarting) {
+            manualStop = true;
+            restartOnEnd = false;
+            isRecognitionStarting = false;
+            recognition.stop();
+            isListening = false;
+            showVoiceStatus('Ecoute arretee.', false, false);
+
+            return;
+        }
+
+        const allowed = await ensureMicroPermission();
+        if (!allowed) {
+            return;
+        }
+
+        networkRetryCount = 0;
+        manualStop = false;
+        restartOnEnd = false;
+        textFallbackArmed = false;
+        synth.cancel();
+        startRecognitionSafely();
+    });
+
+    showVoiceStatus('Assistant vocal panier actif.', false, true);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initVoiceCartAssistant();
+
+    if (window.GestureAssistant) {
+        window.GestureAssistant.create({
+            id: 'cart',
+            autoSpeak: true,
+            onGesture: async function (gesture) {
+                const row = document.querySelector('tr[data-product-id]');
+                const productId = Number(row?.dataset?.productId || 0);
+
+                // Debug log for gesture received in cart context
+                try { console.log('[Gesture][cart] detected gesture:', gesture); } catch (_e) {}
+
+                // Action locale immédiate: si poing (main fermée) vide le panier
+                if (gesture === 'fist' || gesture === 'poing') {
+                    // clearCart est défini dans ce template et gère l'UI et l'appel serveur
+                    try {
+                        clearCart(true);
+                        // On notifie l'utilisateur immédiatement
+                        return 'Panier vidé.';
+                    } catch (_e) {
+                        // si erreur locale, on continue et laisse le serveur gérer
+                    }
+                }
+
+                try {
+                    const response = await fetch('{{ path('app_api_ai_gesture_command') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ context: 'cart', gesture: gesture, product_id: productId })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok || !data.ok) {
+                        return data.speak || 'Commande gestes non reconnue.';
+                    }
+
+                    const actions = Array.isArray(data.actions) ? data.actions : [];
+                    for (const action of actions) {
+                        if (!action || typeof action !== 'object') continue;
+
+                        if (action.type === 'read_cart_summary') {
+                            const total = document.getElementById('cart-total')?.textContent?.trim() || '0 DT';
+                            return `Total actuel ${total}.`;
+                        }
+
+                        if (action.type === 'update_cart_quantity_delta') {
+                            const id = Number(action.product_id || 0);
+                            const rowItem = document.querySelector(`tr[data-product-id="${id}"]`);
+                            if (!rowItem) continue;
+                            const currentQty = Number(rowItem.querySelector('[id^="qty-"]')?.textContent || 0);
+                            updateQuantity(id, Math.max(0, currentQty + Number(action.delta || 0)));
+                        }
+
+                        if (action.type === 'clear_cart') {
+                            clearCart(true);
+                        }
+
+                        if (action.type === 'navigate') {
+                            const url = String(action.url || '');
+                            if (url !== '') {
+                                window.location.href = url;
+                            }
+                        }
+                    }
+
+                    return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+                } catch (_error) {
+                    return 'Service gestes temporairement indisponible.';
+                }
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

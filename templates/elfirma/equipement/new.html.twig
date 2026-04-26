@@ -1,0 +1,41 @@
+{% extends 'baseback.html.twig' %}
+
+{% block body %}
+
+<div class="ml-72 p-12">
+
+    <h2 class="text-2xl font-bold mb-6">Ajouter un équipement</h2>
+
+    {{ form_start(form, {
+        'action': path('equipement_new'),
+        'method': 'POST'
+    }) }}
+
+    <div class="space-y-4">
+
+        {{ form_row(form.nomEq) }}
+        {{ form_row(form.typeEq) }}
+        {{ form_row(form.dateAchat) }}
+        {{ form_row(form.etat) }}
+        {{ form_row(form.coutAchat) }}
+        {{ form_row(form.descriptionEq) }}
+
+        <div class="flex gap-2">
+
+            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">
+                Ajouter
+            </button>
+
+            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded">
+                Annuler
+            </button>
+
+        </div>
+
+    </div>
+
+    {{ form_end(form) }}
+
+</div>
+
+{% endblock %}

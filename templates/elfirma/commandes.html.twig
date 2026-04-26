@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
+    <title>Elfirma - Orders</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Open_Sans:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Open Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.45); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="bg-[#fbfbe2] text-[#1b1d0e] min-h-screen flex">
+    <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 py-8 pr-4 bg-[#f5f5dc]">
+        <div class="px-8 mb-8">
+            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
+            <p class="text-[#43493d] text-sm">Agricultural Management</p>
+        </div>
+        <nav class="flex-1 flex flex-col space-y-1">
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
+                <span class="material-symbols-outlined">group</span>
+                <span>User Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('parcelle_index') }}">
+                <span class="material-symbols-outlined">agriculture</span>
+                <span>Field Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
+                <span class="material-symbols-outlined">pets</span>
+                <span>Livestock Management</span>
+            </a>
+
+            <div class="py-1">
+                <div class="flex items-center gap-4 py-3 px-8 bg-[#2d5016] text-white rounded-l-full ml-auto">
+                    <span class="material-symbols-outlined">shopping_basket</span>
+                    <span class="flex-1">Product Management</span>
+                    <span class="material-symbols-outlined text-sm">expand_less</span>
+                </div>
+                <div class="mt-1 ml-8">
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_categories') }}">
+                        <span class="material-symbols-outlined text-sm">category</span>
+                        <span>Categories</span>
+                    </a>
+                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_products') }}">
+                        <span class="material-symbols-outlined text-sm">inventory_2</span>
+                        <span>Products</span>
+                    </a>
+                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('app_admin_commandes') }}">
+                        <span class="material-symbols-outlined text-sm">receipt_long</span>
+                        <span>Orders</span>
+                    </a>
+                </div>
+            </div>
+
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
+                <span class="material-symbols-outlined">handyman</span>
+                <span>Equipment Management</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
+                <span class="material-symbols-outlined">description</span>
+                <span>Contract Management</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 md:ml-72 min-h-screen flex flex-col">
+        <header class="sticky top-0 z-50 bg-[#fbfbe2]/70 backdrop-blur-xl px-8 py-4 flex justify-between items-center border-b border-[#c3c9b9]/20">
+            <h2 class="text-2xl font-black text-[#0a2200]">Order Management</h2>
+            <div class="flex items-center gap-3 bg-[#f5f5dc] px-4 py-1.5 rounded-full">
+                <div class="text-right">
+                    <p class="text-sm font-bold text-[#0a2200]">Admin Elfirma</p>
+                    <p class="text-xs text-[#43493d]">Director</p>
+                </div>
+            </div>
+        </header>
+
+        {% set createErrors = app.flashes('form_errors_commande_create')|first|default({}) %}
+        {% set createOld = app.flashes('form_old_commande_create')|first|default({}) %}
+        {% set editErrors = app.flashes('form_errors_commande_edit')|first|default({}) %}
+        {% set editOld = app.flashes('form_old_commande_edit')|first|default({}) %}
+
+        {% for message in app.flashes('success') %}
+            <div class="mx-8 mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="mx-8 mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endfor %}
+
+        <div class="p-8 lg:p-12 space-y-8">
+            <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-lg">
+                    <p class="text-green-100 text-sm font-semibold uppercase tracking-wide">Total Orders</p>
+                    <p class="text-4xl font-black mt-2">{{ order_stats.total }}</p>
+                </div>
+                <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-6 text-white shadow-lg">
+                    <p class="text-amber-100 text-sm font-semibold uppercase tracking-wide">Pending</p>
+                    <p class="text-4xl font-black mt-2">{{ order_stats.pending }}</p>
+                </div>
+                <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
+                    <p class="text-blue-100 text-sm font-semibold uppercase tracking-wide">Paid</p>
+                    <p class="text-4xl font-black mt-2">{{ order_stats.paid }}</p>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
+                    <p class="text-emerald-100 text-sm font-semibold uppercase tracking-wide">Amount</p>
+                    <p class="text-3xl font-black mt-2">{{ order_stats.amount|number_format(2, ',', ' ') }} DT</p>
+                </div>
+            </section>
+
+            <section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h2 class="text-4xl font-black text-[#0a2200] tracking-tight leading-none mb-2">Orders</h2>
+                    <p class="text-[#43493d] max-w-xl">Create, update and delete customer orders.</p>
+                </div>
+                <button onclick="openModal('createModal')" class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>New Order</span>
+                </button>
+            </section>
+
+            <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100">
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                    <div>
+                        <h3 class="text-2xl font-black text-[#0a2200] tracking-tight">Analyse geographique clients</h3>
+                        <p class="text-[#4b5563] mt-1">Zone la plus rentable calculee a partir des adresses de livraison.</p>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-sm font-semibold">
+                        <span class="material-symbols-outlined text-base">info</span>
+                        <span>Adresses non classables: {{ geo_zone_analytics.unknown_count|default(0) }}</span>
+                    </div>
+                </div>
+
+                {% set topZone = geo_zone_analytics.top_zone|default(null) %}
+                <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="rounded-xl p-4 border border-green-200 bg-green-50">
+                        <p class="text-xs uppercase tracking-wide text-green-700 font-semibold">Top zone rentable</p>
+                        <p class="text-2xl font-black text-green-900 mt-1">{{ topZone ? topZone.zone : 'Aucune' }}</p>
+                    </div>
+                    <div class="rounded-xl p-4 border border-emerald-200 bg-emerald-50">
+                        <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Chiffre d'affaires zone</p>
+                        <p class="text-2xl font-black text-emerald-900 mt-1">{{ topZone ? topZone.revenue|number_format(2, ',', ' ') ~ ' DT' : '0,00 DT' }}</p>
+                    </div>
+                    <div class="rounded-xl p-4 border border-blue-200 bg-blue-50">
+                        <p class="text-xs uppercase tracking-wide text-blue-700 font-semibold">Panier moyen zone</p>
+                        <p class="text-2xl font-black text-blue-900 mt-1">{{ topZone ? topZone.avg_ticket|number_format(2, ',', ' ') ~ ' DT' : '0,00 DT' }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-5 overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-[#d8e4c6] text-left text-[#3f4d31] text-sm uppercase tracking-wide">
+                                <th class="py-2 px-2">Zone</th>
+                                <th class="py-2 px-2">Commandes</th>
+                                <th class="py-2 px-2">CA (DT)</th>
+                                <th class="py-2 px-2">Panier moyen (DT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for zoneRow in geo_zone_analytics.zones|default([]) %}
+                                <tr class="border-b border-[#edf3e2]">
+                                    <td class="py-2 px-2 font-semibold text-[#0a2200]">{{ zoneRow.zone }}</td>
+                                    <td class="py-2 px-2">{{ zoneRow.orders }}</td>
+                                    <td class="py-2 px-2 text-green-700 font-semibold">{{ zoneRow.revenue|number_format(2, ',', ' ') }}</td>
+                                    <td class="py-2 px-2">{{ zoneRow.avg_ticket|number_format(2, ',', ' ') }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="py-3 px-2 text-[#66755b]">Pas assez d'adresses exploitables pour calculer les zones.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100">
+                <form method="GET" action="{{ path('app_admin_commandes') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="md:col-span-4 relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">search</span>
+                        <input type="text" name="q" value="{{ filters.q|default('') }}" placeholder="Search by client, product or ID..." class="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"/>
+                    </div>
+                    <div class="md:col-span-2">
+                        <select name="status" class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100">
+                            <option value="">All status</option>
+                            {% for status in ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'] %}
+                                <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <select name="payment" class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100">
+                            <option value="">All payment</option>
+                            {% for status in ['Non payé', 'Payé', 'Remboursé'] %}
+                                <option value="{{ status }}" {% if filters.payment == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <select name="sort" class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100">
+                            <option value="date-desc" {% if filters.sort == 'date-desc' or filters.sort is empty %}selected{% endif %}>Date desc</option>
+                            <option value="date-asc" {% if filters.sort == 'date-asc' %}selected{% endif %}>Date asc</option>
+                            <option value="total-desc" {% if filters.sort == 'total-desc' %}selected{% endif %}>Total desc</option>
+                            <option value="total-asc" {% if filters.sort == 'total-asc' %}selected{% endif %}>Total asc</option>
+                            <option value="id-desc" {% if filters.sort == 'id-desc' %}selected{% endif %}>ID desc</option>
+                            <option value="id-asc" {% if filters.sort == 'id-asc' %}selected{% endif %}>ID asc</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 flex gap-2">
+                        <button type="submit" class="flex-1 px-6 py-3 bg-[#1e3a0f] hover:bg-[#16300b] text-white font-semibold rounded-xl transition-all">Apply</button>
+                        <a href="{{ path('app_admin_commandes') }}" class="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all inline-flex items-center justify-center">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+            <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100 overflow-x-auto">
+                <form id="bulk-delete-form" method="POST" action="{{ path('app_admin_commandes_bulk_delete') }}" class="mb-4 flex items-center justify-between gap-3" onsubmit="return confirm('Supprimer les commandes sélectionnées ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_delete_commandes') }}">
+                    <p id="bulk-selection-info" class="text-sm text-[#4b5563]">Aucune commande sélectionnée.</p>
+                    <button id="bulk-delete-btn" type="submit" disabled class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 transition-colors">
+                        Supprimer la sélection
+                    </button>
+                </form>
+
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="border-b border-[#d8e4c6] text-left text-[#3f4d31] text-sm uppercase tracking-wide">
+                            <th class="py-3 px-3 w-10">
+                                <input id="select-all-orders" type="checkbox" class="rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Sélectionner tout">
+                            </th>
+                            <th class="py-3 px-3">ID</th>
+                            <th class="py-3 px-3">Client</th>
+                            <th class="py-3 px-3">Score client</th>
+                            <th class="py-3 px-3">Adresse</th>
+                            <th class="py-3 px-3">Product</th>
+                            <th class="py-3 px-3">Quantity</th>
+                            <th class="py-3 px-3">Total</th>
+                            <th class="py-3 px-3">Order</th>
+                            <th class="py-3 px-3">Payment</th>
+                            <th class="py-3 px-3">Date</th>
+                            <th class="py-3 px-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commande in commandes %}
+                            <tr class="border-b border-[#edf3e2] hover:bg-[#f8fbeF]">
+                                <td class="py-3 px-3">
+                                    <input type="checkbox" name="order_ids[]" value="{{ commande.idCommande }}" form="bulk-delete-form" class="order-checkbox rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Sélectionner commande {{ commande.idCommande }}">
+                                </td>
+                                <td class="py-3 px-3 font-bold text-[#0a2200]">#{{ commande.idCommande }}</td>
+                                <td class="py-3 px-3">{{ commande.nomClient }}</td>
+                                <td class="py-3 px-3">
+                                    {% set adminClientScore = order_client_scores[commande.idCommande]|default(null) %}
+                                    {% if adminClientScore is not null %}
+                                        {% set scoreValue = adminClientScore.value|default(0) %}
+                                        {% set scoreColor = scoreValue >= 85 ? 'bg-green-100 text-green-800' : (scoreValue >= 65 ? 'bg-blue-100 text-blue-800' : (scoreValue >= 40 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800')) %}
+                                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold {{ scoreColor }}">
+                                            <span>{{ scoreValue }}/100</span>
+                                            <span>•</span>
+                                            <span>{{ adminClientScore.category }}</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-3">{{ commande.adresseLivraison ?: '-' }}</td>
+                                <td class="py-3 px-3">{{ commande.produit ? commande.produit.nom : '-' }}</td>
+                                <td class="py-3 px-3">{{ commande.quantite }}</td>
+                                <td class="py-3 px-3 font-semibold text-green-700">{{ commande.prixTotal }} DT</td>
+                                <td class="py-3 px-3">
+                                    {% set adminStatusColor = commande.statutCommande == 'Confirmée' ? 'bg-green-100 text-green-800' : (commande.statutCommande == 'Annulée' ? 'bg-red-100 text-red-800' : (commande.statutCommande == 'En attente' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700')) %}
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ adminStatusColor }}">
+                                        {{ commande.statutCommande }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3">{{ commande.statutPaiement }}</td>
+                                <td class="py-3 px-3">{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y') : '-' }}</td>
+                                <td class="py-3 px-3">
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="openEditModal('{{ commande.idCommande }}')" class="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-800 font-semibold">Edit</button>
+                                        <form method="POST" action="{{ path('app_admin_commande_delete', { id: commande.idCommande }) }}" onsubmit="return confirm('Delete this order?')">
+                                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-red-100 text-red-800 font-semibold">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="12" class="py-10 text-center text-[#66755b]">No orders found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if commandes is defined and commandes|length > 0 %}
+                    <div class="mt-5 flex justify-center">
+                        {{ knp_pagination_render(commandes) }}
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <div id="createModal" class="modal">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-black text-[#0a2200]">Create Order</h3>
+                <button type="button" onclick="closeModal('createModal')" class="text-gray-500 hover:text-gray-700">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            {% if createErrors is not empty %}
+                <div class="mb-4 rounded-lg border border-red-300 bg-red-50 text-red-700 p-3 text-sm">
+                    {% for fieldErrors in createErrors %}
+                        {% for err in fieldErrors %}
+                            <div>{{ err }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <form method="POST" action="{{ path('app_admin_commande_create') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Client</label>
+                    <input name="nom_client" value="{{ createOld.nom_client|default('') }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                    {% if createErrors.nom_client is defined %}
+                        {% for err in createErrors.nom_client %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Adresse de livraison</label>
+                    <input name="adresse_livraison" value="{{ createOld.adresse_livraison|default('') }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                    {% if createErrors.adresse_livraison is defined %}
+                        {% for err in createErrors.adresse_livraison %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Product</label>
+                    <select name="produit_id" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                        <option value="">Select product</option>
+                        {% for produit in produits %}
+                            <option value="{{ produit.idProduit }}" {% if createOld.produit_id|default('') == produit.idProduit %}selected{% endif %}>{{ produit.nom }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if createErrors.produit_id is defined %}
+                        {% for err in createErrors.produit_id %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Quantity</label>
+                    <input type="number" name="quantite" value="{{ createOld.quantite|default(1) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                    {% if createErrors.quantite is defined %}
+                        {% for err in createErrors.quantite %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Total (DT)</label>
+                    <input name="prix_total" value="{{ createOld.prix_total|default('') }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2" placeholder="Auto if empty"/>
+                    {% if createErrors.prix_total is defined %}
+                        {% for err in createErrors.prix_total %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Order status</label>
+                    <select name="statut_commande" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                        {% for status in ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'] %}
+                            <option value="{{ status }}" {% if createOld.statut_commande|default('En attente') == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if createErrors.statut_commande is defined %}
+                        {% for err in createErrors.statut_commande %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Payment mode</label>
+                    <select name="mode_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                        {% for mode in ['Cash', 'Carte bancaire', 'Virement'] %}
+                            <option value="{{ mode }}" {% if createOld.mode_paiement|default('Cash') == mode %}selected{% endif %}>{{ mode }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if createErrors.mode_paiement is defined %}
+                        {% for err in createErrors.mode_paiement %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Payment status</label>
+                    <select name="statut_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                        {% for status in ['Non payé', 'Payé', 'Remboursé'] %}
+                            <option value="{{ status }}" {% if createOld.statut_paiement|default('Non payé') == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if createErrors.statut_paiement is defined %}
+                        {% for err in createErrors.statut_paiement %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Date</label>
+                    <input type="date" name="date_commande" value="{{ createOld.date_commande|default('now'|date('Y-m-d')) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                    {% if createErrors.date_commande is defined %}
+                        {% for err in createErrors.date_commande %}
+                            <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="md:col-span-2 flex justify-end gap-2 mt-2">
+                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-800">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-green-700 text-white">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for commande in commandes %}
+        {% set oldForThis = editOld.id|default(null) == commande.idCommande ? editOld : {} %}
+        <div id="editModal-{{ commande.idCommande }}" class="modal">
+            <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-black text-[#0a2200]">Edit Order #{{ commande.idCommande }}</h3>
+                    <button type="button" onclick="closeEditModal('{{ commande.idCommande }}')" class="text-gray-500 hover:text-gray-700">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                {% if editOld.id|default(null) == commande.idCommande and editErrors is not empty %}
+                    <div class="mb-4 rounded-lg border border-red-300 bg-red-50 text-red-700 p-3 text-sm">
+                        {% for fieldErrors in editErrors %}
+                            {% for err in fieldErrors %}
+                                <div>{{ err }}</div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <form method="POST" action="{{ path('app_admin_commande_edit', { id: commande.idCommande }) }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Client</label>
+                        <input name="nom_client" value="{{ oldForThis.nom_client|default(commande.nomClient) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.nom_client is defined %}
+                            {% for err in editErrors.nom_client %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Adresse de livraison</label>
+                        <input name="adresse_livraison" value="{{ oldForThis.adresse_livraison|default(commande.adresseLivraison) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.adresse_livraison is defined %}
+                            {% for err in editErrors.adresse_livraison %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Product</label>
+                        <select name="produit_id" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                            {% for produit in produits %}
+                                {% set selectedId = oldForThis.produit_id|default(commande.produit ? commande.produit.idProduit : '') %}
+                                <option value="{{ produit.idProduit }}" {% if selectedId == produit.idProduit %}selected{% endif %}>{{ produit.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.produit_id is defined %}
+                            {% for err in editErrors.produit_id %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Quantity</label>
+                        <input type="number" name="quantite" value="{{ oldForThis.quantite|default(commande.quantite) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.quantite is defined %}
+                            {% for err in editErrors.quantite %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Total (DT)</label>
+                        <input name="prix_total" value="{{ oldForThis.prix_total|default(commande.prixTotal) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.prix_total is defined %}
+                            {% for err in editErrors.prix_total %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Order status</label>
+                        <select name="statut_commande" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                            {% set orderStatusSelected = oldForThis.statut_commande|default(commande.statutCommande) %}
+                            {% for status in ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'] %}
+                                <option value="{{ status }}" {% if orderStatusSelected == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.statut_commande is defined %}
+                            {% for err in editErrors.statut_commande %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Payment mode</label>
+                        <select name="mode_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                            {% set paymentModeSelected = oldForThis.mode_paiement|default(commande.modePaiement) %}
+                            {% for mode in ['Cash', 'Carte bancaire', 'Virement'] %}
+                                <option value="{{ mode }}" {% if paymentModeSelected == mode %}selected{% endif %}>{{ mode }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.mode_paiement is defined %}
+                            {% for err in editErrors.mode_paiement %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Payment status</label>
+                        <select name="statut_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                            {% set paymentStatusSelected = oldForThis.statut_paiement|default(commande.statutPaiement) %}
+                            {% for status in ['Non payé', 'Payé', 'Remboursé'] %}
+                                <option value="{{ status }}" {% if paymentStatusSelected == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.statut_paiement is defined %}
+                            {% for err in editErrors.statut_paiement %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Date</label>
+                        <input type="date" name="date_commande" value="{{ oldForThis.date_commande|default(commande.dateCommande ? commande.dateCommande|date('Y-m-d') : 'now'|date('Y-m-d')) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
+                        {% if editOld.id|default(null) == commande.idCommande and editErrors.date_commande is defined %}
+                            {% for err in editErrors.date_commande %}
+                                <div class="text-xs text-red-600 mt-1">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="md:col-span-2 flex justify-end gap-2 mt-2">
+                        <button type="button" onclick="closeEditModal('{{ commande.idCommande }}')" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-800">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-blue-700 text-white">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+
+    <script>
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.remove('active');
+        }
+
+        function openEditModal(id) {
+            const modal = document.getElementById('editModal-' + id);
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeEditModal(id) {
+            const modal = document.getElementById('editModal-' + id);
+            if (modal) modal.classList.remove('active');
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const hasCreateErrors = {{ createErrors is not empty ? 'true' : 'false' }};
+            const editTarget = '{{ editOld.id|default('') }}';
+            const hasEditErrors = {{ editErrors is not empty ? 'true' : 'false' }};
+
+            const selectAll = document.getElementById('select-all-orders');
+            const checkboxes = Array.from(document.querySelectorAll('.order-checkbox'));
+            const bulkBtn = document.getElementById('bulk-delete-btn');
+            const bulkInfo = document.getElementById('bulk-selection-info');
+
+            const updateBulkSelectionUi = () => {
+                if (!bulkBtn || !bulkInfo) {
+                    return;
+                }
+
+                const selectedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+                bulkBtn.disabled = selectedCount === 0;
+                bulkInfo.textContent = selectedCount === 0
+                    ? 'Aucune commande sélectionnée.'
+                    : `${selectedCount} commande(s) sélectionnée(s).`;
+
+                if (selectAll) {
+                    const hasAny = checkboxes.length > 0;
+                    selectAll.checked = hasAny && selectedCount === checkboxes.length;
+                    selectAll.indeterminate = selectedCount > 0 && selectedCount < checkboxes.length;
+                }
+            };
+
+            if (selectAll) {
+                selectAll.addEventListener('change', () => {
+                    checkboxes.forEach((checkbox) => {
+                        checkbox.checked = selectAll.checked;
+                    });
+                    updateBulkSelectionUi();
+                });
+            }
+
+            checkboxes.forEach((checkbox) => {
+                checkbox.addEventListener('change', updateBulkSelectionUi);
+            });
+
+            updateBulkSelectionUi();
+
+            if (hasCreateErrors) {
+                openModal('createModal');
+            }
+
+            if (hasEditErrors && editTarget !== '') {
+                openEditModal(editTarget);
+            }
+        });
+    </script>
+</body>
+</html>

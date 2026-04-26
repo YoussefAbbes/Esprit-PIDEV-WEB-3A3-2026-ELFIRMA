@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-04-16T01:19:33+00:00",
+  "vector_store": "local_numpy_cosine",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "normalize_vectors": true,
+  "vector_count": 122,
+  "dimension": 384,
+  "matrix_file": "embeddings.npy",
+  "metadata_file": "metadata.jsonl"
+}

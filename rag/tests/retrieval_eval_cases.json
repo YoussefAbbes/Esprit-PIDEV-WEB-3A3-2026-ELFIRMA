@@ -1,0 +1,104 @@
+{
+  "version": "1.0.0",
+  "generated_on": "2026-04-16",
+  "notes": {
+    "unknown_policy_usage": "unknown_policy is a query class/outcome and not a confidence metadata value.",
+    "confidence_taxonomy": [
+      "confirmed",
+      "inferred",
+      "assumed"
+    ]
+  },
+  "cases": [
+    {
+      "id": "R001",
+      "query_class": "confirmed",
+      "query": "What fields are confirmed in the animals table?",
+      "expected_domains": ["animals", "cross_entity"],
+      "expected_document_types": ["schema_reference", "data_dictionary"],
+      "expected_confidence_preference": ["confirmed"],
+      "notes": "Exact structural lookup"
+    },
+    {
+      "id": "R002",
+      "query_class": "confirmed",
+      "query": "Quelles valeurs ont ete observees pour etat_elevage ?",
+      "expected_domains": ["livestock", "cross_entity"],
+      "expected_document_types": ["schema_reference", "domain_guide", "faq"],
+      "expected_confidence_preference": ["confirmed", "inferred"],
+      "notes": "French-first observed sample query"
+    },
+    {
+      "id": "R003",
+      "query_class": "inferred",
+      "query": "Difference between etat_sante and statut",
+      "expected_domains": ["animals", "cross_entity"],
+      "expected_document_types": ["data_dictionary", "domain_guide", "faq"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "Concept distinction with schema wording"
+    },
+    {
+      "id": "R004",
+      "query_class": "inferred",
+      "query": "Comment relier animals, vaccinations et elevage ?",
+      "expected_domains": ["cross_entity", "animals", "vaccination", "livestock"],
+      "expected_document_types": ["schema_reference", "assumptions_and_gaps"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "FR structural relation question"
+    },
+    {
+      "id": "R005",
+      "query_class": "unknown_policy",
+      "query": "What is the official overdue vaccination policy?",
+      "expected_domains": ["cross_entity", "vaccination"],
+      "expected_document_types": ["assumptions_and_gaps", "business_rules", "faq"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "unknown_policy query class"
+    },
+    {
+      "id": "R006",
+      "query_class": "unknown_policy",
+      "query": "Quelle est la regle officielle des vaccins en retard ?",
+      "expected_domains": ["cross_entity", "vaccination"],
+      "expected_document_types": ["assumptions_and_gaps", "business_rules"],
+      "expected_confidence_preference": ["assumed", "inferred"],
+      "notes": "French unknown_policy query"
+    },
+    {
+      "id": "R007",
+      "query_class": "confirmed",
+      "query": "Is Scheduled the only vaccination status?",
+      "expected_domains": ["vaccination", "cross_entity"],
+      "expected_document_types": ["schema_reference", "domain_guide", "faq"],
+      "expected_confidence_preference": ["confirmed", "inferred"],
+      "notes": "Observed value non-exhaustive check"
+    },
+    {
+      "id": "R008",
+      "query_class": "inferred",
+      "query": "Can capacite and nombre_animaux be used for occupancy analysis?",
+      "expected_domains": ["livestock", "cross_entity"],
+      "expected_document_types": ["domain_guide", "business_rules", "data_dictionary"],
+      "expected_confidence_preference": ["inferred", "assumed"],
+      "notes": "Inferred analytics interpretation"
+    },
+    {
+      "id": "R009",
+      "query_class": "inferred",
+      "query": "Pourquoi garder latitude et longitude dans elevage ?",
+      "expected_domains": ["livestock", "cross_entity"],
+      "expected_document_types": ["domain_guide", "data_dictionary", "faq"],
+      "expected_confidence_preference": ["inferred", "confirmed"],
+      "notes": "French geolocation use-case"
+    },
+    {
+      "id": "R010",
+      "query_class": "unknown_policy",
+      "query": "Give me strict thresholds for critical livestock state",
+      "expected_domains": ["cross_entity", "livestock"],
+      "expected_document_types": ["assumptions_and_gaps", "business_rules"],
+      "expected_confidence_preference": ["assumed"],
+      "notes": "Must avoid fabricated thresholds"
+    }
+  ]
+}
