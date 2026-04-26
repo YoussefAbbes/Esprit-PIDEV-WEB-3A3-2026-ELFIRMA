@@ -236,6 +236,22 @@ final class AnimalController extends AbstractController
             }
         }
 
+        if ($photoFile !== null) {
+            $mimeType = null;
+            try {
+                $mimeType = $photoFile->getMimeType();
+            } catch (\LogicException $e) {
+                $mimeType = $photoFile->getClientMimeType();
+            }
+
+            if ($mimeType === null || !str_starts_with((string) $mimeType, 'image/')) {
+                $errors['photo_file'] = 'Please upload a valid image file (jpg, png, gif).';
+            }
+            if ($photoFile->getSize() !== null && $photoFile->getSize() > 5_242_880) {
+                $errors['photo_file'] = 'Image size must be 5MB or less.';
+            }
+        }
+
         return $errors;
     }
 

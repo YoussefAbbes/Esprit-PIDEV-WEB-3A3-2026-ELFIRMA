@@ -17,60 +17,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mailer\Mailer;
-use Symfony\Component\Mailer\Transport;
-use Symfony\Component\Mime\Email;
 
 final class FournisseurController extends AbstractController
 {
-    #[
-        Route(
-            "/elfirma/fournisseurs-contrats",
-            name: "fournisseur_page",
-            methods: ["GET"],
-            priority: 10,
-        ),
-    ]
-    public function page(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        PaginatorInterface $paginator,
-    ): Response {
+    #[Route('/elfirma/fournisseurs-contrats', name: 'fournisseur_page', methods: ['GET'], priority: 10)]
+    public function page(EntityManagerInterface $entityManager): Response
+    {
         $fournisseurRepo = $entityManager->getRepository(Fournisseur::class);
         $contratRepo = $entityManager->getRepository(Contrat::class);
-
-        $supplierSort = (string) $request->query->get(
-            "supplierSort",
-            "type-asc",
-        );
-        $allowedSupplierSort = [
-            "type-asc" => ["f.type_f", "ASC"],
-            "type-desc" => ["f.type_f", "DESC"],
-            "status" => ["f.statut_f", "ASC"],
-        ];
-
-        if (!isset($allowedSupplierSort[$supplierSort])) {
-            $supplierSort = "type-asc";
-        }
-
-        [$supplierSortField, $supplierSortDirection] = $allowedSupplierSort[
-            $supplierSort
-        ];
-
-        $supplierQueryBuilder = $fournisseurRepo
-            ->createQueryBuilder("f")
-            ->orderBy($supplierSortField, $supplierSortDirection)
-            ->addOrderBy("f.id_f", "DESC");
-
         $allSuppliers = $fournisseurRepo->findAll();
-        $suppliers = $paginator->paginate(
-            $supplierQueryBuilder,
-            max(1, (int) $request->query->get("supplierPage", 1)),
-            10,
-            ["pageParameterName" => "supplierPage"],
-        );
-
         $allContracts = $contratRepo->findAll();
 
         // Calculate supplier statistics by status
@@ -122,16 +77,14 @@ final class FournisseurController extends AbstractController
             }
         }
 
-        return $this->render("elfirma/fournisseurs_contrats.html.twig", [
-            "suppliers" => $suppliers,
-            "contracts" => $allContracts,
-            "supplierSort" => $supplierSort,
-            "contractSort" => "date-desc",
-            "supplierStats" => [
-                "active" => $activeCount,
-                "inactive" => $inactiveCount,
-                "suspended" => $suspendedCount,
-                "total" => count($allSuppliers),
+        return $this->render('elfirma/fournisseurs_contrats.html.twig', [
+            'suppliers' => $allSuppliers,
+            'contracts' => $allContracts,
+            'supplierStats' => [
+                'active' => $activeCount,
+                'inactive' => $inactiveCount,
+                'suspended' => $suspendedCount,
+                'total' => count($allSuppliers)
             ],
             "contractStats" => [
                 "total" => $totalContracts,
@@ -384,6 +337,16 @@ final class FournisseurController extends AbstractController
                     "success" => false,
                     "message" => "Supplier not found",
                 ]);
+            }
+
+            // Delete related meetings first
+            foreach ($fournisseur->getMeetings() as $meeting) {
+                $entityManager->remove($meeting);
+            }
+
+            // Delete related ratings
+            foreach ($fournisseur->getRatings() as $rating) {
+                $entityManager->remove($rating);
             }
 
             // Delete related meetings first
@@ -673,45 +636,6 @@ final class FournisseurController extends AbstractController
                 "success" => false,
                 "message" => "Error fetching ratings: " . $e->getMessage(),
             ]);
-        }
-    }
-
-    #[
-        Route(
-            "/api/geocode-address",
-            name: "api_geocode_address",
-            methods: ["POST"],
-        ),
-    ]
-    public function geocodeAddress(
-        Request $request,
-        GeocodingService $geocodingService,
-    ): JsonResponse {
-        try {
-            $data = json_decode($request->getContent(), true);
-            $address = $data["address"] ?? "";
-
-            if (empty(trim($address))) {
-                return new JsonResponse(
-                    [
-                        "success" => false,
-                        "error" => "Address is required",
-                    ],
-                    400,
-                );
-            }
-
-            $result = $geocodingService->geocodeAddress($address);
-
-            return new JsonResponse($result);
-        } catch (\Exception $e) {
-            return new JsonResponse(
-                [
-                    "success" => false,
-                    "error" => "Error geocoding address: " . $e->getMessage(),
-                ],
-                500,
-            );
         }
     }
 }
