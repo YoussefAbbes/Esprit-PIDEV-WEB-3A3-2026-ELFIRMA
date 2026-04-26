@@ -21,3 +21,9 @@
 
 # Firebase Admin SDK local credentials
 /config/firebase_credentials.json
+
+# Python virtual environments
+.venv/
+**/.venv/
+venv/
+**/venv/
