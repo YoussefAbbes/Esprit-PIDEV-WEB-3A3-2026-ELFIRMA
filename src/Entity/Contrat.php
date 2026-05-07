@@ -24,7 +24,7 @@ class Contrat
         return $this->id_contrat;
     }
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'date', nullable: true)]
     #[Assert\NotNull(message: 'Start date is required')]
     #[Assert\Type(type: \DateTimeInterface::class, message: 'End date must be after start date')]
     private ?\DateTimeInterface $date_debut_f = null;
@@ -40,7 +40,7 @@ class Contrat
         return $this;
     }
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'date', nullable: true)]
     private ?\DateTimeInterface $date_fin_f = null;
 
     public function getDateFinF(): ?\DateTimeInterface
@@ -54,7 +54,7 @@ class Contrat
         return $this;
     }
 
-    #[ORM\Column(name: "type_c_f", type: "string", length: 255)]
+    #[ORM\Column(name: "type_c_f", type: "string", length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Please select a valid contract type')]
     #[Assert\Choice(
         choices: ['annual', 'monthly', 'Annual', 'Monthly'],
@@ -73,7 +73,7 @@ class Contrat
         return $this;
     }
 
-    #[ORM\Column(name: "statut_c_f", type: "string", length: 255)]
+    #[ORM\Column(name: "statut_c_f", type: "string", length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Please select a valid status')]
     #[Assert\Choice(
         choices: ['Active', 'Inactive'],

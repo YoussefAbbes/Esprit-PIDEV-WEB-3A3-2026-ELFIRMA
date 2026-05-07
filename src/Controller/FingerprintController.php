@@ -209,12 +209,13 @@ final class FingerprintController extends AbstractController
         foreach ($users as $u) {
             $raw = $u->getFingerprintTemplate();
 
-            // Doctrine may return a blob as a stream resource on some drivers
-            if (is_resource($raw)) {
-                $raw = stream_get_contents($raw);
-            }
-
-            if ($raw === null || $raw === false || $raw === "") {
+            $raw = self::normalizeTemplateBinary($raw);
+            if ($raw === null) {
+                error_log(
+                    "[FingerprintLogin] Skipping user_id=" .
+                        $u->getIdU() .
+                        " due to invalid stored template format",
+                );
                 continue;
             }
 
@@ -222,10 +223,15 @@ final class FingerprintController extends AbstractController
             // Older entries may be shorter; pad so Base64ToBlob does not return -5.
             $raw = self::padTemplate($raw);
 
+            $templateLength = (int) $u->getFingerprintLength();
+            if ($templateLength <= 0 || $templateLength > self::TEMPLATE_SIZE) {
+                $templateLength = self::TEMPLATE_SIZE;
+            }
+
             $templates[] = [
                 "user_id" => $u->getIdU(),
                 "template" => base64_encode($raw),
-                "template_length" => $u->getFingerprintLength(),
+                "template_length" => $templateLength,
             ];
         }
 
@@ -243,6 +249,18 @@ final class FingerprintController extends AbstractController
         // 3. Ask the Java bridge to identify                                  //
         // ------------------------------------------------------------------ //
         $result = $this->fingerprintClient->identify($templates);
+
+        if (($result["ok"] ?? false) !== true) {
+            return new JsonResponse(
+                [
+                    "ok" => false,
+                    "message" =>
+                        $result["error"] ??
+                        "Fingerprint service is currently unavailable",
+                ],
+                503,
+            );
+        }
 
         // Debug: log the full result from the bridge
         error_log("[FingerprintLogin] Templates sent: " . count($templates));
@@ -262,7 +280,6 @@ final class FingerprintController extends AbstractController
             return new JsonResponse([
                 "ok" => false,
                 "message" => "Fingerprint not recognized",
-                "debug" => $result,
             ]);
         }
 
@@ -459,5 +476,39 @@ final class FingerprintController extends AbstractController
             return substr($binary, 0, self::TEMPLATE_SIZE);
         }
         return $binary;
+    }
+
+    /**
+     * Normalizes template value loaded from DB into raw binary.
+     * Supports both blob bytes and legacy rows that accidentally stored base64 text.
+     */
+    private static function normalizeTemplateBinary(mixed $raw): ?string
+    {
+        if (is_resource($raw)) {
+            $raw = stream_get_contents($raw);
+        }
+
+        if (!is_string($raw) || $raw === "") {
+            return null;
+        }
+
+        $trimmed = trim($raw);
+        if (self::looksLikeBase64($trimmed)) {
+            $decoded = base64_decode($trimmed, true);
+            if (is_string($decoded) && $decoded !== "") {
+                return $decoded;
+            }
+        }
+
+        return $raw;
+    }
+
+    private static function looksLikeBase64(string $value): bool
+    {
+        if ($value === "" || (strlen($value) % 4) !== 0) {
+            return false;
+        }
+
+        return preg_match('/^[A-Za-z0-9+\/=]+$/', $value) === 1;
     }
 }

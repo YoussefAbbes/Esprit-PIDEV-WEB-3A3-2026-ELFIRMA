@@ -21,7 +21,7 @@ class Elevage
         return $this->id_elevage;
     }
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $type_elevage = null;
 
     public function getTypeElevage(): ?string
@@ -35,7 +35,7 @@ class Elevage
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $etat_elevage = null;
 
     public function getEtatElevage(): ?string
@@ -49,7 +49,7 @@ class Elevage
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $capacite = null;
 
     public function getCapacite(): ?int
@@ -63,7 +63,7 @@ class Elevage
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $nombre_animaux = null;
 
     public function getNombreAnimaux(): ?int
@@ -77,7 +77,7 @@ class Elevage
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 200)]
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private ?string $production = null;
 
     public function getProduction(): ?string

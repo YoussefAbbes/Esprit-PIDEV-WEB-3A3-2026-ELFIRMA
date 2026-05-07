@@ -1780,7 +1780,11 @@ Contracts
       } else {
         // Display errors
         if (data.errors) {
+          if (data.errors.general) {
+            alert('Error: ' + data.errors.general);
+          }
           for (const [field, message] of Object.entries(data.errors)) {
+            if (field === 'general') continue;
             const input = document.getElementById(field);
             const errorEl = document.getElementById(field + 'Error');
             if (input) input.classList.add('error-field');
@@ -5208,7 +5212,11 @@ Contracts
       } else {
         // Display errors
         if (data.errors) {
+          if (data.errors.general) {
+            alert('Error: ' + data.errors.general);
+          }
           for (const [field, message] of Object.entries(data.errors)) {
+            if (field === 'general') continue;
             const input = document.getElementById(field);
             const errorEl = document.getElementById(field + 'Error');
             if (input) input.classList.add('error-field');

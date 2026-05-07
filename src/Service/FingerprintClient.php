@@ -120,7 +120,15 @@ class FingerprintClient
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST,           true);
             curl_setopt($ch, CURLOPT_HTTPHEADER,     ['Content-Type: application/json']);
-            curl_setopt($ch, CURLOPT_POSTFIELDS,     json_encode($data));
+            $jsonPayload = json_encode($data, JSON_UNESCAPED_SLASHES);
+            if ($jsonPayload === false) {
+                return [
+                    'ok'    => false,
+                    'error' => 'Failed to encode fingerprint request payload to JSON.',
+                ];
+            }
+
+            curl_setopt($ch, CURLOPT_POSTFIELDS,     $jsonPayload);
             // Fingerprint capture can legitimately take several seconds.
             curl_setopt($ch, CURLOPT_TIMEOUT,        30);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
@@ -140,10 +148,17 @@ class FingerprintClient
             }
 
             if ($httpCode !== 200) {
+                $decodedError = json_decode((string) $response, true);
+                $bridgeError = is_array($decodedError)
+                    ? ($decodedError['error'] ?? $decodedError['message'] ?? null)
+                    : null;
+
                 return [
                     'ok'    => false,
-                    'error' => "Fingerprint bridge returned HTTP {$httpCode}. "
-                             . "Please ensure the Java bridge is properly configured.",
+                    'error' => $bridgeError
+                        ? "Fingerprint bridge returned HTTP {$httpCode}: {$bridgeError}"
+                        : "Fingerprint bridge returned HTTP {$httpCode}. "
+                          . "Please ensure the Java bridge is properly configured.",
                 ];
             }
 

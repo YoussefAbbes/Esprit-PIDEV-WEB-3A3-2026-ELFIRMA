@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,9 +267,55 @@ public class FingerprintBridgeServer {
         if (vs >= json.length()) return null;
         char fc = json.charAt(vs);
         if (fc == '"') {
-            int end = json.indexOf('"', vs + 1);
-            if (end < 0) return null;
-            return json.substring(vs + 1, end);
+            StringBuilder sb = new StringBuilder();
+            boolean escaping = false;
+
+            for (int i = vs + 1; i < json.length(); i++) {
+                char c = json.charAt(i);
+
+                if (escaping) {
+                    switch (c) {
+                        case '"': sb.append('"'); break;
+                        case '\\': sb.append('\\'); break;
+                        case '/': sb.append('/'); break;
+                        case 'b': sb.append('\b'); break;
+                        case 'f': sb.append('\f'); break;
+                        case 'n': sb.append('\n'); break;
+                        case 'r': sb.append('\r'); break;
+                        case 't': sb.append('\t'); break;
+                        case 'u':
+                            if (i + 4 < json.length()) {
+                                String hex = json.substring(i + 1, i + 5);
+                                try {
+                                    sb.append((char) Integer.parseInt(hex, 16));
+                                    i += 4;
+                                } catch (NumberFormatException ex) {
+                                    return null;
+                                }
+                            } else {
+                                return null;
+                            }
+                            break;
+                        default:
+                            sb.append(c);
+                    }
+                    escaping = false;
+                    continue;
+                }
+
+                if (c == '\\') {
+                    escaping = true;
+                    continue;
+                }
+
+                if (c == '"') {
+                    return sb.toString();
+                }
+
+                sb.append(c);
+            }
+
+            return null;
         }
         // number / bool / null
         int end = vs;
@@ -280,6 +327,23 @@ public class FingerprintBridgeServer {
         String v = jsonString(json, key);
         if (v == null) return null;
         try { return Integer.parseInt(v); } catch (NumberFormatException e) { return null; }
+    }
+
+    /**
+     * Decodes a base64 template payload into a fixed TEMPLATE_SIZE buffer.
+     * Returns null when the payload is not valid base64 or decodes to empty bytes.
+     */
+    private static byte[] decodeTemplateBase64(String base64) {
+        if (base64 == null || base64.trim().isEmpty()) return null;
+        try {
+            byte[] decoded = Base64.getDecoder().decode(base64);
+            if (decoded.length == 0) return null;
+            byte[] fixed = new byte[TEMPLATE_SIZE];
+            System.arraycopy(decoded, 0, fixed, 0, Math.min(decoded.length, TEMPLATE_SIZE));
+            return fixed;
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     /**
@@ -446,13 +510,12 @@ public class FingerprintBridgeServer {
                 return;
             }
 
-            // Decode stored template
-            byte[] storedTpl = new byte[TEMPLATE_SIZE];
-            int decRet = ZKFPService.Base64ToBlob(templateBase64, storedTpl, TEMPLATE_SIZE);
-            if (decRet != 0) {
-                sendJson(ex, 400, String.format(
-                    "{\"ok\":false,\"error\":\"Base64ToBlob failed (code %d). Template may be corrupt.\"}",
-                    decRet));
+            // Decode stored template with standard base64 decoder.
+            // This is more tolerant with templates encoded by non-SDK code paths.
+            byte[] storedTpl = decodeTemplateBase64(templateBase64);
+            if (storedTpl == null) {
+                sendJson(ex, 400,
+                    "{\"ok\":false,\"error\":\"Template payload is not valid base64\"}");
                 return;
             }
 
@@ -507,26 +570,18 @@ public class FingerprintBridgeServer {
 
                 // Map fid (1-based) → user_id string
                 Map<Integer, String> fidToUserId = new LinkedHashMap<>();
-                // TEMP fallback: keep track of users skipped because Base64ToBlob failed.
-                // If identification cannot proceed, we can still return one of these IDs.
-                List<String> skippedDecodeUserIds = new ArrayList<>();
                 int fid = 1;
+                int decodeFailures = 0;
 
                 for (String[] entry : entries) {
                     String userIdStr = entry[0];
                     String base64    = entry[1];
                     if (base64 == null || base64.isEmpty()) continue;
 
-                    // Allocate a full 2048-byte buffer. Base64ToBlob writes the
-                    // decoded template into it starting at byte 0; the SDK
-                    // internally uses the template's own header to determine its
-                    // valid length, so we always pass the full buffer to DBAdd.
-                    byte[] tmpl = new byte[TEMPLATE_SIZE];
-                    int dRet = ZKFPService.Base64ToBlob(base64, tmpl, TEMPLATE_SIZE);
-                    if (dRet != 0) {
-                        LOG.warning("Base64ToBlob failed for user_id=" + userIdStr
-                            + " code=" + dRet + " – skipping.");
-                        skippedDecodeUserIds.add(userIdStr);
+                    byte[] tmpl = decodeTemplateBase64(base64);
+                    if (tmpl == null) {
+                        decodeFailures++;
+                        LOG.warning("Template decode failed for user_id=" + userIdStr + " – skipping.");
                         continue;
                     }
 
@@ -542,21 +597,9 @@ public class FingerprintBridgeServer {
 
                 if (fidToUserId.isEmpty()) {
                     ZKFPService.DBClear();
-
-                    // TEMP bypass requested: if all templates were skipped during decode,
-                    // return the first skipped user_id as a matched result.
-                    if (!skippedDecodeUserIds.isEmpty()) {
-                        String fallbackUserId = skippedDecodeUserIds.get(0);
-                        LOG.warning("Temporary bypass active: returning skipped user_id="
-                            + fallbackUserId + " because no template could be decoded.");
-                        sendJson(ex, 200, String.format(
-                            "{\"ok\":true,\"matched\":true,\"user_id\":%s,\"score\":0," +
-                            "\"message\":\"Temporary bypass after Base64 decode failure\"}",
-                            fallbackUserId));
-                        return;
-                    }
-
-                    sendJson(ex, 400, "{\"ok\":false,\"error\":\"No valid templates could be decoded\"}");
+                    sendJson(ex, 400, String.format(
+                        "{\"ok\":false,\"error\":\"No valid templates could be loaded (decode_failures=%d,total=%d)\"}",
+                        decodeFailures, entries.size()));
                     return;
                 }
 
@@ -574,19 +617,6 @@ public class FingerprintBridgeServer {
                     + " fid=" + matchedFid[0] + " score=" + matchedScore[0]);
 
                 if (identRet != 0 || matchedFid[0] <= 0) {
-                    // TEMP bypass requested: if identify failed but we saw decode failures,
-                    // return the first skipped user_id.
-                    if (!skippedDecodeUserIds.isEmpty()) {
-                        String fallbackUserId = skippedDecodeUserIds.get(0);
-                        LOG.warning("Temporary bypass active: IdentifyFP failed, returning skipped user_id="
-                            + fallbackUserId + ".");
-                        sendJson(ex, 200, String.format(
-                            "{\"ok\":true,\"matched\":true,\"user_id\":%s,\"score\":0," +
-                            "\"message\":\"Temporary bypass after Base64 decode failure\"}",
-                            fallbackUserId));
-                        return;
-                    }
-
                     sendJson(ex, 200,
                         "{\"ok\":true,\"matched\":false,\"user_id\":null,\"score\":0," +
                         "\"message\":\"Fingerprint not recognised\"}");

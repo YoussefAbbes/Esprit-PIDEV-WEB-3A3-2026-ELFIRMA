@@ -32,7 +32,7 @@ class Produit
         return $this->id_produit;
     }
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: 'Product name is required.')]
     #[Assert\Length(max: 100, maxMessage: 'Product name cannot exceed {{ limit }} characters.')]
     private ?string $nom = null;
@@ -48,7 +48,7 @@ class Produit
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 30)]
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
     #[Assert\NotBlank(message: 'Type is required.')]
     #[Assert\Choice(
         choices: ['Frais', 'Transformé', 'Biologique', 'Séché', 'Conditionné'],
@@ -67,7 +67,7 @@ class Produit
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     #[Assert\NotBlank(message: 'Price is required.')]
     #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/', message: 'Price must be a valid decimal with up to 2 decimals.')]
     #[Assert\Positive(message: 'Price must be greater than 0.')]
@@ -84,7 +84,7 @@ class Produit
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     #[Assert\NotNull(message: 'Stock quantity is required.')]
     #[Assert\PositiveOrZero(message: 'Stock quantity must be greater than or equal to 0.')]
     private ?int $quantite_stock = null;

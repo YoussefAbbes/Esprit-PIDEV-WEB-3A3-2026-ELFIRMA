@@ -7,551 +7,1105 @@
   <!-- Bootstrap CSS -->
   <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+  <!-- AOS Animations -->
+  <link href="{{ asset('assets/vendor/aos/aos.css') }}" rel="stylesheet">
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Marcellus:wght@400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
 
-  <title>User Profile - EL FIRMA</title>
+  <title>User Profile — EL FIRMA</title>
   <style>
     :root {
-      --primary-color: #116530;
+      --primary: #116530;
       --primary-dark: #0c4a23;
-      --accent-color: #5e9c3d;
-      --light-bg: #f8faf5;
+      --primary-mid: #1a7a3c;
+      --accent: #5e9c3d;
+      --accent-light: #7dba55;
+      --light-bg: #f0f5eb;
       --card-bg: #ffffff;
       --text-dark: #1a2d1f;
-      --text-gray: #666666;
-      --border-color: #e0e5d9;
+      --text-gray: #5a6b5e;
+      --border: #dce8d4;
+      --glass: rgba(255,255,255,0.92);
+      --shadow-green: rgba(17,101,48,0.18);
     }
 
-    * {
-      font-family: 'Open Sans', sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background-color: var(--light-bg);
+      font-family: 'Open Sans', sans-serif;
+      background: var(--light-bg);
       color: var(--text-dark);
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       vertical-align: middle;
+      line-height: 1;
     }
 
+    /* ── NAVBAR ── */
     .navbar-custom {
-      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-      box-shadow: 0 2px 8px rgba(17, 101, 48, 0.15);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      box-shadow: 0 2px 16px var(--shadow-green);
+      padding: 0.85rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
-
-    .profile-header {
-      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-      padding: 3rem 2rem 2rem 2rem;
+    .navbar-brand-text {
       color: white;
-      border-radius: 16px;
-      margin-bottom: 2rem;
-      box-shadow: 0 15px 40px rgba(17, 101, 48, 0.2);
-      transform: translateY(-5px);
-      position: relative;
-      overflow: visible;
+      font-family: 'Marcellus', serif;
+      font-size: 1.6rem;
+      text-decoration: none;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .navbar-brand-text .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-back {
+      color: white;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      padding: 0.5rem 1.2rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.25s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-back:hover {
+      background: rgba(255,255,255,0.28);
+      transform: translateX(-3px);
+      color: white;
     }
 
-    .profile-avatar {
-      width: 180px;
-      height: 180px;
-      border: 6px solid white;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 12px 35px rgba(17, 101, 48, 0.35), 0 8px 16px rgba(0, 0, 0, 0.15);
-      margin: -100px auto 0;
-      display: block;
-      background: white;
+    /* ── HERO ── */
+    .profile-hero {
+      position: relative;
+      height: 340px;
+      overflow: hidden;
+    }
+    .profile-hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url("{{ asset('assets/img/hero_2.jpg') }}");
+      background-size: cover;
+      background-position: center 40%;
+      transform: scale(1.08);
+      transition: transform 8s ease;
+    }
+    .profile-hero-bg.loaded { transform: scale(1); }
+    .profile-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(12,74,35,0.82) 0%,
+        rgba(17,101,48,0.68) 45%,
+        rgba(94,156,61,0.45) 100%
+      );
+    }
+    .profile-hero-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.04) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%);
+    }
+
+    /* Floating leaves decoration */
+    .leaf-float {
+      position: absolute;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+    .leaf-float svg { fill: white; }
+    .leaf-1 { top: 15%; left: 5%; animation: floatLeaf 7s ease-in-out infinite; }
+    .leaf-2 { top: 60%; left: 12%; animation: floatLeaf 9s ease-in-out infinite 1.5s; }
+    .leaf-3 { top: 20%; right: 8%; animation: floatLeaf 8s ease-in-out infinite 3s; }
+    .leaf-4 { top: 65%; right: 15%; animation: floatLeaf 6s ease-in-out infinite 0.8s; }
+    @keyframes floatLeaf {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      33% { transform: translateY(-12px) rotate(5deg); }
+      66% { transform: translateY(6px) rotate(-4deg); }
+    }
+
+    /* Hero text */
+    .hero-text {
+      position: relative;
+      z-index: 2;
+      padding: 3.5rem 2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    .hero-eyebrow {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.6rem;
+    }
+    .hero-title {
+      font-family: 'Marcellus', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: white;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+      line-height: 1.2;
+      text-align: center;
+    }
+    .hero-subtitle {
+      color: rgba(255,255,255,0.75);
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ── PROFILE CARD (floating over hero) ── */
+    .profile-card-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: -90px;
+      padding: 0 1rem;
       position: relative;
       z-index: 10;
     }
+    .profile-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(12,74,35,0.22), 0 4px 20px rgba(0,0,0,0.08);
+      padding: 2.5rem 3rem;
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent-light), var(--primary));
+      background-size: 200% auto;
+      animation: shimmerBar 3s linear infinite;
+    }
+    @keyframes shimmerBar {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
 
-    .info-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.5rem;
-      transition: all 0.3s ease;
+    .avatar-wrap {
+      position: relative;
+      display: inline-block;
       margin-bottom: 1.5rem;
     }
-
-    .info-card:hover {
-      box-shadow: 0 4px 12px rgba(17, 101, 48, 0.1);
-      border-color: var(--accent-color);
+    .profile-avatar {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid white;
+      box-shadow: 0 8px 28px var(--shadow-green), 0 0 0 3px var(--accent);
+      display: block;
+      background: white;
+    }
+    .avatar-icon {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border: 5px solid white;
+      box-shadow: 0 8px 28px var(--shadow-green), 0 0 0 3px var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+    .avatar-icon .material-symbols-outlined { font-size: 4.5rem; color: var(--primary); }
+    .avatar-online-dot {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: #22c55e;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.25);
+      animation: pulse-dot 2s ease infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.25); }
+      50% { box-shadow: 0 0 0 6px rgba(34,197,94,0.1); }
     }
 
-    .info-card .label {
-      font-size: 0.8rem;
+    .profile-name {
+      font-family: 'Marcellus', serif;
+      font-size: 2rem;
+      color: var(--text-dark);
+      margin-bottom: 0.4rem;
+      line-height: 1.2;
+    }
+    .profile-email-sub {
+      color: var(--text-gray);
+      font-size: 0.95rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.4rem;
+      border-radius: 50px;
       font-weight: 700;
-      color: var(--primary-color);
-      text-transform: uppercase;
+      font-size: 0.85rem;
       letter-spacing: 0.5px;
-      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+    .role-badge::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.25), transparent);
+      border-radius: inherit;
+    }
+    .role-employee { background: linear-gradient(135deg, #1a7a3c, #116530); color: white; box-shadow: 0 4px 14px rgba(17,101,48,0.35); }
+    .role-client { background: linear-gradient(135deg, #e65100, #bf360c); color: white; box-shadow: 0 4px 14px rgba(230,81,0,0.35); }
+    .role-admin { background: linear-gradient(135deg, #6a1b9a, #4a148c); color: white; box-shadow: 0 4px 14px rgba(106,27,154,0.35); }
+    .role-default { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 14px var(--shadow-green); }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      text-align: center;
+      min-width: 80px;
+    }
+    .stat-number {
+      font-family: 'Marcellus', serif;
+      font-size: 1.8rem;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-gray);
+    }
+    .stat-divider {
+      width: 1px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    /* ── INFO CARDS GRID ── */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-heading-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px var(--shadow-green);
+      flex-shrink: 0;
+    }
+    .section-heading-icon .material-symbols-outlined { font-size: 1.4rem; color: white; }
+    .section-heading h3 {
+      font-family: 'Marcellus', serif;
+      font-size: 1.35rem;
+      color: var(--text-dark);
+      margin: 0;
+    }
+    .section-heading p {
+      font-size: 0.82rem;
+      color: var(--text-gray);
+      margin: 0;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.4rem 1.6rem;
+      transition: all 0.35s cubic-bezier(0.25,0.8,0.25,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      border-radius: 4px 0 0 4px;
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform 0.35s ease;
+    }
+    .info-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px var(--shadow-green);
+      border-color: var(--accent);
+    }
+    .info-card:hover::before { transform: scaleY(1); }
+    .info-card-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .info-card-icon .material-symbols-outlined { font-size: 1.4rem; color: var(--primary); }
+    .info-card .label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-gray);
+      margin-bottom: 0.4rem;
+    }
+    .info-card .value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      word-break: break-word;
+    }
+
+    /* ── COMPLAINTS SECTION ── */
+    .complaints-section { margin-bottom: 4rem; }
+
+    .complaint-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .complaint-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(17,101,48,0.03), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .complaint-card:hover {
+      transform: translateX(4px);
+      box-shadow: 0 8px 24px var(--shadow-green);
+      border-color: var(--accent);
+    }
+    .complaint-card:hover::after { opacity: 1; }
+
+    .complaint-type-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px var(--shadow-green);
+    }
+    .complaint-type-icon .material-symbols-outlined { font-size: 1.5rem; color: white; }
+
+    .complaint-body { flex: 1; min-width: 0; }
+    .complaint-type-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #e8f5e9, #d0edda);
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 0.2rem 0.7rem;
+      border-radius: 50px;
+      margin-bottom: 0.4rem;
+    }
+    .complaint-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 0.3rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .complaint-desc {
+      font-size: 0.85rem;
+      color: var(--text-gray);
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .complaint-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .complaint-date {
+      font-size: 0.78rem;
+      color: var(--text-gray);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .complaint-date .material-symbols-outlined { font-size: 0.95rem; }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.85rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .badge-pending { background: #fff8e1; color: #f59e0b; border: 1px solid #fde68a; }
+    .badge-reviewed { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .badge-default { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+
+    .complaint-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .btn-action {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.22s;
+      background: transparent;
+    }
+    .btn-action .material-symbols-outlined { font-size: 1.1rem; }
+    .btn-edit { color: var(--primary); }
+    .btn-edit:hover { background: #e8f5e9; color: var(--primary-dark); transform: scale(1.1); }
+    .btn-delete { color: #ef4444; }
+    .btn-delete:hover { background: #fee2e2; color: #dc2626; transform: scale(1.1); }
+
+    /* Empty state */
+    .empty-state {
+      background: var(--card-bg);
+      border: 2px dashed var(--border);
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+    .empty-state-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    .empty-state-icon .material-symbols-outlined { font-size: 2.5rem; color: var(--primary); }
+    .empty-state h5 { font-family: 'Marcellus', serif; font-size: 1.3rem; color: var(--text-dark); margin-bottom: 0.5rem; }
+    .empty-state p { color: var(--text-gray); font-size: 0.9rem; }
+
+    /* ── MODALS ── */
+    .modal-content {
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    }
+    .modal-header-green {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 1.5rem 2rem;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header-red {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 1.5rem 2rem;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header-title {
+      font-family: 'Marcellus', serif;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .modal-body-pad { padding: 2rem; }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label-custom {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.6rem;
+    }
+    .form-control-custom {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: 'Open Sans', sans-serif;
+      background: #fafcf8;
+      color: var(--text-dark);
+      transition: all 0.2s;
+      outline: none;
+      resize: vertical;
+    }
+    .form-control-custom:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(17,101,48,0.12);
+      background: white;
+    }
+    .form-hint { font-size: 0.78rem; color: var(--text-gray); margin-top: 0.3rem; }
+    .error-msg { font-size: 0.8rem; color: #ef4444; margin-top: 0.3rem; display: none; }
+
+    .btn-modal-cancel {
+      background: #f1f5f0;
+      color: var(--text-dark);
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-modal-cancel:hover { background: #e4ebe0; }
+    .btn-modal-save {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 1.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-
-    .info-card .value {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
-    .badge-role {
-      padding: 0.6rem 1.2rem;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      letter-spacing: 0.3px;
-    }
-
-    .badge-employee {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .badge-client {
-      background-color: #fff3e0;
-      color: #e65100;
-    }
-
-    .badge-admin {
-      background-color: #f3e5f5;
-      color: #6a1b9a;
-    }
-
-    .table-custom {
-      background: var(--card-bg);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      border: 1px solid var(--border-color);
-    }
-
-    .table-custom thead {
-      background-color: #f5f9f3;
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    .table-custom thead th {
-      color: var(--text-dark);
-      font-weight: 700;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 1.25rem 1rem;
+    .btn-modal-save:hover { box-shadow: 0 6px 18px var(--shadow-green); transform: translateY(-2px); }
+    .btn-modal-delete {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
       border: none;
-    }
-
-    .table-custom tbody td {
-      padding: 1.25rem 1rem;
-      border-bottom: 1px solid var(--border-color);
-      vertical-align: middle;
-    }
-
-    .table-custom tbody tr:hover {
-      background-color: #fafaf8;
-    }
-
-    .badge-status {
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 0.75rem;
-      display: inline-flex;
+      border-radius: 10px;
+      padding: 0.7rem 1.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
       align-items: center;
       gap: 0.5rem;
     }
+    .btn-modal-delete:hover { box-shadow: 0 6px 18px rgba(239,68,68,0.4); transform: translateY(-2px); }
 
-    .badge-pending {
-      background-color: #fff3cd;
-      color: #856404;
+    .delete-warning-box {
+      background: #fff1f1;
+      border: 1.5px solid #fecaca;
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: flex-start;
     }
+    .delete-warning-box .material-symbols-outlined { color: #ef4444; font-size: 2rem; flex-shrink: 0; }
 
-    .badge-reviewed {
-      background-color: #d4edda;
-      color: #155724;
+    /* Toast notification */
+    .toast-container-custom {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 9999;
     }
+    .toast-custom {
+      background: white;
+      border-radius: 14px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      min-width: 280px;
+      border-left: 4px solid var(--primary);
+      transform: translateX(120%);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .toast-custom.show { transform: translateX(0); }
+    .toast-custom.error { border-color: #ef4444; }
+    .toast-icon { font-size: 1.4rem; }
+    .toast-success .toast-icon { color: var(--primary); }
+    .toast-error .toast-icon { color: #ef4444; }
+    .toast-text { font-weight: 600; font-size: 0.9rem; color: var(--text-dark); }
 
-    .btn-action {
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
+    /* Scroll top btn */
+    .scroll-top-btn {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      border-radius: 50%;
+      display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .btn-edit {
-      color: var(--primary-color);
-    }
-
-    .btn-edit:hover {
-      background-color: rgba(17, 101, 48, 0.1);
-    }
-
-    .btn-delete {
-      color: #d32f2f;
-    }
-
-    .btn-delete:hover {
-      background-color: rgba(211, 47, 47, 0.1);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1.5rem;
-      color: var(--text-gray);
-    }
-
-    .empty-state .material-symbols-outlined {
-      font-size: 4rem;
-      color: var(--border-color);
-      margin-bottom: 1rem;
-    }
-
-    .modal-custom {
-      background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-content-custom {
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-    }
-
-    .modal-header-custom {
-      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-      color: white;
-      border-radius: 12px 12px 0 0;
-      padding: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--shadow-green);
+      transition: all 0.3s;
+      opacity: 0;
+      pointer-events: none;
       border: none;
+      z-index: 100;
     }
+    .scroll-top-btn.visible { opacity: 1; pointer-events: auto; }
+    .scroll-top-btn:hover { transform: translateY(-4px); box-shadow: 0 8px 24px var(--shadow-green); }
 
-    .modal-body-custom {
-      padding: 2rem;
+    /* Responsive */
+    @media (max-width: 768px) {
+      .profile-hero { height: 260px; }
+      .profile-card { padding: 2rem 1.5rem; }
+      .profile-name { font-size: 1.5rem; }
+      .stats-row { gap: 1.5rem; }
+      .stat-divider { display: none; }
+      .info-grid { grid-template-columns: 1fr 1fr; }
+      .complaint-card { flex-direction: column; }
+      .complaint-actions { flex-direction: row; align-self: flex-end; }
     }
-
-    .form-control-custom {
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      font-size: 0.95rem;
-    }
-
-    .form-control-custom:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(17, 101, 48, 0.1);
-    }
-
-    .btn-primary-custom {
-      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem 1.5rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary-custom:hover {
-      box-shadow: 0 4px 12px rgba(17, 101, 48, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .profile-header h1 {
-      position: relative;
-      z-index: 1;
-    }
-
-    .profile-header .text-center {
-      position: relative;
-      z-index: 1;
+    @media (max-width: 480px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .profile-card-wrap { margin-top: -70px; }
     }
   </style>
 </head>
 <body>
 
-<!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
-  <div class="container-fluid px-4">
-    <a class="navbar-brand fw-bold" href="/home" style="color: white; font-size: 1.5rem;">
-      <i class="bi bi-arrow-left me-2"></i>EL FIRMA
-    </a>
-    <button class="btn btn-light" onclick="window.history.back()">
-      <i class="material-symbols-outlined">arrow_back</i> Back
-    </button>
-  </div>
+<!-- ── NAVBAR ── -->
+<nav class="navbar-custom d-flex justify-content-between align-items-center">
+  <a href="/home" class="navbar-brand-text">
+    <div class="logo-icon">
+      <span class="material-symbols-outlined" style="color:white; font-size:1.2rem;">eco</span>
+    </div>
+    EL FIRMA
+  </a>
+  <button class="btn-back" onclick="window.history.back()">
+    <span class="material-symbols-outlined" style="font-size:1rem;">arrow_back</span>
+    Back
+  </button>
 </nav>
 
-<!-- Main Content -->
-<div class="container-fluid py-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
+<!-- ── HERO ── -->
+<div class="profile-hero">
+  <div class="profile-hero-bg" id="heroBg"></div>
+  <div class="profile-hero-overlay"></div>
+  <div class="profile-hero-pattern"></div>
 
-      <!-- Profile Header Section -->
-      <div class="profile-header">
-        <!-- Avatar and Basic Info -->
-        <div class="text-center">
-          {% set photo = user.imageU %}
-          {% if photo is null or photo == '' or photo == 'default.JPG' %}
-            <div class="profile-avatar mx-auto d-flex align-items-center justify-content-center" style="background: white; font-size: 3rem; color: var(--primary-color);">
-              <i class="material-symbols-outlined" style="font-size: 5rem;">person</i>
-            </div>
-          {% elseif photo starts with 'uploads/' %}
-            <img src="{{ asset(photo) }}" class="profile-avatar mx-auto">
+  <!-- Floating leaf decorations -->
+  <div class="leaf-float leaf-1">
+    <svg width="40" height="40" viewBox="0 0 100 100"><path d="M50 10 C80 10, 90 40, 50 90 C10 40, 20 10, 50 10Z"/></svg>
+  </div>
+  <div class="leaf-float leaf-2">
+    <svg width="30" height="30" viewBox="0 0 100 100"><path d="M50 10 C80 10, 90 40, 50 90 C10 40, 20 10, 50 10Z"/></svg>
+  </div>
+  <div class="leaf-float leaf-3">
+    <svg width="50" height="50" viewBox="0 0 100 100"><path d="M50 10 C80 10, 90 40, 50 90 C10 40, 20 10, 50 10Z"/></svg>
+  </div>
+  <div class="leaf-float leaf-4">
+    <svg width="35" height="35" viewBox="0 0 100 100"><path d="M50 10 C80 10, 90 40, 50 90 C10 40, 20 10, 50 10Z"/></svg>
+  </div>
+
+  <div class="hero-text">
+    <div class="hero-eyebrow">EL FIRMA Agricultural Platform</div>
+    <h1 class="hero-title">My Profile</h1>
+    <p class="hero-subtitle">Manage your account and activity</p>
+  </div>
+</div>
+
+<!-- ── PROFILE CARD ── -->
+<div class="profile-card-wrap">
+  <div class="profile-card" data-aos="fade-up" data-aos-duration="700">
+
+    <!-- Avatar -->
+    <div class="avatar-wrap mx-auto mb-1" style="display:inline-block;">
+      {% set photo = user.imageU %}
+      {% if photo is null or photo == '' or photo == 'default.JPG' %}
+        <div class="avatar-icon">
+          <span class="material-symbols-outlined">person</span>
+        </div>
+      {% elseif photo starts with 'uploads/' %}
+        <img src="{{ asset(photo) }}" class="profile-avatar" alt="{{ user.prenomU }}">
+      {% else %}
+        <img src="{{ asset('uploads/users/' ~ photo) }}" class="profile-avatar" alt="{{ user.prenomU }}">
+      {% endif %}
+      <div class="avatar-online-dot" title="Active"></div>
+    </div>
+
+    <!-- Name & Role -->
+    <h2 class="profile-name mt-2">{{ user.prenomU }} {{ user.nomU }}</h2>
+    <p class="profile-email-sub">{{ user.emailU }}</p>
+
+    {% if user.roleU == 'employee' %}
+      <span class="role-badge role-employee">
+        <span class="material-symbols-outlined" style="font-size:1rem;">badge</span>
+        Employee
+      </span>
+    {% elseif user.roleU == 'client' %}
+      <span class="role-badge role-client">
+        <span class="material-symbols-outlined" style="font-size:1rem;">person</span>
+        Client
+      </span>
+    {% elseif user.roleU == 'admin' %}
+      <span class="role-badge role-admin">
+        <span class="material-symbols-outlined" style="font-size:1rem;">shield_person</span>
+        Administrator
+      </span>
+    {% else %}
+      <span class="role-badge role-default">
+        <span class="material-symbols-outlined" style="font-size:1rem;">badge</span>
+        {{ user.roleU|capitalize }}
+      </span>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-number">{{ complaints|length }}</div>
+        <div class="stat-label">Complaints</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        {% set pending = 0 %}
+        {% for c in complaints %}{% if c.getStatutU() == 'pending' %}{% set pending = pending + 1 %}{% endif %}{% endfor %}
+        <div class="stat-number">{{ pending }}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-number">
+          {% if user.dateCreationU %}
+            {{ ("now"|date("Y")) - (user.dateCreationU|date("Y")) }}y
+          {% else %}—{% endif %}
+        </div>
+        <div class="stat-label">Member</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main-content">
+
+  <!-- Account Information -->
+  <div data-aos="fade-up" data-aos-delay="100" style="margin-bottom:2.5rem;">
+    <div class="section-heading">
+      <div class="section-heading-icon">
+        <span class="material-symbols-outlined">manage_accounts</span>
+      </div>
+      <div>
+        <h3>Account Information</h3>
+        <p>Your personal details and membership info</p>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card" data-aos="fade-up" data-aos-delay="120">
+        <div class="info-card-icon">
+          <span class="material-symbols-outlined">mail</span>
+        </div>
+        <div class="label">Email Address</div>
+        <div class="value">{{ user.emailU }}</div>
+      </div>
+
+      <div class="info-card" data-aos="fade-up" data-aos-delay="160">
+        <div class="info-card-icon">
+          <span class="material-symbols-outlined">person</span>
+        </div>
+        <div class="label">First Name</div>
+        <div class="value">{{ user.prenomU }}</div>
+      </div>
+
+      <div class="info-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="info-card-icon">
+          <span class="material-symbols-outlined">person_outline</span>
+        </div>
+        <div class="label">Last Name</div>
+        <div class="value">{{ user.nomU }}</div>
+      </div>
+
+      <div class="info-card" data-aos="fade-up" data-aos-delay="240">
+        <div class="info-card-icon">
+          <span class="material-symbols-outlined">calendar_month</span>
+        </div>
+        <div class="label">Member Since</div>
+        <div class="value">
+          {% if user.dateCreationU %}
+            {{ user.dateCreationU|date('M d, Y') }}
           {% else %}
-            <img src="{{ asset('uploads/users/' ~ photo) }}" class="profile-avatar mx-auto">
+            Not available
           {% endif %}
+        </div>
+      </div>
 
-          <h2 class="mt-4 mb-2" style="font-size: 2rem; font-weight: 800; letter-spacing: -0.5px;">{{ user.prenomU }} {{ user.nomU }}</h2>
+      <div class="info-card" data-aos="fade-up" data-aos-delay="280">
+        <div class="info-card-icon">
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+        </div>
+        <div class="label">Account Role</div>
+        <div class="value" style="text-transform:capitalize;">{{ user.roleU }}</div>
+      </div>
 
-          <div class="mt-3">
-            {% if user.roleU == 'employee' %}
-              <span class="badge-role badge-employee">
-                <i class="material-symbols-outlined" style="font-size: 1.1rem;">person_check</i>
-                <span>Employee</span>
+      <div class="info-card" data-aos="fade-up" data-aos-delay="320">
+        <div class="info-card-icon">
+          <span class="material-symbols-outlined">verified_user</span>
+        </div>
+        <div class="label">Account Status</div>
+        <div class="value" style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;"></span>
+          Active
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complaints Section -->
+  <div class="complaints-section" data-aos="fade-up" data-aos-delay="150">
+    <div class="section-heading">
+      <div class="section-heading-icon">
+        <span class="material-symbols-outlined">chat_bubble</span>
+      </div>
+      <div>
+        <h3>My Complaints</h3>
+        <p>{{ complaints|length }} complaint{% if complaints|length != 1 %}s{% endif %} submitted</p>
+      </div>
+    </div>
+
+    {% if complaints|length > 0 %}
+      {% for complaint in complaints %}
+      <div class="complaint-card" data-aos="fade-left" data-aos-delay="{{ loop.index * 60 }}" data-complaint-id="{{ complaint.getIdrU() }}">
+
+        <div class="complaint-type-icon">
+          {% set icon = 'flag' %}
+          {% if complaint.getTypeReclamationU() == 'Product Issue' %}{% set icon = 'inventory_2' %}
+          {% elseif complaint.getTypeReclamationU() == 'Service Issue' %}{% set icon = 'build' %}
+          {% elseif complaint.getTypeReclamationU() == 'Delivery Problem' %}{% set icon = 'local_shipping' %}
+          {% elseif complaint.getTypeReclamationU() == 'Quality Concern' %}{% set icon = 'star_rate' %}
+          {% endif %}
+          <span class="material-symbols-outlined">{{ icon }}</span>
+        </div>
+
+        <div class="complaint-body">
+          <span class="complaint-type-tag">{{ complaint.getTypeReclamationU() }}</span>
+          <div class="complaint-title">{{ complaint.getTitreU() }}</div>
+          <div class="complaint-desc">{{ complaint.getDescriptionU() }}</div>
+          <div class="complaint-meta">
+            <span class="complaint-date">
+              <span class="material-symbols-outlined">schedule</span>
+              {% if complaint.getDateReclamationU() %}
+                {{ complaint.getDateReclamationU()|date('d M, Y') }}
+              {% else %}
+                N/A
+              {% endif %}
+            </span>
+            {% if complaint.getStatutU() == 'pending' %}
+              <span class="badge-status badge-pending">
+                <span class="material-symbols-outlined" style="font-size:0.85rem;">hourglass_empty</span>
+                Pending
               </span>
-            {% elseif user.roleU == 'client' %}
-              <span class="badge-role badge-client">
-                <i class="material-symbols-outlined" style="font-size: 1.1rem;">person</i>
-                <span>Client</span>
-              </span>
-            {% elseif user.roleU == 'admin' %}
-              <span class="badge-role badge-admin">
-                <i class="material-symbols-outlined" style="font-size: 1.1rem;">shield_admin</i>
-                <span>Administrator</span>
+            {% elseif complaint.getStatutU() == 'reviewed' %}
+              <span class="badge-status badge-reviewed">
+                <span class="material-symbols-outlined" style="font-size:0.85rem;">check_circle</span>
+                Reviewed
               </span>
             {% else %}
-              <span class="badge-role" style="background-color: rgba(255, 255, 255, 0.2); color: white;">
-                <i class="material-symbols-outlined" style="font-size: 1.1rem;">badge</i>
-                <span>{{ user.roleU|capitalize }}</span>
+              <span class="badge-status badge-default">
+                <span class="material-symbols-outlined" style="font-size:0.85rem;">info</span>
+                {{ complaint.getStatutU()|capitalize }}
               </span>
             {% endif %}
           </div>
         </div>
+
+        <div class="complaint-actions">
+          <button class="btn-action btn-edit edit-complaint-btn"
+            data-complaint-id="{{ complaint.getIdrU() }}"
+            data-complaint-type="{{ complaint.getTypeReclamationU() }}"
+            data-complaint-title="{{ complaint.getTitreU() }}"
+            data-complaint-description="{{ complaint.getDescriptionU() }}"
+            title="Edit complaint">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="btn-action btn-delete delete-complaint-btn"
+            data-complaint-id="{{ complaint.getIdrU() }}"
+            title="Delete complaint">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+
       </div>
+      {% endfor %}
 
-      <!-- Profile Information Cards -->
-      <div class="row mb-5">
-        <div class="col-md-6">
-          <div class="info-card">
-            <div class="label">
-              <i class="material-symbols-outlined">mail</i>
-              Email Address
-            </div>
-            <div class="value" style="word-break: break-all;">{{ user.emailU }}</div>
-          </div>
+    {% else %}
+      <div class="empty-state" data-aos="zoom-in" data-aos-delay="200">
+        <div class="empty-state-icon">
+          <span class="material-symbols-outlined">inbox</span>
         </div>
-
-        <div class="col-md-6">
-          <div class="info-card">
-            <div class="label">
-              <i class="material-symbols-outlined">person</i>
-              Full Name
-            </div>
-            <div class="value">{{ user.prenomU }} {{ user.nomU }}</div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="info-card">
-            <div class="label">
-              <i class="material-symbols-outlined">calendar_today</i>
-              Member Since
-            </div>
-            <div class="value">
-              {% if user.dateCreationU %}
-                {{ user.dateCreationU|date('F d, Y') }}
-              {% else %}
-                Not available
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="info-card">
-            <div class="label">
-              <i class="material-symbols-outlined">badge</i>
-              Account Type
-            </div>
-            <div class="value">
-              {% if user.roleU == 'employee' %}
-                <span class="badge-role badge-employee">Employee</span>
-              {% elseif user.roleU == 'client' %}
-                <span class="badge-role badge-client">Client</span>
-              {% elseif user.roleU == 'admin' %}
-                <span class="badge-role badge-admin">Admin</span>
-              {% else %}
-                <span class="badge-role" style="background-color: rgba(17, 101, 48, 0.1); color: var(--primary-color);">{{ user.roleU|capitalize }}</span>
-              {% endif %}
-            </div>
-          </div>
-        </div>
+        <h5>No Complaints Yet</h5>
+        <p>You haven't submitted any complaints. Everything looks good!</p>
       </div>
+    {% endif %}
 
-      <!-- Complaints Section -->
-      <div class="mb-5">
-        <div class="d-flex align-items-center gap-3 mb-4">
-          <i class="material-symbols-outlined" style="font-size: 2rem; color: var(--primary-color);">edit_note</i>
-          <h3 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">My Complaints</h3>
-        </div>
-
-        <div class="table-custom">
-          {% if complaints|length > 0 %}
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th class="text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for complaint in complaints %}
-                  <tr data-complaint-id="{{ complaint.getIdrU() }}">
-                    <td>
-                      <span style="display: inline-flex; align-items: center; gap: 0.5rem; background-color: rgba(17, 101, 48, 0.1); color: var(--primary-color); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
-                        <i class="material-symbols-outlined" style="font-size: 1rem;">flag</i>
-                        {{ complaint.getTypeReclamationU() }}
-                      </span>
-                    </td>
-                    <td>
-                      <strong>{{ complaint.getTitreU() }}</strong>
-                    </td>
-                    <td>
-                      <small>{{ complaint.getDescriptionU()|slice(0, 30) }}{% if complaint.getDescriptionU()|length > 30 %}...{% endif %}</small>
-                    </td>
-                    <td>
-                      <small class="text-muted">
-                        {% if complaint.getDateReclamationU() %}
-                          {{ complaint.getDateReclamationU()|date('d M, Y') }}
-                        {% else %}
-                          N/A
-                        {% endif %}
-                      </small>
-                    </td>
-                    <td>
-                      {% if complaint.getStatutU() == 'pending' %}
-                        <span class="badge-status badge-pending">
-                          <i class="material-symbols-outlined" style="font-size: 0.9rem;">schedule</i>
-                          Pending
-                        </span>
-                      {% elseif complaint.getStatutU() == 'reviewed' %}
-                        <span class="badge-status badge-reviewed">
-                          <i class="material-symbols-outlined" style="font-size: 0.9rem;">check_circle</i>
-                          Reviewed
-                        </span>
-                      {% else %}
-                        <span class="badge-status badge-reviewed">
-                          <i class="material-symbols-outlined" style="font-size: 0.9rem;">info</i>
-                          {{ complaint.getStatutU()|capitalize }}
-                        </span>
-                      {% endif %}
-                    </td>
-                    <td class="text-center">
-                      <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                        <button class="btn-action btn-edit edit-complaint-btn" data-complaint-id="{{ complaint.getIdrU() }}" data-complaint-type="{{ complaint.getTypeReclamationU() }}" data-complaint-title="{{ complaint.getTitreU() }}" data-complaint-description="{{ complaint.getDescriptionU() }}" title="Edit complaint">
-                          <i class="material-symbols-outlined">edit</i>
-                        </button>
-                        <button class="btn-action btn-delete delete-complaint-btn" data-complaint-id="{{ complaint.getIdrU() }}" title="Delete complaint">
-                          <i class="material-symbols-outlined">delete</i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <div class="empty-state">
-              <i class="material-symbols-outlined">assignment</i>
-              <h5 class="mt-3 mb-2 fw-bold">No Complaints Yet</h5>
-              <p class="text-muted">You haven't submitted any complaints.</p>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-
-    </div>
   </div>
 </div>
 
-<!-- Edit Complaint Modal -->
-<div class="modal modal-custom fade" id="editComplaintModal" tabindex="-1">
+<!-- ── EDIT COMPLAINT MODAL ── -->
+<div class="modal fade" id="editComplaintModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modal-content-custom">
-      <div class="modal-header-custom d-flex justify-content-between align-items-center">
-        <div>
-          <h5 class="mb-0 fs-4 fw-bold">
-            <i class="material-symbols-outlined me-2">edit_note</i>Edit Complaint
-          </h5>
+    <div class="modal-content">
+      <div class="modal-header-green">
+        <div class="modal-header-title">
+          <span class="material-symbols-outlined">edit_note</span>
+          Edit Complaint
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body-custom">
-        <form id="editComplaintForm" class="needs-validation">
+      <div class="modal-body-pad">
+        <form id="editComplaintForm">
           <input type="hidden" id="editComplaintId" name="complaint_id">
 
-          <!-- Type -->
-          <div class="mb-4">
-            <label for="editComplaintType" class="form-label fw-bold mb-2" style="color: var(--primary-color);">
-              <i class="material-symbols-outlined me-2" style="font-size: 1.1rem;">category</i>Complaint Type
+          <div class="form-group">
+            <label class="form-label-custom">
+              <span class="material-symbols-outlined" style="font-size:1rem;">category</span>
+              Complaint Type
             </label>
-            <select id="editComplaintType" name="type" class="form-control-custom form-control" required>
+            <select id="editComplaintType" name="type" class="form-control-custom" required>
               <option value="Product Issue">Product Issue</option>
               <option value="Service Issue">Service Issue</option>
               <option value="Delivery Problem">Delivery Problem</option>
               <option value="Quality Concern">Quality Concern</option>
               <option value="Other">Other</option>
             </select>
-            <div class="complaint-error-message text-danger small mt-1" id="editComplaintTypeError"></div>
+            <div class="error-msg" id="editComplaintTypeError"></div>
           </div>
 
-          <!-- Title -->
-          <div class="mb-4">
-            <label for="editComplaintTitle" class="form-label fw-bold mb-2" style="color: var(--primary-color);">
-              <i class="material-symbols-outlined me-2" style="font-size: 1.1rem;">title</i>Title
+          <div class="form-group">
+            <label class="form-label-custom">
+              <span class="material-symbols-outlined" style="font-size:1rem;">title</span>
+              Title
             </label>
-            <input type="text" id="editComplaintTitle" name="titre" class="form-control-custom form-control" placeholder="Complaint title" maxlength="100" required>
-            <small class="text-muted d-block mt-1">Max. 100 characters</small>
-            <div class="complaint-error-message text-danger small mt-1" id="editComplaintTitleError"></div>
+            <input type="text" id="editComplaintTitle" name="titre" class="form-control-custom" placeholder="Complaint title" maxlength="100" required>
+            <div class="form-hint">Max. 100 characters</div>
+            <div class="error-msg" id="editComplaintTitleError"></div>
           </div>
 
-          <!-- Description -->
-          <div class="mb-4">
-            <label for="editComplaintDescription" class="form-label fw-bold mb-2" style="color: var(--primary-color);">
-              <i class="material-symbols-outlined me-2" style="font-size: 1.1rem;">description</i>Description
+          <div class="form-group">
+            <label class="form-label-custom">
+              <span class="material-symbols-outlined" style="font-size:1rem;">description</span>
+              Description
             </label>
-            <textarea id="editComplaintDescription" name="description" rows="4" class="form-control-custom form-control" placeholder="Describe your complaint" maxlength="500" required></textarea>
-            <small class="text-muted d-block mt-1">Max. 500 characters</small>
-            <div class="complaint-error-message text-danger small mt-1" id="editComplaintDescriptionError"></div>
+            <textarea id="editComplaintDescription" name="description" rows="4" class="form-control-custom" placeholder="Describe your complaint in detail..." maxlength="500" required></textarea>
+            <div class="form-hint">Max. 500 characters</div>
+            <div class="error-msg" id="editComplaintDescriptionError"></div>
           </div>
 
-          <!-- Buttons -->
-          <div class="d-flex gap-3 pt-3 border-top">
-            <button type="button" class="btn btn-light flex-1" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary-custom flex-1">
-              <i class="material-symbols-outlined me-2" style="font-size: 1rem;">save</i>Update
+          <div style="display:flex; gap:0.75rem; padding-top:1rem; border-top:1px solid var(--border);">
+            <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-modal-save" style="flex:1; justify-content:center;">
+              <span class="material-symbols-outlined" style="font-size:1rem;">save</span>
+              Save Changes
             </button>
           </div>
         </form>
@@ -560,31 +1114,30 @@
   </div>
 </div>
 
-<!-- Delete Complaint Modal -->
-<div class="modal modal-custom fade" id="deleteComplaintModal" tabindex="-1">
+<!-- ── DELETE COMPLAINT MODAL ── -->
+<div class="modal fade" id="deleteComplaintModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modal-content-custom">
-      <div class="modal-header-custom d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #d32f2f, #c62828);">
-        <div>
-          <h5 class="mb-0 fs-4 fw-bold">
-            <i class="material-symbols-outlined me-2">delete_forever</i>Delete Complaint
-          </h5>
+    <div class="modal-content">
+      <div class="modal-header-red">
+        <div class="modal-header-title">
+          <span class="material-symbols-outlined">delete_forever</span>
+          Delete Complaint
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body-custom">
-        <div style="background-color: #ffebee; border: 2px solid #ffcdd2; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem;">
-          <i class="material-symbols-outlined text-danger" style="font-size: 2rem; flex-shrink: 0;">warning</i>
+      <div class="modal-body-pad">
+        <div class="delete-warning-box">
+          <span class="material-symbols-outlined">warning</span>
           <div>
-            <strong class="d-block mb-2">Are you sure?</strong>
-            <p class="mb-0 text-muted small">This action cannot be undone. The complaint will be permanently deleted from your profile.</p>
+            <strong style="display:block; margin-bottom:0.4rem; color:var(--text-dark);">This action cannot be undone</strong>
+            <p style="margin:0; font-size:0.875rem; color:var(--text-gray);">The complaint will be permanently removed from your profile and our records.</p>
           </div>
         </div>
-
-        <div class="d-flex gap-3 pt-2 border-top">
-          <button type="button" class="btn btn-light flex-1" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="confirmDeleteComplaintBtn" class="btn btn-danger flex-1">
-            <i class="material-symbols-outlined me-2" style="font-size: 1rem;">delete</i>Delete
+        <div style="display:flex; gap:0.75rem;">
+          <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="confirmDeleteComplaintBtn" class="btn-modal-delete" style="flex:1; justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:1rem;">delete</span>
+            Delete Complaint
           </button>
         </div>
       </div>
@@ -592,141 +1145,117 @@
   </div>
 </div>
 
-<style>
-  .complaint-error-message {
-    display: none;
-  }
+<!-- Toast -->
+<div class="toast-container-custom">
+  <div class="toast-custom" id="toastMsg">
+    <span class="material-symbols-outlined toast-icon" id="toastIcon">check_circle</span>
+    <span class="toast-text" id="toastText">Action completed</span>
+  </div>
+</div>
 
-  .form-control:invalid,
-  .form-select:invalid {
-    border-color: #d32f2f;
-  }
-
-  .form-control:invalid:focus,
-  .form-select:invalid:focus {
-    border-color: #d32f2f;
-    box-shadow: 0 0 0 0.25rem rgba(211, 47, 47, 0.25);
-  }
-
-  .btn-light {
-    background-color: #f0f0f0;
-    border-color: #f0f0f0;
-    color: var(--text-dark);
-  }
-
-  .btn-light:hover {
-    background-color: #e0e0e0;
-    border-color: #e0e0e0;
-  }
-</style>
+<!-- Scroll-to-top button -->
+<button class="scroll-top-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <span class="material-symbols-outlined" style="font-size:1.2rem;">keyboard_arrow_up</span>
+</button>
 
 <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/aos/aos.js') }}"></script>
 <script>
-  let currentEditingComplaintId = null;
-  let currentDeletingComplaintId = null;
-  const editComplaintModal = new bootstrap.Modal(document.getElementById('editComplaintModal'));
-  const deleteComplaintModal = new bootstrap.Modal(document.getElementById('deleteComplaintModal'));
+  AOS.init({ once: true, easing: 'ease-out-cubic', duration: 650 });
 
-  // Edit button click
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('.edit-complaint-btn')) {
-      const btn = e.target.closest('.edit-complaint-btn');
-      currentEditingComplaintId = btn.dataset.complaintId;
+  // Hero background Ken Burns
+  const heroBg = document.getElementById('heroBg');
+  setTimeout(() => heroBg.classList.add('loaded'), 100);
 
-      document.getElementById('editComplaintId').value = btn.dataset.complaintId;
-      document.getElementById('editComplaintType').value = btn.dataset.complaintType;
-      document.getElementById('editComplaintTitle').value = btn.dataset.complaintTitle;
-      document.getElementById('editComplaintDescription').value = btn.dataset.complaintDescription;
-
-      // Clear errors
-      document.querySelectorAll('.complaint-error-message').forEach(el => {
-        el.textContent = '';
-        el.style.display = 'none';
-      });
-
-      editComplaintModal.show();
-    }
+  // Scroll top button
+  const scrollBtn = document.getElementById('scrollTopBtn');
+  window.addEventListener('scroll', () => {
+    scrollBtn.classList.toggle('visible', window.scrollY > 300);
   });
 
-  // Delete button click
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('.delete-complaint-btn')) {
-      const btn = e.target.closest('.delete-complaint-btn');
-      currentDeletingComplaintId = btn.dataset.complaintId;
-      deleteComplaintModal.show();
-    }
+  // Toast helper
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById('toastMsg');
+    const icon  = document.getElementById('toastIcon');
+    const text  = document.getElementById('toastText');
+    toast.className = 'toast-custom' + (isError ? ' error' : '');
+    icon.className = 'material-symbols-outlined toast-icon';
+    icon.textContent = isError ? 'error' : 'check_circle';
+    icon.style.color = isError ? '#ef4444' : 'var(--primary)';
+    text.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  // Modals
+  let currentEditId   = null;
+  let currentDeleteId = null;
+  const editModal   = new bootstrap.Modal(document.getElementById('editComplaintModal'));
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteComplaintModal'));
+
+  // Edit
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.edit-complaint-btn');
+    if (!btn) return;
+    currentEditId = btn.dataset.complaintId;
+    document.getElementById('editComplaintId').value          = btn.dataset.complaintId;
+    document.getElementById('editComplaintType').value        = btn.dataset.complaintType;
+    document.getElementById('editComplaintTitle').value       = btn.dataset.complaintTitle;
+    document.getElementById('editComplaintDescription').value = btn.dataset.complaintDescription;
+    document.querySelectorAll('.error-msg').forEach(el => { el.textContent = ''; el.style.display = 'none'; });
+    editModal.show();
   });
 
-  // Edit form submission
-  document.getElementById('editComplaintForm').addEventListener('submit', async (e) => {
+  // Delete
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.delete-complaint-btn');
+    if (!btn) return;
+    currentDeleteId = btn.dataset.complaintId;
+    deleteModal.show();
+  });
+
+  // Edit submit
+  document.getElementById('editComplaintForm').addEventListener('submit', async e => {
     e.preventDefault();
+    document.querySelectorAll('.error-msg').forEach(el => { el.textContent = ''; el.style.display = 'none'; });
 
-    document.querySelectorAll('.complaint-error-message').forEach(el => {
-      el.textContent = '';
-      el.style.display = 'none';
-    });
-
-    const type = document.getElementById('editComplaintType').value;
-    const titre = document.getElementById('editComplaintTitle').value;
-    const description = document.getElementById('editComplaintDescription').value;
-
-    const formData = new FormData();
-    formData.append('complaint_id', currentEditingComplaintId);
-    formData.append('type', type);
-    formData.append('titre', titre);
-    formData.append('description', description);
+    const fd = new FormData();
+    fd.append('complaint_id', currentEditId);
+    fd.append('type',         document.getElementById('editComplaintType').value);
+    fd.append('titre',        document.getElementById('editComplaintTitle').value);
+    fd.append('description',  document.getElementById('editComplaintDescription').value);
 
     try {
-      const response = await fetch('{{ path("elfirma_update_complaint") }}', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
+      const res  = await fetch('{{ path("elfirma_update_complaint") }}', { method: 'POST', body: fd });
+      const data = await res.json();
       if (data.success) {
-        alert('Complaint updated successfully!');
-        location.reload();
-      } else {
-        if (data.errors) {
-          for (const [field, message] of Object.entries(data.errors)) {
-            const errorEl = document.getElementById('editComplaint' + field.charAt(0).toUpperCase() + field.slice(1) + 'Error');
-            if (errorEl) {
-              errorEl.textContent = message;
-              errorEl.style.display = 'block';
-            }
-          }
+        editModal.hide();
+        showToast('Complaint updated successfully!');
+        setTimeout(() => location.reload(), 900);
+      } else if (data.errors) {
+        for (const [field, msg] of Object.entries(data.errors)) {
+          const el = document.getElementById('editComplaint' + field.charAt(0).toUpperCase() + field.slice(1) + 'Error');
+          if (el) { el.textContent = msg; el.style.display = 'block'; }
         }
       }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred');
-    }
+    } catch { showToast('An error occurred. Please try again.', true); }
   });
 
-  // Delete confirmation
+  // Delete confirm
   document.getElementById('confirmDeleteComplaintBtn').addEventListener('click', async () => {
-    const formData = new FormData();
-    formData.append('complaint_id', currentDeletingComplaintId);
-
+    const fd = new FormData();
+    fd.append('complaint_id', currentDeleteId);
     try {
-      const response = await fetch('{{ path("elfirma_delete_complaint") }}', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
+      const res  = await fetch('{{ path("elfirma_delete_complaint") }}', { method: 'POST', body: fd });
+      const data = await res.json();
       if (data.success) {
-        alert('Complaint deleted successfully!');
-        location.reload();
+        deleteModal.hide();
+        showToast('Complaint deleted successfully!');
+        setTimeout(() => location.reload(), 900);
       } else {
-        alert('Error deleting complaint');
+        showToast('Error deleting complaint.', true);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred');
-    }
+    } catch { showToast('An error occurred. Please try again.', true); }
   });
 </script>
 

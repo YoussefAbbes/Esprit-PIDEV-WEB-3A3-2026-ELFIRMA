@@ -22,7 +22,7 @@ class Parcelle
         return $this->id;
     }
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Parcel name is required.')]
     #[Assert\Length(
         min: 2,
@@ -43,7 +43,7 @@ class Parcelle
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Location is required.')]
     #[Assert\Length(
         min: 2,
@@ -64,7 +64,7 @@ class Parcelle
         return $this;
     }
 
-    #[ORM\Column(type: 'float')]
+    #[ORM\Column(type: 'float', nullable: true)]
     #[Assert\NotNull(message: 'Area is required.')]
     #[Assert\Positive(message: 'Area must be greater than 0.')]
     private ?float $superficie = null;

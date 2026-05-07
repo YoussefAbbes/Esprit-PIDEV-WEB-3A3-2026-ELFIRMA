@@ -23,7 +23,7 @@ class Maintenance
     }
 
     // ✅ TYPE
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     #[Assert\NotBlank(message: "Le type est obligatoire")]
     #[Assert\Length(min: 3, max: 50)]
     private ?string $type_m = null;
@@ -40,7 +40,7 @@ class Maintenance
     }
 
     // ✅ DATE
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'date', nullable: true)]
     #[Assert\NotNull(message: "La date est obligatoire")]
     private ?\DateTimeInterface $date_m = null;
 
@@ -56,7 +56,7 @@ class Maintenance
     }
 
     // ✅ DESCRIPTION
-    #[ORM\Column(type: 'string', length: 200)]
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     #[Assert\NotBlank(message: "La description est obligatoire")]
     #[Assert\Length(min: 5, max: 200)]
     private ?string $description = null;
@@ -72,7 +72,7 @@ class Maintenance
     }
 
     // ✅ COUT
-    #[ORM\Column(type: 'float')]
+    #[ORM\Column(type: 'float', nullable: true)]
     #[Assert\NotNull(message: "Le coût est obligatoire")]
     #[Assert\Positive(message: "Le coût doit être positif")]
     private ?float $cout = null;

@@ -16,17 +16,24 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+// import corrigé pour MailerInterface 
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\Email;
+
 use Symfony\Component\Routing\Attribute\Route;
 
 final class FournisseurController extends AbstractController
 {
     #[Route('/elfirma/fournisseurs-contrats', name: 'fournisseur_page', methods: ['GET'], priority: 10)]
-    public function page(EntityManagerInterface $entityManager): Response
+    public function page(EntityManagerInterface $entityManager, Request $request, PaginatorInterface $paginator): Response
     {
         $fournisseurRepo = $entityManager->getRepository(Fournisseur::class);
         $contratRepo = $entityManager->getRepository(Contrat::class);
         $allSuppliers = $fournisseurRepo->findAll();
         $allContracts = $contratRepo->findAll();
+        $suppliers = $paginator->paginate($allSuppliers, $request->query->getInt('page', 1), 10);
 
         // Calculate supplier statistics by status
         $activeCount = 0;
@@ -78,7 +85,7 @@ final class FournisseurController extends AbstractController
         }
 
         return $this->render('elfirma/fournisseurs_contrats.html.twig', [
-            'suppliers' => $allSuppliers,
+            'suppliers' => $suppliers,
             'contracts' => $allContracts,
             'supplierStats' => [
                 'active' => $activeCount,
@@ -99,6 +106,19 @@ final class FournisseurController extends AbstractController
             ],
             "current_module" => "fournisseurs-contrats",
         ]);
+    }
+
+    #[Route('/api/geocode-address', name: 'api_geocode_address', methods: ['POST'])]
+    public function geocodeAddress(Request $request, GeocodingService $geocodingService): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $address = trim($data['address'] ?? '');
+
+        if ($address === '') {
+            return new JsonResponse(['success' => false, 'error' => 'Address is required'], 400);
+        }
+
+        return new JsonResponse($geocodingService->geocodeAddress($address));
     }
 
     #[

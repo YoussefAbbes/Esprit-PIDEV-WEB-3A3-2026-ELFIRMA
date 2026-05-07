@@ -1195,6 +1195,11 @@
     if (finaliseInProgress) return;
     finaliseInProgress = true;
 
+    if (!theForm) {
+      finaliseInProgress = false;
+      return;
+    }
+
     if (withFingerprint && enrolledTemplate) {
       // We need the user ID that will be created — so we submit the form
       // via fetch to get the new user ID back, then save the fingerprint.
@@ -1205,13 +1210,18 @@
       // No fingerprint — just submit normally
       if (fpRegInput) fpRegInput.value = '0';
       window.__fingerprintSubmitAllowed = true;
-      signupForm.submit();
+      theForm.submit();
     }
   }
 
   async function submitFormWithFingerprintSave() {
+    if (!theForm) {
+      finaliseInProgress = false;
+      return;
+    }
+
     // Add a flag so the server knows to return JSON with user_id
-    const formData = new FormData(signupForm);
+    const formData = new FormData(theForm);
     formData.set('fingerprint_pending', '1');
 
     try {
@@ -1222,7 +1232,7 @@
         const data = await r.json();
         if (data.success && data.user_id) {
           // Save fingerprint
-          await fetch(FP_SAVE_URL, {
+          const saveR = await fetch(FP_SAVE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1231,6 +1241,12 @@
               user_id: data.user_id,
             }),
           });
+          const saveD = await saveR.json().catch(() => ({ ok: false }));
+
+          if (!saveR.ok || !saveD.ok) {
+            console.error('Fingerprint save failed after signup:', saveD);
+          }
+
           // Now redirect to home
           window.location.href = data.redirect || '/home';
         } else {
@@ -1242,13 +1258,13 @@
         // Fall back to normal submit
         if (fpRegInput) fpRegInput.value = '0';
         window.__fingerprintSubmitAllowed = true;
-        signupForm.submit();
+        theForm.submit();
       }
     } catch (e) {
       // Network failure — fall back to normal submit
       if (fpRegInput) fpRegInput.value = '0';
       window.__fingerprintSubmitAllowed = true;
-      signupForm.submit();
+      theForm.submit();
     }
   }
 

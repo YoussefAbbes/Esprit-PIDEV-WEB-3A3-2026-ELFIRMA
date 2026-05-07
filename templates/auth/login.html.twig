@@ -1331,8 +1331,18 @@
 
         const r = await fetch(LOGIN_URL, { method: 'POST', body: fd, redirect: 'manual' });
 
-        // The login endpoint redirects on success. A 3xx or opaque response = success.
-        if (r.type === 'opaqueredirect' || r.redirected || r.status === 302 || r.status === 200) {
+        // The login endpoint redirects on success. Do not treat HTTP 200 as success
+        // because invalid credentials render the login page with status 200.
+        const isLoginSuccess =
+          r.type === 'opaqueredirect' ||
+          r.redirected ||
+          r.status === 301 ||
+          r.status === 302 ||
+          r.status === 303 ||
+          r.status === 307 ||
+          r.status === 308;
+
+        if (isLoginSuccess) {
           // Try to get user_id from session via status endpoint
           const statusR = await fetch(FP_STATUS_URL, { method: 'POST' });
           const statusD = await statusR.json();

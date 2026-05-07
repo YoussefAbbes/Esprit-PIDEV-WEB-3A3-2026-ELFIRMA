@@ -38,6 +38,15 @@ class IrrigationEvent
     #[ORM\Column(name: "created_at", type: "datetime_immutable")]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column(name: "updated_at", type: "datetime_immutable", nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(name: "created_by", type: "integer", nullable: true)]
+    private ?int $createdBy = null;
+
+    #[ORM\Column(name: "updated_by", type: "integer", nullable: true)]
+    private ?int $updatedBy = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -125,9 +134,31 @@ class IrrigationEvent
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
-        $this->createdAt = $createdAt;
+        return $this->updatedAt;
+    }
+
+    public function getCreatedBy(): ?int
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?int $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?int
+    {
+        return $this->updatedBy;
+    }
+
+    public function setUpdatedBy(?int $updatedBy): self
+    {
+        $this->updatedBy = $updatedBy;
 
         return $this;
     }
