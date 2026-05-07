@@ -1198,4 +1198,9 @@
       statusFilter.addEventListener('change', renderList);
     })();
   </script>
+
+{% include 'components/_chatbot.html.twig' with {
+  'page': 'livestock',
+  'page_label': 'Animals Catalog'
+} %}
 {% endblock %}

@@ -34,14 +34,67 @@ class ParcelleRepository extends ServiceEntityRepository
         }
     }
 
-    public function findAllWithCultures(): array
+    public function findAllWithCultures(?int $limit = null): array
     {
-        return $this->createQueryBuilder("p")
-            ->leftJoin("p.cultures", "c")
-            ->addSelect("c")
-            ->orderBy("p.id", "DESC")
+        // Avoid setMaxResults() on a fetch-joined collection to prevent incomplete collections.
+        if ($limit !== null && $limit > 0) {
+            $idRows = $this->createQueryBuilder('p')
+                ->select('p.id')
+                ->orderBy('p.id', 'DESC')
+                ->setMaxResults($limit)
+                ->getQuery()
+                ->getScalarResult();
+
+            $ids = array_map(
+                static fn (array $row): int => (int) $row['id'],
+                $idRows,
+            );
+
+            if ($ids === []) {
+                return [];
+            }
+
+            $parcelles = $this->createQueryBuilder('p')
+                ->leftJoin('p.cultures', 'c')
+                ->addSelect('c')
+                ->andWhere('p.id IN (:ids)')
+                ->setParameter('ids', $ids)
+                ->getQuery()
+                ->getResult();
+
+            return $this->sortParcellesByIds($parcelles, $ids);
+        }
+
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.cultures', 'c')
+            ->addSelect('c')
+            ->orderBy('p.id', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @return array{total:int, available:int, occupied:int, resting:int, totalArea:float}
+     */
+    public function getClientStats(): array
+    {
+        /** @var array{total:mixed, available:mixed, occupied:mixed, resting:mixed, totalArea:mixed}|null $result */
+        $result = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id) AS total')
+            ->addSelect("SUM(CASE WHEN p.statut = 'Available' THEN 1 ELSE 0 END) AS available")
+            ->addSelect("SUM(CASE WHEN p.statut = 'Occupied' THEN 1 ELSE 0 END) AS occupied")
+            ->addSelect("SUM(CASE WHEN p.statut = 'Resting' THEN 1 ELSE 0 END) AS resting")
+            ->addSelect('COALESCE(SUM(p.superficie), 0) AS totalArea')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return [
+            'total' => (int) ($result['total'] ?? 0),
+            'available' => (int) ($result['available'] ?? 0),
+            'occupied' => (int) ($result['occupied'] ?? 0),
+            'resting' => (int) ($result['resting'] ?? 0),
+            'totalArea' => (float) ($result['totalArea'] ?? 0.0),
+        ];
     }
 
     public function findPaginated(
@@ -53,20 +106,18 @@ class ParcelleRepository extends ServiceEntityRepository
         ?string $statut = null,
         ?string $typeSol = null,
     ): array {
-        $qb = $this->createQueryBuilder("p")
-            ->leftJoin("p.cultures", "c")
-            ->addSelect("c");
+        $baseQb = $this->createQueryBuilder("p");
 
         // Search
         if ($search) {
-            $qb->andWhere(
+            $baseQb->andWhere(
                 "p.nom LIKE :search OR p.localisation LIKE :search OR p.typeSol LIKE :search OR p.statut LIKE :search",
             )->setParameter("search", "%" . $search . "%");
         }
 
         // Statut filter
         if ($statut) {
-            $qb->andWhere("p.statut = :statut")->setParameter(
+            $baseQb->andWhere("p.statut = :statut")->setParameter(
                 "statut",
                 $statut,
             );
@@ -74,7 +125,7 @@ class ParcelleRepository extends ServiceEntityRepository
 
         // TypeSol filter
         if ($typeSol) {
-            $qb->andWhere("p.typeSol = :typeSol")->setParameter(
+            $baseQb->andWhere("p.typeSol = :typeSol")->setParameter(
                 "typeSol",
                 $typeSol,
             );
@@ -90,27 +141,52 @@ class ParcelleRepository extends ServiceEntityRepository
             "statut",
             "dateCreation",
         ];
-        if (in_array($sortBy, $allowedSortFields)) {
-            $qb->orderBy(
-                "p." . $sortBy,
-                strtoupper($sortOrder) === "ASC" ? "ASC" : "DESC",
-            );
+        $direction = strtoupper($sortOrder) === "ASC" ? "ASC" : "DESC";
+        if (in_array($sortBy, $allowedSortFields, true)) {
+            $baseQb->orderBy("p." . $sortBy, $direction)->addOrderBy("p.id", "DESC");
         } else {
-            $qb->orderBy("p.id", "DESC");
+            $baseQb->orderBy("p.id", "DESC");
         }
 
         // Get total count
-        $countQb = clone $qb;
+        $countQb = clone $baseQb;
         $total = $countQb
-            ->select("COUNT(DISTINCT p.id)")
+            ->select("COUNT(p.id)")
             ->getQuery()
             ->getSingleScalarResult();
 
-        // Pagination
+        // Paginate IDs first, then fetch-join cultures in a second query.
         $offset = ($page - 1) * $limit;
-        $qb->setFirstResult($offset)->setMaxResults($limit);
 
-        $parcelles = $qb->getQuery()->getResult();
+        $idRows = (clone $baseQb)
+            ->select("p.id")
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getScalarResult();
+
+        $ids = array_map(
+            static fn (array $row): int => (int) $row["id"],
+            $idRows,
+        );
+
+        if ($ids === []) {
+            return [
+                "data" => [],
+                "total" => (int) $total,
+                "page" => $page,
+                "limit" => $limit,
+                "totalPages" => (int) ceil($total / $limit),
+            ];
+        }
+
+        $dataQb = $this->createQueryBuilder("p")
+            ->leftJoin("p.cultures", "c")
+            ->addSelect("c")
+            ->andWhere("p.id IN (:ids)")
+            ->setParameter("ids", $ids);
+
+        $parcelles = $this->sortParcellesByIds($dataQb->getQuery()->getResult(), $ids);
 
         return [
             "data" => $parcelles,
@@ -143,5 +219,28 @@ class ParcelleRepository extends ServiceEntityRepository
             ->select("SUM(p.superficie)")
             ->getQuery()
             ->getSingleScalarResult() ?? 0.0);
+    }
+
+    /**
+     * @param Parcelle[] $parcelles
+     * @param int[] $ids
+     *
+     * @return Parcelle[]
+     */
+    private function sortParcellesByIds(array $parcelles, array $ids): array
+    {
+        $positions = array_flip($ids);
+
+        usort(
+            $parcelles,
+            static function (Parcelle $left, Parcelle $right) use ($positions): int {
+                $leftPosition = $positions[$left->getId() ?? -1] ?? PHP_INT_MAX;
+                $rightPosition = $positions[$right->getId() ?? -1] ?? PHP_INT_MAX;
+
+                return $leftPosition <=> $rightPosition;
+            },
+        );
+
+        return $parcelles;
     }
 }

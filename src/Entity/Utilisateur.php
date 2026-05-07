@@ -166,7 +166,7 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: "datetime", options: ["default" => "CURRENT_TIMESTAMP"])]
+    #[ORM\Column(type: "datetime", nullable: true, options: ["default" => "CURRENT_TIMESTAMP"])]
     private ?\DateTimeInterface $date_creation_u = null;
 
     public function getDateCreationU(): ?\DateTimeInterface

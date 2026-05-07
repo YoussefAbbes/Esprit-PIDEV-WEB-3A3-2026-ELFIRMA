@@ -17,17 +17,13 @@ final class HomeController extends AbstractController
     #[Route('/client/parcelles', name: 'app_client_parcelles')]
     public function clientParcelles(ParcelleRepository $parcelleRepository): Response
     {
-        $parcelles = $parcelleRepository->findAllWithCultures();
+        // Keep client catalog responsive by avoiding an unrestricted query.
+        $parcelles = $parcelleRepository->findAllWithCultures(80);
+        $stats = $parcelleRepository->getClientStats();
 
         return $this->render('pages/client_parcelles.html.twig', [
             'parcelles' => $parcelles,
-            'stats' => [
-                'total' => count($parcelles),
-                'available' => $parcelleRepository->countByStatus('Available'),
-                'occupied' => $parcelleRepository->countByStatus('Occupied'),
-                'resting' => $parcelleRepository->countByStatus('Resting'),
-                'totalArea' => $parcelleRepository->getTotalArea(),
-            ],
+            'stats' => $stats,
         ]);
     }
 

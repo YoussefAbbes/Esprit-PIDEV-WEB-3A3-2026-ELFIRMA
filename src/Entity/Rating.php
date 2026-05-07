@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\RatingRepository;
 
 #[ORM\Entity(repositoryClass: RatingRepository::class)]
-#[ORM\Table(name: 'ratings')]
+#[ORM\Table(name: 'rating')]
 class Rating
 {
     #[ORM\Id]
@@ -19,7 +19,7 @@ class Rating
         return $this->id_rating;
     }
 
-    #[ORM\ManyToOne(targetEntity: Fournisseur::class)]
+    #[ORM\ManyToOne(targetEntity: Fournisseur::class, inversedBy: 'ratings')]
     #[ORM\JoinColumn(name: 'id_f', referencedColumnName: 'id_f', nullable: true)]
     private ?Fournisseur $fournisseur = null;
 
@@ -34,7 +34,7 @@ class Rating
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $user_id = null;
 
     public function getUserId(): ?int
@@ -48,7 +48,7 @@ class Rating
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $number_of_stars = null;
 
     public function getNumberOfStars(): ?int
@@ -77,9 +77,14 @@ class Rating
     }
 
     #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private ?\DateTimeInterface $created_at = null;
+    private \DateTimeInterface $created_at;
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function __construct()
+    {
+        $this->created_at = new \DateTime();
+    }
+
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->created_at;
     }
@@ -90,7 +95,7 @@ class Rating
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(type: 'datetime', nullable: true, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $updated_at = null;
 
     public function getUpdatedAt(): ?\DateTimeInterface

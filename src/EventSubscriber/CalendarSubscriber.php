@@ -1,34 +1,40 @@
 <?php
-namespace App\EventSubscriber;
 
-use CalendarBundle\Entity\Event;
-use CalendarBundle\Event\SetDataEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+namespace App\EventSubscriber;
+// correction de CalendarSubscriber erreurs de syntaxe et d'importation
 use App\Repository\MaintenanceRepository;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CalendarSubscriber implements EventSubscriberInterface
 {
-    private $repo;
+    private const SET_DATA_EVENT_CLASS = 'CalendarBundle\\Event\\SetDataEvent';
+    private const CALENDAR_EVENT_CLASS = 'CalendarBundle\\Entity\\Event';
 
-    public function __construct(MaintenanceRepository $repo)
-    {
-        $this->repo = $repo;
-    }
+    public function __construct(private MaintenanceRepository $repo) {}
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
+        if (!class_exists(self::SET_DATA_EVENT_CLASS)) {
+            return [];
+        }
+
         return [
-            SetDataEvent::class => 'onCalendarSetData'
+            self::SET_DATA_EVENT_CLASS => 'onCalendarSetData',
         ];
     }
 
-    public function onCalendarSetData(SetDataEvent $event)
+    public function onCalendarSetData(object $event): void
     {
+        if (!method_exists($event, 'addEvent') || !class_exists(self::CALENDAR_EVENT_CLASS)) {
+            return;
+        }
+
+        $calendarEventClass = self::CALENDAR_EVENT_CLASS;
         $maintenances = $this->repo->findAll();
 
         foreach ($maintenances as $m) {
             $event->addEvent(
-                new Event(
+                new $calendarEventClass(
                     $m->getTypeM(),
                     $m->getDateM(),
                     $m->getDateM()

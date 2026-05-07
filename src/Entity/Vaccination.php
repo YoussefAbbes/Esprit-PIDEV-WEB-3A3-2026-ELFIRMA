@@ -41,7 +41,7 @@ class Vaccination
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: 'Vaccine name is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
@@ -76,7 +76,7 @@ class Vaccination
         return $this;
     }
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'date', nullable: true)]
     #[Assert\NotNull(message: 'Next vaccination date is required.')]
     #[Assert\GreaterThanOrEqual(propertyPath: 'date_done', message: 'Next date must be after vaccination date.')]
     private ?\DateTimeInterface $date_next = null;

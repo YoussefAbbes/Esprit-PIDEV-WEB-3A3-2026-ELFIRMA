@@ -23,7 +23,7 @@ class Culture
     #[ORM\ManyToOne(targetEntity: Parcelle::class, inversedBy: "cultures")]
     #[
         ORM\JoinColumn(
-            name: "parcelleId",
+            name: "parcelle_id",
             referencedColumnName: "id",
             nullable: true,
         ),
@@ -42,7 +42,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(name: "nom_culture", type: "string", length: 255)]
+    #[ORM\Column(name: "nom_culture", type: "string", length: 255, nullable: true)]
     #[Assert\NotBlank(message: "Crop name is required.")]
     #[
         Assert\Length(

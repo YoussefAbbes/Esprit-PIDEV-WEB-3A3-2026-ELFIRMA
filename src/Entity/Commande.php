@@ -20,7 +20,7 @@ class Commande
         return $this->id_commande;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     #[Assert\NotNull(message: 'La quantite est obligatoire.')]
     #[Assert\Positive(message: 'La quantite doit etre superieure a 0.')]
     private ?int $quantite = null;
@@ -36,7 +36,7 @@ class Commande
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     #[Assert\NotBlank(message: 'Le prix total est obligatoire.')]
     #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/', message: 'Le prix total doit etre un decimal valide avec 2 chiffres maximum apres la virgule.')]
     #[Assert\Positive(message: 'Le prix total doit etre superieur a 0.')]
@@ -186,7 +186,7 @@ class Commande
         return $this;
     }
 
-    #[ORM\Column(type: 'date')]
+    #[ORM\Column(type: 'date', nullable: true)]
     #[Assert\NotNull(message: 'La date de commande est obligatoire.')]
     #[Assert\Type(type: \DateTimeInterface::class, message: 'La date de commande est invalide.')]
     private ?\DateTimeInterface $date_commande = null;

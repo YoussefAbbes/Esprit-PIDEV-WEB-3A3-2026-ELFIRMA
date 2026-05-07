@@ -14,7 +14,7 @@ class Notification
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $message = null;
 
     #[ORM\Column(type: 'boolean')]

@@ -19,7 +19,7 @@ class Personne
         return $this->id;
     }
 
-    #[ORM\Column(type: 'string', length: 30)]
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
     private ?string $nom = null;
 
     public function getNom(): ?string
@@ -33,7 +33,7 @@ class Personne
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 30)]
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
     private ?string $prenom = null;
 
     public function getPrenom(): ?string
@@ -47,7 +47,7 @@ class Personne
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $age = null;
 
     public function getAge(): ?int

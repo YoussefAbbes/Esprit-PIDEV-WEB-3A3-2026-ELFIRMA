@@ -1,5 +1,9 @@
 <style>
-/* ── Notification Bell in Header ── */
+/* ══════════════════════════════════════════
+   HEADER — Improved Layout & Elements
+   ══════════════════════════════════════════ */
+
+/* ── Notification Bell ── */
 #hdrNotifWrapper {
   position: relative;
   display: flex;
@@ -136,32 +140,161 @@
   #hdrNotifPanel { width: calc(100vw - 24px); right: -4px; }
 }
 
-.hdr-admin-btn {
+/* ── Action icon buttons (cart, orders, profile, logout, bell) ── */
+.hdr-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: white;
+  font-size: 1.05rem;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.hdr-icon-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  color: white;
+}
+.hdr-icon-btn.green  { background: #1e7e34; box-shadow: 0 3px 10px rgba(30,126,52,0.3); }
+.hdr-icon-btn.teal   { background: #0f766e; box-shadow: 0 3px 10px rgba(15,118,110,0.3); }
+.hdr-icon-btn.red    { background: #dc2626; box-shadow: 0 3px 10px rgba(220,38,38,0.3); }
+
+/* ── Cart badge ── */
+.hdr-cart-badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 18px; height: 18px;
+  border-radius: 9px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(239,68,68,0.4);
+}
+
+/* ── Vertical divider ── */
+.hdr-divider {
+  width: 1px;
+  height: 28px;
+  background: #e5e7eb;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* ── User identity pill ── */
+.hdr-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 12px 5px 5px;
+  background: #f0faf3;
+  border: 1.5px solid #c3e6cb;
+  border-radius: 30px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+}
+.hdr-user-pill:hover {
+  background: #e8f5e9;
+  border-color: #1e7e34;
+  box-shadow: 0 3px 12px rgba(30,126,52,0.15);
+}
+.hdr-user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e7e34 0%, #116530 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.hdr-user-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Admin / Employee button ── */
+.hdr-role-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-left: 12px;
-  padding: 8px 12px;
+  padding: 7px 14px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #0b3b8f 0%, #1d4ed8 100%);
-  color: #fff;
   text-decoration: none;
-  font-size: 0.82rem;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: #fff;
+}
+.hdr-role-btn:hover { transform: translateY(-2px); color: #fff; }
+.hdr-role-btn.admin    { background: linear-gradient(135deg, #1e3a8a, #2563eb); box-shadow: 0 4px 14px rgba(37,99,235,0.35); }
+.hdr-role-btn.employee { background: linear-gradient(135deg, #065f46, #059669); box-shadow: 0 4px 14px rgba(5,150,105,0.35); }
+.hdr-role-btn.admin:hover    { box-shadow: 0 8px 20px rgba(37,99,235,0.45); }
+.hdr-role-btn.employee:hover { box-shadow: 0 8px 20px rgba(5,150,105,0.45); }
+
+/* ── Right actions wrapper ── */
+.hdr-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 16px;
 }
 
-.hdr-admin-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
-  color: #fff;
+/* ── Login button ── */
+.hdr-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #1e7e34, #116530);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(30,126,52,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+.hdr-login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(30,126,52,0.4);
+  color: white;
 }
 
 @media (max-width: 1199.98px) {
-  .hdr-admin-btn {
-    display: none;
-  }
+  .hdr-role-btn { display: none; }
+}
+@media (max-width: 576px) {
+  .hdr-user-name { display: none; }
+  .hdr-actions { gap: 7px; }
 }
 </style>
 
@@ -177,8 +310,7 @@
         <li><a href="{{ path('app_pages_home') }}" class="{% if app.request.get('_route') == 'app_pages_home' %}active{% endif %}">Home</a></li>
         <li><a href="{{ path('app_about') }}" class="{% if app.request.get('_route') == 'app_about' %}active{% endif %}">About Us</a></li>
         <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
-                <li><a href="{{ path('suppliers_list') }}" class="{% if app.request.get('_route') == 'suppliers_list' %}active{% endif %}">Our Suppliers</a></li>
-
+        <li><a href="{{ path('suppliers_list') }}" class="{% if app.request.get('_route') == 'suppliers_list' %}active{% endif %}">Our Suppliers</a></li>
         <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
         <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Blog</a></li>
         {% set isParcellesCulturesRoute = app.request.get('_route') == 'app_client_parcelles' or app.request.get('_route') == 'app_client_cultures' or app.request.get('_route') starts with 'parcelle_' or app.request.get('_route') starts with 'culture_' %}
@@ -193,80 +325,66 @@
             <li>
               <a href="{{ path('app_client_cultures') }}" class="{% if app.request.get('_route') == 'app_client_cultures' or app.request.get('_route') starts with 'culture_' %}active{% endif %}">Crops</a>
             </li>
-        {% set livestock_animals_active = app.request.get('_route') in ['app_livestock_catalog', 'app_animals_catalog'] %}
-        <li class="dropdown"><a href="#" class="{{ livestock_animals_active ? 'active' : '' }}"><span>Livestock-Animals</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-          <ul>
-            <li><a href="{{ path('app_livestock_catalog') }}" class="{% if app.request.get('_route') == 'app_livestock_catalog' %}active{% endif %}">Livestock Catalog</a></li>
-            <li><a href="{{ path('app_animals_catalog') }}" class="{% if app.request.get('_route') == 'app_animals_catalog' %}active{% endif %}">Animals Catalog</a></li>
+            {% set livestock_animals_active = app.request.get('_route') in ['app_livestock_catalog', 'app_animals_catalog'] %}
+            <li class="dropdown">
+              <a href="#" class="{{ livestock_animals_active ? 'active' : '' }}">
+                <span>Livestock &amp; Animals</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
+              </a>
+              <ul>
+                <li><a href="{{ path('app_livestock_catalog') }}" class="{% if app.request.get('_route') == 'app_livestock_catalog' %}active{% endif %}">Livestock Catalog</a></li>
+                <li><a href="{{ path('app_animals_catalog') }}" class="{% if app.request.get('_route') == 'app_animals_catalog' %}active{% endif %}">Animals Catalog</a></li>
+              </ul>
+            </li>
+            <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
           </ul>
         </li>
-        <li><a href="{{ path('app_contact') }}" class="{% if app.request.get('_route') == 'app_contact' %}active{% endif %}">Contact</a></li>
-    
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
-   
+
     {% if app.session.get('user_id') %}
       {% set panier = app.session.get('panier', []) %}
       {% set cartCount = 0 %}
       {% for quantity in panier %}
         {% set cartCount = cartCount + quantity %}
       {% endfor %}
-<div style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+      {% set userName = app.session.get('user_name') %}
+      {% set initials = userName|split(' ')|map(w => w|slice(0,1))|join('')|upper|slice(0,2) %}
 
-  {# ── Admin / Employee Panel Button ── #}
-  {% if app.session.get('user_role') == 'admin' %}
-    <a href="{{ path('app_admin_panel_entry') }}"
-       title="Admin Panel"
-       style="
-         display: inline-flex; align-items: center; gap: 6px;
-         padding: 7px 14px; border-radius: 10px;
-         background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-         color: #fff; text-decoration: none;
-         font-size: 0.78rem; font-weight: 800; letter-spacing: 0.02em;
-         box-shadow: 0 4px 14px rgba(37,99,235,0.35);
-         transition: transform 0.2s ease, box-shadow 0.2s ease;
-         white-space: nowrap;
-       "
-       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(37,99,235,0.45)'"
-       onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(37,99,235,0.35)'"
-    >
-      <i class="bi bi-shield-lock-fill" style="font-size:0.9rem;"></i>
-      Admin
-    </a>
-  {% elseif app.session.get('user_role') == 'employee' %}
-    <a href="{{ path('employee_panel') }}"
-       title="Employee Panel"
-       style="
-         display: inline-flex; align-items: center; gap: 6px;
-         padding: 7px 14px; border-radius: 10px;
-         background: linear-gradient(135deg, #065f46 0%, #059669 100%);
-         color: #fff; text-decoration: none;
-         font-size: 0.78rem; font-weight: 800; letter-spacing: 0.02em;
-         box-shadow: 0 4px 14px rgba(5,150,105,0.35);
-         transition: transform 0.2s ease, box-shadow 0.2s ease;
-         white-space: nowrap;
-       "
-       onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(5,150,105,0.45)'"
-       onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(5,150,105,0.35)'"
-    >
-      <i class="bi bi-person-badge-fill" style="font-size:0.9rem;"></i>
-      Employee
-    </a>
-  {% endif %}        <a href="{{ path('app_panier_index') }}" class="btn-cart" title="Cart" aria-label="Cart" style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: linear-gradient(135deg, #166534 0%, #15803d 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 6px 14px rgba(22, 101, 52, 0.3); transition: transform .2s ease, box-shadow .2s ease;">
-          <i class="bi bi-cart3" style="font-size: 1.05rem;"></i>
+      <div class="hdr-actions">
+
+        {# ── Role badge ── #}
+        {% if app.session.get('user_role') == 'admin' %}
+          <a href="{{ path('app_admin_panel_entry') }}" class="hdr-role-btn admin" title="Admin Panel">
+            <i class="bi bi-shield-lock-fill"></i> Admin
+          </a>
+        {% elseif app.session.get('user_role') == 'employee' %}
+          <a href="{{ path('employee_panel') }}" class="hdr-role-btn employee" title="Employee Panel">
+            <i class="bi bi-person-badge-fill"></i> Employee
+          </a>
+        {% endif %}
+
+        <div class="hdr-divider"></div>
+
+        {# ── Cart ── #}
+        <a href="{{ path('app_panier_index') }}" class="hdr-icon-btn green" title="My Cart">
+          <i class="bi bi-cart3"></i>
           {% if cartCount > 0 %}
-            <span id="cart-badge" style="position: absolute; top: -7px; right: -6px; background: #ef4444; color: white; border-radius: 999px; min-width: 20px; height: 20px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 2px solid white;">
-              {{ cartCount }}
-            </span>
+            <span class="hdr-cart-badge">{{ cartCount }}</span>
           {% endif %}
         </a>
-        <a href="{{ path('app_commandes_index') }}" class="btn-orders" title="My Orders" aria-label="My Orders" style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); color: white; text-decoration: none; font-weight: 700; box-shadow: 0 6px 14px rgba(13, 148, 136, 0.28); transition: transform .2s ease, box-shadow .2s ease;">
-          <i class="bi bi-receipt" style="font-size: 1.02rem;"></i>
+
+        {# ── Orders ── #}
+        <a href="{{ path('app_commandes_index') }}" class="hdr-icon-btn teal" title="My Orders">
+          <i class="bi bi-receipt"></i>
         </a>
-        <span style="color: #116530; font-weight: 600;">{{ app.session.get('user_name') }}</span>
-        <a href="{{ path('elfirma_profile') }}" class="btn-profile" title="My Profile" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(17, 101, 48, 0.15);">
-          <i class="bi bi-person-fill" style="font-size: 1.3rem;"></i>
+
+        <div class="hdr-divider"></div>
+
+        {# ── User identity pill (links to profile) ── #}
+        <a href="{{ path('elfirma_profile') }}" class="hdr-user-pill" title="My Profile">
+          <div class="hdr-user-avatar">{{ initials }}</div>
+          <span class="hdr-user-name">{{ userName }}</span>
         </a>
 
         {# ── Notification Bell ── #}
@@ -295,13 +413,16 @@
           </button>
         </div>
 
-        <a href="{{ path('app_logout') }}" class="btn-logout" title="Logout" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%); color: white; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.15);">
-          <i class="bi bi-box-arrow-right" style="font-size: 1.3rem;"></i>
+        {# ── Logout ── #}
+        <a href="{{ path('app_logout') }}" class="hdr-icon-btn red" title="Logout">
+          <i class="bi bi-box-arrow-right"></i>
         </a>
+
       </div>
+
     {% else %}
-      <a href="{{ path('app_login') }}" style="margin-left: auto; padding: 0.5rem 1rem; background: linear-gradient(135deg, #116530 0%, #0c4a23 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
-        Login
+      <a href="{{ path('app_login') }}" class="hdr-login-btn">
+        <i class="bi bi-person-fill"></i> Login
       </a>
     {% endif %}
 
@@ -403,13 +524,12 @@
     }).join('');
   }
 
-  /* ── read data from cultures page if present, else show link ── */
+  /* ── read data from cultures page if present ── */
   function init() {
     var dataEl = document.getElementById('ccUpcomingData');
     if (dataEl) {
       var items = [];
       try { items = JSON.parse(dataEl.dataset.items || '[]'); } catch (e) {}
-      /* Keep all items with a date — past ones show as overdue, not silently hidden */
       items = items.filter(function (it) {
         return !!it.date;
       }).sort(function (a, b) {
@@ -417,7 +537,6 @@
       });
       populate(items);
     } else {
-      /* not on cultures page — show a prompt */
       badgeEl.style.display = 'none';
       if (subEl) subEl.textContent = 'Visit Crops page to see harvests';
       listEl.innerHTML =
@@ -441,7 +560,6 @@
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closePanel(); });
 
-  /* run after DOM is ready */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

@@ -22,7 +22,7 @@ class Categorie
         return $this->id;
     }
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: 'Category name is required.')]
     #[Assert\Length(
         min: 2,

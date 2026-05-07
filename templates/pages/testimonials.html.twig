@@ -1,4 +1,4 @@
-﻿{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Testimonials - EL FIRMA{% endblock %}
 {% block meta_description %}{% endblock %}
@@ -6,6 +6,95 @@
 {% block body_class %}testimonials-page{% endblock %}
 
 {% block body %}
+<style>
+  .elfirma-testimonial-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px 32px 28px;
+    box-shadow: 0 4px 24px rgba(30,126,52,0.08);
+    border: 1px solid #e8f5e9;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+  }
+  .elfirma-testimonial-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(30,126,52,0.18);
+  }
+  .elfirma-testimonial-card .quote-icon {
+    position: absolute;
+    top: 14px;
+    right: 24px;
+    font-size: 80px;
+    line-height: 1;
+    color: #d4edda;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    user-select: none;
+  }
+  .elfirma-testimonial-card .stars {
+    color: #f4b942;
+    font-size: 17px;
+    margin-bottom: 14px;
+    letter-spacing: 2px;
+  }
+  .elfirma-testimonial-card .review-text {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #444;
+    font-style: italic;
+    margin-bottom: 24px;
+    min-height: 90px;
+  }
+  .elfirma-testimonial-card .author-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-top: 1px solid #e8f5e9;
+    padding-top: 18px;
+  }
+  .elfirma-testimonial-card .author-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #1e7e34;
+    flex-shrink: 0;
+  }
+  .elfirma-testimonial-card .author-name {
+    font-weight: 700;
+    color: #1a1a1a;
+    font-size: 15px;
+    margin: 0 0 3px;
+  }
+  .elfirma-testimonial-card .author-role {
+    font-size: 13px;
+    color: #1e7e34;
+    margin: 0;
+  }
+  .elfirma-stat-strip {
+    background: linear-gradient(135deg, #1e7e34 0%, #218838 100%);
+    border-radius: 16px;
+    padding: 40px 30px;
+    margin-bottom: 60px;
+    box-shadow: 0 8px 32px rgba(30,126,52,0.25);
+  }
+  .elfirma-stat-strip .stat-number {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .elfirma-stat-strip .stat-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+</style>
+
 <!-- Page Title -->
     <div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
       <div class="container position-relative">
@@ -25,70 +114,97 @@
     </div><!-- End Page Title -->
 
     <!-- Testimonials Section -->
-    <section class="testimonials-12 testimonials section" id="testimonials">
-      <!-- Section Title -->
+    <section class="testimonials section" id="testimonials" style="background: linear-gradient(135deg, #f0faf3 0%, #ffffff 50%, #f0faf3 100%); padding: 80px 0;">
+
       <div class="container section-title" data-aos="fade-up">
         <h2>TESTIMONIALS</h2>
-        <p>Necessitatibus eius consequatur</p>
-      </div><!-- End Section Title -->
+        <p>What our farmers and partners say about EL FIRMA</p>
+      </div>
 
-      <div class="testimonial-wrap">
-        <div class="container">
-          <div class="row">
-            <div class="col-md-6 mb-4 mb-md-4">
-              <div class="testimonial">
-                <img src="{{ asset('assets/img/testimonials/testimonials-1.jpg') }}" alt="Testimonial author">
-                <blockquote>
-                  <p>
-                    â€œLorem ipsum dolor sit, amet consectetur adipisicing
-                    elit. Provident deleniti iusto molestias, dolore vel fugiat
-                    ab placeat ea?â€
-                  </p>
-                </blockquote>
-                <p class="client-name">James Smith</p>
+      <div class="container">
+
+        <!-- Stats strip -->
+        <div class="elfirma-stat-strip" data-aos="fade-up" data-aos-delay="50">
+          <div class="row text-center gy-4">
+            <div class="col-6 col-md-3">
+              <div class="stat-number">500+</div>
+              <p class="stat-label">Happy Clients</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="stat-number">50+</div>
+              <p class="stat-label">Years Experience</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="stat-number">98%</div>
+              <p class="stat-label">Satisfaction Rate</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="stat-number">1,200</div>
+              <p class="stat-label">Hectares Managed</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial cards -->
+        <div class="row g-4">
+          <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="elfirma-testimonial-card">
+              <div class="quote-icon">"</div>
+              <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+              <p class="review-text">EL FIRMA transformed how we manage our farm. Planning crops, tracking parcels, and coordinating harvests has never been this smooth. Our yields improved by over 30% in the first season.</p>
+              <div class="author-row">
+                <img src="{{ asset('assets/img/testimonials/testimonials-1.jpg') }}" alt="James Smith" class="author-avatar">
+                <div>
+                  <p class="author-name">James Smith</p>
+                  <p class="author-role">Wheat &amp; Barley Farmer, Bizerte</p>
+                </div>
               </div>
             </div>
-            <div class="col-md-6 mb-4 mb-md-4">
-              <div class="testimonial">
-                <img src="{{ asset('assets/img/testimonials/testimonials-2.jpg') }}" alt="Testimonial author">
-                <blockquote>
-                  <p>
-                    â€œLorem ipsum dolor sit, amet consectetur adipisicing
-                    elit. Provident deleniti iusto molestias, dolore vel fugiat
-                    ab placeat ea?â€
-                  </p>
-                </blockquote>
-                <p class="client-name">Kate Smith</p>
+          </div>
+          <div class="col-md-6" data-aos="fade-up" data-aos-delay="150">
+            <div class="elfirma-testimonial-card">
+              <div class="quote-icon">"</div>
+              <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+              <p class="review-text">The livestock management module is outstanding. Tracking animal health, vaccinations, and production records used to take hours. With EL FIRMA it takes minutes and nothing falls through the cracks.</p>
+              <div class="author-row">
+                <img src="{{ asset('assets/img/testimonials/testimonials-2.jpg') }}" alt="Kate Smith" class="author-avatar">
+                <div>
+                  <p class="author-name">Kate Smith</p>
+                  <p class="author-role">Livestock Ranch Owner, Béja</p>
+                </div>
               </div>
             </div>
-            <div class="col-md-6 mb-4 mb-md-4">
-              <div class="testimonial">
-                <img src="{{ asset('assets/img/testimonials/testimonials-3.jpg') }}" alt="Testimonial author">
-                <blockquote>
-                  <p>
-                    â€œLorem ipsum dolor sit, amet consectetur adipisicing
-                    elit. Provident deleniti iusto molestias, dolore vel fugiat
-                    ab placeat ea?â€
-                  </p>
-                </blockquote>
-                <p class="client-name">Claire Anderson</p>
+          </div>
+          <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="elfirma-testimonial-card">
+              <div class="quote-icon">"</div>
+              <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</div>
+              <p class="review-text">We switched to EL FIRMA for equipment tracking and supplier management. The system gives our team real coordination and our machines are better maintained than ever. Highly recommended.</p>
+              <div class="author-row">
+                <img src="{{ asset('assets/img/testimonials/testimonials-3.jpg') }}" alt="Claire Anderson" class="author-avatar">
+                <div>
+                  <p class="author-name">Claire Anderson</p>
+                  <p class="author-role">Agro-Industrial Manager, Sfax</p>
+                </div>
               </div>
             </div>
-            <div class="col-md-6 mb-4 mb-md-4">
-              <div class="testimonial">
-                <img src="{{ asset('assets/img/testimonials/testimonials-4.jpg') }}" alt="Testimonial author">
-                <blockquote>
-                  <p>
-                    â€œLorem ipsum dolor sit, amet consectetur adipisicing
-                    elit. Provident deleniti iusto molestias, dolore vel fugiat
-                    ab placeat ea?â€
-                  </p>
-                </blockquote>
-                <p class="client-name">Dan Smith</p>
+          </div>
+          <div class="col-md-6" data-aos="fade-up" data-aos-delay="250">
+            <div class="elfirma-testimonial-card">
+              <div class="quote-icon">"</div>
+              <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+              <p class="review-text">From parcels to harvests to complaints handling — EL FIRMA covers it all. Our seasonal campaigns are better organized and the support team responds quickly whenever we need help.</p>
+              <div class="author-row">
+                <img src="{{ asset('assets/img/testimonials/testimonials-4.jpg') }}" alt="Dan Smith" class="author-avatar">
+                <div>
+                  <p class="author-name">Dan Smith</p>
+                  <p class="author-role">Cooperative Director, Tunis</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </section><!-- /Testimonials Section -->
 
@@ -101,8 +217,7 @@
             <div class="col-lg-6">
               <h3>Subscribe To Our Newsletter</h3>
               <p class="opacity-50">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Nesciunt, reprehenderit!
+                Stay updated with the latest farming tips, seasonal campaigns, and EL FIRMA news.
               </p>
             </div>
             <div class="col-lg-6">
@@ -122,6 +237,9 @@
         </div>
       </div>
     </section><!-- /Call To Action Section -->
+
+{% include 'components/_chatbot.html.twig' with {
+  'page': 'general',
+  'page_label': 'EL FIRMA Farm'
+} %}
 {% endblock %}
-
-

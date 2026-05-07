@@ -1,267 +1,461 @@
-﻿{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Equipments - EL FIRMA{% endblock %}
+{% block title %}Equipment Catalog - EL FIRMA{% endblock %}
 {% block meta_description %}{% endblock %}
 {% block meta_keywords %}{% endblock %}
 {% block body_class %}Equipments-page{% endblock %}
 
 {% block body %}
 <style>
-.btn-modern {
-  padding:10px 20px;
-  background:linear-gradient(135deg, #1e7e34, #218838);
-  color:white;
-  border-radius:25px;
-  text-decoration:none;
-  border:2px solid #1e7e34;
-  transition:0.3s;
-}
+  /* ── Equipment Cards ── */
+  .eq-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    border: 1px solid #e8f5e9;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .eq-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(30,126,52,0.16);
+  }
+  .eq-card-img-wrap {
+    position: relative;
+    height: 220px;
+    background: #f8fdf9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .eq-card-img-wrap img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.4s ease;
+  }
+  .eq-card:hover .eq-card-img-wrap img {
+    transform: scale(1.05);
+  }
+  .eq-discount-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: linear-gradient(135deg, #e53935, #c62828);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(229,57,53,0.4);
+  }
+  .eq-card-body {
+    padding: 22px 22px 18px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .eq-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .eq-card-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    flex: 1;
+    margin-bottom: 16px;
+  }
+  .eq-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .eq-price-original {
+    text-decoration: line-through;
+    color: #aaa;
+    font-size: 14px;
+  }
+  .eq-price-promo {
+    color: #1e7e34;
+    font-weight: 800;
+    font-size: 22px;
+  }
+  .eq-price-currency {
+    font-size: 14px;
+    color: #1e7e34;
+    font-weight: 600;
+  }
+  .btn-order {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    background: linear-gradient(135deg, #1e7e34, #218838);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    align-self: flex-start;
+    box-shadow: 0 4px 12px rgba(30,126,52,0.3);
+  }
+  .btn-order:hover {
+    background: linear-gradient(135deg, #155724, #1e7e34);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(30,126,52,0.4);
+    color: #fff;
+  }
 
-.btn-modern:hover {
-  background:white;
-  color:#1e7e34;
-  transform:translateY(-3px);
-}
+  /* ── Success Toast ── */
+  #successToast {
+    display: none;
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: linear-gradient(135deg, #1e7e34, #218838);
+    color: #fff;
+    padding: 16px 22px;
+    border-radius: 12px;
+    z-index: 10000;
+    box-shadow: 0 8px 24px rgba(30,126,52,0.4);
+    font-weight: 600;
+    font-size: 15px;
+    animation: slideIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 240px;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
 
-@keyframes fadeIn {
-  from { transform:scale(0.9); opacity:0; }
-  to { transform:scale(1); opacity:1; }
-}
+  /* ── Order Modal ── */
+  .eq-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+  .eq-modal-overlay.open {
+    display: flex;
+  }
+  .eq-modal {
+    background: #fff;
+    width: 460px;
+    max-width: 95vw;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .eq-modal-header {
+    background: linear-gradient(135deg, #1e7e34, #218838);
+    color: #fff;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .eq-modal-header h5 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .eq-modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .eq-modal-close:hover { background: rgba(255,255,255,0.35); }
+  .eq-modal-body {
+    padding: 24px;
+  }
+  .eq-product-pill {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1e7e34;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .eq-modal-input, .eq-modal-select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .eq-modal-input:focus, .eq-modal-select:focus {
+    border-color: #1e7e34;
+    box-shadow: 0 0 0 3px rgba(30,126,52,0.12);
+  }
+  .eq-modal-footer {
+    padding: 16px 24px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .btn-cancel {
+    padding: 10px 20px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fff;
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-cancel:hover { background: #f5f5f5; }
+  .btn-confirm {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #1e7e34, #218838);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(30,126,52,0.3);
+    transition: all 0.2s;
+  }
+  .btn-confirm:hover { background: linear-gradient(135deg, #155724, #1e7e34); }
+
+  /* ── Section Header ── */
+  .eq-section-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .eq-section-header .badge-tag {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #1e7e34;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .eq-section-header h2 {
+    font-size: 34px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+  .eq-section-header p {
+    color: #666;
+    font-size: 16px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
 </style>
 
-<!-- SUCCESS MESSAGE -->
-<div id="successMessage" style="
-display:none;
-position:fixed;
-top:20px;
-right:20px;
-background:#1e7e34;
-color:white;
-padding:15px 20px;
-border-radius:10px;
-z-index:1000;">
-✅ Order Done Successfully!
+<!-- Success Toast -->
+<div id="successToast" style="display:none;">
+  <span style="font-size:20px;">&#10003;</span>
+  <span id="successToastText">Order placed successfully!</span>
 </div>
 
 <!-- Page Title -->
-    <div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
-      <div class="container position-relative">
-        <h1>Equipments</h1>
-        <p>
-          Home
-          /
-          Equipments</p>
-        <nav class="breadcrumbs">
-          <ol>
-            <li><a href="{{ path('app_home') }}">Home</a></li>
-            <li class="current">Equipments</li>
-          </ol>
-        </nav>
-      </div>
-    </div><!-- End Page Title -->
-
-    <!-- Blog Posts 2 Section -->
-    <section id="blog-posts-2" class="blog-posts-2 section">
-
-      <div class="container">
-  <div class="row gy-4">
-
-    {% for equipement in equipements %}
-      <div class="col-lg-4">
-        <article class="position-relative h-100">
-
-          <!-- IMAGE (remplace l'image statique) -->
-          <div class="post-img position-relative overflow-hidden" 
-     style="height:250px; display:flex; align-items:center; justify-content:center; background:#f5f5f5;">
-
-  <img src="{{ asset('uploads/equipement/' ~ equipement.imageEq) }}" 
-       style="max-height:100%; max-width:100%; object-fit:contain;" 
-       class="img-fluid" 
-       alt="">
-</div>
-
-          <div class="post-content d-flex flex-column">
-
-            <!-- NOM -->
-            <h3 class="post-title">
-              {{ equipement.nomEq }}
-            </h3>
-
-            <!-- DESCRIPTION -->
-            <p>
-              {{ equipement.descriptionEq }}
-            </p>
-
-            <!-- PRIX -->
-            {% set prixOriginal = equipement.coutAchat %}
-            {% set prixPromo = prixOriginal * 0.7 %}
-
-            <p>
-              <span style="text-decoration:line-through; color:#888;">
-                {{ prixOriginal }} DT
-              </span>
-            </p>
-
-            <p style="color:#1e7e34; font-weight:bold; font-size:18px;">
-              {{ prixPromo|number_format(2) }} DT
-            </p>
-            <a href="#" 
-              class="btn-modern"
-              onclick="openModal('{{ equipement.nomEq }}')"
-              style="align-self:flex-end;">
-              🛒 Order
-            </a>
-
-        </article>
-      </div>
-    {% else %}
-      <p>Aucun équipement disponible.</p>
-    {% endfor %}
-
+<div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
+  <div class="container position-relative">
+    <h1>Equipment Catalog</h1>
+    <p>Home / Equipment Catalog</p>
+    <nav class="breadcrumbs">
+      <ol>
+        <li><a href="{{ path('app_home') }}">Home</a></li>
+        <li class="current">Equipment</li>
+      </ol>
+    </nav>
   </div>
 </div>
 
-<!-- MODAL -->
-<div id="orderModal" style="
-display:none;
-position:fixed;
-top:0; left:0;
-width:100%; height:100%;
-background:rgba(0,0,0,0.6);
-backdrop-filter:blur(5px);
-z-index:999;
-">
+<!-- Equipment Section -->
+<section style="padding: 70px 0 40px; background: #fafafa;">
+  <div class="container">
 
-  <div style="
-  background:white;
-  width:450px;
-  margin:80px auto;
-  border-radius:20px;
-  overflow:hidden;
-  box-shadow:0 20px 50px rgba(0,0,0,0.3);
-  animation:fadeIn 0.3s;
-  ">
-
-    <div style="
-    background:linear-gradient(135deg, #1e7e34, #218838);
-    color:white;
-    padding:20px;
-    display:flex;
-    justify-content:space-between;">
-      <h5>🛒 Place Order</h5>
-      <span onclick="closeModal()" style="cursor:pointer;">✖</span>
+    <div class="eq-section-header" data-aos="fade-up">
+      <div class="badge-tag">Our Catalog</div>
+      <h2>Farm Equipment</h2>
+      <p>Browse our selection of quality agricultural equipment available at special prices</p>
     </div>
 
-    <div style="padding:20px;">
-      <p id="productName" style="background:#e6f4ea; padding:10px; border-radius:10px;"></p>
-
-      <input type="text" id="clientName" placeholder="Your name"
-             style="width:100%; padding:10px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
-
-      <select id="paymentMethod"
-              style="width:100%; padding:10px; border-radius:10px; border:1px solid #ccc;">
-        <option>Cash</option>
-        <option>Card</option>
-        <option>Online</option>
-      </select>
-    </div>
-
-    <div style="padding:20px; display:flex; justify-content:flex-end; gap:10px;">
-      <button onclick="closeModal()">Cancel</button>
-
-      <button onclick="submitOrder()" style="
-      background:linear-gradient(135deg, #1e7e34, #218838);
-      color:white;
-      border:none;
-      padding:10px 20px;
-      border-radius:10px;">
-      Confirm
-      </button>
-    </div>
-
-  </div>
-</div>
-
-    </section><!-- /Blog Posts 2 Section -->
-
-    <!-- Blog Pagination Section -->
-    <section id="blog-pagination" class="blog-pagination section">
-
-      <div class="container">
-        <div class="d-flex justify-content-center">
-          <ul>
-            <li><a href="#"><i class="bi bi-chevron-left"></i></a></li>
-            <li><a href="#">1</a></li>
-            <li><a href="#" class="active">2</a></li>
-            <li><a href="#">3</a></li>
-            <li><a href="#">4</a></li>
-            <li>...</li>
-            <li><a href="#">10</a></li>
-            <li><a href="#"><i class="bi bi-chevron-right"></i></a></li>
-          </ul>
-        </div>
-      </div>
-
-    </section><!-- /Blog Pagination Section -->
-
-    <!-- Call To Action Section -->
-    <section id="call-to-action" class="call-to-action section light-background">
-
-      <div class="content">
-        <div class="container">
-          <div class="row align-items-center">
-            <div class="col-lg-6">
-              <h3>Subscribe To Our Newsletter</h3>
-              <p class="opacity-50">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Nesciunt, reprehenderit!
-              </p>
+    <div class="row gy-4">
+      {% for equipement in equipements %}
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 60 }}">
+          <div class="eq-card">
+            <div class="eq-card-img-wrap">
+              <span class="eq-discount-badge">-30% OFF</span>
+              <img src="{{ asset('uploads/equipement/' ~ equipement.imageEq) }}"
+                   alt="{{ equipement.nomEq }}">
             </div>
-            <div class="col-lg-6">
-              <form action="{{ path('app_newsletter_submit') }}" class="form-subscribe php-email-form">
-                <div class="form-group d-flex align-items-stretch">
-                  <input type="email" name="email" class="form-control h-100" placeholder="Enter your e-mail">
-                  <input type="submit" class="btn btn-secondary px-4" value="Subscribe">
-                </div>
-                <div class="loading">Loading</div>
-                <div class="error-message"></div>
-                <div class="sent-message">
-                  Your subscription request has been sent. Thank you!
-                </div>
-              </form>
+            <div class="eq-card-body">
+              <h3 class="eq-card-title">{{ equipement.nomEq }}</h3>
+              <p class="eq-card-desc">{{ equipement.descriptionEq }}</p>
+              <div class="eq-price-row">
+                <span class="eq-price-original">{{ equipement.coutAchat }} DT</span>
+                <span class="eq-price-promo">{{ (equipement.coutAchat * 0.7)|number_format(2) }}</span>
+                <span class="eq-price-currency">DT</span>
+              </div>
+              <button class="btn-order" onclick="openModal('{{ equipement.nomEq|e('js') }}')">
+                &#128722; Order Now
+              </button>
             </div>
           </div>
         </div>
-      </div>
-    </section><!-- /Call To Action Section -->
+      {% else %}
+        <div class="col-12 text-center py-5">
+          <p style="color:#888; font-size:16px;">No equipment available at this time.</p>
+        </div>
+      {% endfor %}
+    </div>
 
-    
+  </div>
+</section>
+
+<!-- Order Modal -->
+<div id="orderModal" class="eq-modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="eq-modal">
+    <div class="eq-modal-header">
+      <h5>&#128722; Place Your Order</h5>
+      <button class="eq-modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div class="eq-modal-body">
+      <div class="eq-product-pill" id="productName"></div>
+      <input type="text" id="clientName" class="eq-modal-input" placeholder="Your full name" autocomplete="name">
+      <select id="paymentMethod" class="eq-modal-select">
+        <option value="" disabled selected>Select payment method</option>
+        <option>Cash on delivery</option>
+        <option>Bank card</option>
+        <option>Online payment</option>
+      </select>
+    </div>
+    <div class="eq-modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="submitOrder()">Confirm Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- Call To Action Section -->
+<section id="call-to-action" class="call-to-action section light-background">
+  <div class="content">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <h3>Subscribe To Our Newsletter</h3>
+          <p class="opacity-50">
+            Get notified about new equipment arrivals, seasonal promotions, and farming tips.
+          </p>
+        </div>
+        <div class="col-lg-6">
+          <form action="{{ path('app_newsletter_submit') }}" class="form-subscribe php-email-form">
+            <div class="form-group d-flex align-items-stretch">
+              <input type="email" name="email" class="form-control h-100" placeholder="Enter your e-mail">
+              <input type="submit" class="btn btn-secondary px-4" value="Subscribe">
+            </div>
+            <div class="loading">Loading</div>
+            <div class="error-message"></div>
+            <div class="sent-message">Your subscription request has been sent. Thank you!</div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <script>
+let currentProduct = '';
+
 function openModal(name) {
-  document.getElementById('orderModal').style.display = 'block';
-  document.getElementById('productName').innerText = "Product: " + name;
+  currentProduct = name;
+  document.getElementById('productName').textContent = name;
+  document.getElementById('clientName').value = '';
+  document.getElementById('paymentMethod').selectedIndex = 0;
+  document.getElementById('orderModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
-  document.getElementById('orderModal').style.display = 'none';
+  document.getElementById('orderModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('orderModal')) closeModal();
 }
 
 function submitOrder() {
-  let name = document.getElementById('clientName').value;
+  const name = document.getElementById('clientName').value.trim();
+  const pay = document.getElementById('paymentMethod').value;
 
-  if (name === "") {
-    alert("Enter your name");
+  if (!name) {
+    document.getElementById('clientName').focus();
+    document.getElementById('clientName').style.borderColor = '#e53935';
+    setTimeout(() => { document.getElementById('clientName').style.borderColor = ''; }, 2000);
+    return;
+  }
+  if (!pay) {
+    document.getElementById('paymentMethod').style.borderColor = '#e53935';
+    setTimeout(() => { document.getElementById('paymentMethod').style.borderColor = ''; }, 2000);
     return;
   }
 
   closeModal();
+  showToast('Order for "' + currentProduct + '" placed successfully!');
+}
 
-  let msg = document.getElementById('successMessage');
-  msg.style.display = 'block';
-
-  setTimeout(() => {
-    msg.style.display = 'none';
-  }, 3000);
+function showToast(msg) {
+  const toast = document.getElementById('successToast');
+  document.getElementById('successToastText').textContent = msg;
+  toast.style.display = 'flex';
+  toast.style.animation = 'none';
+  void toast.offsetHeight;
+  toast.style.animation = 'slideIn 0.3s ease';
+  setTimeout(() => { toast.style.display = 'none'; }, 3500);
 }
 </script>
+
+{% include 'components/_chatbot.html.twig' with {
+  'page': 'products',
+  'page_label': 'Equipment Catalog'
+} %}
 {% endblock %}

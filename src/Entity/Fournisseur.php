@@ -9,7 +9,7 @@ use App\Repository\FournisseurRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FournisseurRepository::class)]
-#[ORM\Table(name: 'fournisseurs')]
+#[ORM\Table(name: 'fournisseur')]
 class Fournisseur
 {
     #[ORM\Id]
@@ -22,7 +22,7 @@ class Fournisseur
         return $this->id_f;
     }
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: 'Le type du fournisseur est obligatoire.')]
     #[Assert\Length(
         min: 2,
@@ -118,7 +118,7 @@ class Fournisseur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 50, options: ['default' => 'Actif'])]
+    #[ORM\Column(type: 'string', length: 50, nullable: true, options: ['default' => 'Actif'])]
     #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     #[Assert\Length(
         max: 50,

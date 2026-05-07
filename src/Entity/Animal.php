@@ -80,14 +80,7 @@ class Animal
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     #[Assert\NotBlank(message: 'Type is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
@@ -132,7 +125,7 @@ class Animal
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 20)]
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $sexe = null;
 
     public function getSexe(): ?string
@@ -146,7 +139,7 @@ class Animal
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     #[Assert\NotNull(message: 'Age is required.')]
     #[Assert\Type(type: 'integer', message: 'Age must contain digits only.')]
     #[Assert\GreaterThanOrEqual(value: 0, message: 'Age must be greater than or equal to 0.')]
@@ -163,7 +156,7 @@ class Animal
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $etat_sante = null;
 
     public function getEtatSante(): ?string
@@ -177,7 +170,7 @@ class Animal
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $statut = null;
 
     public function getStatut(): ?string

@@ -7,73 +7,98 @@
    ============================================================ #}
 
 <style>
-/* ── Chatbot floating button ── */
+/* ── Imports ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── FAB button ── */
 .elfirma-chat-fab {
   position: fixed;
-  bottom: 28px;
-  right: 28px;
+  bottom: 30px;
+  right: 30px;
   z-index: 9900;
   display: flex;
   align-items: center;
   gap: 10px;
-  background: linear-gradient(135deg, #166534 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #0f4c2a 0%, #1a7a40 60%, #22c55e 100%);
   color: #fff;
   border: none;
-  border-radius: 50px;
-  padding: 13px 22px 13px 16px;
-  font-size: .93rem;
+  border-radius: 56px;
+  padding: 14px 22px 14px 14px;
+  font-size: .88rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 28px rgba(22,101,52,.45);
-  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s;
-  letter-spacing: .01em;
+  box-shadow: 0 8px 32px rgba(15,76,42,.5), 0 2px 8px rgba(0,0,0,.18);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
+  letter-spacing: .02em;
+  font-family: 'Inter', sans-serif;
 }
 .elfirma-chat-fab:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 14px 36px rgba(22,101,52,.55);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 18px 48px rgba(15,76,42,.55), 0 4px 16px rgba(0,0,0,.2);
 }
-.elfirma-chat-fab .fab-icon {
-  width: 34px; height: 34px;
-  background: rgba(255,255,255,.18);
+.elfirma-chat-fab .fab-icon-wrap {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,.15);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,.25);
 }
-.elfirma-chat-fab .fab-pulse {
+.elfirma-chat-fab .fab-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+.elfirma-chat-fab .fab-label {
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.elfirma-chat-fab .fab-sublabel {
+  font-size: .66rem;
+  font-weight: 500;
+  opacity: .8;
+  letter-spacing: .01em;
+}
+.elfirma-chat-fab .fab-live-dot {
   position: absolute;
-  top: 6px; right: 6px;
-  width: 10px; height: 10px;
+  top: 8px; right: 8px;
+  width: 9px; height: 9px;
   background: #4ade80;
   border-radius: 50%;
-  border: 2px solid #166534;
-  animation: fabPulse 2s infinite;
+  border: 2px solid #0f4c2a;
+  animation: livePulse 2.2s infinite;
 }
-@keyframes fabPulse {
+@keyframes livePulse {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50%       { transform: scale(1.5); opacity: .6; }
+  50%       { transform: scale(1.6); opacity: .5; }
 }
 
-/* ── Chat panel ── */
+/* ── Panel ── */
 .elfirma-chat-panel {
   position: fixed;
-  bottom: 100px;
-  right: 28px;
+  bottom: 104px;
+  right: 30px;
   z-index: 9910;
-  width: 390px;
-  max-width: calc(100vw - 32px);
-  height: 560px;
-  max-height: calc(100vh - 130px);
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 24px 80px rgba(5,46,22,.28), 0 4px 16px rgba(0,0,0,.12);
+  width: 400px;
+  max-width: calc(100vw - 24px);
+  height: 580px;
+  max-height: calc(100vh - 120px);
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow:
+    0 32px 80px rgba(10,40,20,.22),
+    0 8px 24px rgba(0,0,0,.1),
+    0 0 0 1px rgba(34,197,94,.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transform: translateY(20px) scale(.95);
+  transform: translateY(24px) scale(.94);
   opacity: 0;
   pointer-events: none;
-  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+  transition: transform .32s cubic-bezier(.34,1.56,.64,1), opacity .24s ease;
 }
 .elfirma-chat-panel.chat-open {
   transform: translateY(0) scale(1);
@@ -81,287 +106,343 @@
   pointer-events: all;
 }
 
-/* Panel header */
-.chat-panel-header {
-  background: linear-gradient(135deg, #052e16 0%, #166534 100%);
-  padding: 16px 18px;
+/* Header */
+.chat-header {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #052e16 0%, #0f4c2a 50%, #166534 100%);
+  padding: 18px 18px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.chat-header::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(74,222,128,.12) 0%, transparent 70%);
+  pointer-events: none;
 }
 .chat-header-avatar {
-  width: 40px; height: 40px;
-  background: rgba(74,222,128,.22);
-  border: 2px solid rgba(74,222,128,.45);
-  border-radius: 50%;
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, rgba(74,222,128,.25), rgba(34,197,94,.15));
+  border: 1.5px solid rgba(74,222,128,.4);
+  border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
 }
 .chat-header-info { flex: 1; min-width: 0; }
 .chat-header-title {
   color: #fff;
-  font-size: .92rem;
+  font-size: .95rem;
   font-weight: 700;
-  line-height: 1.2;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: .01em;
+  font-family: 'Inter', sans-serif;
 }
 .chat-header-sub {
   color: #86efac;
-  font-size: .69rem;
-  font-weight: 500;
-  margin-top: 1px;
-}
-.chat-header-right { display: flex; align-items: center; gap: 8px; }
-.chat-status-badge {
-  display: flex; align-items: center; gap: 5px;
-  background: rgba(74,222,128,.18);
-  border: 1px solid rgba(74,222,128,.35);
-  border-radius: 999px;
-  padding: 3px 10px;
   font-size: .68rem;
+  font-weight: 500;
+  margin-top: 2px;
+  opacity: .9;
+}
+.chat-header-actions { display: flex; align-items: center; gap: 8px; }
+.chat-online-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(74,222,128,.15);
+  border: 1px solid rgba(74,222,128,.3);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: .67rem;
   font-weight: 700;
   color: #86efac;
-  letter-spacing: .04em;
+  letter-spacing: .05em;
+  text-transform: uppercase;
 }
-.chat-status-dot {
-  width: 7px; height: 7px;
+.chat-online-dot {
+  width: 6px; height: 6px;
   background: #4ade80;
   border-radius: 50%;
-  animation: fabPulse 2s infinite;
+  animation: livePulse 2.2s infinite;
 }
 .chat-close-btn {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.14);
-  border: 1px solid rgba(255,255,255,.2);
-  color: #fff;
-  font-size: .8rem;
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.85);
+  font-size: .78rem;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: background .18s;
-  flex-shrink: 0;
+  transition: background .18s, color .18s;
 }
-.chat-close-btn:hover { background: rgba(255,255,255,.28); }
-
-/* Context banner */
-.chat-context-bar {
-  background: #f0fdf4;
-  border-bottom: 1px solid #bbf7d0;
-  padding: 7px 16px;
-  font-size: .72rem;
-  color: #166534;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.chat-context-bar span.ctx-icon { font-size: .85rem; }
+.chat-close-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
 
 /* Messages area */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 18px 16px 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: #d1fae5 transparent;
 }
-.chat-messages::-webkit-scrollbar { width: 5px; }
+.chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-thumb { background: #bbf7d0; border-radius: 99px; }
 
 /* Message bubbles */
-.chat-msg { display: flex; flex-direction: column; max-width: 86%; }
+.chat-msg { display: flex; flex-direction: column; max-width: 88%; gap: 4px; }
 .chat-msg--bot { align-self: flex-start; align-items: flex-start; }
 .chat-msg--user { align-self: flex-end; align-items: flex-end; }
 
-.chat-bubble {
-  padding: 10px 14px;
-  border-radius: 16px;
-  font-size: .86rem;
-  line-height: 1.55;
-  word-break: break-word;
-  white-space: pre-wrap;
-}
 .chat-msg--bot .chat-bubble {
   background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-bottom-left-radius: 4px;
+  border: 1px solid #e8eef5;
+  border-bottom-left-radius: 5px;
   color: #1e293b;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
 }
 .chat-msg--user .chat-bubble {
-  background: linear-gradient(135deg, #166534, #16a34a);
+  background: linear-gradient(135deg, #0f4c2a, #16a34a);
   color: #fff;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 5px;
+  box-shadow: 0 4px 14px rgba(15,76,42,.3);
+}
+.chat-bubble {
+  padding: 11px 15px;
+  border-radius: 18px;
+  font-size: .855rem;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
+  font-family: 'Inter', sans-serif;
+}
+/* Markdown-like rendering inside bot bubbles */
+.chat-bubble strong { font-weight: 700; }
+.chat-bubble em { font-style: italic; }
+.chat-bubble ul { margin: 6px 0 0 16px; padding: 0; }
+.chat-bubble li { margin-bottom: 3px; }
+
+.chat-msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
 }
 .chat-msg-time {
-  font-size: .65rem;
+  font-size: .62rem;
   color: #94a3b8;
-  margin-top: 4px;
-  padding: 0 4px;
+  font-family: 'Inter', sans-serif;
+}
+.chat-msg--bot .chat-msg-meta { flex-direction: row; }
+.chat-msg--user .chat-msg-meta { flex-direction: row-reverse; }
+
+.chat-bubble--error {
+  background: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+  color: #be123c !important;
 }
 
 /* Typing indicator */
 .chat-typing {
   display: none;
   align-self: flex-start;
-  padding: 11px 16px;
+  padding: 12px 16px;
   background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  border-bottom-left-radius: 4px;
+  border: 1px solid #e8eef5;
+  border-radius: 18px;
+  border-bottom-left-radius: 5px;
   gap: 5px;
   align-items: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
 }
 .chat-typing.typing-visible { display: flex; }
 .chat-typing-dot {
   width: 7px; height: 7px;
   background: #94a3b8;
   border-radius: 50%;
-  animation: typingBounce 1.2s infinite;
+  animation: dotBounce 1.3s infinite;
 }
-.chat-typing-dot:nth-child(2) { animation-delay: .2s; }
-.chat-typing-dot:nth-child(3) { animation-delay: .4s; }
-@keyframes typingBounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30%           { transform: translateY(-6px); }
-}
-
-/* Input area */
-.chat-input-area {
-  padding: 12px 14px;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  flex-shrink: 0;
-  background: #fff;
-}
-.chat-textarea {
-  flex: 1;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 10px 13px;
-  font-size: .86rem;
-  resize: none;
-  outline: none;
-  font-family: inherit;
-  line-height: 1.5;
-  max-height: 110px;
-  overflow-y: auto;
-  transition: border-color .18s;
-  color: #1e293b;
-}
-.chat-textarea:focus { border-color: #16a34a; }
-.chat-textarea::placeholder { color: #94a3b8; }
-.chat-send-btn {
-  width: 40px; height: 40px;
-  background: linear-gradient(135deg, #166534, #16a34a);
-  border: none;
-  border-radius: 12px;
-  color: #fff;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: opacity .18s, transform .18s;
-}
-.chat-send-btn:hover:not(:disabled) { opacity: .88; transform: scale(1.06); }
-.chat-send-btn:disabled { opacity: .45; cursor: not-allowed; }
-.chat-send-btn svg { width: 17px; height: 17px; }
-
-/* Error message style */
-.chat-bubble--error {
-  background: #fef2f2 !important;
-  border-color: #fecaca !important;
-  color: #dc2626 !important;
+.chat-typing-dot:nth-child(2) { animation-delay: .18s; }
+.chat-typing-dot:nth-child(3) { animation-delay: .36s; }
+@keyframes dotBounce {
+  0%, 60%, 100% { transform: translateY(0); background: #94a3b8; }
+  30%           { transform: translateY(-7px); background: #22c55e; }
 }
 
-/* Suggestions chips */
+/* Suggestion chips */
 .chat-suggestions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 0 0 4px;
+  padding: 2px 0 4px;
 }
 .chat-chip {
   background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+  border: 1.5px solid #bbf7d0;
+  color: #15803d;
   border-radius: 999px;
-  padding: 5px 13px;
-  font-size: .74rem;
+  padding: 6px 14px;
+  font-size: .73rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background .18s, transform .18s;
+  transition: all .18s;
   white-space: nowrap;
+  font-family: 'Inter', sans-serif;
 }
 .chat-chip:hover {
   background: #dcfce7;
+  border-color: #4ade80;
   transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(34,197,94,.2);
 }
 
+/* Input area */
+.chat-input-wrap {
+  flex-shrink: 0;
+  padding: 12px 14px 14px;
+  border-top: 1px solid #f1f5f9;
+  background: #fff;
+}
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 8px 8px 8px 14px;
+  transition: border-color .18s, box-shadow .18s;
+}
+.chat-input-row:focus-within {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,.1);
+  background: #fff;
+}
+.chat-textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+  font-size: .855rem;
+  resize: none;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+  max-height: 100px;
+  overflow-y: auto;
+  color: #1e293b;
+}
+.chat-textarea::placeholder { color: #94a3b8; }
+.chat-send-btn {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #0f4c2a, #16a34a);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: opacity .18s, transform .18s, box-shadow .18s;
+  box-shadow: 0 3px 10px rgba(15,76,42,.3);
+}
+.chat-send-btn:hover:not(:disabled) {
+  opacity: .9;
+  transform: scale(1.08);
+  box-shadow: 0 5px 16px rgba(15,76,42,.4);
+}
+.chat-send-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+.chat-send-btn svg { width: 16px; height: 16px; }
+.chat-input-hint {
+  text-align: center;
+  font-size: .62rem;
+  color: #94a3b8;
+  margin-top: 7px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Status text */
+#elfirmaChatStatusText { font-size: .67rem; }
+
 @media (max-width: 480px) {
-  .elfirma-chat-panel { right: 10px; bottom: 90px; width: calc(100vw - 20px); }
-  .elfirma-chat-fab   { right: 14px; bottom: 20px; padding: 11px 16px 11px 12px; font-size: .85rem; }
+  .elfirma-chat-panel { right: 8px; bottom: 96px; width: calc(100vw - 16px); border-radius: 20px; }
+  .elfirma-chat-fab   { right: 16px; bottom: 22px; padding: 12px 16px 12px 12px; }
+  .elfirma-chat-fab .fab-sublabel { display: none; }
 }
 </style>
 
-{# ── Floating button ── #}
+{# ── FAB ── #}
 <button class="elfirma-chat-fab" id="elfirmaChatFab" aria-label="Open AI Assistant" type="button">
-  <span class="fab-pulse"></span>
-  <span class="fab-icon">🌿</span>
-  <span>AI Assistant</span>
+  <span class="fab-live-dot"></span>
+  <span class="fab-icon-wrap">🌿</span>
+  <span class="fab-text-wrap">
+    <span class="fab-label">AI Assistant</span>
+    <span class="fab-sublabel">Ask me anything</span>
+  </span>
 </button>
 
-{# ── Chat panel ── #}
+{# ── Panel ── #}
 <div class="elfirma-chat-panel" id="elfirmaChatPanel" aria-live="polite" aria-label="EL FIRMA AI Chat">
 
   {# Header #}
-  <div class="chat-panel-header">
+  <div class="chat-header">
     <div class="chat-header-avatar">🌱</div>
     <div class="chat-header-info">
       <div class="chat-header-title">EL FIRMA Assistant</div>
       <div class="chat-header-sub">Your smart farming assistant</div>
     </div>
-    <div class="chat-header-right">
-      <div class="chat-status-badge" id="elfirmaChatStatus">
-        <span class="chat-status-dot"></span>
+    <div class="chat-header-actions">
+      <div class="chat-online-badge">
+        <span class="chat-online-dot"></span>
         <span id="elfirmaChatStatusText">Online</span>
       </div>
-      <button class="chat-close-btn" id="elfirmaChatClose" type="button" aria-label="Close chat">✕</button>
+      <button class="chat-close-btn" id="elfirmaChatClose" type="button" aria-label="Close">✕</button>
     </div>
-  </div>
-
-  {# Context bar #}
-  <div class="chat-context-bar">
-    <span class="ctx-icon">📋</span>
-    Viewing: <strong>{{ page_label|default('Farm Data') }}</strong>
   </div>
 
   {# Messages #}
   <div class="chat-messages" id="elfirmaChatMessages">
-    {# Welcome bot message with suggestion chips #}
     <div class="chat-msg chat-msg--bot">
       <div class="chat-bubble">
-        👋 Hello! I'm your EL FIRMA agricultural assistant with live access to all <strong>parcel</strong> and <strong>crop</strong> data. How can I help you today?
+        👋 Hello! I'm your <strong>EL FIRMA</strong> assistant. I can answer your questions about our farm, products, animals, crops, and more. How can I help you today?
       </div>
-      <div class="chat-msg-time">just now</div>
+      <div class="chat-msg-meta">
+        <span class="chat-msg-time">just now</span>
+      </div>
     </div>
     <div class="chat-suggestions" id="elfirmaChatChips">
       {% if page == 'parcelles' %}
-      <button class="chat-chip" type="button">How many parcels are available?</button>
-      <button class="chat-chip" type="button">Which parcel has the largest area?</button>
-      <button class="chat-chip" type="button">List all parcels and their soil types</button>
-      <button class="chat-chip" type="button">Which parcels are currently resting?</button>
+        <button class="chat-chip" type="button">How many parcels are available?</button>
+        <button class="chat-chip" type="button">Which parcel has the largest area?</button>
+        <button class="chat-chip" type="button">List parcels by soil type</button>
+        <button class="chat-chip" type="button">Which parcels are currently resting?</button>
+      {% elseif page == 'cultures' %}
+        <button class="chat-chip" type="button">Which crops are overdue for harvest?</button>
+        <button class="chat-chip" type="button">What is the average crop yield?</button>
+        <button class="chat-chip" type="button">List all crops in progress</button>
+        <button class="chat-chip" type="button">Which crop has the best yield?</button>
+      {% elseif page == 'livestock' %}
+        <button class="chat-chip" type="button">How many livestock facilities do we have?</button>
+        <button class="chat-chip" type="button">Which facility is near full capacity?</button>
+        <button class="chat-chip" type="button">Show animals by health status</button>
+        <button class="chat-chip" type="button">Which vaccinations are due soon?</button>
+      {% elseif page == 'products' %}
+        <button class="chat-chip" type="button">Which products are low on stock?</button>
+        <button class="chat-chip" type="button">List all available products</button>
+        <button class="chat-chip" type="button">What are the recent orders?</button>
+        <button class="chat-chip" type="button">Which products are expired?</button>
       {% else %}
-      <button class="chat-chip" type="button">Which crops are overdue for harvest?</button>
-      <button class="chat-chip" type="button">What is the average crop yield?</button>
-      <button class="chat-chip" type="button">List all crops in progress</button>
-      <button class="chat-chip" type="button">Which crop has the highest production cost?</button>
+        <button class="chat-chip" type="button">Give me a farm overview</button>
+        <button class="chat-chip" type="button">Which crops are overdue?</button>
+        <button class="chat-chip" type="button">Any pending maintenance tasks?</button>
+        <button class="chat-chip" type="button">Which animals need vaccination?</button>
       {% endif %}
     </div>
   </div>
@@ -373,21 +454,24 @@
     <div class="chat-typing-dot"></div>
   </div>
 
-  {# Input area #}
-  <div class="chat-input-area">
-    <textarea
-      id="elfirmaChatInput"
-      class="chat-textarea"
-      placeholder="Ask about parcels, crops, harvests…"
-      rows="1"
-      aria-label="Chat message input"
-    ></textarea>
-    <button id="elfirmaChatSend" class="chat-send-btn" type="button" aria-label="Send message" disabled>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"></line>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-      </svg>
-    </button>
+  {# Input #}
+  <div class="chat-input-wrap">
+    <div class="chat-input-row">
+      <textarea
+        id="elfirmaChatInput"
+        class="chat-textarea"
+        placeholder="Ask about parcels, crops, animals, orders…"
+        rows="1"
+        aria-label="Chat message"
+      ></textarea>
+      <button id="elfirmaChatSend" class="chat-send-btn" type="button" aria-label="Send" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="chat-input-hint">Press Enter to send · Shift+Enter for new line</div>
   </div>
 </div>
 
@@ -395,29 +479,25 @@
 (function () {
   'use strict';
 
-  var fab       = document.getElementById('elfirmaChatFab');
-  var panel     = document.getElementById('elfirmaChatPanel');
-  var closeBtn  = document.getElementById('elfirmaChatClose');
-  var messages  = document.getElementById('elfirmaChatMessages');
-  var typing    = document.getElementById('elfirmaChatTyping');
-  var input     = document.getElementById('elfirmaChatInput');
-  var sendBtn   = document.getElementById('elfirmaChatSend');
-  var chips     = document.getElementById('elfirmaChatChips');
+  var fab      = document.getElementById('elfirmaChatFab');
+  var panel    = document.getElementById('elfirmaChatPanel');
+  var closeBtn = document.getElementById('elfirmaChatClose');
+  var msgArea  = document.getElementById('elfirmaChatMessages');
+  var typing   = document.getElementById('elfirmaChatTyping');
+  var input    = document.getElementById('elfirmaChatInput');
+  var sendBtn  = document.getElementById('elfirmaChatSend');
+  var chips    = document.getElementById('elfirmaChatChips');
   var statusTxt = document.getElementById('elfirmaChatStatusText');
 
-  var history   = [];   /* OpenAI-style message history */
-  var isOpen    = false;
+  var history   = [];
   var isLoading = false;
 
-  /* ── Toggle panel ── */
   function openChat() {
-    isOpen = true;
     panel.classList.add('chat-open');
     fab.style.display = 'none';
     input.focus();
   }
   function closeChat() {
-    isOpen = false;
     panel.classList.remove('chat-open');
     fab.style.display = '';
   }
@@ -425,71 +505,90 @@
   fab.addEventListener('click', openChat);
   closeBtn.addEventListener('click', closeChat);
 
-  /* ── Suggestion chips ── */
+  /* Chips */
   if (chips) {
     chips.querySelectorAll('.chat-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         input.value = chip.textContent.trim();
         autoResize();
-        updateSendBtn();
+        updateSend();
         chips.style.display = 'none';
-        sendMessage();
+        send();
       });
     });
   }
 
-  /* ── Input handling ── */
+  /* Input helpers */
   function autoResize() {
     input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
   }
-
-  function updateSendBtn() {
+  function updateSend() {
     sendBtn.disabled = input.value.trim() === '' || isLoading;
   }
 
-  input.addEventListener('input', function () {
-    autoResize();
-    updateSendBtn();
-  });
-
+  input.addEventListener('input', function () { autoResize(); updateSend(); });
   input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!sendBtn.disabled) sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) send(); }
   });
+  sendBtn.addEventListener('click', send);
 
-  sendBtn.addEventListener('click', sendMessage);
-
-  /* ── Helpers ── */
-  function timestamp() {
+  /* Timestamp */
+  function ts() {
     var d = new Date();
     return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
   }
 
-  function appendMessage(role, text, isError) {
-    var wrapper = document.createElement('div');
-    wrapper.className = 'chat-msg chat-msg--' + (role === 'user' ? 'user' : 'bot');
+  /* Render basic markdown (bold, bullet lists) */
+  function renderMarkdown(text) {
+    var escaped = text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var html = escaped
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g,'<em>$1</em>');
+    /* Convert lines starting with - or • to a list */
+    var lines = html.split('\n');
+    var result = []; var inList = false;
+    lines.forEach(function(line) {
+      if (/^[-•]\s+/.test(line)) {
+        if (!inList) { result.push('<ul>'); inList = true; }
+        result.push('<li>' + line.replace(/^[-•]\s+/,'') + '</li>');
+      } else {
+        if (inList) { result.push('</ul>'); inList = false; }
+        result.push(line);
+      }
+    });
+    if (inList) result.push('</ul>');
+    return result.join('\n');
+  }
+
+  function appendMsg(role, text, isError) {
+    var wrap = document.createElement('div');
+    wrap.className = 'chat-msg chat-msg--' + (role === 'user' ? 'user' : 'bot');
 
     var bubble = document.createElement('div');
     bubble.className = 'chat-bubble' + (isError ? ' chat-bubble--error' : '');
-    bubble.textContent = text;
+    if (role === 'bot' && !isError) {
+      bubble.innerHTML = renderMarkdown(text);
+    } else {
+      bubble.textContent = text;
+    }
 
-    var time = document.createElement('div');
-    time.className = 'chat-msg-time';
-    time.textContent = timestamp();
+    var meta = document.createElement('div');
+    meta.className = 'chat-msg-meta';
+    var timeEl = document.createElement('span');
+    timeEl.className = 'chat-msg-time';
+    timeEl.textContent = ts();
+    meta.appendChild(timeEl);
 
-    wrapper.appendChild(bubble);
-    wrapper.appendChild(time);
-    messages.appendChild(wrapper);
-    scrollToBottom();
-    return wrapper;
+    wrap.appendChild(bubble);
+    wrap.appendChild(meta);
+    msgArea.appendChild(wrap);
+    scrollBottom();
+    return wrap;
   }
 
-  function scrollToBottom() {
-    messages.scrollTop = messages.scrollHeight;
-  }
+  function scrollBottom() { msgArea.scrollTop = msgArea.scrollHeight; }
 
   function setLoading(val) {
     isLoading = val;
@@ -497,30 +596,25 @@
     if (val) {
       typing.classList.add('typing-visible');
       statusTxt.textContent = 'Thinking…';
+      msgArea.appendChild(typing);
     } else {
       typing.classList.remove('typing-visible');
       statusTxt.textContent = 'Online';
     }
-    scrollToBottom();
+    scrollBottom();
   }
 
-  /* ── Send message ── */
-  function sendMessage() {
+  function send() {
     var text = input.value.trim();
     if (!text || isLoading) return;
 
-    /* Hide chips after first message */
     if (chips) chips.style.display = 'none';
-
-    /* Add to UI and history */
-    appendMessage('user', text);
+    appendMsg('user', text);
     history.push({ role: 'user', content: text });
 
-    /* Reset input */
     input.value = '';
     input.style.height = 'auto';
-    updateSendBtn();
-
+    updateSend();
     setLoading(true);
 
     fetch('/api/chatbot/chat', {
@@ -528,21 +622,20 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: history }),
     })
-    .then(function (res) { return res.json(); })
+    .then(function (r) { return r.json(); })
     .then(function (data) {
       setLoading(false);
       if (data.error) {
-        console.error('[EL FIRMA Chatbot] LM Studio error response:', data);
-        appendMessage('bot', '⚠️ ' + data.error, true);
+        appendMsg('bot', '⚠️ ' + data.error, true);
       } else {
         var reply = data.reply || '(no response)';
-        appendMessage('bot', reply);
+        appendMsg('bot', reply);
         history.push({ role: 'assistant', content: reply });
       }
     })
-    .catch(function (err) {
+    .catch(function () {
       setLoading(false);
-      appendMessage('bot', '⚠️ Network error — please check that LM Studio is running.', true);
+      appendMsg('bot', '⚠️ Network error — please check that LM Studio is running.', true);
     });
   }
 

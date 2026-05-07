@@ -24,7 +24,7 @@ class Equipement
     }
 
     // ✅ NOM
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: "Le nom est obligatoire")]
     #[Assert\Length(min: 3, max: 100)]
     private ?string $nom_eq = null;
@@ -33,7 +33,7 @@ class Equipement
     public function setNomEq(string $nom_eq): self { $this->nom_eq = $nom_eq; return $this; }
 
     // ✅ TYPE
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: "Le type est obligatoire")]
     #[Assert\Length(min: 3, max: 100)]
     private ?string $type_eq = null;
@@ -70,7 +70,7 @@ class Equipement
     }
 
     // ✅ COUT
-    #[ORM\Column(type: 'float')]
+    #[ORM\Column(type: 'float', nullable: true)]
     #[Assert\NotNull(message: "Le coût est obligatoire")]
     #[Assert\Positive(message: "Le coût doit être positif")]
     private ?float $cout_achat = null;
@@ -79,7 +79,7 @@ class Equipement
     public function setCoutAchat(float $cout_achat): self { $this->cout_achat = $cout_achat; return $this; }
 
     // ✅ DESCRIPTION
-    #[ORM\Column(type: 'string', length: 200)]
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     #[Assert\NotBlank(message: "La description est obligatoire")]
     #[Assert\Length(min: 5, max: 200)]
     private ?string $description_eq = null;
@@ -88,7 +88,7 @@ class Equipement
     public function setDescriptionEq(string $description_eq): self { $this->description_eq = $description_eq; return $this; }
 
     // IMAGE (pas obligatoire)
-    #[ORM\Column(type: 'string', length: 255, options: ['default' => 'default.png'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true, options: ['default' => 'default.png'])]
     private ?string $image_eq = 'default.png';
 
     public function getImageEq(): ?string { return $this->image_eq; }

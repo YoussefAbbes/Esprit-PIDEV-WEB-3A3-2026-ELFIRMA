@@ -5,7 +5,90 @@
 {% block meta_keywords %}{% endblock %}
 {% block body_class %}services-page{% endblock %}
 
+
 {% block body %}
+<style>
+  /* ── Service Cards ── */
+  .service-item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    padding: 30px 24px 26px !important;
+  }
+  .service-item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 36px rgba(30,126,52,0.14) !important;
+  }
+  .service-item-icon svg {
+    transition: transform 0.3s ease;
+  }
+  .service-item:hover .service-item-icon svg {
+    transform: scale(1.1) rotate(-4deg);
+  }
+  .service-item .number {
+    font-size: 42px !important;
+    font-weight: 900 !important;
+    opacity: 0.06 !important;
+  }
+  /* ── Stats Strip ── */
+  .elfirma-services-stats {
+    background: linear-gradient(135deg, #1e7e34 0%, #218838 100%);
+    padding: 50px 0;
+    margin-bottom: 0;
+  }
+  .elfirma-services-stats .stat-num {
+    font-size: 44px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .elfirma-services-stats .stat-lbl {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+  /* ── Testimonial cards override ── */
+  .services-page .testimonial {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 24px 20px;
+    box-shadow: 0 4px 20px rgba(30,126,52,0.08);
+    border: 1px solid #e8f5e9;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .services-page .testimonial:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 36px rgba(30,126,52,0.16);
+  }
+  .services-page .testimonial img {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 3px solid #1e7e34 !important;
+    margin-bottom: 16px !important;
+  }
+  .services-page .testimonial blockquote p {
+    font-style: italic;
+    color: #444;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .services-page .testimonial .client-name {
+    font-weight: 700;
+    color: #1e7e34;
+    font-size: 14px;
+    margin-top: 12px;
+    border-top: 1px solid #e8f5e9;
+    padding-top: 12px;
+  }
+</style>
+
 <!-- Page Title -->
     <div class="page-title dark-background" data-aos="fade" style="background-image: url({{ asset('assets/img/page-title-bg.webp') }});">
       <div class="container position-relative">
@@ -209,8 +292,7 @@
                 industry
               </h2>
               <p class="opacity-50">
-                Reprehenderit, odio laboriosam? Blanditiis quae ullam quasi illum
-                minima nostrum perspiciatis error consequatur sit nulla.
+                Driven by technology and agricultural expertise, EL FIRMA empowers every farmer to achieve better yields with less effort.
               </p>
 
               <div class="row my-5">
@@ -258,8 +340,8 @@
                 <img src="{{ asset('assets/img/testimonials/testimonials-1.jpg') }}" alt="Testimonial author">
                 <blockquote>
                   <p>
-                    â€œEL FIRMA helps us plan tasks and better monitor
-                    every step of our agricultural production.â€
+                    "EL FIRMA helps us plan tasks and better monitor
+                    every step of our agricultural production."
                   </p>
                 </blockquote>
                 <p class="client-name">James Smith</p>
@@ -270,8 +352,8 @@
                 <img src="{{ asset('assets/img/testimonials/testimonials-2.jpg') }}" alt="Testimonial author">
                 <blockquote>
                   <p>
-                    â€œThe monitoring organized by EL FIRMA saves us time
-                    and improves the quality of field operations.â€
+                    "The monitoring organized by EL FIRMA saves us time
+                    and improves the quality of field operations."
                   </p>
                 </blockquote>
                 <p class="client-name">Kate Smith</p>
@@ -282,8 +364,8 @@
                 <img src="{{ asset('assets/img/testimonials/testimonials-3.jpg') }}" alt="Testimonial author">
                 <blockquote>
                   <p>
-                    â€œWith EL FIRMA, we have better coordination of
-                    teams, resources, and agricultural interventions.â€
+                    "With EL FIRMA, we have better coordination of
+                    teams, resources, and agricultural interventions."
                   </p>
                 </blockquote>
                 <p class="client-name">Claire Anderson</p>
@@ -294,8 +376,8 @@
                 <img src="{{ asset('assets/img/testimonials/testimonials-4.jpg') }}" alt="Testimonial author">
                 <blockquote>
                   <p>
-                    â€œEL FIRMA brings real rigor to planning,
-                    monitoring, and successful seasonal campaigns.â€
+                    "EL FIRMA brings real rigor to planning,
+                    monitoring, and successful seasonal campaigns."
                   </p>
                 </blockquote>
                 <p class="client-name">Dan Smith</p>
@@ -336,6 +418,11 @@
         </div>
       </div>
     </section><!-- /Call To Action Section -->
+
+{% include 'components/_chatbot.html.twig' with {
+  'page': 'products',
+  'page_label': 'Farm Services'
+} %}
 {% endblock %}
 
 

@@ -22,7 +22,7 @@ class Livestock
         return $this->id_elevage;
     }
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     #[Assert\NotBlank(message: 'Type is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
@@ -41,7 +41,7 @@ class Livestock
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     #[Assert\NotBlank(message: 'State is required.')]
     private ?string $etat_elevage = null;
 
@@ -56,7 +56,7 @@ class Livestock
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     #[Assert\NotNull(message: 'Capacity is required.')]
     #[Assert\PositiveOrZero(message: 'Capacity must be greater than or equal to 0.')]
     private ?int $capacite = null;
@@ -72,7 +72,7 @@ class Livestock
         return $this;
     }
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     #[Assert\NotNull(message: 'Number of animals is required.')]
     #[Assert\PositiveOrZero(message: 'Number of animals must be greater than or equal to 0.')]
     private ?int $nombre_animaux = null;
@@ -88,7 +88,7 @@ class Livestock
         return $this;
     }
 
-    #[ORM\Column(type: 'string', length: 200)]
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     #[Assert\NotBlank(message: 'Production is required.')]
     #[Assert\Regex(
         pattern: '/^[\p{L}\s]+$/u',
