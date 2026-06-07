@@ -1,9 +1,20 @@
 <?php
 
 use App\Kernel;
+use Symfony\Component\Dotenv\Dotenv;
 
-require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
+require_once dirname(__DIR__).'/vendor/autoload.php';
 
-return static function (array $context) {
-    return new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+/*
+ * Charger .env seulement en local
+ */
+if (file_exists(dirname(__DIR__).'/.env')) {
+    (new Dotenv())->loadEnv(dirname(__DIR__).'/.env');
+}
+
+return function (array $context) {
+    return new Kernel(
+        $context['APP_ENV'] ?? 'prod',
+        (bool) ($context['APP_DEBUG'] ?? false)
+    );
 };
