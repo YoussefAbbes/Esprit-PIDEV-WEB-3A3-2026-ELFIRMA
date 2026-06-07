@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $r = new ReflectionClass\\('\\\\''Doctrine\\\\DBAL\\\\Driver\\\\Middleware\\\\AbstractDriverMiddleware'\\\\''\\); echo $r->getFileName\\(\\);')"
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $r = new ReflectionClass\\('\\\\''Doctrine\\\\DBAL\\\\Driver\\\\Middleware\\\\AbstractDriverMiddleware'\\\\''\\); echo $r->getFileName\\(\\);')",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\youss\\\\Music\\\\yassine\\\\symfony-agriculturefinale-20260410-0258\" -Force)",
+      "Bash(Select-Object Name, FullName)"
     ]
   }
 }

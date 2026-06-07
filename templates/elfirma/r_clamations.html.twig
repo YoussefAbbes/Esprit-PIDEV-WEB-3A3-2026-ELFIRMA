@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html class="light" lang="fr"><head>
+<html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="{{ asset('styles/elfirma-theme.css') }}" rel="stylesheet"/>
@@ -86,70 +86,16 @@
 </head>
 <body class="text-on-surface">
 <!-- Sidebar Navigation -->
-<aside class="h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] dark:bg-[#173901] flex flex-col py-8 pr-4 z-40">
-<div class="px-8 mb-8">
-<h1 class="text-3xl font-black text-[#0a2200] dark:text-[#fbfbe2] tracking-tighter">Elfirma</h1>
-<p class="text-sm font-semibold text-[#43493d] dark:text-[#c3c9b9]">Gestion Agricole</p>
-</div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="dashboard">dashboard</span>
-<span class="font-headline font-semibold">Tableau de Bord</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="group">group</span>
-<span class="font-headline font-semibold">Utilisateurs</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="agriculture">agriculture</span>
-<span class="font-headline font-semibold">Parcelles &amp; Cultures</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="pets">pets</span>
-<span class="font-headline font-semibold">Animaux &amp; Élevages</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="shopping_basket">shopping_basket</span>
-<span class="font-headline font-semibold">Produits &amp; Commandes</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="handyman">handyman</span>
-<span class="font-headline font-semibold">Équipements &amp; Maintenance</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="contract">contract</span>
-<span class="font-headline font-semibold">Fournisseurs &amp; Contrats</span>
-</a>
-<a class="flex items-center px-8 py-3 bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg transition-transform group" href="#">
-<span class="material-symbols-outlined mr-4" data-icon="report_problem">report_problem</span>
-<span class="font-headline font-semibold">Réclamations</span>
-</a>
-</nav>
-<div class="px-8 mt-auto space-y-4">
-<button class="w-full py-4 bg-secondary text-on-secondary rounded-full font-headline font-bold transition hover:opacity-90 active:scale-95">
-                Nouvelle Saison
-            </button>
-<div class="space-y-1">
-<a class="flex items-center py-2 text-[#43493d] hover:text-secondary" href="#">
-<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
-<span class="text-sm font-semibold">Aide</span>
-</a>
-<a class="flex items-center py-2 text-[#43493d] hover:text-error" href="#">
-<span class="material-symbols-outlined mr-3" data-icon="logout">logout</span>
-<span class="text-sm font-semibold">Déconnexion</span>
-</a>
-</div>
-</div>
-</aside>
+{% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'reclamations' } %}
 <!-- Main Content Shell -->
 <main class="ml-72 min-h-screen flex flex-col">
 <!-- Top Bar -->
 <header class="sticky top-0 z-30 bg-[#fbfbe2]/70 backdrop-blur-xl flex justify-between items-center w-full px-12 py-6">
 <div class="flex items-center gap-8 w-1/2">
-<h2 class="text-2xl font-headline font-bold text-primary tracking-tight">Réclamations</h2>
+<h2 class="text-2xl font-headline font-bold text-primary tracking-tight">Complaints</h2>
 <div class="flex-1 max-w-md relative">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
-<input class="w-full pl-12 pr-4 py-3 bg-surface-container-low border-none rounded-full focus:ring-2 focus:ring-primary text-sm" placeholder="Rechercher un ticket" type="text"/>
+<input class="w-full pl-12 pr-4 py-3 bg-surface-container-low border-none rounded-full focus:ring-2 focus:ring-primary text-sm" placeholder="Search for a ticket" type="text"/>
 </div>
 </div>
 <div class="flex items-center gap-6">
@@ -163,7 +109,7 @@
 <div class="flex items-center gap-3 pl-4 border-l border-outline-variant/30">
 <div class="text-right">
 <p class="text-xs font-bold text-primary">Sami Ben Ali</p>
-<p class="text-[10px] text-on-surface-variant uppercase tracking-widest">Administrateur</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest">Administrator</p>
 </div>
 <img class="w-10 h-10 rounded-full object-cover border-2 border-primary-container" data-alt="Portrait of a professional Tunisian agricultural manager with a friendly expression and sharp business attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkmaIzPNAXNXfuMv_RqBfVk6QSQ2mrmKvbWqfeJSX9ugBqInWQWiWV3-lVda5y1in1bX6v76eXeb2BfriPX_zKk-mMetF9HfkQOEfq2RL7KvpwgJ31ndGPGOA8UMLKJBZkF2p5JfogYmxNVuUdDPyVrU1qCwrCNwQKudyR3Dy8GuMLBJ_oqXQRJjwLeAomO7gEZWZDjN1Nxb4uVOXafvQZilPbahnw4ADZi0Xo2BqShzBHbKddzxW_dsQKEmDpxxciK8QWw539_Q7f"/>
 </div>
@@ -174,10 +120,10 @@
 <!-- Ticket Queue (Left Column) -->
 <section class="col-span-5 flex flex-col gap-6">
 <div class="flex justify-between items-end">
-<p class="text-on-surface-variant font-headline font-bold tracking-tighter uppercase text-xs">File d'attente (24 actifs)</p>
+<p class="text-on-surface-variant font-headline font-bold tracking-tighter uppercase text-xs">Queue (24 active)</p>
 <button class="flex items-center gap-2 text-primary font-headline font-bold text-xs hover:underline transition-all">
 <span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
-                        Filtrer par priorité
+                        Filter by priority
                     </button>
 </div>
 <div class="space-y-4 overflow-y-auto pr-2 max-h-[calc(100vh-220px)]">
@@ -185,50 +131,50 @@
 <div class="glass-card p-6 rounded-lg border-l-8 border-primary shadow-sm cursor-pointer transition-all hover:translate-x-1">
 <div class="flex justify-between items-start mb-3">
 <span class="text-[10px] font-black text-on-surface-variant tracking-widest uppercase">TK-2024-882</span>
-<span class="px-3 py-1 bg-primary text-on-primary rounded-full text-[10px] font-bold uppercase tracking-tighter">en cours</span>
+<span class="px-3 py-1 bg-primary text-on-primary rounded-full text-[10px] font-bold uppercase tracking-tighter">in progress</span>
 </div>
-<h4 class="font-headline font-bold text-primary text-lg leading-tight mb-2">Problème de Capteur Humidité</h4>
+<h4 class="font-headline font-bold text-primary text-lg leading-tight mb-2">Humidity Sensor Issue</h4>
 <div class="flex items-center gap-2 mb-4">
 <img class="w-6 h-6 rounded-full object-cover" data-alt="Profile of a female field engineer wearing outdoor agricultural workwear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCflJMj8xtIMT2TaDY7_1vIeYaXeMiQkchoTl7U5l2Y4dYulVaQ7IKsPDIFy5ynKrgKX-sFbPBpHsZ7n65-rayz67v_8IejWl56lZ8jIa0eF6zCrOmGlMN4V0OzS66_wGIX0SkCvr7HTfGjgpI2NGnhp9RzXVx1JLmbzLKDVgzih_tR_C7cm2VBmndkX3OuCwG3sVFsFowNcMtuWpX-3auo2bWPWCM1PugQYLxdbJOUsrMVj6moo01Hwr-Um_O4uEBqjcF8At0rVgLg"/>
 <span class="text-sm text-on-surface font-semibold">Leila Mansour</span>
-<span class="text-[10px] text-on-surface-variant/60">• Il y a 2h</span>
+<span class="text-[10px] text-on-surface-variant/60">• 2 hours ago</span>
 </div>
 <div class="flex justify-between items-center">
-<span class="px-3 py-1 bg-error-container text-error rounded-full text-[10px] font-bold uppercase tracking-tighter">Critique</span>
-<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Secteur G-14</span>
+<span class="px-3 py-1 bg-error-container text-error rounded-full text-[10px] font-bold uppercase tracking-tighter">Critical</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Sector G-14</span>
 </div>
 </div>
 <!-- Ticket Item -->
 <div class="bg-surface-container-low p-6 rounded-lg border-l-8 border-secondary-container/30 cursor-pointer transition-all hover:bg-surface-container-high">
 <div class="flex justify-between items-start mb-3">
 <span class="text-[10px] font-black text-on-surface-variant tracking-widest uppercase">TK-2024-879</span>
-<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">ouvert</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">open</span>
 </div>
-<h4 class="font-headline font-bold text-on-surface text-lg leading-tight mb-2">Retard Livraison Engrais Plot B</h4>
+<h4 class="font-headline font-bold text-on-surface text-lg leading-tight mb-2">Fertilizer Delivery Delay Plot B</h4>
 <div class="flex items-center gap-2 mb-4">
 <img class="w-6 h-6 rounded-full object-cover" data-alt="Close-up of a middle-aged Tunisian farmer with sun-weathered skin and a proud gaze" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWHGKxN2nqCt4wOyTzsmKwkb_f46qa3EsUFa2L3nhCj3iMwVXU6PgO8chY-6UYqxtZOBMeWb7abyZlDuuIQD0o_KTGWWvx7QefUwW2CJg5wtXiDjqrKHhGj8tgyOHsDYRAC7umVuS4S8Nm0y6bDVdkTDV3v_X-qXn5iLnHVmSIOFc2XxQq-4Tnuk9Xt0-hyhBxHORNR3kxuUYPSTl6HQa7tr5YVZbR8VnorJ7HukwpNh6YaaL6dZXdWEOoGAKGoRyBuTrXp8-sluir"/>
 <span class="text-sm text-on-surface font-semibold">Ahmed Dridi</span>
-<span class="text-[10px] text-on-surface-variant/60">• Hier</span>
+<span class="text-[10px] text-on-surface-variant/60">• Yesterday</span>
 </div>
 <div class="flex justify-between items-center">
-<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">Moyenne</span>
-<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Logistique</span>
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">Medium</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Logistics</span>
 </div>
 </div>
 <!-- Ticket Item -->
 <div class="bg-surface-container-low p-6 rounded-lg border-l-8 border-outline-variant/30 cursor-pointer transition-all hover:bg-surface-container-high">
 <div class="flex justify-between items-start mb-3">
 <span class="text-[10px] font-black text-on-surface-variant tracking-widest uppercase">TK-2024-875</span>
-<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">fermé</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">closed</span>
 </div>
-<h4 class="font-headline font-bold text-on-surface text-lg leading-tight mb-2">Panne Pompe à Eau Puits 4</h4>
+<h4 class="font-headline font-bold text-on-surface text-lg leading-tight mb-2">Water Pump Failure Well 4</h4>
 <div class="flex items-center gap-2 mb-4">
 <img class="w-6 h-6 rounded-full object-cover" data-alt="Professional technician with specialized irrigation equipment in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfPl9BotxspfZIzvwF5GZWgmRtRVcC7kof-5lv71bsOyRcYfYqgtixL8eRabYDJL3F8vmKoPrv00UaYkBGSAzP0ii7RkNPl_TW8t9o4LLOthrY7dA7Uy954_iYIV4ftO10kgzdlxMXK18UsBNeWKFzaZH4gfwAMdrDvJm-pl2LwpnujYEqDRbNCsxoYIhc_KBH_OOWafQL2shvAW35niF2NM1q7YBCRvOmk-dRt2aqQ-nU92Kd2xK28YQV5nlpu0GfuylYIezQDXz2"/>
 <span class="text-sm text-on-surface font-semibold">Karim Jemaa</span>
-<span class="text-[10px] text-on-surface-variant/60">• 3 jours</span>
+<span class="text-[10px] text-on-surface-variant/60">• 3 days ago</span>
 </div>
 <div class="flex justify-between items-center">
-<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">Haute</span>
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed-variant rounded-full text-[10px] font-bold uppercase tracking-tighter">High</span>
 <span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Infrastructure</span>
 </div>
 </div>
@@ -240,10 +186,10 @@
 <div class="p-8 border-b border-outline-variant/15 flex justify-between items-start">
 <div>
 <div class="flex items-center gap-4 mb-2">
-<h3 class="text-2xl font-headline font-black text-primary tracking-tight">Capteur Humidité HS - Secteur G-14</h3>
-<span class="px-4 py-1 bg-error-container text-error rounded-full text-xs font-bold">CRITIQUE</span>
+<h3 class="text-2xl font-headline font-black text-primary tracking-tight">Humidity Sensor Failure - Sector G-14</h3>
+<span class="px-4 py-1 bg-error-container text-error rounded-full text-xs font-bold">CRITICAL</span>
 </div>
-<p class="text-sm text-on-surface-variant">Ticket ouvert par <strong>Leila Mansour</strong> • Créé le 12/03/2026 à 08:45</p>
+<p class="text-sm text-on-surface-variant">Ticket opened by <strong>Leila Mansour</strong> • Created on 12/03/2026 at 08:45</p>
 </div>
 <div class="flex gap-2">
 <button class="p-2 bg-surface-container-low text-primary rounded-lg hover:bg-surface-container-high transition">
@@ -260,10 +206,10 @@
 <div class="flex gap-4">
 <div class="flex-1 bg-secondary-fixed p-6 rounded-xl border-l-4 border-secondary">
 <div class="flex items-center justify-between mb-2">
-<span class="text-[10px] font-bold text-on-secondary-fixed uppercase tracking-widest">Note Interne - Sami B. (Admin)</span>
+<span class="text-[10px] font-bold text-on-secondary-fixed uppercase tracking-widest">Internal Note - Sami B. (Admin)</span>
 <span class="text-[10px] text-on-secondary-fixed-variant">09:15</span>
 </div>
-<p class="text-sm text-on-secondary-container leading-relaxed">Le technicien de zone a été informé. Il semblerait que l'humidité excessive ait court-circuité le module LoraWAN. Pièce de rechange demandée en stock.</p>
+<p class="text-sm text-on-secondary-container leading-relaxed">The area technician has been notified. It appears that excessive humidity short-circuited the LoraWAN module. Replacement part requested from stock.</p>
 </div>
 </div>
 <!-- Client Message -->
@@ -274,7 +220,7 @@
 <span class="font-headline font-bold text-primary text-sm">Leila Mansour</span>
 <span class="text-[10px] text-on-surface-variant">08:45</span>
 </div>
-<p class="text-sm text-on-surface leading-relaxed mb-4">Le capteur ne renvoie plus aucune donnée depuis 03h00 ce matin. L'irrigation automatique est bloquée par sécurité. Urgent de vérifier manuellement.</p>
+<p class="text-sm text-on-surface leading-relaxed mb-4">The sensor has not been sending any data since 3:00 AM this morning. Automatic irrigation is blocked as a safety measure. Urgent manual verification required.</p>
 <!-- Attachments -->
 <div class="grid grid-cols-2 gap-3">
 <div class="flex items-center gap-3 p-3 bg-surface-container-highest rounded-lg cursor-pointer hover:opacity-80 transition">
@@ -302,21 +248,21 @@
 <span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
 </button>
 <div class="flex-1 relative">
-<textarea class="w-full bg-surface-container-low border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary h-12 resize-none transition-all focus:h-24" placeholder="Écrire une réponse ou une note interne..."></textarea>
+<textarea class="w-full bg-surface-container-low border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary h-12 resize-none transition-all focus:h-24" placeholder="Write a reply or an internal note..."></textarea>
 </div>
 <button class="bg-primary text-on-primary px-6 py-3 rounded-full font-headline font-bold text-sm flex items-center gap-2 hover:opacity-90 active:scale-95 transition">
-                            Envoyer
+                            Send
                             <span class="material-symbols-outlined text-sm" data-icon="send">send</span>
 </button>
 </div>
 <div class="flex gap-4 mt-4 ml-12">
 <label class="flex items-center gap-2 cursor-pointer">
 <input class="rounded text-primary focus:ring-primary bg-surface-container-low border-outline-variant/30" type="checkbox"/>
-<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Note Interne</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Internal Note</span>
 </label>
 <label class="flex items-center gap-2 cursor-pointer">
 <input class="rounded text-primary focus:ring-primary bg-surface-container-low border-outline-variant/30" type="checkbox"/>
-<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Fermer le ticket</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Close ticket</span>
 </label>
 </div>
 </div>
@@ -326,9 +272,9 @@
 <footer class="w-full py-6 mt-auto flex justify-between items-center px-12 border-t border-[#c3c9b9]/15 bg-[#fbfbe2]">
 <p class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d]">Elfirma © 2026</p>
 <div class="flex gap-8">
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Support Technique</a>
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Mentions Légales</a>
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Confidentialité</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Technical Support</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Legal Notice</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Privacy</a>
 </div>
 </footer>
 </main>

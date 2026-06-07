@@ -492,6 +492,8 @@
   var history   = [];
   var isLoading = false;
 
+  var maxHistory = 6;
+
   function openChat() {
     panel.classList.add('chat-open');
     fab.style.display = 'none';
@@ -611,6 +613,9 @@
     if (chips) chips.style.display = 'none';
     appendMsg('user', text);
     history.push({ role: 'user', content: text });
+    if (history.length > maxHistory) {
+      history = history.slice(-maxHistory);
+    }
 
     input.value = '';
     input.style.height = 'auto';
@@ -631,6 +636,9 @@
         var reply = data.reply || '(no response)';
         appendMsg('bot', reply);
         history.push({ role: 'assistant', content: reply });
+        if (history.length > maxHistory) {
+          history = history.slice(-maxHistory);
+        }
       }
     })
     .catch(function () {

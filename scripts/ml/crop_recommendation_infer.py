@@ -202,13 +202,20 @@ def infer(model_path: Path, metadata_path: Path, input_payload: Dict[str, Any]) 
 
 
 def main() -> None:
+    import sys
+
     parser = argparse.ArgumentParser(description="Crop recommendation inference")
     parser.add_argument("--model", type=Path, required=True, help="Path to .joblib model")
     parser.add_argument("--metadata", type=Path, required=True, help="Path to metadata JSON")
-    parser.add_argument("--input-json", type=str, required=True, help="Input features as JSON object")
+    parser.add_argument("--input-json", type=str, required=True,
+                        help="Input features as JSON object, or '-' to read from stdin")
     args = parser.parse_args()
 
-    payload = json.loads(args.input_json)
+    if args.input_json == "-":
+        payload = json.loads(sys.stdin.read())
+    else:
+        payload = json.loads(args.input_json)
+
     result = infer(args.model, args.metadata, payload)
     print(json.dumps(result))
 

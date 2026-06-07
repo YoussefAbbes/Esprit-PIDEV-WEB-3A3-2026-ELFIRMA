@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\youss\\\\Music\\\\yassine\\\\symfony-agriculturefinale-20260410-0258\" -File | Select-Object Name, @{Name=\"SizeKB\";Expression={[math]::Round\\($_.Length/1KB, 2\\)}} | Sort-Object Name)",
+      "Bash(xargs wc -l)",
+      "Bash(sort -k5 -h -r)",
+      "Bash(grep -E \"\\(\\\\.js|\\\\.css\\)$\")",
+      "Bash(php bin/console dbal:run-sql \"UPDATE maintenance SET statut = 'termine' WHERE statut = 'Terminée'\")",
+      "Bash(php bin/console dbal:run-sql \"UPDATE maintenance SET statut = 'en_attente' WHERE statut = 'En Attente'\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\youss\\\\Music\\\\yassine\\\\symfony-agriculturefinale-20260410-0258\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Get-Content \"c:\\\\Users\\\\youss\\\\Music\\\\yassine\\\\symfony-agriculturefinale-20260410-0258\\\\src\\\\Service\\\\PixabayService.php\" -Head 60)",
+      "Bash(php bin/console dbal:run-sql \"SELECT DISTINCT statut FROM parcelle; SELECT DISTINCT type_sol FROM parcelle; SELECT DISTINCT statut FROM culture; SELECT DISTINCT type_animal FROM animal LIMIT 10; SELECT DISTINCT sexe FROM animal; SELECT DISTINCT etat_sante FROM animal; SELECT DISTINCT statut AS animal_statut FROM animal; SELECT DISTINCT type_elevage FROM elevage; SELECT DISTINCT etat_elevage FROM elevage; SELECT DISTINCT type FROM produit; SELECT DISTINCT statut AS produit_statut FROM produit; SELECT DISTINCT statut_f FROM fournisseur; SELECT DISTINCT statut_c_f FROM contrat; SELECT DISTINCT type_c_f FROM contrat; SELECT DISTINCT statut_commande FROM commande; SELECT DISTINCT mode_paiement FROM commande; SELECT DISTINCT statut_paiement FROM commande\")",
+      "Bash(xargs grep -l \"panier\\\\|cart\\\\|checkout\")",
+      "Bash(Get-ChildItem -Path . -Directory)",
+      "Bash(Select-Object -First 20)",
+      "PowerShell(head -15)"
+    ]
+  }
+}

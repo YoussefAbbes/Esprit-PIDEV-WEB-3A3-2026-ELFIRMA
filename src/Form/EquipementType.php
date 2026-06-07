@@ -21,14 +21,14 @@ $builder
 ->add('nomEq', TextType::class, [
 'required' => true,
 'attr' => [
-'placeholder' => 'Nom équipement'
+'placeholder' => 'Equipment name'
 ]
 ])
 
         ->add('typeEq', TextType::class, [
             'required' => true,
             'attr' => [
-                'placeholder' => 'Type équipement'
+                'placeholder' => 'Equipment type'
             ]
         ])
 
@@ -36,22 +36,22 @@ $builder
             'widget' => 'single_text',
             'required' => false,
             'empty_data' => null, 
-            'invalid_message' => 'Date invalide'
+            'invalid_message' => 'Invalid date'
         ])
 
         ->add('etat', ChoiceType::class, [
             'choices' => [
-                'Disponible' => EquipementEtat::DISPONIBLE,
-                'Maintenance' => EquipementEtat::MAINTENANCE,
-                'Panne' => EquipementEtat::PANNE,
+                'Available' => EquipementEtat::DISPONIBLE,
+                'Under Maintenance' => EquipementEtat::MAINTENANCE,
+                'Broken Down' => EquipementEtat::PANNE,
             ],
-            'placeholder' => 'Choisir un état',
+            'placeholder' => 'Choose a status',
             'required' => true
         ])
 
         ->add('coutAchat', NumberType::class, [
             'required' => true,
-            'invalid_message' => 'Le coût doit être un nombre valide'
+            'invalid_message' => 'Cost must be a valid number'
         ])
 
         ->add('descriptionEq', TextareaType::class, [

@@ -48,7 +48,7 @@ if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasVali
         }
 
         // Build a public profile URL for QR code scanning.
-      $profileUrl = 'http://10.227.117.82:8000/elfirma/user/' . $user->getIdU() . '/profile';
+      $profileUrl = 'http://172.20.10.5:8000/elfirma/user/' . $user->getIdU() . '/profile';
 
         $user->qrCode = $this->generateQrCode($profileUrl);
     }
@@ -57,7 +57,7 @@ if ($session->get('user_role') !== 'admin' || !AdminTwoFactorController::hasVali
     $reclamationRepo = $entityManager->getRepository(Reclamation::class);
     $allComplaints = $reclamationRepo->findAll();
 
-    return $this->render('utilisateurs.html.twig', [
+    return $this->render('elfirma/utilisateurs.html.twig', [
         'users' => $allUsers,
         'totalUsers' => $totalUsers,
         'employeeCount' => $employeeCount,

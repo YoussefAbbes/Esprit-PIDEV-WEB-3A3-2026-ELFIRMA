@@ -46,6 +46,10 @@ services:
     arguments:
       $projectDir: "%kernel.project_dir%"
 
+  App\Controller\AiAccessibilityController:
+    arguments:
+      $openrouterApiKey: "%env(default::OPENROUTER_API_KEY)%"
+
   # Configure ProductVideoGeneratorService with the project directory
   App\Service\ProductVideoGeneratorService:
     arguments:

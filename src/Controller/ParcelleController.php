@@ -19,7 +19,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use App\Service\CropRecommendationService;
-use App\Service\PixabayService;
 
 #[Route("/elfirma/parcelles")]
 final class ParcelleController extends AbstractController
@@ -127,7 +126,7 @@ final class ParcelleController extends AbstractController
     #[Route("/map", name: "parcelle_map", methods: ["GET"])]
     public function map(ParcelleRepository $parcelleRepository): Response
     {
-        $parcelles = $parcelleRepository->findAll();
+        $parcelles = $parcelleRepository->findAllWithCultures();
 
         // Prepare parcelle data for JS (with coordinates)
         $parcellesData = [];
@@ -551,7 +550,6 @@ final class ParcelleController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         ParcelleRepository $parcelleRepository,
-        PixabayService $pixabay,
     ): Response {
         $file = $request->files->get("importFile");
         if (!$file) {
@@ -667,14 +665,7 @@ final class ParcelleController extends AbstractController
                         : null,
                 );
 
-                // --- Pixabay: auto-fetch image based on parcel name + soil type ---
-                $imageBlob = $pixabay->fetchImageBlob(
-                    $pixabay->buildParcelleQuery($nom, $typeSol),
-                    $idx % 5,
-                );
-                if ($imageBlob !== null) {
-                    $p->setImage($imageBlob);
-                }
+                // Images skipped during import to avoid blocking HTTP calls per row.
 
                 $entityManager->persist($p);
                 $imported++;

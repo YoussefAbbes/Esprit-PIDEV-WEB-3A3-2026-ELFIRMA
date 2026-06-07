@@ -1,0 +1,29 @@
+{
+  "name": "symfony-agriculturefinale-20260410-0258",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA/issues"
+  },
+  "homepage": "https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA#readme",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "tailwindcss": "^4.3.0"
+  }
+}

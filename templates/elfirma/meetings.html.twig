@@ -54,62 +54,7 @@
 </head>
 <body class="bg-surface text-on-surface min-h-screen flex">
 <!-- SideNavBar (Authority: JSON) -->
-<aside class="h-screen w-72 fixed left-0 top-0 bg-surface-container-low text-primary flex flex-col py-8 pr-4 font-headline font-semibold z-40">
-  <div class="px-8 mb-8">
-    <h1 class="text-3xl font-black tracking-tighter text-primary">Elfirma</h1>
-    <p class="text-xs font-label text-on-surface-variant uppercase tracking-widest opacity-70">Farm Management</p>
-  </div>
-  <nav class="flex-grow space-y-1">
-    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
-      <span class="material-symbols-outlined">dashboard</span>
-      <span>Dashboard</span>
-    </a>
-    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
-      <span class="material-symbols-outlined">group</span>
-      <span>Users</span>
-    </a>
-    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
-      <span class="material-symbols-outlined">agriculture</span>
-      <span>Fields & Crops</span>
-    </a>
-    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
-      <span class="material-symbols-outlined">pets</span>
-      <span>Livestock</span>
-    </a>
-    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
-      <span class="material-symbols-outlined">shopping_basket</span>
-      <span>Products & Orders</span>
-    </a>
-    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
-      <span class="material-symbols-outlined">handyman</span>
-      <span>Equipment & Maintenance</span>
-    </a>
-    <a class="flex items-center gap-4 px-8 py-4 bg-primary text-surface rounded-r-full shadow-lg opacity-100 transition-opacity" href="#">
-      <span class="material-symbols-outlined">contract</span>
-      <span>Suppliers & Contract Management</span>
-    </a>
-    <a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-surface-variant/50 rounded-r-full" href="#">
-      <span class="material-symbols-outlined">report_problem</span>
-      <span>Claims</span>
-    </a>
-  </nav>
-  <div class="px-8 mt-auto pt-8 flex flex-col gap-2">
-    <button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform">
-      <span class="material-symbols-outlined">add</span>
-      <span>New Season</span>
-    </button>
-    <div class="pt-6 border-t border-outline-variant/20 flex flex-col gap-1">
-      <a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
-        <span class="material-symbols-outlined">help</span>
-        <span class="text-sm">Help</span>
-      </a>
-      <a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-error transition-colors" href="#">
-        <span class="material-symbols-outlined">logout</span>
-        <span class="text-sm">Logout</span>
-      </a>
-    </div>
-  </div>
-</aside>
+{% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'meetings' } %}
 <!-- Main Canvas -->
 <main class="ml-72 flex-grow min-h-screen flex flex-col relative overflow-x-hidden">
 <!-- TopNavBar -->

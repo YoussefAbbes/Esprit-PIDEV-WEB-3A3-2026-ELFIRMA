@@ -358,7 +358,7 @@
   // ── Mic button ────────────────────────────────────────────────────────────
   micBtn.dataset.active = 'false';
 
-  micBtn.addEventListener('click', () => {
+  function toggleAssistant() {
     if (micBtn.dataset.active === 'true') {
       // Stop everything
       if (recognition) recognition.abort();
@@ -374,6 +374,16 @@
       widget.classList.add('open');
       isOpen = true;
       greetAndListen();
+    }
+  }
+
+  micBtn.addEventListener('click', toggleAssistant);
+
+  // ── Keyboard shortcut (G key) ─────────────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'g' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      e.preventDefault();
+      toggleAssistant();
     }
   });
 

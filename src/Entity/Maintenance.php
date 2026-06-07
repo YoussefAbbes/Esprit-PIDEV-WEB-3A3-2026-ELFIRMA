@@ -24,7 +24,7 @@ class Maintenance
 
     // ✅ TYPE
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
-    #[Assert\NotBlank(message: "Le type est obligatoire")]
+    #[Assert\NotBlank(message: "Type is required")]
     #[Assert\Length(min: 3, max: 50)]
     private ?string $type_m = null;
 
@@ -41,7 +41,7 @@ class Maintenance
 
     // ✅ DATE
     #[ORM\Column(type: 'date', nullable: true)]
-    #[Assert\NotNull(message: "La date est obligatoire")]
+    #[Assert\NotNull(message: "Date is required")]
     private ?\DateTimeInterface $date_m = null;
 
     public function getDateM(): ?\DateTimeInterface
@@ -57,7 +57,7 @@ class Maintenance
 
     // ✅ DESCRIPTION
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
-    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\NotBlank(message: "Description is required")]
     #[Assert\Length(min: 5, max: 200)]
     private ?string $description = null;
     public function getDescription(): ?string
@@ -73,8 +73,8 @@ class Maintenance
 
     // ✅ COUT
     #[ORM\Column(type: 'float', nullable: true)]
-    #[Assert\NotNull(message: "Le coût est obligatoire")]
-    #[Assert\Positive(message: "Le coût doit être positif")]
+    #[Assert\NotNull(message: "Cost is required")]
+    #[Assert\Positive(message: "Cost must be positive")]
     private ?float $cout = null;
     public function getCout(): ?float
     {
@@ -89,7 +89,7 @@ class Maintenance
 
     // ✅ STATUT
     #[ORM\Column(enumType: MaintenanceStatut::class, nullable: true)]
-    #[Assert\NotNull(message: "Le statut est obligatoire")]
+    #[Assert\NotNull(message: "Status is required")]
     private ?MaintenanceStatut $statut = null;
     public function getStatut(): ?MaintenanceStatut
     {
@@ -104,7 +104,7 @@ class Maintenance
 
     // ✅ PRIORITE
     #[ORM\Column(enumType: MaintenancePriorite::class, nullable: true)]
-    #[Assert\NotNull(message: "La priorité est obligatoire")]
+    #[Assert\NotNull(message: "Priority is required")]
     private ?MaintenancePriorite $priorite = null;
     public function getPriorite(): ?MaintenancePriorite
     {
@@ -120,7 +120,7 @@ class Maintenance
     // ✅ EQUIPEMENT
     #[ORM\ManyToOne(targetEntity: Equipement::class, inversedBy: 'maintenances')]
     #[ORM\JoinColumn(name: 'id_equipement', referencedColumnName: 'id_eq')]
-    #[Assert\NotNull(message: "L'équipement est obligatoire")]
+    #[Assert\NotNull(message: "Equipment is required")]
     private ?Equipement $equipement = null;
     public function getEquipement(): ?Equipement
     {
@@ -136,7 +136,7 @@ class Maintenance
 // TECHNICIEN
 #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
 #[ORM\JoinColumn(name: "technicien_id", referencedColumnName: "id_u", nullable: false)]
-#[Assert\NotNull(message: "Le technicien est obligatoire")]
+#[Assert\NotNull(message: "Technician is required")]
 private ?Utilisateur $technicien = null;
 
 public function getTechnicien(): ?Utilisateur

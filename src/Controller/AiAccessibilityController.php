@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\AI\GestureIntentAi;
 use App\AI\VoiceIntentAi;
+use App\AI\OpenRouterVoiceAssistant;
 use App\Entity\Produit;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,14 +12,27 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class AiAccessibilityController extends AbstractController
 {
+    private ?OpenRouterVoiceAssistant $openRouterAssistant = null;
+
     public function __construct(
         private readonly VoiceIntentAi $voiceIntentAi,
         private readonly GestureIntentAi $gestureIntentAi,
+        private readonly HttpClientInterface $httpClient,
+        private readonly string $openrouterApiKey,
     )
     {
+    }
+
+    private function getOpenRouterAssistant(): OpenRouterVoiceAssistant
+    {
+        if ($this->openRouterAssistant === null) {
+            $this->openRouterAssistant = new OpenRouterVoiceAssistant($this->httpClient, $this->openrouterApiKey);
+        }
+        return $this->openRouterAssistant;
     }
 
     #[Route('/api/ai/voice-command', name: 'app_api_ai_voice_command', methods: ['POST'])]
@@ -89,191 +103,196 @@ final class AiAccessibilityController extends AbstractController
     private function handleCatalogGesture(string $intent, string $gesture, int $productId, EntityManagerInterface $em): JsonResponse
     {
         if ($intent === 'catalog_read_products') {
-            return $this->ok('Lecture des produits visibles.', [
+            return $this->ok('Reading visible products.', [
                 ['type' => 'read_visible_products'],
             ]);
         }
 
         if ($intent === 'catalog_open_cart' || $gesture === 'open_palm') {
-            return $this->ok('Ouverture du panier.', [
+            return $this->ok('Opening cart.', [
                 ['type' => 'navigate', 'url' => $this->generateUrl('app_panier_index')],
             ]);
         }
 
         if ($productId <= 0) {
-            return $this->ok('Aucun produit cible detecte.');
+            return $this->ok('No target product detected.');
         }
 
         $product = $em->getRepository(Produit::class)->find($productId);
         if (!$product instanceof Produit) {
-            return $this->ok('Produit introuvable.');
+            return $this->ok('Product not found.');
         }
 
         if (str_starts_with($intent, 'catalog_details_') || in_array($gesture, ['point', 'index', 'one_finger', 'two_fingers', 'three_fingers', 'four_fingers', 'five_fingers', 'victory'], true)) {
-            return $this->ok(sprintf('Details ouverts pour %s.', (string) $product->getNom()), [
+            return $this->ok(sprintf('Details opened for %s.', (string) $product->getNom()), [
                 ['type' => 'open_product_details', 'product_id' => (int) $product->getIdProduit()],
             ]);
         }
 
         if ($intent === 'catalog_add' || $gesture === 'thumb_up') {
-            return $this->ok(sprintf('%s ajoute au panier.', (string) $product->getNom()), [
+            return $this->ok(sprintf('%s added to cart.', (string) $product->getNom()), [
                 ['type' => 'add_to_cart', 'product_id' => (int) $product->getIdProduit()],
             ]);
         }
 
-        return $this->ok('Geste catalogue non reconnu.');
+        return $this->ok('Catalog gesture not recognized.');
     }
 
     private function handleCartGesture(string $intent, string $gesture, int $productId, SessionInterface $session): JsonResponse
     {
         if ($intent === 'cart_clear' || $gesture === 'fist') {
-            return $this->ok('Demande de vidage du panier envoyee.', [
+            return $this->ok('Cart clear request sent.', [
                 ['type' => 'clear_cart'],
             ]);
         }
 
         if ($intent === 'cart_checkout' || $gesture === 'open_palm') {
-            return $this->ok('Ouverture de la commande.', [
+            return $this->ok('Opening order.', [
                 ['type' => 'navigate', 'url' => $this->generateUrl('app_commande_create')],
             ]);
         }
 
         if ($intent === 'cart_read' || $gesture === 'victory') {
-            return $this->ok('Lecture du recapitulatif panier.', [
+            return $this->ok('Reading cart summary.', [
                 ['type' => 'read_cart_summary'],
             ]);
         }
 
         if ($productId <= 0) {
-            return $this->ok('Aucun produit cible detecte dans le panier.');
+            return $this->ok('No target product detected in cart.');
         }
 
         if ($intent === 'cart_increase' || $gesture === 'thumb_up') {
-            return $this->ok('Quantite augmentee.', [
+            return $this->ok('Quantity increased.', [
                 ['type' => 'update_cart_quantity_delta', 'product_id' => $productId, 'delta' => 1],
             ]);
         }
 
         if ($intent === 'cart_decrease' || $gesture === 'thumb_down') {
-            return $this->ok('Quantite diminuee.', [
+            return $this->ok('Quantity decreased.', [
                 ['type' => 'update_cart_quantity_delta', 'product_id' => $productId, 'delta' => -1],
             ]);
         }
 
-        return $this->ok('Geste panier non reconnu.');
+        return $this->ok('Cart gesture not recognized.');
     }
 
     private function handleCheckoutGesture(string $intent, string $gesture): JsonResponse
     {
         if ($intent === 'checkout_focus_next' || $gesture === 'point') {
-            return $this->ok('Selection du champ suivant.', [
+            return $this->ok('Selecting next field.', [
                 ['type' => 'focus_next_checkout_field'],
             ]);
         }
 
         if ($intent === 'checkout_promo_generate' || $gesture === 'open_palm') {
-            return $this->ok('Generation du code promo en cours.', [
+            return $this->ok('Generating promo code.', [
                 ['type' => 'submit_checkout_action', 'value' => 'generate_promo'],
             ]);
         }
 
         if ($intent === 'checkout_promo_apply' || $gesture === 'fist') {
-            return $this->ok('Application du code promo en cours.', [
+            return $this->ok('Applying promo code.', [
                 ['type' => 'submit_checkout_action', 'value' => 'apply_promo'],
             ]);
         }
 
         if ($intent === 'checkout_confirm' || $gesture === 'double_open_palm') {
-            return $this->ok('Confirmation de commande en cours.', [
+            return $this->ok('Order confirmation in progress.', [
                 ['type' => 'click_confirm_order'],
             ]);
         }
 
         if ($intent === 'checkout_read_summary' || $gesture === 'victory') {
-            return $this->ok('Lecture du recapitulatif commande.', [
+            return $this->ok('Reading order summary.', [
                 ['type' => 'read_checkout_summary'],
             ]);
         }
 
-        return $this->ok('Geste checkout non reconnu.');
+        return $this->ok('Checkout gesture not recognized.');
     }
 
     private function handleCatalogCommand(string $transcript, EntityManagerInterface $em): JsonResponse
     {
-        $text = $this->normalize($transcript);
-        $prediction = $this->voiceIntentAi->predict($transcript);
-        $intent = (string) ($prediction['intent'] ?? '');
+        $allProducts = $em->getRepository(Produit::class)->findBy([], ['id_produit' => 'DESC'], 300);
+        $productNames = array_map(fn(Produit $p) => (string) $p->getNom(), $allProducts);
 
-        if ($intent === 'help' || $this->containsAny($text, ['aide', 'help'])) {
-            return $this->ok('Commandes disponibles. Chercher nom du produit. Lire produits. Details nom du produit. Ajouter nom du produit. Commander nom du produit. Ouvrir panier.');
+        $llmResult = $this->getOpenRouterAssistant()->parse($transcript, $productNames);
+        $intent = (string) ($llmResult['intent'] ?? 'unknown');
+
+        if ($intent === 'help') {
+            return $this->ok('Available commands. Search product name. Read products. Details product name. Add product name. Order product name. Open cart.');
         }
 
-        if ($intent === 'catalog_read_products' || $this->containsAny($text, ['lire produits', 'liste produits'])) {
-            return $this->ok('Je lis les produits visibles.', [
+        if ($intent === 'catalog_read_products') {
+            return $this->ok('Reading visible products.', [
                 ['type' => 'read_visible_products'],
             ]);
         }
 
-        if ($intent === 'catalog_search' || str_starts_with($text, 'chercher ')) {
-            $query = trim($this->extractAfterKeyword($text, ['chercher', 'cherche', 'rechercher', 'recherche']));
+        if ($intent === 'catalog_search') {
+            $query = (string) ($llmResult['query'] ?? '');
             if ($query === '') {
-                $query = trim($this->extractProductNeedle($text));
-            }
-            if ($query === '') {
-                return $this->ok('Precisez le produit a chercher.');
+                return $this->ok('Please specify the product to search for.');
             }
 
-            return $this->ok(sprintf('Recherche en cours pour %s.', $query), [
+            return $this->ok(sprintf('Searching for %s.', $query), [
                 ['type' => 'filter_products', 'query' => $query],
             ]);
         }
 
-        if ($intent === 'catalog_details' || str_starts_with($text, 'details ')) {
-            $needle = trim($this->extractAfterKeyword($text, ['details', 'detail', 'ouvrir details', 'afficher details']));
-            $product = $this->findAvailableProductByName($needle, $em);
+        if ($intent === 'catalog_details') {
+            $productName = (string) ($llmResult['product'] ?? '');
+            if ($productName === '') {
+                return $this->ok('Please specify which product to view details for.');
+            }
+            $product = $this->findAvailableProductByName($productName, $em);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit introuvable pour afficher les details.');
+                return $this->ok(sprintf('Product "%s" not found.', $productName));
             }
 
-            return $this->ok(sprintf('Details ouverts pour %s.', (string) $product->getNom()), [
+            return $this->ok(sprintf('Details opened for %s.', (string) $product->getNom()), [
                 ['type' => 'open_product_details', 'product_id' => (int) $product->getIdProduit()],
             ]);
         }
 
-        if ($intent === 'catalog_add' || str_starts_with($text, 'ajouter ')) {
-            $needle = trim($this->extractAfterKeyword($text, ['ajouter', 'ajoute', 'mettre']));
-            $product = $this->findAvailableProductByName($needle, $em);
+        if ($intent === 'catalog_add') {
+            $productName = (string) ($llmResult['product'] ?? '');
+            if ($productName === '') {
+                return $this->ok('Please specify which product to add to cart.');
+            }
+            $product = $this->findAvailableProductByName($productName, $em);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit introuvable pour ajout au panier.');
+                return $this->ok(sprintf('Product "%s" not found in the database.', $productName));
             }
 
-            return $this->ok(sprintf('%s ajoute au panier.', (string) $product->getNom()), [
+            return $this->ok(sprintf('%s added to cart.', (string) $product->getNom()), [
                 ['type' => 'add_to_cart', 'product_id' => (int) $product->getIdProduit()],
             ]);
         }
 
-        if (
-            $intent === 'catalog_order'
-            || $this->containsAny($text, ['commander', 'acheter', 'commande rapide', 'passe commande'])
-        ) {
-            $needle = trim($this->extractProductNeedle($text));
-            $product = $this->findAvailableProductByName($needle, $em);
+        if ($intent === 'catalog_order') {
+            $productName = (string) ($llmResult['product'] ?? '');
+            if ($productName === '') {
+                return $this->ok('Please specify which product to order.');
+            }
+            $product = $this->findAvailableProductByName($productName, $em);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit non trouve dans la base de donnees.');
+                return $this->ok(sprintf('Product "%s" not found in the database.', $productName));
             }
 
-            return $this->ok(sprintf('%s trouve. Ajout au panier puis ouverture de la commande.', (string) $product->getNom()), [
+            return $this->ok(sprintf('%s found. Adding to cart then opening order.', (string) $product->getNom()), [
                 ['type' => 'add_to_cart_then_checkout', 'product_id' => (int) $product->getIdProduit()],
             ]);
         }
 
-        if ($intent === 'catalog_open_cart' || $this->containsAny($text, ['ouvrir panier', 'aller panier']) || $text === 'panier') {
-            return $this->ok('Ouverture du panier.', [
+        if ($intent === 'catalog_open_cart') {
+            return $this->ok('Opening cart.', [
                 ['type' => 'navigate', 'url' => $this->generateUrl('app_panier_index')],
             ]);
         }
 
-        return $this->ok('Commande non reconnue. Dites aide pour entendre les commandes.');
+        return $this->ok('Command not recognized. Say help to hear available commands.');
     }
 
     private function handleCartCommand(string $transcript, EntityManagerInterface $em, SessionInterface $session): JsonResponse
@@ -283,11 +302,11 @@ final class AiAccessibilityController extends AbstractController
         $intent = (string) ($prediction['intent'] ?? '');
 
         if ($intent === 'help' || $this->containsAny($text, ['aide', 'help'])) {
-            return $this->ok('Commandes disponibles. Lire panier. Quantite suivi du nombre, ou quantite nom produit nombre. Augmenter ou diminuer quantite. Supprimer nom du produit. Vider panier. Passer commande.');
+            return $this->ok('Available commands. Read cart. Quantity followed by number, or quantity product name number. Increase or decrease quantity. Remove product name. Clear cart. Place order.');
         }
 
         if ($intent === 'cart_read' || $this->containsAny($text, ['lire panier'])) {
-            return $this->ok('Lecture du recapitulatif panier.', [
+            return $this->ok('Reading cart summary.', [
                 ['type' => 'read_cart_summary'],
             ]);
         }
@@ -304,10 +323,10 @@ final class AiAccessibilityController extends AbstractController
                 : $this->findSingleProductInCart($em, $session);
 
             if (!$product instanceof Produit) {
-                return $this->ok('Precisez le nom du produit pour modifier la quantite. Exemple: quantite pomme 2.');
+                return $this->ok('Please specify the product name to change the quantity. Example: quantity apple 2.');
             }
 
-            return $this->ok(sprintf('Quantite de %s reglee a %d.', (string) $product->getNom(), $quantity), [
+            return $this->ok(sprintf('Quantity of %s set to %d.', (string) $product->getNom(), $quantity), [
                 ['type' => 'update_cart_quantity_set', 'product_id' => (int) $product->getIdProduit(), 'quantity' => $quantity],
             ]);
         }
@@ -318,10 +337,10 @@ final class AiAccessibilityController extends AbstractController
                 ? $this->findProductInCartByName($needle, $em, $session)
                 : $this->findSingleProductInCart($em, $session);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit introuvable dans le panier.');
+                return $this->ok('Product not found in cart.');
             }
 
-            return $this->ok('Quantite augmentee.', [
+            return $this->ok('Quantity increased.', [
                 ['type' => 'update_cart_quantity_delta', 'product_id' => (int) $product->getIdProduit(), 'delta' => 1],
             ]);
         }
@@ -332,10 +351,10 @@ final class AiAccessibilityController extends AbstractController
                 ? $this->findProductInCartByName($needle, $em, $session)
                 : $this->findSingleProductInCart($em, $session);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit introuvable dans le panier.');
+                return $this->ok('Product not found in cart.');
             }
 
-            return $this->ok('Quantite reduite.', [
+            return $this->ok('Quantity decreased.', [
                 ['type' => 'update_cart_quantity_delta', 'product_id' => (int) $product->getIdProduit(), 'delta' => -1],
             ]);
         }
@@ -346,27 +365,27 @@ final class AiAccessibilityController extends AbstractController
                 ? $this->findProductInCartByName($needle, $em, $session)
                 : $this->findSingleProductInCart($em, $session);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit introuvable dans le panier.');
+                return $this->ok('Product not found in cart.');
             }
 
-            return $this->ok('Produit supprime du panier.', [
+            return $this->ok('Product removed from cart.', [
                 ['type' => 'remove_from_cart', 'product_id' => (int) $product->getIdProduit()],
             ]);
         }
 
         if ($intent === 'cart_clear' || $this->containsAny($text, ['vider panier', 'vider le panier', 'vider mon panier', 'panier vide'])) {
-            return $this->ok('Demande de vidage du panier envoyee.', [
+            return $this->ok('Cart clear request sent.', [
                 ['type' => 'clear_cart'],
             ]);
         }
 
         if ($intent === 'cart_checkout' || $this->containsAny($text, ['passer commande', 'passer la commande', 'je passe commande', 'commander'])) {
-            return $this->ok('Ouverture de la page commande.', [
+            return $this->ok('Opening order page.', [
                 ['type' => 'navigate', 'url' => $this->generateUrl('app_commande_create')],
             ]);
         }
 
-        return $this->ok('Commande non reconnue. Dites aide pour la liste des commandes vocales.');
+        return $this->ok('Command not recognized. Say help for the list of voice commands.');
     }
 
     private function handleCheckoutCommand(string $transcript, EntityManagerInterface $em, SessionInterface $session): JsonResponse
@@ -376,18 +395,18 @@ final class AiAccessibilityController extends AbstractController
         $intent = (string) ($prediction['intent'] ?? '');
 
         if ($intent === 'help' || $this->containsAny($text, ['aide', 'help'])) {
-            return $this->ok('Commandes disponibles. Nom suivi de votre nom. Adresse suivi de votre adresse. Paiement cash, paiement carte, paiement virement. Generer promo. Appliquer promo suivi du code. Augmenter ou diminuer nom du produit. Lire recap. Confirmer commande.');
+            return $this->ok('Available commands. Name followed by your name. Address followed by your address. Cash payment, card payment, bank transfer payment. Generate promo. Apply promo followed by code. Increase or decrease product name. Read summary. Confirm order.');
         }
 
         if ($this->containsAny($text, ['guide checkout', 'guide commande', 'etapes commande', 'que dois je remplir', 'quoi remplir'])) {
-            return $this->ok('Etapes checkout. Dites nom suivi du nom client. Puis adresse suivi de votre adresse. Puis paiement cash, carte ou virement. Ensuite dites generer promo. Puis dites utiliser ce code promo. Enfin dites confirmer commande.');
+            return $this->ok('Checkout steps. Say name followed by client name. Then address followed by your address. Then cash, card or bank transfer payment. Then say generate promo. Then say use this promo code. Finally say confirm order.');
         }
 
         if ($intent === 'cart_read' || $this->containsAny($text, ['lire panier'])) {
             $panier = $session->get('panier', []);
             $count = is_array($panier) ? array_sum($panier) : 0;
 
-            return $this->ok(sprintf('Votre panier contient %d article(s).', (int) $count), [
+            return $this->ok(sprintf('Your cart contains %d item(s).', (int) $count), [
                 ['type' => 'reload_page'],
             ]);
         }
@@ -400,7 +419,7 @@ final class AiAccessibilityController extends AbstractController
 
             $product = $this->findProductInCartByName($needle, $em, $session);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit introuvable dans le panier.');
+                return $this->ok('Product not found in cart.');
             }
 
             $result = $this->updateCartProductQuantity((int) $product->getIdProduit(), 1, $session, $product);
@@ -416,7 +435,7 @@ final class AiAccessibilityController extends AbstractController
 
             $product = $this->findProductInCartByName($needle, $em, $session);
             if (!$product instanceof Produit) {
-                return $this->ok('Produit introuvable dans le panier.');
+                return $this->ok('Product not found in cart.');
             }
 
             $result = $this->updateCartProductQuantity((int) $product->getIdProduit(), -1, $session, $product);
@@ -426,75 +445,75 @@ final class AiAccessibilityController extends AbstractController
 
         if ($intent === 'checkout_name' || preg_match('/^nom\s+(.+)$/iu', $transcript, $matches) === 1) {
             $value = isset($matches[1]) ? trim((string) $matches[1]) : trim($this->extractAfterKeyword($transcript, ['nom', 'mon nom est', 'saisir nom']));
-            return $this->ok('Nom client mis a jour.', [
+            return $this->ok('Client name updated.', [
                 ['type' => 'set_field', 'field_id' => 'nom_client', 'value' => $value],
             ]);
         }
 
         if ($intent === 'checkout_address' || preg_match('/^adresse\s+(.+)$/iu', $transcript, $matches) === 1) {
             $value = isset($matches[1]) ? trim((string) $matches[1]) : trim($this->extractAfterKeyword($transcript, ['adresse', 'mon adresse est', 'saisir adresse']));
-            return $this->ok('Adresse de livraison mise a jour.', [
+            return $this->ok('Delivery address updated.', [
                 ['type' => 'set_field', 'field_id' => 'adresse_livraison', 'value' => $value],
             ]);
         }
 
         if ($intent === 'checkout_payment_cash' || $this->containsAny($text, ['paiement cash', 'paiement espece'])) {
-            return $this->ok('Mode de paiement Cash selectionne.', [
+            return $this->ok('Cash payment mode selected.', [
                 ['type' => 'set_payment_mode', 'value' => 'Cash'],
             ]);
         }
 
         if ($intent === 'checkout_payment_card' || $this->containsAny($text, ['paiement carte'])) {
-            return $this->ok('Mode de paiement carte bancaire selectionne.', [
+            return $this->ok('Bank card payment mode selected.', [
                 ['type' => 'set_payment_mode', 'value' => 'Carte bancaire'],
             ]);
         }
 
         if ($intent === 'checkout_payment_transfer' || $this->containsAny($text, ['paiement virement'])) {
-            return $this->ok('Mode de paiement virement selectionne.', [
+            return $this->ok('Bank transfer payment mode selected.', [
                 ['type' => 'set_payment_mode', 'value' => 'Virement'],
             ]);
         }
 
         if ($intent === 'checkout_promo_generate' || $this->containsAny($text, ['generer promo'])) {
-            return $this->ok('Generation du code promo en cours.', [
+            return $this->ok('Generating promo code.', [
                 ['type' => 'submit_checkout_action', 'value' => 'generate_promo'],
             ]);
         }
 
         if ($this->containsAny($text, ['utiliser ce code promo', 'appliquer ce code promo', 'utilise ce code promo', 'appliquer ce code', 'utilise ce code'])) {
-            return $this->ok('Application du code promo genere en cours.', [
+            return $this->ok('Applying generated promo code.', [
                 ['type' => 'apply_generated_promo'],
             ]);
         }
 
         if ($intent === 'checkout_promo_apply' || preg_match('/^appliquer\s+promo\s+(.+)$/iu', $transcript, $matches) === 1) {
             $value = isset($matches[1]) ? trim((string) $matches[1]) : trim($this->extractAfterKeyword($transcript, ['appliquer promo', 'utiliser code promo', 'mettre promo']));
-            return $this->ok('Application du code promo en cours.', [
+            return $this->ok('Applying promo code.', [
                 ['type' => 'set_field', 'field_id' => 'promo_code', 'value' => $value],
                 ['type' => 'submit_checkout_action', 'value' => 'apply_promo'],
             ]);
         }
 
         if ($intent === 'checkout_read_summary' || $this->containsAny($text, ['lire recap', 'lire total'])) {
-            return $this->ok('Lecture du recapitulatif commande.', [
+            return $this->ok('Reading order summary.', [
                 ['type' => 'read_checkout_summary'],
             ]);
         }
 
         if ($intent === 'checkout_confirm' || $this->containsAny($text, ['confirmer commande'])) {
-            return $this->ok('Confirmation de commande en cours.', [
+            return $this->ok('Order confirmation in progress.', [
                 ['type' => 'click_confirm_order'],
             ]);
         }
 
         if ($intent === 'checkout_back_cart' || $this->containsAny($text, ['retour panier'])) {
-            return $this->ok('Retour au panier.', [
+            return $this->ok('Back to cart.', [
                 ['type' => 'navigate', 'url' => $this->generateUrl('app_panier_index')],
             ]);
         }
 
-        return $this->ok('Commande non reconnue. Dites aide pour les commandes vocales.');
+        return $this->ok('Command not recognized. Say help for voice commands.');
     }
 
     /**
@@ -504,7 +523,7 @@ final class AiAccessibilityController extends AbstractController
     {
         $panier = $session->get('panier', []);
         if (!is_array($panier) || !isset($panier[$productId])) {
-            return ['ok' => false, 'message' => 'Produit non present dans le panier.'];
+            return ['ok' => false, 'message' => 'Product not present in cart.'];
         }
 
         $currentQty = max(0, (int) $panier[$productId]);
@@ -514,21 +533,21 @@ final class AiAccessibilityController extends AbstractController
             unset($panier[$productId]);
             $session->set('panier', $panier);
 
-            return ['ok' => true, 'message' => sprintf('%s retire du panier.', (string) $product->getNom())];
+            return ['ok' => true, 'message' => sprintf('%s removed from cart.', (string) $product->getNom())];
         }
 
         $available = (int) ($product->getQuantiteStock() ?? 0);
         if ($newQty > $available) {
             return [
                 'ok' => false,
-                'message' => sprintf('Stock insuffisant pour %s. Stock disponible %d.', (string) $product->getNom(), $available),
+                'message' => sprintf('Insufficient stock for %s. Available stock: %d.', (string) $product->getNom(), $available),
             ];
         }
 
         $panier[$productId] = $newQty;
         $session->set('panier', $panier);
 
-        return ['ok' => true, 'message' => sprintf('Quantite de %s mise a %d.', (string) $product->getNom(), $newQty)];
+        return ['ok' => true, 'message' => sprintf('Quantity of %s set to %d.', (string) $product->getNom(), $newQty)];
     }
 
     private function findAvailableProductByName(string $needle, EntityManagerInterface $em): ?Produit
@@ -539,7 +558,7 @@ final class AiAccessibilityController extends AbstractController
         }
 
         $repository = $em->getRepository(Produit::class);
-        $products = $repository->findBy(['statut' => 'Disponible']);
+        $products = $repository->findBy(['statut' => 'Available']);
         if ($products === []) {
             // Fallback for datasets where status values differ by case or vocabulary.
             $products = $repository->findAll();

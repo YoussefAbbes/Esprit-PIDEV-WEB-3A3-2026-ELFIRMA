@@ -57,47 +57,47 @@ final class PanierController extends AbstractController
         $data = json_decode($request->getContent(), true);
         
         if (!isset($data['product_id'], $data['quantite'])) {
-            return new JsonResponse(['error' => 'Données manquantes'], 400);
+            return new JsonResponse(['error' => 'Missing data'], 400);
         }
 
         $productId = (int)$data['product_id'];
         $quantite = (int)$data['quantite'];
 
-        // Vérifier que le produit existe
+        // Check that the product exists
         $produit = $em->getRepository(Produit::class)->find($productId);
         if (!$produit) {
-            return new JsonResponse(['error' => 'Produit introuvable'], 404);
+            return new JsonResponse(['error' => 'Product not found'], 404);
         }
 
-        // Vérifier le stock disponible
+        // Check available stock
         if ($produit->getStatut() !== 'Disponible') {
-            return new JsonResponse(['error' => 'Produit non disponible'], 400);
+            return new JsonResponse(['error' => 'Product not available'], 400);
         }
 
         $panier = $session->get('panier', []);
-        
-        // Vérifier le stock total (quantité actuelle + nouvelle quantité)
+
+        // Check total stock (current quantity + new quantity)
         $quantiteActuelle = $panier[$productId] ?? 0;
         $nouvelleQuantiteTotale = $quantiteActuelle + $quantite;
-        
+
         if ($nouvelleQuantiteTotale > $produit->getQuantiteStock()) {
             return new JsonResponse([
-                'error' => 'Stock insuffisant',
+                'error' => 'Insufficient stock',
                 'stock_disponible' => $produit->getQuantiteStock(),
                 'quantite_panier' => $quantiteActuelle
             ], 400);
         }
 
-        // Ajouter au panier
+        // Add to cart
         $panier[$productId] = $nouvelleQuantiteTotale;
         $session->set('panier', $panier);
 
-        // Calculer le nombre total d'articles
+        // Calculate total number of items
         $totalItems = array_sum($panier);
 
         return new JsonResponse([
             'success' => true,
-            'message' => 'Produit ajouté au panier',
+            'message' => 'Product added to cart',
             'total_items' => $totalItems
         ]);
     }
@@ -108,7 +108,7 @@ final class PanierController extends AbstractController
         $data = json_decode($request->getContent(), true);
         
         if (!isset($data['product_id'], $data['quantite'])) {
-            return new JsonResponse(['error' => 'Données manquantes'], 400);
+            return new JsonResponse(['error' => 'Missing data'], 400);
         }
 
         $productId = (int)$data['product_id'];
@@ -116,18 +116,18 @@ final class PanierController extends AbstractController
 
         $produit = $em->getRepository(Produit::class)->find($productId);
         if (!$produit) {
-            return new JsonResponse(['error' => 'Produit introuvable'], 404);
+            return new JsonResponse(['error' => 'Product not found'], 404);
         }
 
         $panier = $session->get('panier', []);
 
         if ($quantite <= 0) {
-            // Supprimer du panier si quantité = 0
+            // Remove from cart if quantity = 0
             unset($panier[$productId]);
         } else {
-            // Vérifier le stock
+            // Check stock
             if ($quantite > $produit->getQuantiteStock()) {
-                return new JsonResponse(['error' => 'Stock insuffisant'], 400);
+                return new JsonResponse(['error' => 'Insufficient stock'], 400);
             }
             $panier[$productId] = $quantite;
         }
@@ -136,7 +136,7 @@ final class PanierController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'message' => 'Panier mis à jour',
+            'message' => 'Cart updated',
             'total_items' => array_sum($panier)
         ]);
     }
@@ -147,7 +147,7 @@ final class PanierController extends AbstractController
         $data = json_decode($request->getContent(), true);
         
         if (!isset($data['product_id'])) {
-            return new JsonResponse(['error' => 'ID produit manquant'], 400);
+            return new JsonResponse(['error' => 'Missing product ID'], 400);
         }
 
         $productId = (int)$data['product_id'];
@@ -160,7 +160,7 @@ final class PanierController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'message' => 'Produit retiré du panier',
+            'message' => 'Product removed from cart',
             'total_items' => array_sum($panier)
         ]);
     }
@@ -172,7 +172,7 @@ final class PanierController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'message' => 'Panier vidé'
+            'message' => 'Cart cleared'
         ]);
     }
 

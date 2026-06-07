@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon Panier - EL FIRMA{% endblock %}
+{% block title %}My Cart - EL FIRMA{% endblock %}
 
 {% block body %}
 <div class="container mt-5">
@@ -10,7 +10,7 @@
                 <div style="background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); padding: 25px; color: white;">
                     <h2 style="margin: 0; display: flex; align-items: center; gap: 15px;">
                         <span class="material-symbols-outlined" style="font-size: 32px;">shopping_cart</span>
-                        Mon Panier
+                        My Cart
                     </h2>
                 </div>
 
@@ -18,10 +18,10 @@
                     {% if items is empty %}
                         <div style="text-align: center; padding: 50px 20px;">
                             <span class="material-symbols-outlined" style="font-size: 80px; color: #d1d5db; margin-bottom: 20px;">shopping_cart</span>
-                            <h4 style="color: #6b7280; margin-bottom: 15px;">Votre panier est vide</h4>
-                            <p class="text-muted mb-4">Découvrez nos produits et ajoutez-les à votre panier</p>
+                            <h4 style="color: #6b7280; margin-bottom: 15px;">Your cart is empty</h4>
+                            <p class="text-muted mb-4">Discover our products and add them to your cart</p>
                             <a href="{{ path('app_pages_home') }}#products" class="btn" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 12px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
-                                Voir les produits
+                                View products
                             </a>
                         </div>
                     {% else %}
@@ -29,10 +29,10 @@
                             <table class="table">
                                 <thead>
                                     <tr style="border-bottom: 2px solid #f3f4f6;">
-                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Produit</th>
-                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Prix unitaire</th>
-                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Quantité</th>
-                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: right;">Sous-total</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700;">Product</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Unit price</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Quantity</th>
+                                        <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: right;">Subtotal</th>
                                         <th style="border: none; padding: 20px 15px; color: #374151; font-weight: 700; text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
@@ -42,8 +42,8 @@
                                         <td style="border: none; padding: 20px 15px;">
                                             <div style="display: flex; align-items: center; gap: 15px;">
                                                 <div style="width: 80px; height: 80px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%);">
-                                                    {% if item.produit.image %}
-                                                        <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" alt="{{ item.produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    {% if item.produit.imageFilename %}
+                                                        <img src="{{ asset('uploads/produits/' ~ item.produit.imageFilename) }}" alt="{{ item.produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
                                                     {% else %}
                                                         <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
                                                             <span class="material-symbols-outlined" style="color: rgba(255,255,255,0.5); font-size: 32px;">package_2</span>
@@ -52,7 +52,7 @@
                                                 </div>
                                                 <div>
                                                     <h6 style="margin: 0 0 5px 0; color: #2d5016; font-weight: 700;">{{ item.produit.nom }}</h6>
-                                                    <p style="margin: 0; font-size: 14px; color: #6b7280;">{{ item.produit.categorie ? item.produit.categorie.nom : 'Non catégorisé' }}</p>
+                                                    <p style="margin: 0; font-size: 14px; color: #6b7280;">{{ item.produit.categorie ? item.produit.categorie.nom : 'Uncategorized' }}</p>
                                                     <p style="margin: 5px 0 0 0; font-size: 12px; color: #6b7280;">Stock: {{ item.produit.quantiteStock }}</p>
                                                 </div>
                                             </div>
@@ -94,10 +94,10 @@
                         <div style="padding: 20px; background: #f9fafb; margin: 20px -30px -30px -30px; border-top: 2px solid #f3f4f6;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <button onclick="clearCart()" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                    Vider le panier
+                                    Empty cart
                                 </button>
                                 <a href="{{ path('app_pages_home') }}#products" style="background: #f3f4f6; color: #374151; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                                    Continuer les achats
+                                    Continue shopping
                                 </a>
                             </div>
                         </div>
@@ -112,19 +112,19 @@
                 <div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); padding: 25px; color: white;">
                     <h4 style="margin: 0; display: flex; align-items: center; gap: 10px;">
                         <span class="material-symbols-outlined">receipt_long</span>
-                        Résumé de commande
+                        Order summary
                     </h4>
                 </div>
 
                 <div style="padding: 30px;">
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                            <span style="color: #6b7280;">Sous-total:</span>
+                            <span style="color: #6b7280;">Subtotal:</span>
                             <span id="cart-subtotal" style="font-weight: 600;">{{ total|number_format(2, '.', ' ') }} DT</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                            <span style="color: #6b7280;">Livraison:</span>
-                            <span style="color: #16a34a; font-weight: 600;">Gratuite</span>
+                            <span style="color: #6b7280;">Delivery:</span>
+                            <span style="color: #16a34a; font-weight: 600;">Free</span>
                         </div>
                         <hr style="border: none; border-top: 2px solid #f3f4f6; margin: 20px 0;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -137,13 +137,13 @@
                     </div>
 
                     <a href="{{ path('app_commande_create') }}" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 15px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; text-align: center; display: block; margin-bottom: 15px;">
-                        Passer la commande
+                        Proceed to checkout
                     </a>
 
                     <div style="text-align: center; margin-top: 20px;">
                         <p style="font-size: 12px; color: #6b7280; margin: 0;">
                             <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">security</span>
-                            Paiement sécurisé
+                            Secure payment
                         </p>
                     </div>
                 </div>
@@ -154,9 +154,9 @@
                 <div style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); padding: 20px; color: white;">
                     <h5 style="margin: 0; display: flex; align-items: center; gap: 10px;">
                         <span class="material-symbols-outlined">auto_awesome</span>
-                        Recommandés pour vous
+                        Recommended for you
                     </h5>
-                    <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.9;">Basé sur les achats effectués ensemble.</p>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.9;">Based on products frequently bought together.</p>
                 </div>
                 <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
                     {% for product in recommended_products|slice(0, 5) %}
@@ -166,7 +166,7 @@
                                 <div style="font-size: 12px; color: #0f766e;">{{ product.prixUnitaire|number_format(2, '.', ' ') }} DT</div>
                             </div>
                             <button type="button" onclick="addRecommendedToCart({{ product.idProduit }})" style="background: #0d9488; color: white; border: none; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;">
-                                Ajouter
+                                Add
                             </button>
                         </div>
                     {% endfor %}
@@ -229,16 +229,16 @@ async function updateQuantity(productId, newQuantity) {
                 calculateTotal();
             }
         } else {
-            alert(result.error || 'Erreur lors de la mise à jour');
+            alert(result.error || 'Error while updating');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Erreur lors de la mise à jour du panier');
+        alert('Error while updating the cart');
     }
 }
 
 async function removeFromCart(productId) {
-    if (!confirm('Voulez-vous vraiment supprimer ce produit du panier ?')) {
+    if (!confirm('Are you sure you want to remove this product from the cart?')) {
         return;
     }
 
@@ -258,16 +258,16 @@ async function removeFromCart(productId) {
         if (result.success) {
             location.reload();
         } else {
-            alert(result.error || 'Erreur lors de la suppression');
+            alert(result.error || 'Error while deleting');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Erreur lors de la suppression du produit');
+        alert('Error while removing the product');
     }
 }
 
 async function clearCart(skipConfirm = false) {
-    if (!skipConfirm && !confirm('Voulez-vous vraiment vider votre panier ?')) {
+    if (!skipConfirm && !confirm('Are you sure you want to empty your cart?')) {
         return;
     }
 
@@ -284,11 +284,11 @@ async function clearCart(skipConfirm = false) {
         if (result.success) {
             location.reload();
         } else {
-            alert(result.error || 'Erreur lors du vidage du panier');
+            alert(result.error || 'Error while emptying the cart');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Erreur lors du vidage du panier');
+        alert('Error while emptying the cart');
     }
 }
 
@@ -335,7 +335,7 @@ async function addRecommendedToCart(productId) {
         alert(result.error || 'Impossible d\'ajouter ce produit');
     } catch (error) {
         console.error('Error:', error);
-        alert('Erreur lors de l\'ajout au panier');
+        alert('Error while adding to cart');
     }
 }
 
@@ -404,7 +404,7 @@ function initVoiceCartAssistant() {
     }
 
     function openVoiceFallbackPrompt() {
-        const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande panier. Ex: lire panier');
+        const typed = window.prompt('Voice recognition unavailable. Type a cart command. Example: read cart');
         if (typeof typed === 'string' && typed.trim() !== '') {
             handleVoiceCommand(typed.trim());
         }
@@ -495,7 +495,7 @@ function initVoiceCartAssistant() {
 
         if (wantsClearCart) {
             clearCart(true);
-            showVoiceStatus('Panier vide.', false, true);
+            showVoiceStatus('Cart emptied.', false, true);
             return true;
         }
 
@@ -516,7 +516,7 @@ function initVoiceCartAssistant() {
                 const productId = Number(row.dataset.productId || 0);
                 if (productId > 0) {
                     updateQuantity(productId, Math.max(0, qty));
-                    showVoiceStatus(`Quantite mise a ${qty}.`, false, true);
+                    showVoiceStatus(`Quantity set to ${qty}.`, false, true);
                     return true;
                 }
             }
@@ -529,7 +529,7 @@ function initVoiceCartAssistant() {
                 const currentQty = Number(row.querySelector('[id^="qty-"]')?.textContent || 0);
                 if (productId > 0) {
                     updateQuantity(productId, Math.max(0, currentQty + 1));
-                    showVoiceStatus('Quantite augmentee.', false, true);
+                    showVoiceStatus('Quantity increased.', false, true);
                     return true;
                 }
             }
@@ -542,7 +542,7 @@ function initVoiceCartAssistant() {
                 const currentQty = Number(row.querySelector('[id^="qty-"]')?.textContent || 0);
                 if (productId > 0) {
                     updateQuantity(productId, Math.max(0, currentQty - 1));
-                    showVoiceStatus('Quantite diminuee.', false, true);
+                    showVoiceStatus('Quantity decreased.', false, true);
                     return true;
                 }
             }
@@ -565,13 +565,13 @@ function initVoiceCartAssistant() {
     function readCartSummary() {
         const rows = Array.from(document.querySelectorAll('tr[data-product-id]'));
         if (rows.length === 0) {
-            speak('Votre panier est vide.');
+            speak('Your cart is empty.');
             return;
         }
 
         const names = rows.slice(0, 5).map((row) => row.querySelector('h6')?.textContent?.trim()).filter(Boolean);
         const total = document.getElementById('cart-total')?.textContent?.trim() || '';
-        speak(`Votre panier contient ${rows.length} produits. ${names.join(', ')}. Total ${total}.`);
+        speak(`Your cart contains ${rows.length} products. ${names.join(', ')}. Total ${total}.`);
     }
 
     function executeVoiceActions(actions) {
@@ -651,7 +651,7 @@ function initVoiceCartAssistant() {
 
             const data = await response.json();
             if (!response.ok || !data.ok) {
-                showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+                showVoiceStatus(data.speak || 'Voice processing error.', true, true);
                 return;
             }
 
@@ -660,7 +660,7 @@ function initVoiceCartAssistant() {
                 speak(data.speak);
             }
         } catch (_error) {
-            showVoiceStatus('Service vocal temporairement indisponible pendant la commande vocale.', true, true);
+            showVoiceStatus('Voice service temporarily unavailable during voice command.', true, true);
         }
     }
 
@@ -668,7 +668,7 @@ function initVoiceCartAssistant() {
         voiceBtn.style.opacity = '0.65';
         voiceBtn.title = 'Voice assistant not supported on this browser';
         voiceBtn.addEventListener('click', function () {
-            showVoiceStatus('La reconnaissance vocale n\'est pas supportee par ce navigateur.', true);
+            showVoiceStatus('Voice recognition is not supported by this browser.', true);
         });
         return;
     }
@@ -690,11 +690,11 @@ function initVoiceCartAssistant() {
             restartOnEnd = false;
             voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
             if (!quiet) {
-                showVoiceStatus('Je vous ecoute... dites votre commande panier.', false, false);
+                showVoiceStatus('Listening... say your cart command.', false, false);
             }
         } catch (_error) {
             isRecognitionStarting = false;
-            showVoiceStatus('Impossible de demarrer le micro.', true);
+            showVoiceStatus('Unable to start the microphone.', true);
         }
     }
 
@@ -728,20 +728,20 @@ function initVoiceCartAssistant() {
 
         if (code === 'not-allowed' || code === 'service-not-allowed') {
             restartOnEnd = false;
-            showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site.', true);
+            showVoiceStatus('Microphone permission denied. Allow microphone access for this site.', true);
             return;
         }
 
         if (code === 'audio-capture') {
             restartOnEnd = false;
-            showVoiceStatus('Aucun micro detecte ou accessible.', true);
+            showVoiceStatus('No microphone detected or accessible.', true);
             return;
         }
 
         if (code === 'network') {
             if (networkRetryCount < 1) {
                 networkRetryCount++;
-                showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+                showVoiceStatus('Browser voice service unavailable. Retrying...', true, false);
                 setTimeout(() => {
                     startRecognitionSafely(true);
                 }, 550);
@@ -751,17 +751,17 @@ function initVoiceCartAssistant() {
 
             restartOnEnd = false;
             textFallbackArmed = true;
-            showVoiceStatus('Service vocal navigateur indisponible. Recliquez micro pour mode texte.', true, false);
+            showVoiceStatus('Browser voice service unavailable. Click the mic again to use text mode.', true, false);
             return;
         }
 
         if (code === 'no-speech') {
-            showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+            showVoiceStatus('No speech detected. Speak right after clicking the microphone.', true, false);
             return;
         }
 
         if (code !== 'aborted') {
-            showVoiceStatus('Erreur vocale: ' + code, true);
+            showVoiceStatus('Voice error: ' + code, true);
         }
     };
 
@@ -782,7 +782,7 @@ function initVoiceCartAssistant() {
 
             return true;
         } catch (_error) {
-            showVoiceStatus('Micro non autorise. Activez l\'acces micro du navigateur.', true);
+            showVoiceStatus('Microphone not authorized. Enable browser microphone access.', true);
 
             return false;
         }
@@ -820,7 +820,7 @@ function initVoiceCartAssistant() {
         startRecognitionSafely();
     });
 
-    showVoiceStatus('Assistant vocal panier actif.', false, true);
+    showVoiceStatus('Cart voice assistant active.', false, true);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -843,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     try {
                         clearCart(true);
                         // On notifie l'utilisateur immédiatement
-                        return 'Panier vidé.';
+                        return 'Cart emptied.';
                     } catch (_e) {
                         // si erreur locale, on continue et laisse le serveur gérer
                     }
@@ -858,7 +858,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     const data = await response.json();
                     if (!response.ok || !data.ok) {
-                        return data.speak || 'Commande gestes non reconnue.';
+                        return data.speak || 'Gesture command not recognized.';
                     }
 
                     const actions = Array.isArray(data.actions) ? data.actions : [];
@@ -890,9 +890,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
 
-                    return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+                    return typeof data.speak === 'string' ? data.speak : 'Gesture command executed.';
                 } catch (_error) {
-                    return 'Service gestes temporairement indisponible.';
+                    return 'Gesture service temporarily unavailable.';
                 }
             }
         });

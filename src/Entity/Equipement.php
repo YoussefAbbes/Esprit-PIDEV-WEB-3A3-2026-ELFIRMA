@@ -25,7 +25,7 @@ class Equipement
 
     // ✅ NOM
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    #[Assert\NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\NotBlank(message: "Name is required")]
     #[Assert\Length(min: 3, max: 100)]
     private ?string $nom_eq = null;
 
@@ -34,7 +34,7 @@ class Equipement
 
     // ✅ TYPE
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    #[Assert\NotBlank(message: "Le type est obligatoire")]
+    #[Assert\NotBlank(message: "Type is required")]
     #[Assert\Length(min: 3, max: 100)]
     private ?string $type_eq = null;
 
@@ -42,8 +42,8 @@ class Equipement
     public function setTypeEq(string $type_eq): self { $this->type_eq = $type_eq; return $this; }
 
     #[ORM\Column(type: 'date')]
-    #[Assert\NotNull(message: "La date est obligatoire")]
-    #[Assert\LessThanOrEqual("today", message: "Date invalide")]
+    #[Assert\NotNull(message: "Date is required")]
+    #[Assert\LessThanOrEqual("today", message: "Invalid date")]
     private \DateTimeInterface $date_achat;
 
     public function getDateAchat(): ?\DateTimeInterface {
@@ -57,7 +57,7 @@ class Equipement
     }
 
     #[ORM\Column(enumType: EquipementEtat::class)]
-    #[Assert\NotNull(message: "L'état est obligatoire")]
+    #[Assert\NotNull(message: "Status is required")]
     private EquipementEtat $etat;
 
     public function getEtat(): ?EquipementEtat {
@@ -71,8 +71,8 @@ class Equipement
 
     // ✅ COUT
     #[ORM\Column(type: 'float', nullable: true)]
-    #[Assert\NotNull(message: "Le coût est obligatoire")]
-    #[Assert\Positive(message: "Le coût doit être positif")]
+    #[Assert\NotNull(message: "Cost is required")]
+    #[Assert\Positive(message: "Cost must be positive")]
     private ?float $cout_achat = null;
 
     public function getCoutAchat(): ?float { return $this->cout_achat; }
@@ -80,7 +80,7 @@ class Equipement
 
     // ✅ DESCRIPTION
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
-    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\NotBlank(message: "Description is required")]
     #[Assert\Length(min: 5, max: 200)]
     private ?string $description_eq = null;
 

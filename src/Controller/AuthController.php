@@ -68,6 +68,10 @@ final class AuthController extends AbstractController
                 $user->getPrenomU() . " " . $user->getNomU(),
             );
 
+            if ($user->getRoleU() === 'client') {
+                $session->set('spin_wheel_eligible', true);
+            }
+
             return $this->redirectToRoute("app_verify_captcha");
         }
 
@@ -529,6 +533,10 @@ final class AuthController extends AbstractController
             $user->getPrenomU() . " " . $user->getNomU(),
         );
 
+        if ($user->getRoleU() === 'client') {
+            $session->set('spin_wheel_eligible', true);
+        }
+
         return new JsonResponse([
             "ok" => true,
             "redirect" => $this->generateUrl("app_pages_home"),
@@ -587,7 +595,7 @@ final class AuthController extends AbstractController
         if (!$this->isOauthClientConfigured($clientId, $clientSecret)) {
             return $this->render("auth/login.html.twig", [
                 "error" =>
-                    "Google OAuth non configure. Ajoute GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET valides dans .env.local, puis configure l URI de redirection http://localhost:8000/connect/google/check dans Google Cloud Console.",
+                    "Google OAuth not configured. Add valid GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local, then configure the redirect URI http://localhost:8000/connect/google/check in Google Cloud Console.",
             ]);
         }
 
@@ -634,6 +642,10 @@ final class AuthController extends AbstractController
             $user->getPrenomU() . " " . $user->getNomU(),
         );
 
+        if ($user->getRoleU() === 'client') {
+            $session->set('spin_wheel_eligible', true);
+        }
+
         return $this->redirectToRoute("app_pages_home");
     }
 
@@ -646,7 +658,7 @@ final class AuthController extends AbstractController
         if (!$this->isOauthClientConfigured($clientId, $clientSecret)) {
             return $this->render("auth/login.html.twig", [
                 "error" =>
-                    "GitHub OAuth non configure. Ajoute GITHUB_CLIENT_ID et GITHUB_CLIENT_SECRET valides dans .env.local.",
+                    "GitHub OAuth not configured. Add valid GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in .env.local.",
             ]);
         }
 
@@ -695,6 +707,10 @@ final class AuthController extends AbstractController
             "user_name",
             $user->getPrenomU() . " " . $user->getNomU(),
         );
+
+        if ($user->getRoleU() === 'client') {
+            $session->set('spin_wheel_eligible', true);
+        }
 
         return $this->redirectToRoute("app_pages_home");
     }
@@ -777,6 +793,10 @@ final class AuthController extends AbstractController
                     "user_name",
                     $user->getPrenomU() . " " . $user->getNomU(),
                 );
+
+                if ($user->getRoleU() === 'client') {
+                    $session->set('spin_wheel_eligible', true);
+                }
 
                 $fingerprintPending = $request->request->get(
                     "fingerprint_pending",

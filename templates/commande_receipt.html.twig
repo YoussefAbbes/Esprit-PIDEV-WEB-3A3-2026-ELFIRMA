@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recu Paiement - Commande #{{ commande.idCommande }}</title>
+    <title>Payment Receipt - Order #{{ commande.idCommande }}</title>
     <style>
         :root {
             --ink: #0f172a;
@@ -232,9 +232,9 @@
 <body>
 <div class="page">
     <div class="toolbar no-print">
-        <button class="btn" type="button" onclick="window.print()">Imprimer</button>
+        <button class="btn" type="button" onclick="window.print()">Print</button>
         {% if is_download|default(false) == false %}
-            <a class="btn btn-secondary" href="{{ path('app_commande_show', {id: commande.idCommande}) }}" style="text-decoration:none;">Retour</a>
+            <a class="btn btn-secondary" href="{{ path('app_commande_show', {id: commande.idCommande}) }}" style="text-decoration:none;">Back</a>
         {% endif %}
     </div>
 
@@ -245,13 +245,13 @@
                     <img class="brand-logo" src="{{ receipt_logo_data_uri|default(asset('assets/img/logo.png')) }}" alt="Logo EL FIRMA">
                     <div>
                         <div class="brand-name">EL FIRMA</div>
-                        <p class="brand-tagline">Agriculture durable et intelligente</p>
+                        <p class="brand-tagline">Sustainable and smart agriculture</p>
                     </div>
                 </div>
-                <h1>Recu de Paiement</h1>
-                <p>Commande #{{ commande.idCommande }} - EL FIRMA</p>
+                <h1>Payment Receipt</h1>
+                <p>Order #{{ commande.idCommande }} - EL FIRMA</p>
             </div>
-            <div class="paid-pill">Paiement confirme</div>
+            <div class="paid-pill">Payment confirmed</div>
         </header>
 
         <div class="content">
@@ -261,31 +261,33 @@
                     <div class="value">{{ commande.nomClient }}</div>
                 </div>
                 <div class="card">
-                    <div class="label">Date paiement</div>
+                    <div class="label">Payment date</div>
                     <div class="value">{{ commande.dateCommande ? commande.dateCommande|date('d/m/Y H:i') : '-' }}</div>
                 </div>
                 <div class="card">
-                    <div class="label">Adresse livraison</div>
-                    <div class="value">{{ commande.adresseLivraison ?: 'Non renseignee' }}</div>
+                    <div class="label">Delivery address</div>
+                    <div class="value">{{ commande.adresseLivraison ?: 'Not provided' }}</div>
                 </div>
                 <div class="card">
-                    <div class="label">Mode paiement</div>
-                    <div class="value">{{ commande.modePaiement }}</div>
+                    <div class="label">Payment method</div>
+                    {% set paymentMethodMap = {'Carte bancaire': 'Credit Card', 'Virement': 'Bank Transfer'} %}
+                    <div class="value">{{ paymentMethodMap[commande.modePaiement]|default(commande.modePaiement) }}</div>
                 </div>
                 <div class="card">
-                    <div class="label">Statut paiement</div>
-                    <div class="value">{{ commande.statutPaiement }}</div>
+                    <div class="label">Payment status</div>
+                    {% set paymentLabelMap = {'Payé': 'Paid', 'Non payé': 'Unpaid', 'Remboursé': 'Refunded'} %}
+                    <div class="value">{{ paymentLabelMap[commande.statutPaiement]|default(commande.statutPaiement) }}</div>
                 </div>
                 <div class="card">
-                    <div class="label">Produit</div>
-                    <div class="value">{{ commande.produit ? commande.produit.nom : 'Produit supprime' }}</div>
+                    <div class="label">Product</div>
+                    <div class="value">{{ commande.produit ? commande.produit.nom : 'Product removed' }}</div>
                 </div>
             </div>
 
             <div class="total">
                 <div>
-                    <div class="label">Montant regle</div>
-                    <div class="value">Quantite: {{ commande.quantite }}</div>
+                    <div class="label">Amount paid</div>
+                    <div class="value">Quantity: {{ commande.quantite }}</div>
                 </div>
                 <div style="text-align: right;">
                     <strong>{{ commande.prixTotal|number_format(2, '.', ' ') }} DT</strong>
@@ -297,7 +299,7 @@
         </div>
 
         <footer class="foot">
-            Ce document sert de preuve de paiement de la commande. Vous pouvez l'imprimer en cliquant sur le bouton Imprimer.
+            This document serves as proof of payment for the order. You can print it by clicking the Print button.
         </footer>
     </section>
 </div>

@@ -17,61 +17,7 @@
     </style>
 </head>
 <body class="bg-[#fbfbe2] text-[#1b1d0e] min-h-screen flex">
-    <aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 py-8 pr-4 bg-[#f5f5dc]">
-        <div class="px-8 mb-8">
-            <h1 class="text-3xl font-black text-[#0a2200] tracking-tighter">Elfirma</h1>
-            <p class="text-[#43493d] text-sm">Agricultural Management</p>
-        </div>
-        <nav class="flex-1 flex flex-col space-y-1">
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'tableau-de-bord' }) }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span>Dashboard</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'utilisateurs' }) }}">
-                <span class="material-symbols-outlined">group</span>
-                <span>User Management</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('parcelle_index') }}">
-                <span class="material-symbols-outlined">agriculture</span>
-                <span>Field Management</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'animaux-elevages' }) }}">
-                <span class="material-symbols-outlined">pets</span>
-                <span>Livestock Management</span>
-            </a>
-
-            <div class="py-1">
-                <div class="flex items-center gap-4 py-3 px-8 bg-[#2d5016] text-white rounded-l-full ml-auto">
-                    <span class="material-symbols-outlined">shopping_basket</span>
-                    <span class="flex-1">Product Management</span>
-                    <span class="material-symbols-outlined text-sm">expand_less</span>
-                </div>
-                <div class="mt-1 ml-8">
-                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_categories') }}">
-                        <span class="material-symbols-outlined text-sm">category</span>
-                        <span>Categories</span>
-                    </a>
-                    <a class="flex items-center gap-3 py-3 px-6 text-[#43493d] hover:bg-[#e4e4cc]/30 rounded-l-full ml-auto mb-1" href="{{ path('elfirma_products') }}">
-                        <span class="material-symbols-outlined text-sm">inventory_2</span>
-                        <span>Products</span>
-                    </a>
-                    <a class="flex items-center gap-3 py-3 px-6 bg-[#1e3a0f] text-white rounded-l-full ml-auto" href="{{ path('app_admin_commandes') }}">
-                        <span class="material-symbols-outlined text-sm">receipt_long</span>
-                        <span>Orders</span>
-                    </a>
-                </div>
-            </div>
-
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'equipements-maintenance' }) }}">
-                <span class="material-symbols-outlined">handyman</span>
-                <span>Equipment Management</span>
-            </a>
-            <a class="flex items-center gap-4 py-3 px-8 text-[#43493d] hover:bg-[#e4e4cc]/30 transition-colors" href="{{ path('elfirma_page', { module: 'fournisseurs-contrats' }) }}">
-                <span class="material-symbols-outlined">description</span>
-                <span>Contract Management</span>
-            </a>
-        </nav>
-    </aside>
+    {% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'commandes' } %}
 
     <main class="flex-1 md:ml-72 min-h-screen flex flex-col">
         <header class="sticky top-0 z-50 bg-[#fbfbe2]/70 backdrop-blur-xl px-8 py-4 flex justify-between items-center border-b border-[#c3c9b9]/20">
@@ -134,27 +80,27 @@
             <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100">
                 <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
                     <div>
-                        <h3 class="text-2xl font-black text-[#0a2200] tracking-tight">Analyse geographique clients</h3>
-                        <p class="text-[#4b5563] mt-1">Zone la plus rentable calculee a partir des adresses de livraison.</p>
+                        <h3 class="text-2xl font-black text-[#0a2200] tracking-tight">Customer Geographic Analysis</h3>
+                        <p class="text-[#4b5563] mt-1">Most profitable zone calculated from delivery addresses.</p>
                     </div>
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-sm font-semibold">
                         <span class="material-symbols-outlined text-base">info</span>
-                        <span>Adresses non classables: {{ geo_zone_analytics.unknown_count|default(0) }}</span>
+                        <span>Unclassifiable addresses: {{ geo_zone_analytics.unknown_count|default(0) }}</span>
                     </div>
                 </div>
 
                 {% set topZone = geo_zone_analytics.top_zone|default(null) %}
                 <div class="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="rounded-xl p-4 border border-green-200 bg-green-50">
-                        <p class="text-xs uppercase tracking-wide text-green-700 font-semibold">Top zone rentable</p>
-                        <p class="text-2xl font-black text-green-900 mt-1">{{ topZone ? topZone.zone : 'Aucune' }}</p>
+                        <p class="text-xs uppercase tracking-wide text-green-700 font-semibold">Top Profitable Zone</p>
+                        <p class="text-2xl font-black text-green-900 mt-1">{{ topZone ? topZone.zone : 'None' }}</p>
                     </div>
                     <div class="rounded-xl p-4 border border-emerald-200 bg-emerald-50">
-                        <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Chiffre d'affaires zone</p>
+                        <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Zone Revenue</p>
                         <p class="text-2xl font-black text-emerald-900 mt-1">{{ topZone ? topZone.revenue|number_format(2, ',', ' ') ~ ' DT' : '0,00 DT' }}</p>
                     </div>
                     <div class="rounded-xl p-4 border border-blue-200 bg-blue-50">
-                        <p class="text-xs uppercase tracking-wide text-blue-700 font-semibold">Panier moyen zone</p>
+                        <p class="text-xs uppercase tracking-wide text-blue-700 font-semibold">Average Cart Zone</p>
                         <p class="text-2xl font-black text-blue-900 mt-1">{{ topZone ? topZone.avg_ticket|number_format(2, ',', ' ') ~ ' DT' : '0,00 DT' }}</p>
                     </div>
                 </div>
@@ -164,9 +110,9 @@
                         <thead>
                             <tr class="border-b border-[#d8e4c6] text-left text-[#3f4d31] text-sm uppercase tracking-wide">
                                 <th class="py-2 px-2">Zone</th>
-                                <th class="py-2 px-2">Commandes</th>
-                                <th class="py-2 px-2">CA (DT)</th>
-                                <th class="py-2 px-2">Panier moyen (DT)</th>
+                                <th class="py-2 px-2">Orders</th>
+                                <th class="py-2 px-2">Revenue (DT)</th>
+                                <th class="py-2 px-2">Avg. Cart (DT)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -179,7 +125,7 @@
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="4" class="py-3 px-2 text-[#66755b]">Pas assez d'adresses exploitables pour calculer les zones.</td>
+                                    <td colspan="4" class="py-3 px-2 text-[#66755b]">Not enough usable addresses to calculate zones.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -195,17 +141,19 @@
                     </div>
                     <div class="md:col-span-2">
                         <select name="status" class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100">
-                            <option value="">All status</option>
+                            <option value="">All statuses</option>
+                            {% set statusLabelMap = {'En attente': 'Pending', 'Confirmée': 'Confirmed', 'En cours': 'In Progress', 'Livrée': 'Delivered', 'Annulée': 'Cancelled'} %}
                             {% for status in ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'] %}
-                                <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+                                <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ statusLabelMap[status]|default(status) }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="md:col-span-2">
                         <select name="payment" class="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100">
-                            <option value="">All payment</option>
+                            <option value="">All payments</option>
+                            {% set paymentLabelMap = {'Non payé': 'Unpaid', 'Payé': 'Paid', 'Remboursé': 'Refunded'} %}
                             {% for status in ['Non payé', 'Payé', 'Remboursé'] %}
-                                <option value="{{ status }}" {% if filters.payment == status %}selected{% endif %}>{{ status }}</option>
+                                <option value="{{ status }}" {% if filters.payment == status %}selected{% endif %}>{{ paymentLabelMap[status]|default(status) }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -229,11 +177,11 @@
             </section>
 
             <section class="bg-white rounded-xl p-6 shadow-sm border-2 border-green-100 overflow-x-auto">
-                <form id="bulk-delete-form" method="POST" action="{{ path('app_admin_commandes_bulk_delete') }}" class="mb-4 flex items-center justify-between gap-3" onsubmit="return confirm('Supprimer les commandes sélectionnées ?');">
+                <form id="bulk-delete-form" method="POST" action="{{ path('app_admin_commandes_bulk_delete') }}" class="mb-4 flex items-center justify-between gap-3" onsubmit="return confirm('Delete selected orders?');">
                     <input type="hidden" name="_token" value="{{ csrf_token('bulk_delete_commandes') }}">
-                    <p id="bulk-selection-info" class="text-sm text-[#4b5563]">Aucune commande sélectionnée.</p>
+                    <p id="bulk-selection-info" class="text-sm text-[#4b5563]">No orders selected.</p>
                     <button id="bulk-delete-btn" type="submit" disabled class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 transition-colors">
-                        Supprimer la sélection
+                        Delete selection
                     </button>
                 </form>
 
@@ -241,12 +189,12 @@
                     <thead>
                         <tr class="border-b border-[#d8e4c6] text-left text-[#3f4d31] text-sm uppercase tracking-wide">
                             <th class="py-3 px-3 w-10">
-                                <input id="select-all-orders" type="checkbox" class="rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Sélectionner tout">
+                                <input id="select-all-orders" type="checkbox" class="rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Select all">
                             </th>
                             <th class="py-3 px-3">ID</th>
                             <th class="py-3 px-3">Client</th>
-                            <th class="py-3 px-3">Score client</th>
-                            <th class="py-3 px-3">Adresse</th>
+                            <th class="py-3 px-3">Client Score</th>
+                            <th class="py-3 px-3">Address</th>
                             <th class="py-3 px-3">Product</th>
                             <th class="py-3 px-3">Quantity</th>
                             <th class="py-3 px-3">Total</th>
@@ -260,7 +208,7 @@
                         {% for commande in commandes %}
                             <tr class="border-b border-[#edf3e2] hover:bg-[#f8fbeF]">
                                 <td class="py-3 px-3">
-                                    <input type="checkbox" name="order_ids[]" value="{{ commande.idCommande }}" form="bulk-delete-form" class="order-checkbox rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Sélectionner commande {{ commande.idCommande }}">
+                                    <input type="checkbox" name="order_ids[]" value="{{ commande.idCommande }}" form="bulk-delete-form" class="order-checkbox rounded border-gray-300 text-green-700 focus:ring-green-500" aria-label="Select order {{ commande.idCommande }}">
                                 </td>
                                 <td class="py-3 px-3 font-bold text-[#0a2200]">#{{ commande.idCommande }}</td>
                                 <td class="py-3 px-3">{{ commande.nomClient }}</td>
@@ -344,7 +292,7 @@
                     {% endif %}
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Adresse de livraison</label>
+                    <label class="block text-sm font-semibold mb-1">Delivery Address</label>
                     <input name="adresse_livraison" value="{{ createOld.adresse_livraison|default('') }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
                     {% if createErrors.adresse_livraison is defined %}
                         {% for err in createErrors.adresse_livraison %}
@@ -387,8 +335,9 @@
                 <div>
                     <label class="block text-sm font-semibold mb-1">Order status</label>
                     <select name="statut_commande" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                        {% set statusLabelMap = {'En attente': 'Pending', 'Confirmée': 'Confirmed', 'En cours': 'In Progress', 'Livrée': 'Delivered', 'Annulée': 'Cancelled'} %}
                         {% for status in ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'] %}
-                            <option value="{{ status }}" {% if createOld.statut_commande|default('En attente') == status %}selected{% endif %}>{{ status }}</option>
+                            <option value="{{ status }}" {% if createOld.statut_commande|default('En attente') == status %}selected{% endif %}>{{ statusLabelMap[status]|default(status) }}</option>
                         {% endfor %}
                     </select>
                     {% if createErrors.statut_commande is defined %}
@@ -400,8 +349,9 @@
                 <div>
                     <label class="block text-sm font-semibold mb-1">Payment mode</label>
                     <select name="mode_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                        {% set modeLabelMap = {'Cash': 'Cash', 'Carte bancaire': 'Bank Card', 'Virement': 'Bank Transfer'} %}
                         {% for mode in ['Cash', 'Carte bancaire', 'Virement'] %}
-                            <option value="{{ mode }}" {% if createOld.mode_paiement|default('Cash') == mode %}selected{% endif %}>{{ mode }}</option>
+                            <option value="{{ mode }}" {% if createOld.mode_paiement|default('Cash') == mode %}selected{% endif %}>{{ modeLabelMap[mode]|default(mode) }}</option>
                         {% endfor %}
                     </select>
                     {% if createErrors.mode_paiement is defined %}
@@ -413,8 +363,9 @@
                 <div>
                     <label class="block text-sm font-semibold mb-1">Payment status</label>
                     <select name="statut_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
+                        {% set paymentLabelMap = {'Non payé': 'Unpaid', 'Payé': 'Paid', 'Remboursé': 'Refunded'} %}
                         {% for status in ['Non payé', 'Payé', 'Remboursé'] %}
-                            <option value="{{ status }}" {% if createOld.statut_paiement|default('Non payé') == status %}selected{% endif %}>{{ status }}</option>
+                            <option value="{{ status }}" {% if createOld.statut_paiement|default('Non payé') == status %}selected{% endif %}>{{ paymentLabelMap[status]|default(status) }}</option>
                         {% endfor %}
                     </select>
                     {% if createErrors.statut_paiement is defined %}
@@ -470,7 +421,7 @@
                         {% endif %}
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-1">Adresse de livraison</label>
+                        <label class="block text-sm font-semibold mb-1">Delivery Address</label>
                         <input name="adresse_livraison" value="{{ oldForThis.adresse_livraison|default(commande.adresseLivraison) }}" class="w-full border-2 border-green-200 rounded-lg px-3 py-2"/>
                         {% if editOld.id|default(null) == commande.idCommande and editErrors.adresse_livraison is defined %}
                             {% for err in editErrors.adresse_livraison %}
@@ -514,8 +465,9 @@
                         <label class="block text-sm font-semibold mb-1">Order status</label>
                         <select name="statut_commande" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
                             {% set orderStatusSelected = oldForThis.statut_commande|default(commande.statutCommande) %}
+                            {% set statusLabelMap = {'En attente': 'Pending', 'Confirmée': 'Confirmed', 'En cours': 'In Progress', 'Livrée': 'Delivered', 'Annulée': 'Cancelled'} %}
                             {% for status in ['En attente', 'Confirmée', 'En cours', 'Livrée', 'Annulée'] %}
-                                <option value="{{ status }}" {% if orderStatusSelected == status %}selected{% endif %}>{{ status }}</option>
+                                <option value="{{ status }}" {% if orderStatusSelected == status %}selected{% endif %}>{{ statusLabelMap[status]|default(status) }}</option>
                             {% endfor %}
                         </select>
                         {% if editOld.id|default(null) == commande.idCommande and editErrors.statut_commande is defined %}
@@ -528,8 +480,9 @@
                         <label class="block text-sm font-semibold mb-1">Payment mode</label>
                         <select name="mode_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
                             {% set paymentModeSelected = oldForThis.mode_paiement|default(commande.modePaiement) %}
+                            {% set modeLabelMap = {'Cash': 'Cash', 'Carte bancaire': 'Bank Card', 'Virement': 'Bank Transfer'} %}
                             {% for mode in ['Cash', 'Carte bancaire', 'Virement'] %}
-                                <option value="{{ mode }}" {% if paymentModeSelected == mode %}selected{% endif %}>{{ mode }}</option>
+                                <option value="{{ mode }}" {% if paymentModeSelected == mode %}selected{% endif %}>{{ modeLabelMap[mode]|default(mode) }}</option>
                             {% endfor %}
                         </select>
                         {% if editOld.id|default(null) == commande.idCommande and editErrors.mode_paiement is defined %}
@@ -542,8 +495,9 @@
                         <label class="block text-sm font-semibold mb-1">Payment status</label>
                         <select name="statut_paiement" class="w-full border-2 border-green-200 rounded-lg px-3 py-2">
                             {% set paymentStatusSelected = oldForThis.statut_paiement|default(commande.statutPaiement) %}
+                            {% set paymentLabelMap = {'Non payé': 'Unpaid', 'Payé': 'Paid', 'Remboursé': 'Refunded'} %}
                             {% for status in ['Non payé', 'Payé', 'Remboursé'] %}
-                                <option value="{{ status }}" {% if paymentStatusSelected == status %}selected{% endif %}>{{ status }}</option>
+                                <option value="{{ status }}" {% if paymentStatusSelected == status %}selected{% endif %}>{{ paymentLabelMap[status]|default(status) }}</option>
                             {% endfor %}
                         </select>
                         {% if editOld.id|default(null) == commande.idCommande and editErrors.statut_paiement is defined %}
@@ -615,8 +569,8 @@
                 const selectedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
                 bulkBtn.disabled = selectedCount === 0;
                 bulkInfo.textContent = selectedCount === 0
-                    ? 'Aucune commande sélectionnée.'
-                    : `${selectedCount} commande(s) sélectionnée(s).`;
+                    ? 'No orders selected.'
+                    : `${selectedCount} order(s) selected.`;
 
                 if (selectAll) {
                     const hasAny = checkboxes.length > 0;

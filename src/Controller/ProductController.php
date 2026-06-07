@@ -17,6 +17,8 @@ use App\Entity\Categorie;
 use App\Service\ProductVideoGeneratorService;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 final class ProductController extends AbstractController
 {
@@ -50,7 +52,7 @@ final class ProductController extends AbstractController
     ];
 
     #[Route('/elfirma/produits', name: 'elfirma_products', methods: ['GET'])]
-    public function adminIndex(Request $request, EntityManagerInterface $em, HttpClientInterface $httpClient): Response
+    public function adminIndex(Request $request, EntityManagerInterface $em, HttpClientInterface $httpClient, CacheInterface $cache): Response
     {
         $q = trim((string) $request->query->get('q', ''));
         $categoryFilter = trim((string) $request->query->get('category', ''));
@@ -68,7 +70,11 @@ final class ProductController extends AbstractController
 
         $stats = $this->buildProductStats($produits);
         $chartData = $this->buildProductChartData($produits);
-        $weatherOverview = $this->fetchTunisiaWeatherOverview($selectedRegion, $httpClient);
+        $weatherCacheKey = 'weather_region_' . preg_replace('/[^a-zA-Z0-9_]/', '_', $selectedRegion);
+        $weatherOverview = $cache->get($weatherCacheKey, function (ItemInterface $item) use ($selectedRegion, $httpClient): array {
+            $item->expiresAfter(3600);
+            return $this->fetchTunisiaWeatherOverview($selectedRegion, $httpClient);
+        });
         $stockAlertData = $this->buildStockAlertData($allProduits);
         $stockAlertStats = $this->buildStockAlertStats($allProduits, $stockAlertData);
 
@@ -265,7 +271,7 @@ final class ProductController extends AbstractController
             'date_production' => trim((string) $request->request->get('date_production', '')),
             'date_expiration' => trim((string) $request->request->get('date_expiration', '')),
             'categorie_id' => trim((string) $request->request->get('categorie_id', '')),
-            'image' => $produit->getImage() ?? '',
+            'image' => $produit->getImageFilename() ?? '',
         ];
 
         $errors = [];
@@ -281,7 +287,7 @@ final class ProductController extends AbstractController
         $imageFile = $request->files->get('image');
         if ($imageFile instanceof UploadedFile) {
             $produit->setImageFile($imageFile);
-            $formData['image'] = $produit->getImage() ?? $formData['image'];
+            $formData['image'] = $produit->getImageFilename() ?? $formData['image'];
         }
 
         $produit->setNom($formData['nom']);
@@ -520,20 +526,20 @@ final class ProductController extends AbstractController
         }
 
         $quality = (string) ($produit->getQualite() ?? 'Standard');
-        $productionDate = $produit->getDateProduction()?->format('d/m/Y') ?? 'Non renseignee';
-        $expirationDate = $produit->getDateExpiration()?->format('d/m/Y') ?? 'Non renseignee';
+        $productionDate = $produit->getDateProduction()?->format('d/m/Y') ?? 'Not specified';
+        $expirationDate = $produit->getDateExpiration()?->format('d/m/Y') ?? 'Not specified';
         $price = number_format((float) ($produit->getPrixUnitaire() ?? 0), 2, '.', '');
 
         $description = sprintf(
-            '%s. Categorie %s. Stock disponible %d unite(s).',
-            (string) ($produit->getType() ?? 'Produit agricole'),
-            (string) ($produit->getCategorie()?->getNom() ?? 'non precisee'),
+            '%s. Category %s. Available stock %d unit(s).',
+            (string) ($produit->getType() ?? 'Agricultural product'),
+            (string) ($produit->getCategorie()?->getNom() ?? 'not specified'),
             (int) ($produit->getQuantiteStock() ?? 0)
         );
 
         $ttsText = sprintf(
-            'Produit %s. Qualite %s. Date de production %s. Date d expiration %s. Prix %s dinars tunisiens.',
-            (string) ($produit->getNom() ?? 'Produit'),
+            'Product %s. Quality %s. Production date %s. Expiration date %s. Price %s Tunisian dinars.',
+            (string) ($produit->getNom() ?? 'Product'),
             $quality,
             $productionDate,
             $expirationDate,

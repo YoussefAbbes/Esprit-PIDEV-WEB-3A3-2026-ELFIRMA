@@ -453,6 +453,11 @@
         return className.includes("fixed") || className.includes("left-0");
     });
 
+    // Skip this entire script if new premium sidebar exists
+    if (document.querySelector(".elfirma-premium-sidebar")) {
+        return;
+    }
+
     if (!sideRoots.length) {
         return;
     }
@@ -463,6 +468,11 @@
     applyEnglishLocalization();
 
     sideRoots.forEach((root) => {
+        // Skip processing new premium sidebar - it has its own structure
+        if (root.classList.contains("elfirma-premium-sidebar")) {
+            return;
+        }
+
         root.querySelectorAll("button").forEach((button) => {
             const label = (button.textContent || "").toLowerCase();
             if (label.includes("nouvelle") || label.includes("new season")) {
@@ -470,10 +480,10 @@
             }
         });
 
-        const container = root.querySelector("nav") || root;
-        buildSideNavigation(container);
-            });
+        // const container = root.querySelector("nav") || root;
+        // buildSideNavigation(container);
+    });
 
-    mountSidebarToggle();
+    // mountSidebarToggle();
 })();
 </script>

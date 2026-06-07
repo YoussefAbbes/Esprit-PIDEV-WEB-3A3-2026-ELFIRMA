@@ -312,7 +312,7 @@
         <li><a href="{{ path('app_services') }}" class="{% if app.request.get('_route') == 'app_services' %}active{% endif %}">Our Services</a></li>
         <li><a href="{{ path('suppliers_list') }}" class="{% if app.request.get('_route') == 'suppliers_list' %}active{% endif %}">Our Suppliers</a></li>
         <li><a href="{{ path('app_testimonials') }}" class="{% if app.request.get('_route') == 'app_testimonials' %}active{% endif %}">Testimonials</a></li>
-        <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Blog</a></li>
+        <li><a href="{{ path('app_blog') }}" class="{% if app.request.get('_route') starts with 'app_blog' %}active{% endif %}">Equipments</a></li>
         {% set isParcellesCulturesRoute = app.request.get('_route') == 'app_client_parcelles' or app.request.get('_route') == 'app_client_cultures' or app.request.get('_route') starts with 'parcelle_' or app.request.get('_route') starts with 'culture_' %}
         <li class="dropdown">
           <a href="#" class="{% if isParcellesCulturesRoute %}active{% endif %}">

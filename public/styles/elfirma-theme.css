@@ -370,3 +370,241 @@ button[class*="bg-secondary"] {
     color: #55604e;
     font-size: 0.88rem;
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🌿 EL FIRMA Premium Admin Sidebar - Advanced Styling Support      */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Main content adjustment for sidebar */
+main.elfirma-admin-content {
+    margin-left: 280px !important;
+    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Override old Tailwind margin classes for pages with ml-72 */
+main.md\:ml-72 {
+    margin-left: 280px !important;
+}
+
+/* Also fix pages using flex layout */
+body.flex > main {
+    margin-left: 280px !important;
+}
+
+/* New sidebar width (280px) */
+nav.elfirma-premium-sidebar {
+    width: 280px !important;
+}
+
+/* Tablet breakpoint - sidebar becomes icon-only */
+@media (max-width: 1024px) {
+    main.elfirma-admin-content {
+        margin-left: 5.5rem;
+    }
+}
+
+/* Mobile breakpoint - full width */
+@media (max-width: 768px) {
+    main.elfirma-admin-content {
+        margin-left: 0;
+    }
+}
+
+/* ─── Sidebar Appearance Adjustments ─── */
+.elfirma-premium-sidebar {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.elfirma-premium-sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.05) 0%, transparent 50%, rgba(147, 75, 25, 0.05) 100%);
+    pointer-events: none;
+}
+
+/* ─── Smooth Animations ─── */
+.elfirma-premium-sidebar,
+main.elfirma-admin-content {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Premium Effects ─── */
+.sidebar-nav-link {
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-nav-link::before {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.sidebar-nav-link:hover::before {
+    transform: translateX(100%);
+}
+
+/* ─── Hover Effects ─── */
+.sidebar-nav-link:hover .material-symbols-outlined {
+    transform: scale(1.15) translateX(3px);
+}
+
+.sidebar-footer-link:hover .material-symbols-outlined {
+    transform: translateX(3px);
+}
+
+.material-symbols-outlined {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── Collapse Animation ─── */
+.section-content {
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.section-content.hidden {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ─── Glow Effects on Active ─── */
+.sidebar-nav-link.active {
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+}
+
+.sidebar-nav-link.active .material-symbols-outlined {
+    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.6));
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+
+/* ─── Scroll behavior ─── */
+.custom-scrollbar {
+    scroll-behavior: smooth;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    transition: background-color 0.3s ease;
+}
+
+/* ─── Floating Elements ─── */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* ─── Pulse Animation ─── */
+@keyframes glow-pulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(74, 222, 128, 0.6);
+    }
+}
+
+.glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Force Premium Sidebar Display ─── */
+.elfirma-premium-sidebar {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 50 !important;
+}
+
+.elfirma-premium-sidebar * {
+    visibility: visible !important;
+}
+
+/* ─── Ensure content areas adjust for new sidebar ─── */
+body > main {
+    margin-left: 20rem !important;
+}
+
+/* ─── Badge Animations ─── */
+.badge-alert {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🌿 Responsive Sidebar - Collapsed State */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Collapsed sidebar - icon-only mode */
+.elfirma-premium-sidebar.collapsed {
+    width: 90px !important;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide text labels when collapsed */
+.elfirma-premium-sidebar.collapsed .sidebar-title,
+.elfirma-premium-sidebar.collapsed .sidebar-menu-label,
+.elfirma-premium-sidebar.collapsed .nav-item-text {
+    display: none !important;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Hide dropdown chevrons when collapsed */
+.elfirma-premium-sidebar.collapsed button > span:last-of-type {
+    display: none !important;
+}
+
+/* Center icons and adjust spacing when collapsed */
+.elfirma-premium-sidebar.collapsed a,
+.elfirma-premium-sidebar.collapsed > div:nth-child(2) button {
+    justify-content: center !important;
+    padding: 1rem 0 !important;
+    gap: 0 !important;
+}
+
+/* Rotate toggle button when collapsed */
+.elfirma-premium-sidebar.collapsed .sidebar-toggle-btn span {
+    transform: scaleX(-1);
+}
+
+/* Hide all dropdown menus when collapsed */
+.elfirma-premium-sidebar.collapsed button + div {
+    display: none !important;
+    max-height: 0;
+    overflow: hidden;
+}
+
+/* Adjust main content margin based on sidebar state */
+main.elfirma-admin-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .elfirma-premium-sidebar {
+        width: 280px !important;
+    }
+
+    .elfirma-premium-sidebar.collapsed {
+        width: 280px !important;
+    }
+
+    main.elfirma-admin-content {
+        margin-left: 280px !important;
+    }
+}

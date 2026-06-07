@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Equipement;
 use App\Repository\EquipementRepository;
+use App\Repository\MaintenanceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,6 +31,7 @@ class EquipementController extends AbstractController
 #[Route('/equipements', name: 'app_equipement_index')]
 public function index(
     EquipementRepository $repo,
+    MaintenanceRepository $maintenanceRepo,
     EntityManagerInterface $em,
     AIPredictionService $ai,
     ChartBuilderInterface $chartBuilder,
@@ -39,10 +41,12 @@ public function index(
     string $mailerFrom
 ): Response {
 
+    $maintenanceRepo->sanitizeEnums();
+
     $form = $this->createForm(EquipementType::class, new Equipement());
     $formMaintenance = $this->createForm(MaintenanceType::class, new Maintenance());
 
-    $equipements = $repo->findAll();
+    $equipements = $repo->findAllSafe();
 
     // 🔄 Mise à jour état
     foreach ($equipements as $eq) {
@@ -119,9 +123,9 @@ public function index(
 
         $chartRisk->setData([
             'labels' => [
-                'Faible (Bon état)',
-                'Moyen (Surveillance)',
-                'Élevé (Critique)'
+                'Low (Good condition)',
+                'Medium (Monitoring)',
+                'High (Critical)'
             ],
             'datasets' => [
                 [
@@ -157,8 +161,8 @@ public function index(
             }
         }
 
-        $labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-                   'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+        $labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
         $dataMaint = array_values($months);
 
@@ -168,7 +172,7 @@ public function index(
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => 'Maintenances par mois',
+                    'label' => 'Maintenances per month',
                     'data' => $dataMaint,
                     'borderColor' => 'rgb(59,130,246)',
                     'backgroundColor' => 'rgba(59,130,246,0.2)',
@@ -227,7 +231,7 @@ public function index(
                 $em->persist($equipement);
                 $em->flush();
 
-                $this->addFlash('success', '✅ Équipement ajouté avec succès !');
+                $this->addFlash('success', '✅ Equipment added successfully!');
                 return $this->redirectToRoute('app_equipement_index');
             } else {
                 // Le formulaire n'est pas valide
@@ -271,7 +275,7 @@ public function index(
         if (!$data) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Données invalides'
+                'message' => 'Invalid data'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -306,7 +310,7 @@ public function index(
 
                 return new JsonResponse([
                     'success' => false,
-                    'message' => 'Erreurs de validation',
+                    'message' => 'Validation errors',
                     'errors' => $errorMessages
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -315,7 +319,7 @@ public function index(
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Équipement modifié avec succès',
+                'message' => 'Equipment updated successfully',
                 'data' => [
                     'id' => $equipement->getIdEq(),
                     'nomEq' => $equipement->getNomEq(),
@@ -330,7 +334,7 @@ public function index(
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur lors de la modification: ' . $e->getMessage()
+                'message' => 'Error during update: ' . $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -346,13 +350,13 @@ public function index(
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Équipement supprimé avec succès'
+                'message' => 'Equipment deleted successfully'
             ]);
 
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur lors de la suppression: ' . $e->getMessage()
+                'message' => 'Error during deletion: ' . $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -399,7 +403,7 @@ public function index(
 
             $maintenance->setEquipement($equipement);
             $maintenance->setTypeM('Maintenance automatique');
-            $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
+            $maintenance->setDescription('Automatically generated maintenance (critical equipment)');
             
             // 📅 date proche (demain)
             $maintenance->setDateM(new \DateTime('+1 day'));
@@ -429,9 +433,9 @@ public function index(
                 ]);
 
                 $email = (new Email())
-                    ->from(new Address($mailerFrom, 'Système de Gestion Agricole'))
+                    ->from(new Address($mailerFrom, 'Agricultural Management System'))
                     ->to(new Address($technicien->getEmailU(), $technicien->getPrenomU() . ' ' . $technicien->getNomU()))
-                    ->subject('🚨 Alerte Maintenance - Équipement Critique')
+                    ->subject('🚨 Maintenance Alert - Critical Equipment')
                     ->html($htmlContent);
 
                 $mailer->send($email);
@@ -461,7 +465,7 @@ public function index(
         
         if (!$equipement) {
             return $this->json([
-                'error' => 'Équipement non trouvé'
+                'error' => 'Equipment not found'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -499,19 +503,19 @@ public function index(
                 'score' => $result['score'] ?? 0,
                 'risk' => $result['risk'] ?? 0,
                 'analysis' => $result['analysis'] ?? [],
-                'recommendations' => $result['recommendations'] ?? ['Consultez les logs pour plus de détails']
+                'recommendations' => $result['recommendations'] ?? ['Check the logs for more details']
             ]);
         } catch (\Exception $e) {
             return $this->json([
-                'error' => 'Le service d\'analyse IA est temporairement indisponible',
+                'error' => 'The AI analysis service is temporarily unavailable',
                 'analysis' => [
-                    'Données récupérées mais analyse IA non disponible',
-                    'Âge de l\'équipement: ' . $age . ' ans',
-                    'Nombre de maintenances: ' . $nbMaintenances
+                    'Data retrieved but AI analysis unavailable',
+                    'Equipment age: ' . $age . ' years',
+                    'Number of maintenances: ' . $nbMaintenances
                 ],
                 'recommendations' => [
-                    'Vérifiez que le service Python d\'IA est en cours d\'exécution sur le port 8001',
-                    'Consultez les logs d\'application pour plus de détails'
+                    'Check that the Python AI service is running on port 8001',
+                    'Check the application logs for more details'
                 ],
                 'score' => 50,
                 'risk' => 1
@@ -527,7 +531,7 @@ public function index(
         if (!$description) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Description vide'
+                'message' => 'Empty description'
             ], 400);
         }
 
@@ -560,7 +564,7 @@ public function index(
             curl_close($ch);
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur API'
+                'message' => 'API error'
             ], 500);
         }
 

@@ -88,66 +88,16 @@
 </head>
 <body class="text-on-surface antialiased">
 <!-- SideNavBar Shell -->
-<aside class="hidden md:flex flex-col h-screen w-72 fixed left-0 top-0 bg-[#f5f5dc] dark:bg-[#173901] py-8 pr-4 z-50">
-<div class="px-8">
-<h1 class="text-3xl font-black text-[#0a2200] dark:text-[#fbfbe2] mb-8 tracking-tighter">Elfirma</h1>
-<p class="text-[#0a2200] dark:text-[#fbfbe2] font-semibold opacity-60 -mt-6 mb-8">Gestion Agricole</p>
-</div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">dashboard</span>
-<span class="font-semibold">Tableau de Bord</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">group</span>
-<span class="font-semibold">Utilisateurs</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">agriculture</span>
-<span class="font-semibold">Parcelles &amp; Cultures</span>
-</a>
-<a class="flex items-center px-8 py-3 bg-[#0a2200] text-[#fbfbe2] rounded-r-full shadow-lg opacity-100 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">pets</span>
-<span class="font-semibold">Animaux &amp; Élevages</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">shopping_basket</span>
-<span class="font-semibold">Produits &amp; Commandes</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">handyman</span>
-<span class="font-semibold">Équipements &amp; Maintenance</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">contract</span>
-<span class="font-semibold">Fournisseurs &amp; Contrats</span>
-</a>
-<a class="flex items-center px-8 py-3 text-[#43493d] dark:text-[#c3c9b9] hover:bg-[#e4e4cc] dark:hover:bg-[#0a2200] rounded-r-full hover:translate-x-1 transition-transform" href="#">
-<span class="material-symbols-outlined mr-4">report_problem</span>
-<span class="font-semibold">Réclamations</span>
-</a>
-</nav>
-<div class="px-8 mt-auto space-y-4">
-<button class="w-full bg-secondary text-on-secondary py-3 rounded-full font-bold shadow-lg hover:opacity-90 transition-opacity">Nouvelle Saison</button>
-<div class="pt-4 space-y-2">
-<a class="flex items-center text-[#43493d] dark:text-[#c3c9b9] hover:text-primary transition-colors text-sm font-semibold" href="#">
-<span class="material-symbols-outlined mr-2 text-xl">help</span> Aide
-                </a>
-<a class="flex items-center text-[#43493d] dark:text-[#c3c9b9] hover:text-primary transition-colors text-sm font-semibold" href="#">
-<span class="material-symbols-outlined mr-2 text-xl">logout</span> Déconnexion
-                </a>
-</div>
-</div>
-</aside>
+{% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'animaux-elevages' } %}
 <!-- Main Content Canvas -->
 <main class="md:ml-72 min-h-screen pb-24">
 <!-- TopAppBar -->
 <header class="sticky top-0 z-40 bg-[#fbfbe2]/70 dark:bg-[#0a2200]/70 backdrop-blur-xl flex justify-between items-center w-full px-8 py-6">
 <div class="flex items-center gap-6">
-<div class="headline text-2xl font-black text-[#0a2200] dark:text-[#fbfbe2] tracking-tighter">Élevages</div>
+<div class="headline text-2xl font-black text-[#0a2200] dark:text-[#fbfbe2] tracking-tighter">Livestock</div>
 <div class="hidden lg:flex items-center bg-surface-container-low px-4 py-2 rounded-full">
 <span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Rechercher un animal ou une race..." type="text"/>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Search for an animal or breed..." type="text"/>
 </div>
 </div>
 <div class="flex items-center gap-4">
@@ -167,16 +117,16 @@
 <!-- Action Bar -->
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 <div>
-<h2 class="text-3xl font-black text-primary tracking-tight">Vue d'ensemble du cheptel</h2>
-<p class="text-on-surface-variant">Dernière mise à jour : Aujourd'hui, 09:42</p>
+<h2 class="text-3xl font-black text-primary tracking-tight">Livestock Overview</h2>
+<p class="text-on-surface-variant">Last updated: Today, 09:42</p>
 </div>
 <div class="flex gap-3">
 <button class="flex items-center px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-xl active:scale-95 duration-150">
-<span class="material-symbols-outlined mr-2">add</span> Ajouter un animal
-                    </button>
+<span class="material-symbols-outlined mr-2">add</span> Add Animal
+</button>
 <button class="flex items-center px-6 py-3 bg-surface-container-highest text-primary rounded-full font-bold active:scale-95 duration-150">
-<span class="material-symbols-outlined mr-2">description</span> Rapport de santé
-                    </button>
+<span class="material-symbols-outlined mr-2">description</span> Health Report
+</button>
 </div>
 </div>
 <!-- Inventory Summary Cards (Asymmetric Bento Grid) -->
@@ -189,7 +139,7 @@
 <span class="text-secondary font-bold text-sm bg-secondary-fixed px-3 py-1 rounded-full">+12%</span>
 </div>
 <h3 class="text-5xl font-black text-primary mt-6 tracking-tighter">482</h3>
-<p class="text-on-surface-variant font-bold uppercase tracking-widest text-xs mt-1">Ovins (Moutons)</p>
+<p class="text-on-surface-variant font-bold uppercase tracking-widest text-xs mt-1">Ovine (Sheep)</p>
 </div>
 <div class="absolute -right-8 -bottom-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
 <span class="material-symbols-outlined text-[12rem]">pets</span>
@@ -203,12 +153,12 @@
 <span class="text-on-primary-container font-bold text-sm bg-primary-fixed px-3 py-1 rounded-full">Stable</span>
 </div>
 <h3 class="text-5xl font-black text-on-primary mt-6 tracking-tighter">156</h3>
-<p class="text-primary-fixed font-bold uppercase tracking-widest text-xs mt-1">Bovins (Vaches)</p>
+<p class="text-primary-fixed font-bold uppercase tracking-widest text-xs mt-1">Bovine (Cows)</p>
 <div class="mt-4 flex gap-2">
 <div class="h-2 w-2/3 bg-primary_container rounded-full overflow-hidden">
 <div class="h-full bg-on-primary-container w-[85%]"></div>
 </div>
-<span class="text-xs font-semibold opacity-70">Soin optimal</span>
+<span class="text-xs font-semibold opacity-70">Optimal care</span>
 </div>
 </div>
 <div class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
@@ -222,7 +172,7 @@
 <span class="text-error font-bold text-sm bg-error-container px-3 py-1 rounded-full">-2%</span>
 </div>
 <h3 class="text-5xl font-black text-on-surface mt-6 tracking-tighter">84</h3>
-<p class="text-on-surface-variant font-bold uppercase tracking-widest text-xs mt-1">Caprins (Chèvres)</p>
+<p class="text-on-surface-variant font-bold uppercase tracking-widest text-xs mt-1">Caprine (Goats)</p>
 </div>
 </section>
 <!-- Main Interactive Section -->
@@ -230,17 +180,17 @@
 <!-- Health Records Table -->
 <div class="lg:col-span-2 bg-surface-container-lowest p-0 rounded-lg shadow-[0_40px_40px_-20px_rgba(27,29,14,0.06)] overflow-hidden">
 <div class="p-8 pb-4 flex justify-between items-end">
-<h3 class="text-2xl font-black text-primary">Registre de Santé</h3>
-<button class="text-secondary font-bold text-sm hover:underline">Voir tout le registre</button>
+<h3 class="text-2xl font-black text-primary">Health Register</h3>
+<button class="text-secondary font-bold text-sm hover:underline">View full register</button>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
 <thead class="bg-surface-container-low border-none">
 <tr>
-<th class="px-8 py-4 font-black text-primary text-sm uppercase tracking-wider">ID Animal</th>
-<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider">Race</th>
-<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider text-center">Âge</th>
-<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider">Statut</th>
+<th class="px-8 py-4 font-black text-primary text-sm uppercase tracking-wider">Animal ID</th>
+<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider">Breed</th>
+<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider text-center">Age</th>
+<th class="px-6 py-4 font-black text-primary text-sm uppercase tracking-wider">Status</th>
 <th class="px-8 py-4 font-black text-primary text-sm uppercase tracking-wider">Vaccination</th>
 </tr>
 </thead>
@@ -250,7 +200,7 @@
 <td class="px-6 py-5 text-on-surface-variant">Brebis Noire de Thibar</td>
 <td class="px-6 py-5 text-center text-on-surface-variant">2.4 ans</td>
 <td class="px-6 py-5">
-<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Sain</span>
+<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Healthy</span>
 </td>
 <td class="px-8 py-5 text-on-surface-variant text-sm">12/05/2026</td>
 </tr>
@@ -259,16 +209,16 @@
 <td class="px-6 py-5 text-on-surface-variant">Holstein-Friesian</td>
 <td class="px-6 py-5 text-center text-on-surface-variant">4.1 ans</td>
 <td class="px-6 py-5">
-<span class="px-4 py-1.5 rounded-full bg-secondary-container/20 text-secondary text-xs font-black uppercase">Traitement</span>
+<span class="px-4 py-1.5 rounded-full bg-secondary-container/20 text-secondary text-xs font-black uppercase">Treatment</span>
 </td>
-<td class="px-8 py-5 text-on-surface-variant text-sm font-bold text-error">En retard</td>
+<td class="px-8 py-5 text-on-surface-variant text-sm font-bold text-error">Overdue</td>
 </tr>
 <tr class="hover:bg-surface-container-low transition-colors cursor-pointer">
 <td class="px-8 py-5 font-bold text-primary">#CP-2024-112</td>
 <td class="px-6 py-5 text-on-surface-variant">Chèvre de Béjaïa</td>
 <td class="px-6 py-5 text-center text-on-surface-variant">1.8 ans</td>
 <td class="px-6 py-5">
-<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Sain</span>
+<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Healthy</span>
 </td>
 <td class="px-8 py-5 text-on-surface-variant text-sm">28/05/2026</td>
 </tr>
@@ -277,7 +227,7 @@
 <td class="px-6 py-5 text-on-surface-variant">Brebis Noire de Thibar</td>
 <td class="px-6 py-5 text-center text-on-surface-variant">3.0 ans</td>
 <td class="px-6 py-5">
-<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Sain</span>
+<span class="px-4 py-1.5 rounded-full bg-on-primary-container/20 text-primary-container text-xs font-black uppercase">Healthy</span>
 </td>
 <td class="px-8 py-5 text-on-surface-variant text-sm">15/06/2026</td>
 </tr>
@@ -298,7 +248,7 @@
 </div>
 <div class="space-y-6">
 <div>
-<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Suivi du Poids (kg)</p>
+<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Weight Tracking (kg)</p>
 <!-- Visualizing weight tracking graph with an SVG -->
 <div class="h-32 w-full bg-white/40 rounded-xl p-2 flex items-end justify-between">
 <div class="w-full h-full relative">
@@ -313,43 +263,43 @@
 </div>
 </div>
 <div>
-<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Régime Alimentaire</p>
+<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Diet</p>
 <div class="bg-white/40 p-4 rounded-xl space-y-2">
 <div class="flex justify-between text-sm">
-<span class="font-semibold">Fourrage sec</span>
-<span class="font-black text-primary">2.5 kg/j</span>
+<span class="font-semibold">Dry hay</span>
+<span class="font-black text-primary">2.5 kg/d</span>
 </div>
 <div class="flex justify-between text-sm">
-<span class="font-semibold">Concentré protéiné</span>
-<span class="font-black text-primary">400g/j</span>
+<span class="font-semibold">Protein concentrate</span>
+<span class="font-black text-primary">400g/d</span>
 </div>
 <div class="flex justify-between text-sm">
-<span class="font-semibold">Complément Minéral</span>
-<span class="font-black text-primary">Libre</span>
+<span class="font-semibold">Mineral Supplement</span>
+<span class="font-black text-primary">Free</span>
 </div>
 </div>
 </div>
 <div>
-<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Historique Médical</p>
+<p class="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Medical History</p>
 <ul class="space-y-3">
 <li class="flex gap-3">
 <span class="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5"></span>
 <div>
-<p class="text-sm font-black">Vaccination Annuelle</p>
-<p class="text-xs text-on-surface-variant italic">Effectuée le 12/05/2026</p>
+<p class="text-sm font-black">Annual Vaccination</p>
+<p class="text-xs text-on-surface-variant italic">Performed on 12/05/2026</p>
 </div>
 </li>
 <li class="flex gap-3">
 <span class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5"></span>
 <div>
-<p class="text-sm font-black">Contrôle Parasitaire</p>
-<p class="text-xs text-on-surface-variant italic">Effectué le 02/02/2026</p>
+<p class="text-sm font-black">Parasite Control</p>
+<p class="text-xs text-on-surface-variant italic">Performed on 02/02/2026</p>
 </div>
 </li>
 </ul>
 </div>
 </div>
-<button class="w-full py-4 border-2 border-primary text-primary font-black rounded-xl hover:bg-primary hover:text-on-primary transition-all">Générer Carnet Complet</button>
+<button class="w-full py-4 border-2 border-primary text-primary font-black rounded-xl hover:bg-primary hover:text-on-primary transition-all">Generate Full Health Book</button>
 </div>
 </section>
 </div>
@@ -358,9 +308,9 @@
 <footer class="md:ml-72 bg-[#fbfbe2] dark:bg-[#0a2200] w-full py-6 mt-auto flex justify-between items-center px-12 border-t border-[#c3c9b9]/15">
 <p class="font-['Open_Sans'] text-sm tracking-wide text-[#934b19]">Elfirma © 2026</p>
 <div class="flex gap-8">
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Support Technique</a>
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Mentions Légales</a>
-<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Confidentialité</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Technical Support</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Legal Notice</a>
+<a class="font-['Open_Sans'] text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Privacy</a>
 </div>
 </footer>
 {{ include('elfirma/_nav_routes.html.twig') }}

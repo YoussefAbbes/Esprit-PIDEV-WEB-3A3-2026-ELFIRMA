@@ -76,10 +76,10 @@
     </script>
 </head>
 <body class="bg-surface">
-    {{ include('elfirma/_sidebar.html.twig') }}
+    {% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'parcelles-cultures' } %}
 
     <!-- Main Content -->
-    <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
+    <main class="md:ml-72 min-h-screen p-4 md:p-6 space-y-8">
         <!-- Header -->
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
@@ -227,7 +227,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="md:ml-64 flex justify-between items-center px-12 py-8 bg-[#fbfbe2] border-t border-[#c3c9b9]/15">
+    <footer class="md:ml-72 flex justify-between items-center px-12 py-8 bg-[#fbfbe2] border-t border-[#c3c9b9]/15">
         <p class="text-sm tracking-wide text-on-surface-variant">Elfirma © 2026</p>
         <div class="flex gap-8">
             <a class="text-sm tracking-wide text-[#43493d] hover:text-[#934b19] transition-colors" href="#">Technical Support</a>

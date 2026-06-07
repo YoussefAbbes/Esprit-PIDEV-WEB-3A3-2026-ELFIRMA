@@ -330,8 +330,8 @@
                 {% endif %}
 
                 <div class="product-image" style="height: 300px; overflow: hidden; position: relative; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); border-bottom: 2px solid #e8f5e8; transition: all 0.4s ease;">
-                  {% if produit.image %}
-                    <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.nom }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
+                  {% if produit.imageFilename %}
+                    <img src="{{ asset('uploads/produits/' ~ produit.imageFilename) }}" alt="{{ produit.nom }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
                   {% else %}
                     <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,255,255,0.7);">
                       <span class="material-symbols-outlined" style="font-size: 100px; color: rgba(255,255,255,0.3);">package_2</span>
@@ -502,7 +502,7 @@
           qualite: "{{ qualiteLabelMap[produit.qualite]|default(produit.qualite)|e('js') }}",
           statut: "{{ statutLabelMap[produit.statut]|default(produit.statut)|e('js') }}",
           categorie: "{{ produit.categorie ? produit.categorie.nom|e('js') : 'N/A' }}",
-          image: "{{ produit.image ? asset('uploads/produits/' ~ produit.image)|e('js') : '' }}",
+          image: "{{ produit.imageFilename ? asset('uploads/produits/' ~ produit.imageFilename)|e('js') : '' }}",
           dateProduction: "{{ produit.dateProduction ? produit.dateProduction|date('d/m/Y') : 'N/A' }}",
           dateExpiration: "{{ produit.dateExpiration ? produit.dateExpiration|date('d/m/Y') : 'N/A' }}"
         }{% if not loop.last %},{% endif %}
@@ -1123,7 +1123,7 @@
         }
 
         function openVoiceFallbackPrompt() {
-          const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande (ex: je veux acheter pomme).');
+          const typed = window.prompt('Voice recognition unavailable. Type your command (e.g., I want to buy apple).');
           if (typeof typed === 'string' && typed.trim() !== '') {
             handleVoiceCommand(typed.trim());
           }
@@ -1146,7 +1146,7 @@
 
           synth.cancel();
           const utt = new SpeechSynthesisUtterance(message);
-          utt.lang = 'fr-FR';
+          utt.lang = 'en-US';
           utt.rate = 1;
           utt.onend = function () {
             if (resumeAfterSpeech && restartOnEnd && !manualStop) {
@@ -1163,12 +1163,12 @@
           const items = Array.from(document.querySelectorAll('.product-item'));
           const visible = items.filter((item) => item.style.display !== 'none');
           if (visible.length === 0) {
-            speak('Aucun produit visible actuellement.');
+            speak('No products visible at the moment.');
             return;
           }
 
           const names = visible.slice(0, 6).map((item) => item.querySelector('h3')?.textContent?.trim()).filter(Boolean);
-          speak(`J'ai trouve ${visible.length} produits visibles. Exemples: ${names.join(', ')}.`);
+          speak(`I found ${visible.length} visible products. Examples: ${names.join(', ')}.`);
         }
 
         function filterByVoiceQuery(query) {
@@ -1196,7 +1196,7 @@
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
 
-          speak(`${count} produits correspondent a ${query}.`);
+          speak(`${count} products match "${query}".`);
         }
 
         async function executeVoiceActions(actions) {
@@ -1269,7 +1269,7 @@
 
             const data = await response.json();
             if (!response.ok || !data.ok) {
-              showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+              showVoiceStatus(data.speak || 'Voice processing error.', true, true);
               return;
             }
 
@@ -1278,20 +1278,20 @@
               speak(data.speak);
             }
           } catch (_error) {
-            showVoiceStatus('Service vocal temporairement indisponible pendant la commande vocale.', true, true);
+            showVoiceStatus('Voice service temporarily unavailable during voice command.', true, true);
           }
         }
 
         if (!hasVoice) {
           voiceBtn.style.opacity = '0.65';
           voiceBtn.addEventListener('click', function () {
-            showVoiceStatus('La reconnaissance vocale n\'est pas supportee sur ce navigateur.', true);
+            showVoiceStatus('Voice recognition is not supported on this browser.', true);
           });
           return;
         }
 
         recognition = new SpeechRecognition();
-        recognition.lang = 'fr-FR';
+        recognition.lang = 'en-US';
         recognition.continuous = false;
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
@@ -1307,12 +1307,12 @@
             restartOnEnd = false;
             voiceBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
             if (!quiet) {
-              // Ne pas parler ici: la synthese coupe l'ecoute juste apres le start.
-              showVoiceStatus('Je vous ecoute... dites le nom du produit a chercher.', false, false);
+              // Do not speak here: synthesis cuts off listening right after start.
+              showVoiceStatus('Listening... say the product name to search for.', false, false);
             }
           } catch (_error) {
             isRecognitionStarting = false;
-            showVoiceStatus('Impossible de demarrer le micro.', true);
+            showVoiceStatus('Unable to start microphone.', true);
           }
         }
 
@@ -1344,20 +1344,20 @@
 
           if (code === 'not-allowed' || code === 'service-not-allowed') {
             restartOnEnd = false;
-            showVoiceStatus('Permission micro refusee. Autorisez le micro pour ce site.', true);
+            showVoiceStatus('Microphone permission denied. Please allow microphone access for this site.', true);
             return;
           }
 
           if (code === 'audio-capture') {
             restartOnEnd = false;
-            showVoiceStatus('Aucun micro detecte ou accessible.', true);
+            showVoiceStatus('No microphone detected or accessible.', true);
             return;
           }
 
           if (code === 'network') {
             if (networkRetryCount < 1) {
               networkRetryCount++;
-              showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+              showVoiceStatus('Browser voice service unavailable. Retrying...', true, false);
               setTimeout(() => {
                 if (restartOnEnd && !manualStop) {
                   startRecognitionSafely(true);
@@ -1368,18 +1368,18 @@
             }
 
             restartOnEnd = false;
-            showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
+            showVoiceStatus('Browser voice service unavailable. Use text fallback.', true);
             openVoiceFallbackPrompt();
             return;
           }
 
           if (code === 'no-speech') {
-            showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+            showVoiceStatus('No voice detected. Speak right after clicking the microphone.', true, false);
             return;
           }
 
           if (code !== 'aborted') {
-            showVoiceStatus('Erreur vocale: ' + code, true);
+            showVoiceStatus('Voice error: ' + code, true);
           }
         };
 
@@ -1400,7 +1400,7 @@
 
             return true;
           } catch (_error) {
-            showVoiceStatus('Micro non autorise. Activez l\'acces micro du navigateur.', true);
+            showVoiceStatus('Microphone not authorized. Enable microphone access in your browser.', true);
 
             return false;
           }
@@ -1413,7 +1413,7 @@
             isRecognitionStarting = false;
             recognition.stop();
             isListening = false;
-            showVoiceStatus('Ecoute arretee.', false, false);
+            showVoiceStatus('Listening stopped.', false, false);
 
             return;
           }
@@ -1431,11 +1431,11 @@
             synth.cancel();
             startRecognitionSafely();
           } catch (_error) {
-            showVoiceStatus('Impossible de demarrer le micro.', true);
+            showVoiceStatus('Unable to start microphone.', true);
           }
         });
 
-        showVoiceStatus('Assistant vocal catalogue actif.', false, true);
+        showVoiceStatus('Catalog voice assistant active.', false, true);
       }
 
       // Load cart item count on page load
@@ -2232,7 +2232,7 @@
 
               const data = await response.json();
               if (!response.ok || !data.ok) {
-                return data.speak || 'Commande gestes non reconnue.';
+                return data.speak || 'Gesture command not recognized.';
               }
 
               const actions = Array.isArray(data.actions) ? data.actions : [];
@@ -2241,7 +2241,7 @@
 
                 if (action.type === 'read_visible_products') {
                   const count = Array.from(document.querySelectorAll('.product-item')).filter((item) => item.style.display !== 'none').length;
-                  return count > 0 ? `Il y a ${count} produits visibles.` : 'Aucun produit visible.';
+                  return count > 0 ? `There are ${count} visible products.` : 'No products visible.';
                 }
 
                 if (action.type === 'open_product_details') {
@@ -2260,9 +2260,9 @@
                 }
               }
 
-              return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+              return typeof data.speak === 'string' ? data.speak : 'Gesture command executed.';
             } catch (_error) {
-              return 'Service gestes temporairement indisponible.';
+              return 'Gesture service temporarily unavailable.';
             }
           }
         });

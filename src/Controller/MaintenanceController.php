@@ -78,7 +78,7 @@ class MaintenanceController extends AbstractController
 
     if ($isHoliday) {
         $formMaintenance->get('dateM')->addError(
-            new \Symfony\Component\Form\FormError('❌ Cette date est un jour férié')
+            new \Symfony\Component\Form\FormError('❌ This date is a public holiday')
         );
     }
 
@@ -93,7 +93,7 @@ class MaintenanceController extends AbstractController
 
         $em->flush();
 
-        $this->addFlash('success', '✅ Maintenance ajoutée avec succès !');
+        $this->addFlash('success', '✅ Maintenance added successfully!');
 
         return $this->redirectToRoute('app_equipement_index');
     }
@@ -101,7 +101,7 @@ class MaintenanceController extends AbstractController
     // ❌ si erreur → rester sur page
     $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
     $chart->setData([
-        'labels' => ['Faible', 'Moyen', 'Élevé'],
+        'labels' => ['Low', 'Medium', 'High'],
         'datasets' => [[
             'data' => [1, 1, 1],
             'backgroundColor' => ['#16a34a', '#f59e0b', '#dc2626']
@@ -131,7 +131,7 @@ class MaintenanceController extends AbstractController
 
             $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
                 $chart->setData([
-                    'labels' => ['Faible', 'Moyen', 'Élevé'],
+                    'labels' => ['Low', 'Medium', 'High'],
                     'datasets' => [[
                         'data' => [1, 1, 1],
                         'backgroundColor' => ['#16a34a', '#f59e0b', '#dc2626']
@@ -173,7 +173,7 @@ class MaintenanceController extends AbstractController
         if (!$data) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Données invalides'
+                'message' => 'Invalid data'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -231,7 +231,7 @@ class MaintenanceController extends AbstractController
 
                 return new JsonResponse([
                     'success' => false,
-                    'message' => 'Erreurs de validation',
+                    'message' => 'Validation errors',
                     'errors' => $errorMessages
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
@@ -246,7 +246,7 @@ class MaintenanceController extends AbstractController
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Maintenance modifiée avec succès',
+                'message' => 'Maintenance updated successfully',
                 'data' => [
                     'id' => $maintenance->getIdM(),
                     'typeM' => $maintenance->getTypeM(),
@@ -263,7 +263,7 @@ class MaintenanceController extends AbstractController
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Erreur lors de la modification: ' . $e->getMessage()
+                'message' => 'Error during update: ' . $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -314,7 +314,8 @@ public function employeePanel(
     ]);
 
     return $this->render('elfirma/employee/maintenancesE.html.twig', [
-        'maintenances' => $maintenances
+        'maintenances' => $maintenances,
+        'current_module' => 'equipements-maintenance'
     ]);
 }
 
@@ -350,7 +351,7 @@ public function startMaintenance(
 
     // ❌ logique métier
     if ($maintenance->getStatut()->value !== 'planifie') {
-        $this->addFlash('error', 'Impossible de démarrer cette maintenance');
+        $this->addFlash('error', 'Cannot start this maintenance');
         return $this->redirectToRoute('employee_panel');
     }
 
@@ -358,7 +359,7 @@ public function startMaintenance(
     $maintenance->setStatut(MaintenanceStatut::from('en_cours'));
     $em->flush();
 
-    $this->addFlash('success', 'Maintenance démarrée');
+    $this->addFlash('success', 'Maintenance started');
 
     return $this->redirectToRoute('employee_panel');
 }
@@ -380,7 +381,7 @@ public function finishMaintenance(
 
     // ❌ logique métier
     if ($maintenance->getStatut()->value !== 'en_cours') {
-        $this->addFlash('error', 'Seules les maintenances en cours peuvent être terminées');
+        $this->addFlash('error', 'Only in-progress maintenance can be completed');
         return $this->redirectToRoute('employee_panel');
     }
 
@@ -388,7 +389,7 @@ public function finishMaintenance(
     $maintenance->setStatut(MaintenanceStatut::from('termine'));
     $em->flush();
 
-    $this->addFlash('success', 'Maintenance terminée');
+    $this->addFlash('success', 'Maintenance completed');
 
     return $this->redirectToRoute('employee_panel');
 }
@@ -468,7 +469,7 @@ private function updateEquipementEtat(Equipement $equipement, EntityManagerInter
         $maintenance = new \App\Entity\Maintenance();
         $maintenance->setEquipement($equipement);
         $maintenance->setTypeM('Maintenance automatique');
-        $maintenance->setDescription('Maintenance générée automatiquement (équipement critique)');
+        $maintenance->setDescription('Automatically generated maintenance (critical equipment)');
 
         $date = new \DateTime('+1 day');
         while ($this->isHoliday($date)) {

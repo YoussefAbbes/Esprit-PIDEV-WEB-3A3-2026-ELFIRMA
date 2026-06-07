@@ -8,9 +8,24 @@ use Doctrine\Persistence\ManagerRegistry;
 
 class EquipementRepository extends ServiceEntityRepository
 {
+    private const VALID_ETAT_VALUES = ['disponible', 'maintenance', 'panne'];
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Equipement::class);
+    }
+
+    /**
+     * Normalise any DB rows whose etat value doesn't match the PHP enum,
+     * then returns all equipements. Prevents MappingException on hydration.
+     */
+    public function findAllSafe(): array
+    {
+        $validList = implode(',', array_map(fn($v) => "'$v'", self::VALID_ETAT_VALUES));
+        $this->getEntityManager()->getConnection()->executeStatement(
+            "UPDATE equipement SET etat = 'disponible' WHERE etat NOT IN ($validList)"
+        );
+        return $this->findAll();
     }
 
     /**

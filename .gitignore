@@ -27,3 +27,6 @@
 **/.venv/
 venv/
 **/venv/
+# environment file (IMPORTANT)
+.env
+.env.*

@@ -23,12 +23,12 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    #[Assert\NotBlank(message: 'Le type du fournisseur est obligatoire.')]
+    #[Assert\NotBlank(message: 'Supplier type is required.')]
     #[Assert\Length(
         min: 2,
         max: 100,
-        minMessage: 'Le type doit contenir au moins {{ limit }} caracteres.',
-        maxMessage: 'Le type ne doit pas depasser {{ limit }} caracteres.'
+        minMessage: 'Type must contain at least {{ limit }} characters.',
+        maxMessage: 'Type must not exceed {{ limit }} characters.'
     )]
     private ?string $type_f = null;
 
@@ -46,7 +46,7 @@ class Fournisseur
     #[ORM\Column(type: 'text', nullable: true)]
     #[Assert\Length(
         max: 1000,
-        maxMessage: 'La description ne doit pas depasser {{ limit }} caracteres.'
+        maxMessage: 'Description must not exceed {{ limit }} characters.'
     )]
     private ?string $description_f = null;
 
@@ -119,10 +119,10 @@ class Fournisseur
     }
 
     #[ORM\Column(type: 'string', length: 50, nullable: true, options: ['default' => 'Actif'])]
-    #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
+    #[Assert\NotBlank(message: 'Status is required.')]
     #[Assert\Length(
         max: 50,
-        maxMessage: 'Le statut ne doit pas depasser {{ limit }} caracteres.'
+        maxMessage: 'Status must not exceed {{ limit }} characters.'
     )]
     private ?string $statut_f = 'Actif';
 

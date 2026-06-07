@@ -27,7 +27,7 @@ class MaintenanceType extends AbstractType
             ->add('typeM', TextType::class, [
                 'required' => true,
                 'attr' => [
-                    'placeholder' => 'Ex: Révision, réparation...'
+                    'placeholder' => 'Ex: Revision, repair...'
                 ]
             ])
 
@@ -36,43 +36,44 @@ class MaintenanceType extends AbstractType
                 'widget' => 'single_text',
                 'required' => false,
                 'empty_data' => null,
-                'invalid_message' => 'Date invalide'
+                'invalid_message' => 'Invalid date'
             ])
 
             // ✅ DESCRIPTION
             ->add('description', TextareaType::class, [
                 'required' => true,
                 'attr' => [
-                    'placeholder' => 'Détails de la maintenance'
+                    'placeholder' => 'Maintenance details'
                 ]
             ])
 
             // ✅ COUT
             ->add('cout', NumberType::class, [
                 'required' => true,
-                'invalid_message' => 'Le coût doit être un nombre valide'
+                'invalid_message' => 'Cost must be a valid number'
             ])
 
             // ✅ STATUT
             ->add('statut', ChoiceType::class, [
                 'choices' => [
-                    'Planifiée' => MaintenanceStatut::PLANIFIE,
-                    'En cours' => MaintenanceStatut::ENCOURS,
-                    'Terminée' => MaintenanceStatut::TERMINE,
+                    'Scheduled' => MaintenanceStatut::PLANIFIE,
+                    'In Progress' => MaintenanceStatut::ENCOURS,
+                    'Completed' => MaintenanceStatut::TERMINE,
+                    'Pending' => MaintenanceStatut::EN_ATTENTE,
                 ],
-                'placeholder' => 'Choisir un statut',
+                'placeholder' => 'Choose a status',
                 'required' => false
             ])
 
             // ✅ PRIORITE
             ->add('priorite', ChoiceType::class, [
                 'choices' => [
-                    'Basse' => MaintenancePriorite::BASSE,
-                    'Moyenne' => MaintenancePriorite::MOYENNE,
-                    'Haute' => MaintenancePriorite::HAUTE,
-                    'Urgente' => MaintenancePriorite::URGENTE,
+                    'Low' => MaintenancePriorite::BASSE,
+                    'Medium' => MaintenancePriorite::MOYENNE,
+                    'High' => MaintenancePriorite::HAUTE,
+                    'Urgent' => MaintenancePriorite::URGENTE,
                 ],
-                'placeholder' => 'Choisir une priorité',
+                'placeholder' => 'Choose a priority',
                 'required' => false
             ])
 
@@ -82,7 +83,7 @@ class MaintenanceType extends AbstractType
                 'choice_label' => function (Utilisateur $u) {
                     return $u->getPrenomU() . ' ' . $u->getNomU();
                 },
-                'placeholder' => 'Choisir un technicien',
+                'placeholder' => 'Choose a technician',
                 'query_builder' => function ($repo) {
                     return $repo->createQueryBuilder('u')
                         ->where('u.role_u = :role')
@@ -97,7 +98,7 @@ class MaintenanceType extends AbstractType
             ->add('equipement', EntityType::class, [
                 'class' => Equipement::class,
                 'choice_label' => 'nomEq',
-                'placeholder' => 'Choisir un équipement',
+                'placeholder' => 'Choose equipment',
                 'required' => true
             ]);
     }

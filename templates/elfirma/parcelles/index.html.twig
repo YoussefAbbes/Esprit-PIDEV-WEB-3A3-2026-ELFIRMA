@@ -163,10 +163,10 @@
     </script>
 </head>
 <body>
-    {{ include('elfirma/_sidebar.html.twig') }}
+    {% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'parcelles-cultures' } %}
 
     <!-- Main Content -->
-    <main class="md:ml-64 min-h-screen p-4 md:p-6 space-y-8">
+    <main class="md:ml-72 min-h-screen p-4 md:p-6 space-y-8">
         <!-- Header -->
         <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 animate-fade-in-up">
             <div>

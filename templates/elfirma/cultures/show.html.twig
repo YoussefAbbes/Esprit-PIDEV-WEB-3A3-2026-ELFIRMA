@@ -77,10 +77,10 @@
 </head>
 <body>
 
-{{ include('elfirma/_sidebar.html.twig') }}
+{% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'parcelles-cultures' } %}
 
 <!-- ══════════════════ MAIN ════════════════════════════════════════════════ -->
-<main class="md:ml-64 min-h-screen">
+<main class="md:ml-72 min-h-screen">
 
     <!-- ── COMPACT HEADER ────────────────────────────────────────────────── -->
     <div class="px-4 md:px-8 pt-6 pb-0">

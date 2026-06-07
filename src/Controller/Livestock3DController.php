@@ -36,14 +36,14 @@ final class Livestock3DController extends AbstractController
         if (!$this->isCsrfTokenValid('livestock_3d_generate', (string) $request->request->get('_token', ''))) {
             return $this->json([
                 'ok' => false,
-                'message' => 'Token CSRF invalide.',
+                'message' => 'Invalid CSRF token.',
             ], Response::HTTP_FORBIDDEN);
         }
 
         if (!$generationService->isConfigured()) {
             return $this->json([
                 'ok' => false,
-                'message' => 'Configuration API 3D manquante sur le serveur.',
+                'message' => '3D API configuration missing on server.',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -51,7 +51,7 @@ final class Livestock3DController extends AbstractController
         if ($livestockId <= 0) {
             return $this->json([
                 'ok' => false,
-                'message' => 'ID livestock invalide.',
+                'message' => 'Invalid livestock ID.',
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -59,7 +59,7 @@ final class Livestock3DController extends AbstractController
         if ($livestock === null) {
             return $this->json([
                 'ok' => false,
-                'message' => 'Livestock introuvable.',
+                'message' => 'Livestock not found.',
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -67,30 +67,35 @@ final class Livestock3DController extends AbstractController
         $remesh = trim((string) $request->request->get('remesh', 'none'));
         $renderMode = strtolower(trim((string) $request->request->get('render_mode', 'signature')));
 
-        if (!in_array($textureResolution, ['512', '1024', '2048'], true)) {
+        if (!\in_array($textureResolution, ['512', '1024', '2048'], true)) {
             $textureResolution = '2048';
         }
 
-        if (!in_array($remesh, ['none', 'triangle', 'quad'], true)) {
+        if (!\in_array($remesh, ['none', 'triangle', 'quad'], true)) {
             $remesh = 'none';
         }
 
-        if (!in_array($renderMode, ['eco', 'balanced', 'ultra', 'cinematic', 'signature'], true)) {
+        if (!\in_array($renderMode, ['eco', 'balanced', 'ultra', 'cinematic', 'signature'], true)) {
             $renderMode = 'signature';
         }
 
         $result = $generationService->generateFromLivestock($livestock);
 
         if ($result === null) {
+            $errorMessage = $generationService->getLastError() ?? '3D generation failed.';
+            $isCreditError = str_contains($errorMessage, 'HTTP 403')
+                || str_contains($errorMessage, 'HTTP 401')
+                || str_contains(strtolower($errorMessage), 'credit')
+                || str_contains(strtolower($errorMessage), 'permission');
             return $this->json([
                 'ok' => false,
-                'message' => $generationService->getLastError() ?? 'Echec de la generation 3D.',
-            ], Response::HTTP_BAD_GATEWAY);
+                'message' => $errorMessage,
+            ], $isCreditError ? Response::HTTP_PAYMENT_REQUIRED : Response::HTTP_BAD_GATEWAY);
         }
 
         return $this->json([
             'ok' => true,
-            'message' => 'Habitat 3D genere avec succes.',
+            'message' => '3D habitat generated successfully.',
             'livestock_id' => (int) ($livestock['id_elevage'] ?? 0),
             'livestock_type' => (string) ($livestock['type_elevage'] ?? ''),
             'model_url' => $result['model_url'] ?? null,
@@ -112,22 +117,22 @@ final class Livestock3DController extends AbstractController
         if (!$this->isCsrfTokenValid('livestock_3d_balance', (string) $request->request->get('_token', ''))) {
             return $this->json([
                 'ok' => false,
-                'message' => 'Token CSRF invalide.',
+                'message' => 'Invalid CSRF token.',
             ], Response::HTTP_FORBIDDEN);
         }
 
         if (!$generationService->isConfigured()) {
             return $this->json([
                 'ok' => false,
-                'message' => 'Configuration API 3D manquante sur le serveur.',
+                'message' => '3D API configuration missing on server.',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $this->json([
             'ok' => true,
-            'credits' => 1,
+            'credits' => null,
             'has_credits' => true,
-            'message' => 'Connexion Tripo3D active. Generation 3D disponible.',
+            'message' => 'Tripo3D configuration present. The actual balance is verified at generation time.',
         ]);
     }
 }

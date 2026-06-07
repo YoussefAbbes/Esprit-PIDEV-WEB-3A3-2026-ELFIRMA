@@ -153,7 +153,7 @@ class RatingController extends AbstractController
                     'blocked' => true,
                     'blocked_until' => $blockStatus['blocked_until'],
                     'remaining_hours' => $blockStatus['remaining_hours'],
-                    'message' => 'Your commenting privileges have been suspended due to repeated profanity violations. You will be able to comment again on: ' . (new \DateTime($blockStatus['blocked_until']))->format('d/m/Y à H:i')
+                    'message' => 'Your commenting privileges have been suspended due to repeated profanity violations. You will be able to comment again on: ' . (new \DateTime($blockStatus['blocked_until']))->format('d/m/Y H:i')
                 ]);
             }
 
@@ -188,7 +188,7 @@ class RatingController extends AbstractController
                         'blocked' => true,
                         'blocked_reason' => 'You have reached the maximum number of profanity violations (3). You are now blocked from commenting for 7 days.',
                         'unblock_date' => $violationResult['unblock_date'],
-                        'message' => 'You have been blocked from commenting for 7 days due to repeated profanity violations. You will be able to comment again on: ' . (new \DateTime($violationResult['unblock_date']))->format('d/m/Y à H:i')
+                        'message' => 'You have been blocked from commenting for 7 days due to repeated profanity violations. You will be able to comment again on: ' . (new \DateTime($violationResult['unblock_date']))->format('d/m/Y H:i')
                     ]);
                 }
             } else {

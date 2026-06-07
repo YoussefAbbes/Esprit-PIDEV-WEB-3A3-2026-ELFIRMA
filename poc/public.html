@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EL FIRMA — Public Site POC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   RESET & DESIGN SYSTEM
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --earth:       #070e07;
+  --soil:        #0d1a0d;
+  --field:       #111f11;
+  --wheat:       #c9a227;
+  --wheat-light: #e8c35a;
+  --sprout:      #4caf50;
+  --fog:         rgba(201,162,39,0.06);
+  --text:        #f0e8d5;
+  --muted:       #8a7a5a;
+  --border:      rgba(201,162,39,0.12);
+  --font-d:      'Cormorant Garamond', serif;
+  --font-b:      'Inter', sans-serif;
+}
+
+html { scroll-behavior: auto; }  /* Lenis handles smooth scroll */
+
+body {
+  background: var(--earth);
+  color: var(--text);
+  font-family: var(--font-b);
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   LOADER
+═══════════════════════════════════════════ */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--earth);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1rem;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+#loader.hidden { opacity: 0; visibility: hidden; }
+.loader-bar {
+  width: 200px; height: 2px;
+  background: rgba(201,162,39,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.loader-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--wheat), var(--sprout));
+  border-radius: 2px;
+  animation: loadBar 1.4s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+@keyframes loadBar { to { width: 100%; } }
+.loader-text {
+  font-family: var(--font-d);
+  font-size: 1.1rem;
+  letter-spacing: 0.4em;
+  color: var(--wheat);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════ */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1.25rem 4rem;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease;
+}
+header.scrolled {
+  background: rgba(7,14,7,0.75);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: var(--font-d);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--wheat);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.logo span { color: var(--sprout); }
+nav { display: flex; gap: 2.5rem; align-items: center; }
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  position: relative;
+  transition: color 0.25s ease;
+}
+nav a::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0; right: 0;
+  height: 1px; background: var(--wheat);
+  transform: scaleX(0); transform-origin: right;
+  transition: transform 0.3s ease;
+}
+nav a:hover { color: var(--wheat); }
+nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+.nav-cta {
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--wheat);
+  border-radius: 4px;
+  color: var(--wheat) !important;
+  font-size: 0.8rem !important;
+  transition: background 0.25s ease, color 0.25s ease !important;
+}
+.nav-cta:hover { background: var(--wheat); color: var(--earth) !important; }
+.nav-cta::after { display: none !important; }
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+#hero {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+#farm-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+.hero-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: radial-gradient(ellipse at center bottom, transparent 0%, rgba(7,14,7,0.4) 100%);
+}
+.hero-content {
+  position: relative; z-index: 2;
+  text-align: center;
+  max-width: 800px;
+  padding: 2rem;
+}
+.hero-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--sprout);
+  margin-bottom: 1.25rem;
+  opacity: 0;
+}
+.hero-title {
+  font-family: var(--font-d);
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 300;
+  line-height: 0.9;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+}
+.hero-title strong {
+  display: block;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--wheat), var(--wheat-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle {
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  margin-left: auto; margin-right: auto;
+  opacity: 0;
+}
+.hero-ctas {
+  display: flex; gap: 1rem; justify-content: center;
+  opacity: 0;
+}
+.btn-primary {
+  padding: 0.85rem 2.25rem;
+  background: var(--wheat);
+  color: var(--earth);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+.btn-primary:hover { background: var(--wheat-light); transform: translateY(-2px); }
+.btn-ghost {
+  padding: 0.85rem 2.25rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+.btn-ghost:hover { border-color: var(--wheat); color: var(--wheat); }
+
+.scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  color: var(--muted); font-size: 0.7rem; letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0;
+}
+.scroll-line {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--wheat), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+/* ═══════════════════════════════════════════
+   SERVICES SECTION
+═══════════════════════════════════════════ */
+#services {
+  padding: 8rem 4rem;
+  background: var(--soil);
+  position: relative;
+}
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--sprout);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.section-title {
+  font-family: var(--font-d);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 400;
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.section-desc {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 500px;
+  margin: 0 auto 4rem;
+  line-height: 1.8;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.service-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  transform-style: preserve-3d;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: border-color 0.3s ease;
+}
+.service-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201,162,39,0.1) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.service-card:hover { border-color: rgba(201,162,39,0.3); }
+.service-card:hover::before { opacity: 1; }
+
+.card-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: rgba(201,162,39,0.1);
+  border: 1px solid rgba(201,162,39,0.2);
+  display: grid; place-items: center;
+  margin-bottom: 1.25rem;
+  font-size: 1.4rem;
+}
+.card-number {
+  position: absolute; top: 1.5rem; right: 1.5rem;
+  font-family: var(--font-d);
+  font-size: 3rem;
+  font-weight: 300;
+  color: rgba(201,162,39,0.08);
+  line-height: 1;
+}
+.card-title {
+  font-family: var(--font-d);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+.card-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.card-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wheat);
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  transition: gap 0.2s ease;
+}
+.card-link:hover { gap: 0.7rem; }
+
+/* ═══════════════════════════════════════════
+   STATS SECTION
+═══════════════════════════════════════════ */
+#stats {
+  padding: 6rem 4rem;
+  background: var(--earth);
+  position: relative;
+  overflow: hidden;
+}
+#stats-particles {
+  position: absolute; inset: 0; z-index: 0;
+  opacity: 0.5;
+}
+.stats-inner {
+  position: relative; z-index: 1;
+  max-width: 1000px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  text-align: center;
+}
+.stat-item { padding: 2rem 1rem; }
+.stat-value {
+  font-family: var(--font-d);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--wheat), var(--wheat-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.stat-unit {
+  display: inline;
+  font-size: 1.5rem;
+  font-family: var(--font-d);
+}
+.stat-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+.stat-divider {
+  width: 1px;
+  background: var(--border);
+  margin: 1rem auto 0;
+}
+
+/* ═══════════════════════════════════════════
+   HORIZONTAL MODULES SHOWCASE
+═══════════════════════════════════════════ */
+#modules {
+  position: relative;
+}
+.modules-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+.modules-track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+}
+.module-slide {
+  flex-shrink: 0;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 0 6rem;
+  gap: 5rem;
+}
+.module-visual {
+  height: 420px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.module-canvas-3d {
+  width: 100%; height: 100%;
+}
+.module-bg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8rem;
+}
+.module-bg-gradient {
+  position: absolute; inset: 0;
+  opacity: 0.5;
+}
+.module-info { padding-left: 1rem; }
+.module-num {
+  font-family: var(--font-d);
+  font-size: 5rem;
+  font-weight: 300;
+  color: rgba(201,162,39,0.12);
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+.module-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(76,175,80,0.1);
+  border: 1px solid rgba(76,175,80,0.2);
+  border-radius: 20px;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--sprout);
+  margin-bottom: 1.5rem;
+}
+.module-title {
+  font-family: var(--font-d);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+.module-desc {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 2rem;
+  max-width: 420px;
+}
+.module-features {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+.module-features li {
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.module-features li::before {
+  content: '→';
+  color: var(--wheat);
+  font-size: 0.9rem;
+}
+.modules-progress {
+  position: absolute;
+  bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 0.5rem; z-index: 10;
+}
+.progress-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(201,162,39,0.25);
+  transition: all 0.3s ease;
+}
+.progress-dot.active {
+  background: var(--wheat);
+  width: 24px; border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════
+   AI SECTION
+═══════════════════════════════════════════ */
+#ai {
+  position: relative;
+  min-height: 80vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  background: var(--earth);
+}
+#ai-particles { position: absolute; inset: 0; z-index: 0; }
+.ai-content {
+  position: relative; z-index: 1;
+  text-align: center;
+  max-width: 700px;
+  padding: 4rem 2rem;
+}
+.ai-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: rgba(76,175,80,0.08);
+  border: 1px solid rgba(76,175,80,0.2);
+  border-radius: 30px;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--sprout);
+  margin-bottom: 2rem;
+}
+.ai-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--sprout);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.ai-title {
+  font-family: var(--font-d);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 300;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height: 1;
+}
+.ai-title em {
+  font-style: italic;
+  color: var(--wheat);
+}
+.ai-desc {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 3rem;
+}
+.ai-features {
+  display: flex; flex-wrap: wrap; gap: 0.75rem;
+  justify-content: center; margin-bottom: 2.5rem;
+}
+.ai-chip {
+  padding: 0.4rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  background: var(--soil);
+  border-top: 1px solid var(--border);
+  padding: 4rem;
+}
+.footer-grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+.footer-brand p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-top: 0.75rem;
+  max-width: 260px;
+}
+.footer-col h4 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--wheat);
+  margin-bottom: 1.25rem;
+}
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+.footer-col ul li a {
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.footer-col ul li a:hover { color: var(--text); }
+.footer-bottom {
+  max-width: 1200px; margin: 0 auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-bottom p { font-size: 0.78rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-text">El Firma</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- HEADER -->
+<header id="main-header">
+  <div class="logo">El <span>Firma</span></div>
+  <nav>
+    <a href="#services">Services</a>
+    <a href="#modules">Modules</a>
+    <a href="#ai">AI</a>
+    <a href="#" class="nav-cta">Dashboard →</a>
+  </nav>
+</header>
+
+<!-- ══════════ HERO ══════════ -->
+<section id="hero">
+  <canvas id="farm-canvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Agricultural Intelligence Platform</p>
+    <h1 class="hero-title">
+      EL<br>
+      <strong>FIRMA</strong>
+    </h1>
+    <p class="hero-subtitle">From soil data to harvest intelligence — a complete farm management ecosystem powered by AI.</p>
+    <div class="hero-ctas">
+      <a href="#modules" class="btn-primary">Explore Platform</a>
+      <a href="#ai" class="btn-ghost">Discover AI Features</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ══════════ SERVICES ══════════ -->
+<section id="services">
+  <p class="section-label">What We Manage</p>
+  <h2 class="section-title">Every Aspect of Your Farm</h2>
+  <p class="section-desc">From the first seed to the final delivery — EL FIRMA gives you complete control over your agricultural enterprise.</p>
+  <div class="services-grid">
+    <div class="service-card" data-tilt data-tilt-max="6" data-tilt-speed="500" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-number">01</div>
+      <div class="card-icon">🌾</div>
+      <h3 class="card-title">Fields & Crops</h3>
+      <p class="card-desc">GPS-tracked parcelles with real-time crop monitoring, planting calendars, and yield forecasting.</p>
+      <a href="#" class="card-link">Explore module <span>→</span></a>
+    </div>
+    <div class="service-card" data-tilt data-tilt-max="6" data-tilt-speed="500" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-number">02</div>
+      <div class="card-icon">🐄</div>
+      <h3 class="card-title">Livestock</h3>
+      <p class="card-desc">Individual animal records, herd health tracking, vaccination schedules, and 3D habitat generation.</p>
+      <a href="#" class="card-link">Explore module <span>→</span></a>
+    </div>
+    <div class="service-card" data-tilt data-tilt-max="6" data-tilt-speed="500" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-number">03</div>
+      <div class="card-icon">🔧</div>
+      <h3 class="card-title">Equipment</h3>
+      <p class="card-desc">Predictive maintenance scheduling, equipment state tracking, and ML-powered failure forecasting.</p>
+      <a href="#" class="card-link">Explore module <span>→</span></a>
+    </div>
+    <div class="service-card" data-tilt data-tilt-max="6" data-tilt-speed="500" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-number">04</div>
+      <div class="card-icon">📦</div>
+      <h3 class="card-title">Supply Chain</h3>
+      <p class="card-desc">Product catalog, order management, supplier analytics, contract generation, and Stripe payments.</p>
+      <a href="#" class="card-link">Explore module <span>→</span></a>
+    </div>
+    <div class="service-card" data-tilt data-tilt-max="6" data-tilt-speed="500" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-number">05</div>
+      <div class="card-icon">💧</div>
+      <h3 class="card-title">Irrigation</h3>
+      <p class="card-desc">Automated irrigation commands, real-time water event history, and dashboard monitoring.</p>
+      <a href="#" class="card-link">Explore module <span>→</span></a>
+    </div>
+    <div class="service-card" data-tilt data-tilt-max="6" data-tilt-speed="500" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-number">06</div>
+      <div class="card-icon">📊</div>
+      <h3 class="card-title">Analytics</h3>
+      <p class="card-desc">Supplier performance scoring, crop recommendations, maintenance predictions, and live KPI dashboards.</p>
+      <a href="#" class="card-link">Explore module <span>→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ STATS ══════════ -->
+<section id="stats">
+  <div id="stats-particles"></div>
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-value"><span class="counter" data-target="2400">0</span><span class="stat-unit">+</span></div>
+      <div class="stat-label">Hectares Managed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value"><span class="counter" data-target="148">0</span></div>
+      <div class="stat-label">Livestock Tracked</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value"><span class="counter" data-target="31">0</span></div>
+      <div class="stat-label">Integrated Modules</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value"><span class="counter" data-target="99">0</span><span class="stat-unit">.7%</span></div>
+      <div class="stat-label">Platform Uptime</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HORIZONTAL MODULE SHOWCASE ══════════ -->
+<div id="modules" style="height: 500vh;">
+  <div class="modules-sticky">
+    <div class="modules-track" id="modules-track">
+
+      <!-- Slide 1: Parcelles -->
+      <div class="module-slide">
+        <div class="module-visual">
+          <div class="module-bg">🗺️</div>
+          <div class="module-bg-gradient" style="background: radial-gradient(ellipse at 30% 50%, rgba(76,175,80,0.3) 0%, transparent 60%);"></div>
+          <canvas id="parcelles-canvas" class="module-canvas-3d" style="position:absolute;inset:0;"></canvas>
+        </div>
+        <div class="module-info">
+          <div class="module-num">01</div>
+          <div class="module-tag">Field Intelligence</div>
+          <h2 class="module-title">Fields &<br>Parcelles</h2>
+          <p class="module-desc">GPS-precise field management with soil analysis, irrigation tracking, and AI-powered crop recommendations.</p>
+          <ul class="module-features">
+            <li>GPS-tracked field boundaries</li>
+            <li>Soil type & status monitoring</li>
+            <li>AI crop recommendation engine</li>
+            <li>Real-time irrigation control</li>
+          </ul>
+          <a href="#" class="btn-ghost" style="font-size:0.8rem;">Open Module →</a>
+        </div>
+      </div>
+
+      <!-- Slide 2: Livestock -->
+      <div class="module-slide">
+        <div class="module-visual">
+          <div class="module-bg">🐄</div>
+          <div class="module-bg-gradient" style="background: radial-gradient(ellipse at 70% 50%, rgba(201,162,39,0.3) 0%, transparent 60%);"></div>
+          <canvas id="livestock-canvas" class="module-canvas-3d" style="position:absolute;inset:0;"></canvas>
+        </div>
+        <div class="module-info">
+          <div class="module-num">02</div>
+          <div class="module-tag">Animal Intelligence</div>
+          <h2 class="module-title">Livestock &<br>Animals</h2>
+          <p class="module-desc">Complete herd management with individual animal records, vaccination tracking, and AI-generated 3D habitat models.</p>
+          <ul class="module-features">
+            <li>Individual animal health records</li>
+            <li>Vaccination calendar & SMS alerts</li>
+            <li>Tripo3D habitat generation</li>
+            <li>DNA-based sex detection</li>
+          </ul>
+          <a href="#" class="btn-ghost" style="font-size:0.8rem;">Open Module →</a>
+        </div>
+      </div>
+
+      <!-- Slide 3: Equipment -->
+      <div class="module-slide">
+        <div class="module-visual">
+          <div class="module-bg">⚙️</div>
+          <div class="module-bg-gradient" style="background: radial-gradient(ellipse at 30% 70%, rgba(99,102,241,0.25) 0%, transparent 60%);"></div>
+          <canvas id="equipment-canvas" class="module-canvas-3d" style="position:absolute;inset:0;"></canvas>
+        </div>
+        <div class="module-info">
+          <div class="module-num">03</div>
+          <div class="module-tag">Predictive Maintenance</div>
+          <h2 class="module-title">Equipment &<br>Maintenance</h2>
+          <p class="module-desc">ML-powered predictive maintenance forecasts equipment failures before they happen, minimizing downtime.</p>
+          <ul class="module-features">
+            <li>Predictive failure alerts</li>
+            <li>Automated maintenance scheduling</li>
+            <li>SMS & email notifications</li>
+            <li>PDF maintenance reports</li>
+          </ul>
+          <a href="#" class="btn-ghost" style="font-size:0.8rem;">Open Module →</a>
+        </div>
+      </div>
+
+      <!-- Slide 4: AI -->
+      <div class="module-slide">
+        <div class="module-visual">
+          <div class="module-bg">🤖</div>
+          <div class="module-bg-gradient" style="background: radial-gradient(ellipse at 50% 30%, rgba(16,185,129,0.3) 0%, transparent 60%);"></div>
+          <canvas id="ai-canvas" class="module-canvas-3d" style="position:absolute;inset:0;"></canvas>
+        </div>
+        <div class="module-info">
+          <div class="module-num">04</div>
+          <div class="module-tag">Artificial Intelligence</div>
+          <h2 class="module-title">AI &<br>Intelligence</h2>
+          <p class="module-desc">Google Gemini RAG chatbot, crop ML recommender, voice commands, face ID, and biometric authentication.</p>
+          <ul class="module-features">
+            <li>Gemini RAG agricultural chatbot</li>
+            <li>Face ID + fingerprint auth</li>
+            <li>Voice & gesture commands</li>
+            <li>Crop recommendation ML</li>
+          </ul>
+          <a href="#" class="btn-ghost" style="font-size:0.8rem;">Open Module →</a>
+        </div>
+      </div>
+
+    </div>
+    <!-- Progress dots -->
+    <div class="modules-progress">
+      <div class="progress-dot active" data-slide="0"></div>
+      <div class="progress-dot" data-slide="1"></div>
+      <div class="progress-dot" data-slide="2"></div>
+      <div class="progress-dot" data-slide="3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ AI SECTION ══════════ -->
+<section id="ai">
+  <div id="ai-particles"></div>
+  <div class="ai-content">
+    <div class="ai-badge"><div class="ai-dot"></div> AI-Powered</div>
+    <h2 class="ai-title">Intelligence<br><em>built into</em><br>every field</h2>
+    <p class="ai-desc">EL FIRMA embeds artificial intelligence at every layer — from soil analysis to supply chain optimization, from voice commands to biometric access.</p>
+    <div class="ai-features">
+      <div class="ai-chip">Gemini RAG Chatbot</div>
+      <div class="ai-chip">Crop ML Recommender</div>
+      <div class="ai-chip">Predictive Maintenance</div>
+      <div class="ai-chip">Face ID Auth</div>
+      <div class="ai-chip">Voice Commands</div>
+      <div class="ai-chip">3D Model Generation</div>
+      <div class="ai-chip">Fingerprint Auth</div>
+      <div class="ai-chip">DNA Sex Detection</div>
+    </div>
+    <a href="#" class="btn-primary">Try the Crop Recommender →</a>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">El <span>Firma</span></div>
+      <p>Agricultural intelligence platform for modern farm management. From soil to sale.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="#">Fields & Crops</a></li>
+        <li><a href="#">Livestock</a></li>
+        <li><a href="#">Equipment</a></li>
+        <li><a href="#">Supply Chain</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Intelligence</h4>
+      <ul>
+        <li><a href="#">AI Chatbot</a></li>
+        <li><a href="#">Crop Advisor</a></li>
+        <li><a href="#">Predictions</a></li>
+        <li><a href="#">Analytics</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 EL FIRMA — Agricultural Intelligence Platform</p>
+    <p>Built with Symfony 6.4 · Powered by Gemini AI</p>
+  </div>
+</footer>
+
+<!-- ══════════ SCRIPTS ══════════ -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@3.3.0/tsparticles.bundle.min.js"></script>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// ── LOADER ────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+    animateHeroIn();
+  }, 1500);
+});
+
+// ── LENIS SMOOTH SCROLL ───────────────────────────────────────────
+const lenis = new Lenis({
+  duration: 1.4,
+  easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smooth: true,
+});
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add(time => lenis.raf(time * 1000));
+gsap.ticker.lagSmoothing(0);
+
+// ── HEADER SCROLL BEHAVIOUR ──────────────────────────────────────
+const header = document.getElementById('main-header');
+ScrollTrigger.create({
+  start: 'top -80',
+  onUpdate: self => header.classList.toggle('scrolled', self.progress > 0)
+});
+
+// ── HERO ENTRANCE ─────────────────────────────────────────────────
+function animateHeroIn() {
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  tl.to('.hero-eyebrow',  { opacity: 1, y: 0, duration: 0.8, from: { y: 20 } })
+    .to('.hero-title',    { opacity: 1, y: 0, duration: 1,   from: { y: 30 } }, '-=0.4')
+    .to('.hero-subtitle', { opacity: 1, y: 0, duration: 0.8, from: { y: 20 } }, '-=0.5')
+    .to('.hero-ctas',     { opacity: 1, y: 0, duration: 0.8, from: { y: 20 } }, '-=0.5')
+    .to('.scroll-hint',   { opacity: 1, duration: 0.6 }, '-=0.2');
+
+  gsap.set('.hero-eyebrow, .hero-title, .hero-subtitle, .hero-ctas', { y: 30 });
+  tl.restart();
+}
+
+// ── THREE.JS FARM TERRAIN HERO ────────────────────────────────────
+(function buildHeroScene() {
+  const canvas = document.getElementById('farm-canvas');
+  const W = window.innerWidth, H = window.innerHeight;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x07130a);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x07130a, 0.016);
+
+  const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 200);
+  camera.position.set(0, 10, 55);
+  camera.lookAt(0, 2, 0);
+
+  // Terrain
+  const terrainGeo = new THREE.PlaneGeometry(150, 150, 100, 100);
+  terrainGeo.rotateX(-Math.PI / 2);
+  const pos = terrainGeo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    const h = Math.sin(x * 0.045) * 4
+            + Math.cos(z * 0.06) * 2.5
+            + Math.sin((x + z) * 0.08) * 1.5
+            + Math.cos(x * 0.15) * 0.8;
+    pos.setY(i, h);
+  }
+  terrainGeo.computeVertexNormals();
+
+  const terrainMat = new THREE.MeshLambertMaterial({ color: 0x1a3d18 });
+  const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+  terrain.receiveShadow = true;
+  scene.add(terrain);
+
+  // Second terrain layer — lighter green highlights
+  const topGeo = terrainGeo.clone();
+  const topMat = new THREE.MeshLambertMaterial({ color: 0x264d24, transparent: true, opacity: 0.6 });
+  const topTerrain = new THREE.Mesh(topGeo, topMat);
+  topTerrain.position.y = 0.1;
+  scene.add(topTerrain);
+
+  // Particles — pollen/seeds
+  const pCount = 2000;
+  const pGeo = new THREE.BufferGeometry();
+  const pArr = new Float32Array(pCount * 3);
+  const pSpeeds = new Float32Array(pCount);
+  const pOffsets = new Float32Array(pCount);
+
+  for (let i = 0; i < pCount; i++) {
+    pArr[i*3]   = (Math.random() - 0.5) * 120;
+    pArr[i*3+1] = Math.random() * 35;
+    pArr[i*3+2] = (Math.random() - 0.5) * 120;
+    pSpeeds[i]  = 0.004 + Math.random() * 0.012;
+    pOffsets[i] = Math.random() * Math.PI * 2;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+
+  const pMat = new THREE.PointsMaterial({
+    color: 0xc9a227, size: 0.22,
+    transparent: true, opacity: 0.65,
+    sizeAttenuation: true
+  });
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+
+  // Stars / distant sparkles
+  const starGeo = new THREE.BufferGeometry();
+  const starArr = new Float32Array(500 * 3);
+  for (let i = 0; i < 500; i++) {
+    starArr[i*3]   = (Math.random() - 0.5) * 200;
+    starArr[i*3+1] = 20 + Math.random() * 50;
+    starArr[i*3+2] = (Math.random() - 0.5) * 200;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starArr, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.4 });
+  scene.add(new THREE.Points(starGeo, starMat));
+
+  // Lighting
+  const sun = new THREE.DirectionalLight(0xd4a843, 1.4);
+  sun.position.set(40, 60, 30);
+  sun.castShadow = true;
+  scene.add(sun);
+  scene.add(new THREE.AmbientLight(0x1a3050, 1.0));
+  const fillLight = new THREE.DirectionalLight(0x4a7c5a, 0.4);
+  fillLight.position.set(-30, 20, -20);
+  scene.add(fillLight);
+
+  // GSAP: camera flies forward into the terrain on scroll
+  gsap.to(camera.position, {
+    z: 8, y: 4,
+    ease: 'power1.inOut',
+    scrollTrigger: {
+      trigger: '#hero',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 2
+    }
+  });
+  gsap.to(camera.rotation, {
+    x: -0.08,
+    ease: 'power1.inOut',
+    scrollTrigger: {
+      trigger: '#hero',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 2
+    }
+  });
+
+  // Loop
+  let frame = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    frame++;
+    const t = frame * 0.01;
+    const pa = particles.geometry.attributes.position.array;
+    for (let i = 0; i < pCount; i++) {
+      pa[i*3+1] += pSpeeds[i];
+      pa[i*3]   += Math.sin(t + pOffsets[i]) * 0.004;
+      if (pa[i*3+1] > 35) pa[i*3+1] = 0;
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    const W = window.innerWidth, H = window.innerHeight;
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  });
+})();
+
+// ── SERVICE CARDS STAGGER ─────────────────────────────────────────
+gsap.from('.service-card', {
+  y: 60, opacity: 0, duration: 0.7,
+  stagger: 0.1, ease: 'power3.out',
+  scrollTrigger: { trigger: '#services', start: 'top 70%' }
+});
+gsap.from('.section-title, .section-desc, .section-label', {
+  y: 30, opacity: 0, duration: 0.7,
+  stagger: 0.1, ease: 'power2.out',
+  scrollTrigger: { trigger: '#services', start: 'top 80%' }
+});
+
+// Vanilla Tilt
+VanillaTilt.init(document.querySelectorAll('[data-tilt]'), {
+  max: 6, speed: 500, glare: true, 'max-glare': 0.08
+});
+
+// ── STATS COUNTER ─────────────────────────────────────────────────
+document.querySelectorAll('.counter').forEach(el => {
+  const target = parseInt(el.dataset.target);
+  ScrollTrigger.create({
+    trigger: el,
+    start: 'top 85%',
+    once: true,
+    onEnter: () => {
+      gsap.fromTo(el,
+        { textContent: 0 },
+        { textContent: target, duration: 2.2, ease: 'power2.out',
+          snap: { textContent: 1 },
+          onUpdate() { el.textContent = Math.round(parseFloat(el.textContent)).toLocaleString(); }
+        }
+      );
+    }
+  });
+});
+
+// Stats particles
+tsParticles.load('stats-particles', {
+  particles: {
+    number: { value: 40 },
+    color: { value: '#c9a227' },
+    opacity: { value: 0.15 },
+    size: { value: { min: 1, max: 3 } },
+    move: { enable: true, speed: 0.4, outModes: 'out' },
+    links: { enable: true, color: '#c9a227', distance: 100, opacity: 0.08, width: 1 }
+  },
+  background: { color: 'transparent' },
+  detectRetina: true
+});
+
+// ── HORIZONTAL MODULE SHOWCASE ────────────────────────────────────
+(function() {
+  const track  = document.getElementById('modules-track');
+  const slides = document.querySelectorAll('.module-slide');
+  const dots   = document.querySelectorAll('.progress-dot');
+  const total  = slides.length;
+
+  const totalMove = (total - 1) * window.innerWidth;
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#modules',
+      start: 'top top',
+      end: () => `+=${totalMove + window.innerHeight}`,
+      scrub: 1.2,
+      pin: '.modules-sticky',
+      anticipatePin: 1,
+      onUpdate(self) {
+        const idx = Math.round(self.progress * (total - 1));
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    }
+  });
+
+  tl.to(track, {
+    x: () => -totalMove,
+    ease: 'none'
+  });
+
+  // Mini 3D scenes for each module visual
+  function makeModuleScene(canvasId, color1, color2) {
+    const cv = document.getElementById(canvasId);
+    if (!cv) return;
+    const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    r.setPixelRatio(1);
+    r.setSize(cv.offsetWidth || 600, cv.offsetHeight || 400);
+    const sc = new THREE.Scene();
+    const cam = new THREE.PerspectiveCamera(50, (cv.offsetWidth || 600) / (cv.offsetHeight || 400), 0.1, 100);
+    cam.position.z = 5;
+
+    // Floating geometric shape
+    const geo = new THREE.IcosahedronGeometry(1.2, 1);
+    const mat = new THREE.MeshNormalMaterial({ wireframe: true });
+    const mesh = new THREE.Mesh(geo, mat);
+    sc.add(mesh);
+
+    // Orbiting particles
+    const orbitGeo = new THREE.BufferGeometry();
+    const orbitArr = new Float32Array(80 * 3);
+    for (let i = 0; i < 80; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi   = Math.acos(2 * Math.random() - 1);
+      const r2    = 2 + Math.random() * 1.5;
+      orbitArr[i*3]   = r2 * Math.sin(phi) * Math.cos(theta);
+      orbitArr[i*3+1] = r2 * Math.sin(phi) * Math.sin(theta);
+      orbitArr[i*3+2] = r2 * Math.cos(phi);
+    }
+    orbitGeo.setAttribute('position', new THREE.BufferAttribute(orbitArr, 3));
+    const orbitMat = new THREE.PointsMaterial({ color: color1, size: 0.05, transparent: true, opacity: 0.8 });
+    sc.add(new THREE.Points(orbitGeo, orbitMat));
+
+    let f = 0;
+    function loop() {
+      requestAnimationFrame(loop);
+      f += 0.008;
+      mesh.rotation.x = f * 0.6;
+      mesh.rotation.y = f;
+      r.render(sc, cam);
+    }
+    loop();
+  }
+
+  makeModuleScene('parcelles-canvas',  0x4caf50, 0xc9a227);
+  makeModuleScene('livestock-canvas',  0xc9a227, 0xe8c35a);
+  makeModuleScene('equipment-canvas',  0x6366f1, 0x818cf8);
+  makeModuleScene('ai-canvas',         0x10b981, 0x34d399);
+})();
+
+// ── AI PARTICLES ──────────────────────────────────────────────────
+tsParticles.load('ai-particles', {
+  particles: {
+    number: { value: 70 },
+    color:  { value: '#22c55e' },
+    links:  { enable: true, color: '#22c55e', distance: 130, opacity: 0.2, width: 1 },
+    move:   { enable: true, speed: 0.5, outModes: 'bounce' },
+    opacity:{ value: { min: 0.2, max: 0.6 } },
+    size:   { value: { min: 1, max: 2.5 } }
+  },
+  background: { color: 'transparent' },
+  detectRetina: true
+});
+
+// Stagger AI content
+gsap.from('.ai-badge, .ai-title, .ai-desc, .ai-features, .ai-content .btn-primary', {
+  y: 30, opacity: 0, duration: 0.7,
+  stagger: 0.12, ease: 'power2.out',
+  scrollTrigger: { trigger: '#ai', start: 'top 70%' }
+});
+</script>
+
+</body>
+</html>

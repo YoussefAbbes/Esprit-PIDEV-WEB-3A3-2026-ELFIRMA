@@ -83,7 +83,7 @@
         <label for="password">Password</label>
         <div class="password-input-wrap">
           <input type="password" id="password" name="password" class="form-control password-control" placeholder="••••••" maxlength="6">
-          <button type="button" id="togglePasswordBtn" class="password-eye-btn" aria-label="Afficher le mot de passe" title="Afficher / masquer">
+          <button type="button" id="togglePasswordBtn" class="password-eye-btn" aria-label="Show password" title="Show / hide">
             <i class="bi bi-eye"></i>
           </button>
         </div>
@@ -685,7 +685,7 @@
         confirmPasswordInput.type = show ? 'text' : 'password';
       }
       this.innerHTML = show ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
-      this.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+      this.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
     });
   }
 

@@ -34,14 +34,47 @@
 
 </head>
 
-<body class="min-h-screen">
+<body class="min-h-screen bg-white">
 
-{{ include('elfirma/_sidebar.html.twig') }}
+{% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': current_module|default('') } %}
 
 <!-- ✅ CONTENT -->
-{% block body %}{% endblock %}
+<main class="elfirma-admin-content min-h-screen" style="margin-left: 280px;">
+    {% block body %}{% endblock %}
+</main>
 
 {{ include('elfirma/_nav_routes.html.twig') }}
+
+<!-- ✅ Sidebar Collapse Handler -->
+<script>
+    (function() {
+        const sidebar = document.querySelector('.elfirma-premium-sidebar');
+        const mainContent = document.querySelector('.elfirma-admin-content');
+
+        if (!sidebar || !mainContent) return;
+
+        // Restore collapsed state from localStorage
+        const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+            updateMainContentMargin();
+        }
+
+        // Update main content margin when sidebar is toggled
+        function updateMainContentMargin() {
+            const collapsed = sidebar.classList.contains('collapsed');
+            mainContent.style.marginLeft = collapsed ? '90px' : '280px';
+        }
+
+        // Watch for sidebar class changes
+        const observer = new MutationObserver(() => {
+            updateMainContentMargin();
+        });
+
+        observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+    })();
+</script>
+
 <!-- ✅ STIMULUS & CHARTS -->
 {{ importmap('app') }}
 

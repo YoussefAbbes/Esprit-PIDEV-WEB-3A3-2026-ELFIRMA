@@ -52,7 +52,7 @@ class Produit
     #[Assert\NotBlank(message: 'Type is required.')]
     #[Assert\Choice(
         choices: ['Frais', 'Transformé', 'Biologique', 'Séché', 'Conditionné'],
-        message: 'Type must be one of: Frais, Transformé, Biologique, Séché, Conditionné.'
+        message: 'Le type doit être l\'un des suivants : Frais, Transformé, Biologique, Séché, Conditionné.'
     )]
     private ?string $type = null;
 
@@ -104,7 +104,7 @@ class Produit
     #[Assert\NotBlank(message: 'Quality is required.')]
     #[Assert\Choice(
         choices: ['Premium', 'Standard', 'Économique', 'Bio', 'Certifié'],
-        message: 'Quality must be one of: Premium, Standard, Économique, Bio, Certifié.'
+        message: 'La qualité doit être l\'une des suivantes : Premium, Standard, Économique, Bio, Certifié.'
     )]
     private ?string $qualite = null;
 
@@ -169,6 +169,18 @@ class Produit
         return $this->image;
     }
 
+    public function getImageFilename(): ?string
+    {
+        if ($this->image === null || $this->image === '') {
+            return null;
+        }
+
+        $normalized = str_replace('\\', '/', $this->image);
+        $filename = basename($normalized);
+
+        return $filename !== '' ? $filename : null;
+    }
+
     public function setImage(?string $image): self
     {
         $this->image = $image;
@@ -198,7 +210,7 @@ class Produit
     #[Assert\NotBlank(message: 'Status is required.')]
     #[Assert\Choice(
         choices: ['Disponible', 'Rupture', 'Expiré'],
-        message: 'Status must be one of: Disponible, Rupture, Expiré.'
+        message: 'Le statut doit être l\'un des suivants : Disponible, Rupture, Expiré.'
     )]
     private ?string $statut = 'Disponible';
 
@@ -268,14 +280,14 @@ class Produit
         $today = new \DateTimeImmutable('today');
         $expirationDay = \DateTimeImmutable::createFromInterface($expiration)->setTime(0, 0);
 
-        if ($status === 'Disponible' && $expirationDay < $today) {
+        if (in_array($status, ['Available', 'Disponible'], true) && $expirationDay < $today) {
             $context
                 ->buildViolation('Available product must have an expiration date that is today or later.')
                 ->atPath('date_expiration')
                 ->addViolation();
         }
 
-        if ($status === 'Expiré' && $expirationDay > $today) {
+        if (in_array($status, ['Expired', 'Expiré'], true) && $expirationDay > $today) {
             $context
                 ->buildViolation('Expired product must have an expiration date in the past or today.')
                 ->atPath('date_expiration')

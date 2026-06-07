@@ -8,9 +8,25 @@ use Doctrine\Persistence\ManagerRegistry;
 
 class MaintenanceRepository extends ServiceEntityRepository
 {
+    private const VALID_STATUT = ['planifie', 'en_cours', 'termine', 'en_attente'];
+    private const VALID_PRIORITE = ['urgente', 'haute', 'moyenne', 'basse'];
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Maintenance::class);
+    }
+
+    /**
+     * Normalises any invalid statut/priorite enum values before loading,
+     * preventing Doctrine MappingException on hydration.
+     */
+    public function sanitizeEnums(): void
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $statuts  = implode(',', array_map(fn($v) => "'$v'", self::VALID_STATUT));
+        $priorites = implode(',', array_map(fn($v) => "'$v'", self::VALID_PRIORITE));
+        $conn->executeStatement("UPDATE maintenance SET statut   = 'planifie' WHERE statut   NOT IN ($statuts)");
+        $conn->executeStatement("UPDATE maintenance SET priorite = 'basse'    WHERE priorite NOT IN ($priorites)");
     }
 
     /**

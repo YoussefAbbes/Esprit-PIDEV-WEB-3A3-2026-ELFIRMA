@@ -75,9 +75,9 @@
     </script>
 </head>
 <body>
-    {{ include('elfirma/_sidebar.html.twig') }}
+    {% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'parcelles-cultures' } %}
 
-    <main class="md:ml-64 min-h-screen p-6">
+    <main class="md:ml-72 min-h-screen p-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
             <div>

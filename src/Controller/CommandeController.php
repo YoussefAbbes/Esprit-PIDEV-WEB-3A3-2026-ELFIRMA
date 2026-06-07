@@ -32,7 +32,7 @@ final class CommandeController extends AbstractController
         if ($rate === null) {
             return new JsonResponse([
                 'ok' => false,
-                'message' => 'Taux TND/EUR indisponible pour le moment.',
+                'message' => 'TND/EUR rate currently unavailable.',
             ], 502);
         }
 
@@ -93,7 +93,7 @@ final class CommandeController extends AbstractController
         $commande = $em->getRepository(Commande::class)->find($id);
 
         if (!$commande) {
-            throw $this->createNotFoundException('Commande introuvable');
+            throw $this->createNotFoundException('Order not found');
         }
 
         return $this->render('commande_show.html.twig', [
@@ -108,25 +108,25 @@ final class CommandeController extends AbstractController
         $commande = $em->getRepository(Commande::class)->find($id);
 
         if (!$commande) {
-            $this->addFlash('error', 'Commande introuvable.');
+            $this->addFlash('error', 'Order not found.');
 
             return $this->redirectToRoute('app_commandes_index');
         }
 
         if (!$this->isCsrfTokenValid('update_commande_status_' . $id, (string) $request->request->get('_token', ''))) {
-            $this->addFlash('error', 'Requete invalide (CSRF).');
+            $this->addFlash('error', 'Invalid request (CSRF).');
 
             return $this->redirectToRoute('app_commande_show', ['id' => $id]);
         }
 
         if (!$this->canManageFrontCommande($commande, $session)) {
-            $this->addFlash('error', 'Vous ne pouvez pas modifier cette commande.');
+            $this->addFlash('error', 'You cannot modify this order.');
 
             return $this->redirectToRoute('app_commandes_index');
         }
 
         if ($commande->getStatutCommande() !== 'En attente') {
-            $this->addFlash('error', 'Cette commande ne peut plus etre modifiee par le client.');
+            $this->addFlash('error', 'This order can no longer be modified by the client.');
 
             return $this->redirectToRoute('app_commande_show', ['id' => $id]);
         }
@@ -135,7 +135,7 @@ final class CommandeController extends AbstractController
         $allowed = ['Confirmée', 'Annulée'];
 
         if (!in_array($status, $allowed, true)) {
-            $this->addFlash('error', 'Statut non autorise.');
+            $this->addFlash('error', 'Status not allowed.');
 
             return $this->redirectToRoute('app_commande_show', ['id' => $id]);
         }
@@ -143,9 +143,9 @@ final class CommandeController extends AbstractController
         try {
             $commande->setStatutCommande($status);
             $em->flush();
-            $this->addFlash('success', sprintf('Commande %s avec succes.', $status === 'Confirmée' ? 'confirmée' : 'annulée'));
+            $this->addFlash('success', sprintf('Order %s successfully.', $status === 'Confirmée' ? 'confirmed' : 'cancelled'));
         } catch (\Throwable $e) {
-            $this->addFlash('error', 'Impossible de modifier le statut de la commande pour le moment.');
+            $this->addFlash('error', 'Unable to update the order status right now.');
         }
 
         return $this->redirectToRoute('app_commande_show', ['id' => $id]);
@@ -157,11 +157,11 @@ final class CommandeController extends AbstractController
         $commande = $em->getRepository(Commande::class)->find($id);
 
         if (!$commande) {
-            throw $this->createNotFoundException('Commande introuvable');
+            throw $this->createNotFoundException('Order not found');
         }
 
         if ($commande->getModePaiement() !== 'Carte bancaire' || $commande->getStatutPaiement() !== 'Payé') {
-            $this->addFlash('error', 'Le recu est disponible uniquement pour les commandes payees par carte.');
+            $this->addFlash('error', 'The receipt is only available for card-paid orders.');
             return $this->redirectToRoute('app_commande_show', ['id' => $id]);
         }
 
@@ -178,11 +178,11 @@ final class CommandeController extends AbstractController
         $commande = $em->getRepository(Commande::class)->find($id);
 
         if (!$commande) {
-            throw $this->createNotFoundException('Commande introuvable');
+            throw $this->createNotFoundException('Order not found');
         }
 
         if ($commande->getModePaiement() !== 'Carte bancaire' || $commande->getStatutPaiement() !== 'Payé') {
-            $this->addFlash('error', 'Le recu est disponible uniquement pour les commandes payees par carte.');
+            $this->addFlash('error', 'The receipt is only available for card-paid orders.');
             return $this->redirectToRoute('app_commande_show', ['id' => $id]);
         }
 
@@ -233,7 +233,7 @@ final class CommandeController extends AbstractController
         $panier = $session->get('panier', []);
 
         if (empty($panier)) {
-            $this->addFlash('error', 'Votre panier est vide');
+            $this->addFlash('error', 'Your cart is empty');
             return $this->redirectToRoute('app_panier_index');
         }
 
@@ -253,13 +253,13 @@ final class CommandeController extends AbstractController
                     ];
                     $total += $subtotal;
                 } else {
-                    $this->addFlash('error', "Stock insuffisant pour {$produit->getNom()}");
+                    $this->addFlash('error', "Insufficient stock for {$produit->getNom()}");
                 }
             }
         }
 
         if (empty($panierWithData)) {
-            $this->addFlash('error', 'Aucun produit valide dans le panier');
+            $this->addFlash('error', 'No valid products in cart');
             return $this->redirectToRoute('app_panier_index');
         }
 
@@ -276,7 +276,7 @@ final class CommandeController extends AbstractController
 
             if ($action !== 'confirm_order') {
                 return $this->renderCheckout($panierWithData, $total, $session, [
-                    '_global' => ['Veuillez confirmer la commande pour finaliser l\'achat.'],
+                    '_global' => ['Please confirm the order to complete your purchase.'],
                 ], [
                     'nom_client' => trim((string) $request->request->get('nom_client', (string) $session->get('user_name', ''))),
                     'adresse_livraison' => trim((string) $request->request->get('adresse_livraison', '')),
@@ -323,15 +323,15 @@ final class CommandeController extends AbstractController
         ];
 
         if ($nomClient === '') {
-            $formErrors['nom_client'][] = 'Le nom complet est obligatoire.';
+            $formErrors['nom_client'][] = 'Full name is required.';
         }
 
         if ($adresseLivraison === '') {
-            $formErrors['adresse_livraison'][] = 'L\'adresse de livraison est obligatoire.';
+            $formErrors['adresse_livraison'][] = 'Delivery address is required.';
         }
 
         if ($modePaiement === '') {
-            $formErrors['mode_paiement'][] = 'Le mode de paiement est obligatoire.';
+            $formErrors['mode_paiement'][] = 'Payment method is required.';
         }
 
         if ($formErrors !== []) {
@@ -340,13 +340,13 @@ final class CommandeController extends AbstractController
 
         $promoSummary = $this->resolvePromoSummary($session, $total);
         if ($promoCode !== '' && (!$promoSummary['is_applied'] || $promoSummary['applied_code'] !== $promoCode)) {
-            $formErrors['promo_code'][] = 'Code promo invalide, expire ou non applique.';
+            $formErrors['promo_code'][] = 'Promo code invalid, expired or not applied.';
             return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
         }
 
         if ($modePaiement === 'Carte bancaire') {
             if ($stripePaymentIntentId === '') {
-                $formErrors['mode_paiement'][] = 'Paiement carte non confirme. Veuillez verifier votre carte.';
+                $formErrors['mode_paiement'][] = 'Card payment not confirmed. Please check your card.';
                 return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
             }
 
@@ -356,7 +356,7 @@ final class CommandeController extends AbstractController
                 : 0;
 
             if ($expectedAmount <= 0) {
-                $formErrors['mode_paiement'][] = 'Session de paiement expiree. Veuillez reconfirmer votre paiement carte.';
+                $formErrors['mode_paiement'][] = 'Payment session expired. Please re-confirm your card payment.';
                 return $this->renderCheckout($panierWithData, $total, $session, $formErrors, $old, $httpClient);
             }
 
@@ -386,7 +386,7 @@ final class CommandeController extends AbstractController
                 $quantite = $item['quantite'];
 
                 if ($quantite > $produit->getQuantiteStock()) {
-                    $formErrors['_global'][] = "Stock insuffisant pour {$produit->getNom()}.";
+                    $formErrors['_global'][] = "Insufficient stock for {$produit->getNom()}.";
                     continue;
                 }
 
@@ -446,10 +446,10 @@ final class CommandeController extends AbstractController
             $this->clearPromoState($session);
             $session->remove('stripe_payment_quote');
 
-            $this->addFlash('success', 'Commande créée avec succès!');
+            $this->addFlash('success', 'Order created successfully!');
 
             if ($modePaiement === 'Carte bancaire' && !empty($createdOrders)) {
-                $this->addFlash('card_receipt_ready', 'Paiement confirme. Vous pouvez telecharger votre recu.');
+                $this->addFlash('card_receipt_ready', 'Payment confirmed. You can download your receipt.');
             }
 
             if (!empty($createdOrders)) {
@@ -462,13 +462,13 @@ final class CommandeController extends AbstractController
             if ($em->getConnection()->isTransactionActive()) {
                 $em->getConnection()->rollBack();
             }
-            $this->addFlash('error', 'Erreur lors de la création de la commande: ' . $e->getMessage());
+            $this->addFlash('error', 'Error creating the order: ' . $e->getMessage());
 
             return $this->renderCheckout(
                 $panierWithData,
                 $total,
                 $session,
-                ['_global' => ['Erreur lors de la creation de la commande: ' . $e->getMessage()]],
+                ['_global' => ['Error creating the order: ' . $e->getMessage()]],
                 $old,
                 $httpClient
             );
@@ -487,7 +487,7 @@ final class CommandeController extends AbstractController
 
         if ($total < self::PROMO_MIN_TOTAL) {
             return $this->renderCheckout($panierWithData, $total, $session, [
-                'promo_code' => [sprintf('Le code promo est disponible a partir de %.0f DT.', self::PROMO_MIN_TOTAL)],
+                'promo_code' => [sprintf('The promo code is available from %.0f DT.', self::PROMO_MIN_TOTAL)],
             ], $old, $httpClient);
         }
 
@@ -502,7 +502,7 @@ final class CommandeController extends AbstractController
         ]);
         $session->remove('commande_promo_applied');
 
-        $this->addFlash('success', sprintf('Code genere: %s (valable %d jours).', $code, self::PROMO_VALID_DAYS));
+        $this->addFlash('success', sprintf('Code generated: %s (valid for %d days).', $code, self::PROMO_VALID_DAYS));
 
         $old['promo_code'] = $code;
         return $this->renderCheckout($panierWithData, $total, $session, [], $old, $httpClient);
@@ -525,33 +525,33 @@ final class CommandeController extends AbstractController
 
         if ($promoCode === '') {
             return $this->renderCheckout($panierWithData, $total, $session, [
-                'promo_code' => ['Veuillez saisir un code promo.'],
+                'promo_code' => ['Please enter a promo code.'],
             ], $old, $httpClient);
         }
 
         if ($total < self::PROMO_MIN_TOTAL) {
             return $this->renderCheckout($panierWithData, $total, $session, [
-                'promo_code' => [sprintf('Le montant minimum pour appliquer un code est %.0f DT.', self::PROMO_MIN_TOTAL)],
+                'promo_code' => [sprintf('The minimum amount to apply a code is %.0f DT.', self::PROMO_MIN_TOTAL)],
             ], $old, $httpClient);
         }
 
         $generated = $this->getGeneratedPromo($session);
         if ($generated === null) {
             return $this->renderCheckout($panierWithData, $total, $session, [
-                'promo_code' => ['Aucun code promo genere.'],
+                'promo_code' => ['No promo code generated.'],
             ], $old, $httpClient);
         }
 
         if ($generated['code'] !== $promoCode) {
             return $this->renderCheckout($panierWithData, $total, $session, [
-                'promo_code' => ['Code promo invalide.'],
+                'promo_code' => ['Invalid promo code.'],
             ], $old, $httpClient);
         }
 
         if ($this->isPromoExpired($generated['expires_at'])) {
             $this->clearPromoState($session);
             return $this->renderCheckout($panierWithData, $total, $session, [
-                'promo_code' => ['Ce code promo a expire.'],
+                'promo_code' => ['This promo code has expired.'],
             ], $old, $httpClient);
         }
 
@@ -560,7 +560,7 @@ final class CommandeController extends AbstractController
             'applied_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
         ]);
 
-        $this->addFlash('success', 'Code promo applique avec succes.');
+        $this->addFlash('success', 'Promo code applied successfully.');
         return $this->renderCheckout($panierWithData, $total, $session, [], $old, $httpClient);
     }
 
@@ -599,7 +599,7 @@ final class CommandeController extends AbstractController
     {
         $panier = $session->get('panier', []);
         if (!is_array($panier) || $panier === []) {
-            return new JsonResponse(['error' => 'Panier vide.'], 400);
+            return new JsonResponse(['error' => 'Cart is empty.'], 400);
         }
 
         $total = 0.0;
@@ -618,23 +618,23 @@ final class CommandeController extends AbstractController
         }
 
         if ($total <= 0) {
-            return new JsonResponse(['error' => 'Aucun produit valide dans le panier.'], 400);
+            return new JsonResponse(['error' => 'No valid products in cart.'], 400);
         }
 
         $promoSummary = $this->resolvePromoSummary($session, $total);
         $conversion = $this->convertTndToEur((float) $promoSummary['final_total'], $httpClient, $session);
         if (!$conversion['ok']) {
-            return new JsonResponse(['error' => 'Conversion TND vers EUR indisponible. Reessayez dans un instant.'], 502);
+            return new JsonResponse(['error' => 'TND to EUR conversion unavailable. Please try again in a moment.'], 502);
         }
 
         $amountCents = (int) round(((float) $conversion['amount_eur']) * 100);
         if ($amountCents <= 0) {
-            return new JsonResponse(['error' => 'Montant invalide.'], 400);
+            return new JsonResponse(['error' => 'Invalid amount.'], 400);
         }
 
         $secretKey = $this->getStripeSecretKey();
         if ($secretKey === '') {
-            return new JsonResponse(['error' => 'Stripe non configure.'], 500);
+            return new JsonResponse(['error' => 'Stripe not configured.'], 500);
         }
 
         try {
@@ -642,7 +642,7 @@ final class CommandeController extends AbstractController
                 'amount' => $amountCents,
                 'currency' => $this->getStripeCurrency(),
                 'automatic_payment_methods[enabled]' => 'true',
-                'description' => 'Paiement commande EL FIRMA',
+                'description' => 'EL FIRMA order payment',
                 'metadata[source]' => 'checkout_commande',
             ];
 
@@ -656,7 +656,7 @@ final class CommandeController extends AbstractController
 
             $data = $response->toArray(false);
             if (!isset($data['client_secret'], $data['id'])) {
-                return new JsonResponse(['error' => 'Reponse Stripe invalide.'], 502);
+                return new JsonResponse(['error' => 'Invalid Stripe response.'], 502);
             }
 
             $session->set('stripe_payment_quote', [
@@ -678,7 +678,7 @@ final class CommandeController extends AbstractController
                 'exchangeRate' => (float) $conversion['rate'],
             ]);
         } catch (\Throwable $e) {
-            return new JsonResponse(['error' => 'Impossible de creer le paiement Stripe.'], 502);
+            return new JsonResponse(['error' => 'Unable to create Stripe payment.'], 502);
         }
     }
 
@@ -745,7 +745,7 @@ final class CommandeController extends AbstractController
     {
         $secretKey = $this->getStripeSecretKey();
         if ($secretKey === '') {
-            return ['ok' => false, 'message' => 'Stripe non configure.'];
+            return ['ok' => false, 'message' => 'Stripe not configured.'];
         }
 
         try {
@@ -760,16 +760,16 @@ final class CommandeController extends AbstractController
             $amount = (int) ($data['amount'] ?? 0);
 
             if ($status !== 'succeeded') {
-                return ['ok' => false, 'message' => 'Le paiement carte n\'est pas confirme.'];
+                return ['ok' => false, 'message' => 'Card payment is not confirmed.'];
             }
 
             if ($amount !== $expectedAmount) {
-                return ['ok' => false, 'message' => 'Le montant paye ne correspond pas a la commande.'];
+                return ['ok' => false, 'message' => 'The amount paid does not match the order.'];
             }
 
             return ['ok' => true, 'message' => 'OK'];
         } catch (\Throwable $e) {
-            return ['ok' => false, 'message' => 'Verification Stripe impossible.'];
+            return ['ok' => false, 'message' => 'Stripe verification failed.'];
         }
     }
 
@@ -906,12 +906,12 @@ final class CommandeController extends AbstractController
     {
         $payload = json_decode($request->getContent(), true);
         if (!is_array($payload)) {
-            return new JsonResponse(['error' => 'Format invalide.'], 400);
+            return new JsonResponse(['error' => 'Invalid format.'], 400);
         }
 
         $message = trim((string) ($payload['message'] ?? ''));
         if ($message === '') {
-            return new JsonResponse(['error' => 'Message vide.'], 400);
+            return new JsonResponse(['error' => 'Empty message.'], 400);
         }
 
         $panier = $session->get('panier', []);
@@ -957,7 +957,7 @@ final class CommandeController extends AbstractController
         if (!is_array($payload)) {
             return new JsonResponse([
                 'ok' => false,
-                'message' => 'Format invalide.',
+                'message' => 'Invalid format.',
             ], 400);
         }
 
@@ -967,7 +967,7 @@ final class CommandeController extends AbstractController
         if ($lat < -90.0 || $lat > 90.0 || $lng < -180.0 || $lng > 180.0) {
             return new JsonResponse([
                 'ok' => false,
-                'message' => 'Coordonnees invalides.',
+                'message' => 'Invalid coordinates.',
             ], 422);
         }
 
@@ -993,7 +993,7 @@ final class CommandeController extends AbstractController
             if ($status >= 400 || $address === '') {
                 return new JsonResponse([
                     'ok' => false,
-                    'message' => 'Adresse introuvable.',
+                    'message' => 'Address not found.',
                     'coordinates' => [
                         'lat' => round($lat, 6),
                         'lng' => round($lng, 6),
@@ -1012,7 +1012,7 @@ final class CommandeController extends AbstractController
         } catch (\Throwable $e) {
             return new JsonResponse([
                 'ok' => false,
-                'message' => 'Service geocoding indisponible.',
+                'message' => 'Geocoding service unavailable.',
                 'coordinates' => [
                     'lat' => round($lat, 6),
                     'lng' => round($lng, 6),
@@ -1071,68 +1071,68 @@ final class CommandeController extends AbstractController
 
         if (str_contains($text, 'bonjour') || str_contains($text, 'salut') || str_contains($text, 'hello')) {
             return [
-                'reply' => 'Bonjour! Je vous aide a finaliser votre commande. Vous avez ' . $items . ' article(s), total actuel: ' . number_format($total, 2, '.', ' ') . ' DT.',
-                'quick_replies' => ['Comment utiliser le code promo ?', 'Quels moyens de paiement ?', 'Que se passe-t-il apres paiement ?'],
+                'reply' => 'Hello! I can help you finalise your order. You have ' . $items . ' item(s), current total: ' . number_format($total, 2, '.', ' ') . ' DT.',
+                'quick_replies' => ['How to use a promo code?', 'What payment methods are available?', 'What happens after payment?'],
             ];
         }
 
         if (str_contains($text, 'promo') || str_contains($text, 'reduction') || str_contains($text, 'code')) {
             if ($total < $promoMin) {
                 return [
-                    'reply' => 'Le code promo est disponible a partir de ' . number_format($promoMin, 0, '.', ' ') . ' DT. Votre total est ' . number_format($total, 2, '.', ' ') . ' DT.',
-                    'quick_replies' => ['Comment augmenter mon panier ?', 'Quels moyens de paiement ?'],
+                    'reply' => 'The promo code is available from ' . number_format($promoMin, 0, '.', ' ') . ' DT. Your current total is ' . number_format($total, 2, '.', ' ') . ' DT.',
+                    'quick_replies' => ['How to increase my cart?', 'What payment methods are available?'],
                 ];
             }
 
             if ($hasPromo) {
                 return [
-                    'reply' => 'Votre promo est deja appliquee: -' . number_format($discount, 2, '.', ' ') . ' DT. Total a payer: ' . number_format($finalTotal, 2, '.', ' ') . ' DT.',
-                    'quick_replies' => ['Comment payer par carte ?', 'Je confirme ma commande'],
+                    'reply' => 'Your promo is already applied: -' . number_format($discount, 2, '.', ' ') . ' DT. Total to pay: ' . number_format($finalTotal, 2, '.', ' ') . ' DT.',
+                    'quick_replies' => ['How to pay by card?', 'I confirm my order'],
                 ];
             }
 
             return [
-                'reply' => 'Vous pouvez generer puis appliquer un code promo (valable 3 jours) directement dans le bloc promo avant la confirmation.',
-                'quick_replies' => ['Generer code promo', 'Appliquer code promo', 'Total actuel'],
+                'reply' => 'You can generate and then apply a promo code (valid for 3 days) directly in the promo section before confirming.',
+                'quick_replies' => ['Generate promo code', 'Apply promo code', 'Current total'],
             ];
         }
 
         if (str_contains($text, 'carte') || str_contains($text, 'stripe') || str_contains($text, 'paiement')) {
             return [
-                'reply' => 'Pour payer par carte: choisissez "Carte bancaire", remplissez les informations Stripe, puis confirmez. La commande est enregistree seulement si le paiement est valide.',
-                'quick_replies' => ['Carte test ?', 'Paiement cash', 'Paiement virement'],
+                'reply' => 'To pay by card: select "Carte bancaire", fill in your Stripe details, then confirm. The order is only recorded if the payment is valid.',
+                'quick_replies' => ['Test card?', 'Cash payment', 'Bank transfer payment'],
             ];
         }
 
         if (str_contains($text, 'test') || str_contains($text, '4242')) {
             return [
-                'reply' => 'En mode test Stripe, vous pouvez utiliser 4242 4242 4242 4242, une date future, et un CVC de 3 chiffres.',
-                'quick_replies' => ['Comment confirmer la commande ?', 'Quels sont les statuts ?'],
+                'reply' => 'In Stripe test mode, you can use 4242 4242 4242 4242, a future expiry date, and any 3-digit CVC.',
+                'quick_replies' => ['How to confirm the order?', 'What are the order statuses?'],
             ];
         }
 
         if (str_contains($text, 'adresse') || str_contains($text, 'livraison')) {
             return [
-                'reply' => 'Le champ adresse de livraison est obligatoire. Vous trouverez le message d\'erreur juste sous le champ si la saisie est invalide.',
-                'quick_replies' => ['Delai de livraison ?', 'Je veux modifier mon adresse'],
+                'reply' => 'The delivery address field is required. An error message will appear just below the field if the input is invalid.',
+                'quick_replies' => ['Delivery time?', 'I want to change my address'],
             ];
         }
 
         if (str_contains($text, 'total') || str_contains($text, 'montant')) {
-            $reply = 'Total panier: ' . number_format($total, 2, '.', ' ') . ' DT.';
+            $reply = 'Cart total: ' . number_format($total, 2, '.', ' ') . ' DT.';
             if ($hasPromo) {
-                $reply .= ' Reduction appliquee: -' . number_format($discount, 2, '.', ' ') . ' DT. Total final: ' . number_format($finalTotal, 2, '.', ' ') . ' DT.';
+                $reply .= ' Discount applied: -' . number_format($discount, 2, '.', ' ') . ' DT. Final total: ' . number_format($finalTotal, 2, '.', ' ') . ' DT.';
             }
 
             return [
                 'reply' => $reply,
-                'quick_replies' => ['Comment utiliser le code promo ?', 'Je confirme ma commande'],
+                'quick_replies' => ['How to use a promo code?', 'I confirm my order'],
             ];
         }
 
         return [
-            'reply' => 'Je peux vous aider sur: promo, paiement carte Stripe, adresse de livraison et total de commande. Dites-moi ce que vous souhaitez verifier.',
-            'quick_replies' => ['Code promo', 'Paiement carte Stripe', 'Adresse de livraison', 'Total actuel'],
+            'reply' => 'I can help you with: promo codes, Stripe card payment, delivery address, and order total. Tell me what you would like to check.',
+            'quick_replies' => ['Promo code', 'Stripe card payment', 'Delivery address', 'Current total'],
         ];
     }
 
@@ -1147,7 +1147,7 @@ final class CommandeController extends AbstractController
 
         // Validation des données
         if (!array_key_exists('produit_id', $data) || !array_key_exists('quantite', $data) || !array_key_exists('nom_client', $data) || !array_key_exists('adresse_livraison', $data)) {
-            return new JsonResponse(['error' => 'Données manquantes'], 400);
+            return new JsonResponse(['error' => 'Missing data'], 400);
         }
 
         $productId = (int) $data['produit_id'];
@@ -1158,15 +1158,15 @@ final class CommandeController extends AbstractController
         $produit = $em->getRepository(Produit::class)->find($productId);
         
         if (!$produit) {
-            return new JsonResponse(['error' => 'Produit introuvable'], 404);
+            return new JsonResponse(['error' => 'Product not found'], 404);
         }
 
         if ($produit->getStatut() !== 'Disponible') {
-            return new JsonResponse(['error' => 'Produit non disponible'], 400);
+            return new JsonResponse(['error' => 'Product not available'], 400);
         }
 
         if ($quantite > $produit->getQuantiteStock()) {
-            return new JsonResponse(['error' => 'Stock insuffisant'], 400);
+            return new JsonResponse(['error' => 'Insufficient stock'], 400);
         }
 
         $sessionUserId = $session->get('user_id');
@@ -1210,7 +1210,7 @@ final class CommandeController extends AbstractController
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Commande créée avec succès',
+                'message' => 'Order created successfully',
                 'order_id' => $commande->getIdCommande(),
                 'total' => $commande->getPrixTotal()
             ]);
@@ -1219,7 +1219,7 @@ final class CommandeController extends AbstractController
             if ($em->getConnection()->isTransactionActive()) {
                 $em->getConnection()->rollBack();
             }
-            return new JsonResponse(['error' => 'Erreur lors de la création de la commande: ' . $e->getMessage()], 500);
+            return new JsonResponse(['error' => 'Error creating the order: ' . $e->getMessage()], 500);
         }
     }
 
@@ -1301,9 +1301,9 @@ final class CommandeController extends AbstractController
         try {
             $em->persist($commande);
             $em->flush();
-            $this->addFlash('success', 'Commande créée avec succès.');
+            $this->addFlash('success', 'Order created successfully.');
         } catch (\Throwable $e) {
-            $this->addFlash('error', 'Impossible de créer la commande pour le moment.');
+            $this->addFlash('error', 'Unable to create the order right now.');
             $this->addFlash('form_old_commande_create', $request->request->all());
         }
 
@@ -1316,7 +1316,7 @@ final class CommandeController extends AbstractController
         $commande = $em->getRepository(Commande::class)->find($id);
 
         if (!$commande) {
-            $this->addFlash('error', 'Commande introuvable.');
+            $this->addFlash('error', 'Order not found.');
             return $this->redirectToRoute('app_admin_commandes');
         }
 
@@ -1334,9 +1334,9 @@ final class CommandeController extends AbstractController
 
         try {
             $em->flush();
-            $this->addFlash('success', 'Commande mise à jour.');
+            $this->addFlash('success', 'Order updated successfully.');
         } catch (\Throwable $e) {
-            $this->addFlash('error', 'Impossible de mettre à jour la commande pour le moment.');
+            $this->addFlash('error', 'Unable to update the order right now.');
         }
 
         return $this->redirectToRoute('app_admin_commandes');
@@ -1347,16 +1347,16 @@ final class CommandeController extends AbstractController
     {
         $commande = $em->getRepository(Commande::class)->find($id);
         if (!$commande) {
-            $this->addFlash('error', 'Commande introuvable.');
+            $this->addFlash('error', 'Order not found.');
             return $this->redirectToRoute('app_admin_commandes');
         }
 
         try {
             $em->remove($commande);
             $em->flush();
-            $this->addFlash('success', 'Commande supprimée avec succès.');
+            $this->addFlash('success', 'Order deleted successfully.');
         } catch (\Throwable $e) {
-            $this->addFlash('error', 'Impossible de supprimer la commande pour le moment.');
+            $this->addFlash('error', 'Unable to delete the order right now.');
         }
 
         return $this->redirectToRoute('app_admin_commandes');
@@ -1367,7 +1367,7 @@ final class CommandeController extends AbstractController
     {
         $token = (string) $request->request->get('_token', '');
         if (!$this->isCsrfTokenValid('bulk_delete_commandes', $token)) {
-            $this->addFlash('error', 'Jeton de sécurité invalide.');
+            $this->addFlash('error', 'Invalid security token.');
 
             return $this->redirectToRoute('app_admin_commandes');
         }
@@ -1376,14 +1376,14 @@ final class CommandeController extends AbstractController
         $ids = array_values(array_unique(array_filter(array_map(static fn ($id): int => (int) $id, $rawIds), static fn (int $id): bool => $id > 0)));
 
         if ($ids === []) {
-            $this->addFlash('error', 'Aucune commande sélectionnée.');
+            $this->addFlash('error', 'No orders selected.');
 
             return $this->redirectToRoute('app_admin_commandes');
         }
 
         $commandes = $em->getRepository(Commande::class)->findBy(['id_commande' => $ids]);
         if ($commandes === []) {
-            $this->addFlash('error', 'Aucune commande valide trouvée.');
+            $this->addFlash('error', 'No valid orders found.');
 
             return $this->redirectToRoute('app_admin_commandes');
         }
@@ -1394,9 +1394,9 @@ final class CommandeController extends AbstractController
             }
 
             $em->flush();
-            $this->addFlash('success', sprintf('%d commande(s) supprimée(s) avec succès.', count($commandes)));
+            $this->addFlash('success', sprintf('%d order(s) deleted successfully.', count($commandes)));
         } catch (\Throwable $e) {
-            $this->addFlash('error', 'Impossible de supprimer les commandes sélectionnées pour le moment.');
+            $this->addFlash('error', 'Unable to delete the selected orders right now.');
         }
 
         return $this->redirectToRoute('app_admin_commandes');
@@ -1412,13 +1412,13 @@ final class CommandeController extends AbstractController
         $produitId = filter_var($request->request->get('produit_id'), FILTER_VALIDATE_INT);
         $produit = $produitId !== false ? $em->getRepository(Produit::class)->find((int) $produitId) : null;
         if (!$produit) {
-            $errors['produit'][] = 'Produit invalide.';
+            $errors['produit'][] = 'Invalid product.';
         }
 
         $quantiteValue = (string) $request->request->get('quantite', '');
         $quantite = filter_var($quantiteValue, FILTER_VALIDATE_INT);
         if ($quantite === false || $quantite <= 0) {
-            $errors['quantite'][] = 'La quantité doit être un entier strictement positif.';
+            $errors['quantite'][] = 'Quantity must be a strictly positive integer.';
             $quantite = 1;
         }
 
@@ -1529,7 +1529,7 @@ final class CommandeController extends AbstractController
             return [
                 'ok' => false,
                 'status' => 401,
-                'message' => 'Client non authentifie.',
+                'message' => 'Client not authenticated.',
                 'data' => $defaultData,
             ];
         }

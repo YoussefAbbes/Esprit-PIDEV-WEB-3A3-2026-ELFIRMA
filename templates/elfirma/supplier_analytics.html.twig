@@ -171,13 +171,7 @@
 <body class="bg-surface text-on-surface min-h-screen flex">
 
   <!-- SideNavBar (Authority: _nav_routes.html.twig) -->
-  <aside class="h-screen w-72 fixed left-0 top-0 bg-surface-container-low text-primary flex flex-col py-8 pr-4 font-headline font-semibold z-40">
-    <div class="px-8 mb-8">
-      <h1 class="text-3xl font-black tracking-tighter text-primary">Elfirma</h1>
-      <p class="text-xs font-label text-on-surface-variant uppercase tracking-widest opacity-70">Gestion Agricole</p>
-    </div>
-    <nav class="flex-grow space-y-1"></nav>
-  </aside>
+  {% include 'elfirma/_admin_sidebar.html.twig' with { 'current_module': 'supplier-analytics' } %}
 
   <!-- Main Content -->
   <div class="flex-1 ml-72 flex flex-col bg-gradient-to-b from-surface-bright via-surface to-surface-container-lowest">

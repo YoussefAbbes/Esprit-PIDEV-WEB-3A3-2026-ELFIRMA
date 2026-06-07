@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer une commande - EL FIRMA{% endblock %}
+{% block title %}Create Order - EL FIRMA{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -51,7 +51,7 @@
                 <div style="background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%); padding: 25px; color: white;">
                     <h2 style="margin: 0; display: flex; align-items: center; gap: 15px;">
                         <span class="material-symbols-outlined" style="font-size: 32px;">shopping_bag</span>
-                        Finaliser votre commande
+                        Complete your order
                     </h2>
                 </div>
 
@@ -64,16 +64,16 @@
                             {% endfor %}
                         </div>
                     {% endif %}
-                    <!-- Informations client -->
+                    <!-- Customer information -->
                     <div style="margin-bottom: 30px;">
                         <h4 style="color: #2d5016; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                             <span class="material-symbols-outlined">person</span>
-                            Informations client
+                            Customer information
                         </h4>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="nom_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Nom complet *</label>
+                                <label for="nom_client" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Full name *</label>
                                 <input type="text" id="nom_client" name="nom_client" value="{{ oldInput.nom_client|default('') }}"
                                        style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
                                 {% if formErrors.nom_client is defined %}
@@ -83,16 +83,16 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="adresse_livraison" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Adresse de livraison *</label>
+                                <label for="adresse_livraison" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Delivery address *</label>
                                 <textarea id="adresse_livraison" name="adresse_livraison" rows="2"
                                           style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;">{{ oldInput.adresse_livraison|default('') }}</textarea>
                                 <div class="delivery-map-box">
                                     <div class="delivery-map-head">
-                                        <span style="font-size: 12px; font-weight: 700; color: #1f2937;">Choisir sur la carte (clic pour remplir l'adresse)</span>
-                                        <button id="use-current-location" type="button">Ma position</button>
+                                        <span style="font-size: 12px; font-weight: 700; color: #1f2937;">Choose on map (click to fill the address)</span>
+                                        <button id="use-current-location" type="button">My location</button>
                                     </div>
                                     <div id="delivery-map"></div>
-                                    <div id="delivery-map-status" style="padding: 8px 10px;">Astuce: vous pouvez ecrire manuellement ou cliquer sur la carte.</div>
+                                    <div id="delivery-map-status" style="padding: 8px 10px;">Tip: you can type manually or click on the map.</div>
                                 </div>
                                 {% if formErrors.adresse_livraison is defined %}
                                     {% for err in formErrors.adresse_livraison %}
@@ -101,12 +101,12 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Mode de paiement *</label>
+                                <label for="mode_paiement" style="font-weight: 600; color: #374151; margin-bottom: 8px;">Payment method *</label>
                                 <select id="mode_paiement" name="mode_paiement" 
                                         style="width: 100%; padding: 12px 15px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
-                                    <option value="Cash" {% if oldInput.mode_paiement|default('Cash') == 'Cash' %}selected{% endif %}>Cash (à la livraison)</option>
-                                    <option value="Carte bancaire" {% if oldInput.mode_paiement|default('Cash') == 'Carte bancaire' %}selected{% endif %}>Carte bancaire</option>
-                                    <option value="Virement" {% if oldInput.mode_paiement|default('Cash') == 'Virement' %}selected{% endif %}>Virement bancaire</option>
+                                    <option value="Cash" {% if oldInput.mode_paiement|default('Cash') == 'Cash' %}selected{% endif %}>Cash (on delivery)</option>
+                                    <option value="Carte bancaire" {% if oldInput.mode_paiement|default('Cash') == 'Carte bancaire' %}selected{% endif %}>Credit card</option>
+                                    <option value="Virement" {% if oldInput.mode_paiement|default('Cash') == 'Virement' %}selected{% endif %}>Bank transfer</option>
                                 </select>
                                 {% if formErrors.mode_paiement is defined %}
                                     {% for err in formErrors.mode_paiement %}
@@ -121,60 +121,60 @@
                                         <div class="pay-card-number" id="card-preview-number">•••• •••• •••• ••••</div>
                                         <div class="pay-card-row">
                                             <div>
-                                                <div>Nom porteur</div>
+                                                <div>Card holder</div>
                                                 <div id="card-preview-name" style="font-size: 15px; font-weight: 700; margin-top: 3px;">{{ oldInput.nom_client|default('Votre nom') }}</div>
                                             </div>
                                             <div style="text-align: right;">
-                                                <div>Réseau</div>
+                                                <div>Network</div>
                                                 <div style="font-size: 16px; font-weight: 700; margin-top: 3px;">Stripe</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div style="margin-top: 14px; display: grid; gap: 10px;">
                                         <div>
-                                            <label for="stripe_card_holder" style="font-weight: 600; color: #14532d; margin-bottom: 6px; display: block;">Nom du porteur de carte</label>
-                                            <input type="text" id="stripe_card_holder" value="{{ oldInput.nom_client|default('') }}" placeholder="Nom et prénom"
+                                            <label for="stripe_card_holder" style="font-weight: 600; color: #14532d; margin-bottom: 6px; display: block;">Card holder name</label>
+                                            <input type="text" id="stripe_card_holder" value="{{ oldInput.nom_client|default('') }}" placeholder="Full name"
                                                    style="width: 100%; padding: 10px 12px; border: 2px solid #bbf7d0; border-radius: 8px; font-size: 15px;">
                                         </div>
                                         <div>
-                                            <label style="font-weight: 600; color: #14532d; margin-bottom: 6px; display: block;">Informations carte</label>
+                                            <label style="font-weight: 600; color: #14532d; margin-bottom: 6px; display: block;">Card information</label>
                                             <div id="stripe-element-wrap" class="stripe-element-wrap">
                                                 <div id="stripe-card-element"></div>
                                             </div>
                                         </div>
                                         {% if not stripe_enabled %}
-                                            <div style="color: #dc2626; font-size: 13px;">Paiement carte indisponible: configurez les cles Stripe (STRIPE_PUBLIC_KEY et STRIPE_SECRET_KEY).</div>
+                                            <div style="color: #dc2626; font-size: 13px;">Card payment unavailable: configure Stripe keys (STRIPE_PUBLIC_KEY and STRIPE_SECRET_KEY).</div>
                                         {% endif %}
                                         <div id="stripe-client-error" style="display: none; color: #dc2626; font-size: 13px;"></div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-12 mb-3" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 15px;">
-                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #92400e;">Code promo (valable 3 jours)</p>
-                                <p style="margin: 0 0 12px 0; color: #78350f; font-size: 14px;">Génération disponible pour un panier à partir de {{ promo_min_total|number_format(0, '.', ' ') }} DT.</p>
+                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #92400e;">Promo code (valid for 3 days)</p>
+                                <p style="margin: 0 0 12px 0; color: #78350f; font-size: 14px;">Generation available for carts starting from {{ promo_min_total|number_format(0, '.', ' ') }} DT.</p>
                                 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-                                    <input type="text" id="promo_code" name="promo_code" value="{{ oldInput.promo_code|default('') }}" placeholder="Entrez votre code promo"
+                                    <input type="text" id="promo_code" name="promo_code" value="{{ oldInput.promo_code|default('') }}" placeholder="Enter your promo code"
                                            style="flex: 1; min-width: 220px; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 15px;">
                                     <button type="submit" name="checkout_action" value="generate_promo"
                                             style="background: #92400e; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                                        Générer code
+                                        Generate code
                                     </button>
                                     <button type="submit" name="checkout_action" value="apply_promo"
                                             style="background: #b45309; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                                        Appliquer code
+                                        Apply code
                                     </button>
                                 </div>
                                 {% if promo_generated_code %}
                                     <p style="margin: 10px 0 0 0; font-size: 14px; color: #065f46;">
-                                        Code généré: <strong>{{ promo_generated_code }}</strong>
+                                        Generated code: <strong>{{ promo_generated_code }}</strong>
                                         {% if promo_expires_at %}
-                                            (expire le {{ promo_expires_at|date('d/m/Y H:i') }})
+                                            (expires on {{ promo_expires_at|date('d/m/Y H:i') }})
                                         {% endif %}
                                     </p>
                                 {% endif %}
                                 {% if promo_is_applied %}
                                     <p style="margin: 8px 0 0 0; font-size: 14px; color: #166534; font-weight: 700;">
-                                        Code promo appliqué: réduction de {{ promo_percent }}%
+                                        Promo code applied: {{ promo_percent }}% discount
                                     </p>
                                 {% endif %}
                                 {% if formErrors.promo_code is defined %}
@@ -184,23 +184,23 @@
                                 {% endif %}
                             </div>
                             <div class="col-12 mb-3" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px;">
-                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #2d5016;">Champs remplis automatiquement</p>
+                                <p style="margin: 0 0 10px 0; font-weight: 700; color: #2d5016;">Automatically filled fields</p>
                                 <ul style="margin: 0; padding-left: 18px; color: #4b5563; font-size: 14px;">
-                                    <li>Date de commande: maintenant</li>
-                                    <li>Statut commande: En attente</li>
-                                    <li>Statut paiement: Non payé</li>
-                                    <li>Prix total: calculé depuis le panier</li>
-                                    <li>Produit et quantité: récupérés depuis le panier</li>
+                                    <li>Order date: now</li>
+                                    <li>Order status: Pending</li>
+                                    <li>Payment status: Unpaid</li>
+                                    <li>Total price: calculated from cart</li>
+                                    <li>Product and quantity: retrieved from cart</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Récapitulatif de la commande -->
+                    <!-- Order summary -->
                     <div style="margin-bottom: 30px;">
                         <h4 style="color: #2d5016; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                             <span class="material-symbols-outlined">receipt</span>
-                            Récapitulatif de votre commande
+                            Your order summary
                         </h4>
                         
                         <div style="background: #f9fafb; border-radius: 10px; padding: 20px;">
@@ -208,8 +208,8 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; {% if not loop.last %}border-bottom: 1px solid #e5e7eb;{% endif %}">
                                 <div style="display: flex; align-items: center; gap: 15px;">
                                     <div style="width: 60px; height: 60px; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #2d5016 0%, #1e3a0f 100%);">
-                                        {% if item.produit.image %}
-                                            <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" alt="{{ item.produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% if item.produit.imageFilename %}
+                                            <img src="{{ asset('uploads/produits/' ~ item.produit.imageFilename) }}" alt="{{ item.produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
                                         {% else %}
                                             <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
                                                 <span class="material-symbols-outlined" style="color: rgba(255,255,255,0.5); font-size: 24px;">package_2</span>
@@ -236,7 +236,7 @@
                             <div style="border-top: 2px solid #e5e7eb; margin-top: 20px; padding-top: 20px;">
                                 {% if promo_discount|default(0) > 0 %}
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span style="font-size: 16px; font-weight: 600; color: #92400e;">Réduction promo ({{ promo_percent }}%) :</span>
+                                        <span style="font-size: 16px; font-weight: 600; color: #92400e;">Promo discount ({{ promo_percent }}%):</span>
                                         <span style="font-size: 18px; font-weight: 700; color: #b45309;">-{{ promo_discount|number_format(2, '.', ' ') }} DT</span>
                                     </div>
                                     {% if tnd_to_eur_rate is not null %}
@@ -244,7 +244,7 @@
                                     {% endif %}
                                 {% endif %}
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total à payer:</span>
+                                    <span style="font-size: 20px; font-weight: 700; color: #2d5016;">Total to pay:</span>
                                     <span style="font-size: 24px; font-weight: 900; color: #16a34a;">{{ final_total|default(total)|number_format(2, '.', ' ') }} DT</span>
                                 </div>
                                 {% if tnd_to_eur_rate is not null %}
@@ -254,7 +254,7 @@
                                     <div style="text-align: right; margin-top: 4px; color: #0f766e; font-size: 13px; font-weight: 600;">Approx. {{ eur_estimate|number_format(2, '.', ' ') }} EUR (paiement carte)</div>
                                 {% endif %}
                                 {% if promo_discount|default(0) > 0 %}
-                                    <div style="text-align: right; margin-top: 4px; color: #6b7280; font-size: 13px;">Sous-total avant réduction: {{ total|number_format(2, '.', ' ') }} DT</div>
+                                    <div style="text-align: right; margin-top: 4px; color: #6b7280; font-size: 13px;">Subtotal before discount: {{ total|number_format(2, '.', ' ') }} DT</div>
                                     {% if tnd_to_eur_rate is not null %}
                                         <div style="text-align: right; margin-top: 2px; color: #6b7280; font-size: 12px;">~ {{ (total * tnd_to_eur_rate)|number_format(2, '.', ' ') }} EUR</div>
                                     {% endif %}
@@ -266,10 +266,10 @@
                     <!-- Boutons d'action -->
                     <div style="display: flex; gap: 15px; justify-content: space-between;">
                         <a href="{{ path('app_panier_index') }}" style="background: #6b7280; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: 600;">
-                            Retour au panier
+                            Back to cart
                         </a>
                         <button type="submit" id="confirm-order-btn" name="checkout_action" value="confirm_order" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; flex: 1; max-width: 300px;">
-                            Confirmer la commande
+                            Confirm order
                         </button>
                     </div>
                 </form>
@@ -289,10 +289,10 @@
                     <div style="margin-bottom: 20px;">
                         <h6 style="color: #2d5016; font-weight: 700; margin-bottom: 10px;">
                             <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">local_shipping</span>
-                            Livraison
+                            Delivery
                         </h6>
                         <p style="font-size: 14px; color: #6b7280; margin: 0;">
-                            Livraison gratuite pour toute commande. Délai de livraison : 2-3 jours ouvrables.
+                            Free delivery for all orders. Delivery time: 2-3 business days.
                         </p>
                     </div>
 
@@ -302,7 +302,7 @@
                             Paiement
                         </h6>
                         <p style="font-size: 14px; color: #6b7280; margin: 0;">
-                            Paiement sécurisé. Possibilité de payer à la livraison ou par virement.
+                            Secure payment. You can pay on delivery or via bank transfer.
                         </p>
                     </div>
 
@@ -312,14 +312,14 @@
                             Support
                         </h6>
                         <p style="font-size: 14px; color: #6b7280; margin: 0;">
-                            Notre équipe est disponible pour vous aider. Contactez-nous en cas de besoin.
+                            Our team is available to help you. Contact us if needed.
                         </p>
                     </div>
 
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px;">
                         <p style="font-size: 12px; color: #166534; margin: 0; text-align: center;">
                             <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">verified</span>
-                            Commande sécurisée et garantie
+                            Secure and guaranteed order
                         </p>
                     </div>
                 </div>
@@ -342,19 +342,19 @@
     </div>
 {% endfor %}
 
-<button id="assist-fab" class="assist-fab" type="button" aria-label="Ouvrir assistant commande">
+<button id="assist-fab" class="assist-fab" type="button" aria-label="Open order assistant">
     <span class="material-symbols-outlined">forum</span>
 </button>
 
 <section id="assist-panel" class="assist-panel" aria-live="polite">
     <div class="assist-head">
-        <strong>Assistant commande</strong>
+        <strong>Order assistant</strong>
         <button id="assist-close" type="button" style="border:none;background:transparent;color:#fff;">✕</button>
     </div>
     <div id="assist-body" class="assist-body"></div>
     <div class="assist-input">
-        <input id="assist-input" type="text" placeholder="Ex: comment utiliser le code promo ?">
-        <button id="assist-send" type="button">Envoyer</button>
+        <input id="assist-input" type="text" placeholder="Ex: how to use the promo code?">
+        <button id="assist-send" type="button">Send</button>
     </div>
 </section>
 {% endblock %}
@@ -565,7 +565,7 @@
 
                 const data = await response.json();
                 if (!response.ok) {
-                    throw new Error(data.error || 'Erreur de creation du paiement Stripe.');
+                    throw new Error(data.error || 'Error creating Stripe payment.');
                 }
 
                 return data;
@@ -611,17 +611,17 @@
                     clearStripeError();
 
                     if (!stripeEnabled) {
-                        showStripeError('Paiement carte indisponible pour le moment.');
+                        showStripeError('Card payment is currently unavailable.');
                         return;
                     }
 
                     if (!stripe || !cardElement) {
-                        showStripeError('Stripe n\'est pas pret. Rechargez la page.');
+                        showStripeError('Stripe is not ready. Reload the page.');
                         return;
                     }
 
                     submitter.disabled = true;
-                    submitter.textContent = 'Paiement en cours...';
+                    submitter.textContent = 'Processing payment...';
 
                     try {
                         const intentData = await createPaymentIntent();
@@ -639,11 +639,11 @@
                         });
 
                         if (result.error) {
-                            throw new Error(result.error.message || 'Paiement refuse.');
+                            throw new Error(result.error.message || 'Payment declined.');
                         }
 
                         if (!result.paymentIntent || result.paymentIntent.status !== 'succeeded') {
-                            throw new Error('Paiement carte non confirme.');
+                            throw new Error('Card payment not confirmed.');
                         }
 
                         stripeIntentInput.value = result.paymentIntent.id;
@@ -654,7 +654,7 @@
                     } catch (err) {
                         showStripeError(err.message || 'Erreur lors du paiement carte.');
                         submitter.disabled = false;
-                        submitter.textContent = 'Confirmer la commande';
+                        submitter.textContent = 'Confirm order';
                     }
                 });
             }
@@ -722,19 +722,19 @@
 
                     const data = await response.json();
                     if (!response.ok) {
-                        throw new Error(data.error || 'Erreur chatbot.');
+                        throw new Error(data.error || 'Chatbot error.');
                     }
 
-                    appendMessage(data.reply || 'Je suis la pour vous aider.', false, data.quick_replies || []);
+                    appendMessage(data.reply || 'I am here to help you.', false, data.quick_replies || []);
                 } catch (err) {
-                    appendMessage(err.message || 'Erreur lors de la reponse assistant.', false, []);
+                    appendMessage(err.message || 'Error while getting assistant response.', false, []);
                 }
             }
 
             fab.addEventListener('click', function () {
                 panel.classList.add('active');
                 if (body.children.length === 0) {
-                    appendMessage('Bonjour! Je suis votre assistant commande. Je peux vous aider sur promo, paiement Stripe, adresse et total.', false, ['Code promo', 'Paiement carte Stripe', 'Adresse de livraison', 'Total actuel']);
+                    appendMessage('Hello! I am your order assistant. I can help with promo, Stripe payment, address, and total.', false, ['Promo code', 'Stripe card payment', 'Delivery address', 'Current total']);
                 }
             });
 
@@ -800,7 +800,7 @@
             }
 
             function openVoiceFallbackPrompt() {
-                const typed = window.prompt('Reconnaissance vocale indisponible. Ecrivez la commande checkout. Ex: nom ahmed');
+                const typed = window.prompt('Voice recognition unavailable. Type a checkout command. Example: name ahmed');
                 if (typeof typed === 'string' && typed.trim() !== '') {
                     handleVoiceCommand(typed.trim());
                 }
@@ -832,8 +832,8 @@
             }
 
             function readCheckoutSummary() {
-                const totalText = totalEl ? totalEl.textContent.trim() : 'total indisponible';
-                speak(`Recapitulatif. Nom ${nameInput?.value || 'non renseigne'}. Mode de paiement ${paymentSelect?.value || 'non renseigne'}. Total ${totalText}.`);
+                const totalText = totalEl ? totalEl.textContent.trim() : 'total unavailable';
+                speak(`Summary. Name ${nameInput?.value || 'not provided'}. Payment method ${paymentSelect?.value || 'not provided'}. Total ${totalText}.`);
             }
 
             function getGeneratedPromoCodeFromUi() {
@@ -888,7 +888,7 @@
                             return;
                         }
 
-                        showVoiceStatus('Aucun code promo genere trouve. Dites generer promo puis reutilisez cette commande.', true, true);
+                        showVoiceStatus('No generated promo code found. Say generate promo and try this command again.', true, true);
                         return;
                     }
 
@@ -933,7 +933,7 @@
 
                     const data = await response.json();
                     if (!response.ok || !data.ok) {
-                        showVoiceStatus(data.speak || 'Erreur de traitement vocal.', true, true);
+                        showVoiceStatus(data.speak || 'Voice processing error.', true, true);
                         return;
                     }
 
@@ -942,14 +942,14 @@
                         speak(data.speak);
                     }
                 } catch (_error) {
-                    showVoiceStatus('Erreur reseau pendant la commande vocale.', true, true);
+                    showVoiceStatus('Network error during voice command.', true, true);
                 }
             }
 
             if (!hasVoice) {
                 fab.style.opacity = '0.65';
                 fab.addEventListener('click', function () {
-                    showVoiceStatus('La reconnaissance vocale n\'est pas supportee par ce navigateur.', true);
+                    showVoiceStatus('Voice recognition is not supported by this browser.', true);
                 });
                 return;
             }
@@ -972,11 +972,11 @@
                     fab.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
                     if (!quiet) {
                         // Ne pas parler au moment du start pour eviter de couper l'ecoute.
-                        showVoiceStatus('Je vous ecoute... dites votre commande vocale.', false, false);
+                        showVoiceStatus('Listening... say your voice command.', false, false);
                     }
                 } catch (_error) {
                     isRecognitionStarting = false;
-                    showVoiceStatus('Impossible de demarrer le micro, reessayez.', true);
+                    showVoiceStatus('Unable to start the microphone, try again.', true);
                 }
             }
 
@@ -1020,7 +1020,7 @@
                 if (code === 'network') {
                     if (networkRetryCount < 1) {
                         networkRetryCount++;
-                        showVoiceStatus('Service vocal navigateur indisponible. Nouvelle tentative...', true, false);
+                    showVoiceStatus('Browser voice service unavailable. Retrying...', true, false);
                         setTimeout(function () {
                             startRecognitionSafely(true);
                         }, 550);
@@ -1029,18 +1029,18 @@
                     }
 
                     restartOnEnd = false;
-                    showVoiceStatus('Service vocal navigateur indisponible. Utilisez le secours texte.', true);
+                    showVoiceStatus('Browser voice service unavailable. Use text fallback.', true);
                     openVoiceFallbackPrompt();
                     return;
                 }
 
                 if (code === 'no-speech') {
-                    showVoiceStatus('Aucune voix detectee. Parlez juste apres le clic micro.', true, false);
+                    showVoiceStatus('No speech detected. Speak right after clicking the microphone.', true, false);
                     return;
                 }
 
                 if (code !== 'aborted') {
-                    showVoiceStatus('Erreur vocale: ' + code + '. Veuillez reessayer.', true);
+                    showVoiceStatus('Voice error: ' + code + '. Please try again.', true);
                 }
             };
 
@@ -1061,7 +1061,7 @@
 
                     return true;
                 } catch (_error) {
-                    showVoiceStatus('Micro non autorise. Activez l\'acces micro dans le navigateur.', true);
+                    showVoiceStatus('Microphone not authorized. Enable browser microphone access.', true);
 
                     return false;
                 }
@@ -1074,7 +1074,7 @@
                     isRecognitionStarting = false;
                     recognition.stop();
                     isListening = false;
-                    showVoiceStatus('Ecoute arretee.', false, false);
+                    showVoiceStatus('Listening stopped.', false, false);
 
                     return;
                 }
@@ -1095,7 +1095,7 @@
                 }
             });
 
-            showVoiceStatus('Assistant vocal checkout actif.', false);
+                showVoiceStatus('Checkout voice assistant active.', false);
         })();
     </script>
     <script>
@@ -1119,7 +1119,7 @@
 
                         const data = await response.json();
                         if (!response.ok || !data.ok) {
-                            return data.speak || 'Commande gestes non reconnue.';
+                            return data.speak || 'Gesture command not recognized.';
                         }
 
                         const actions = Array.isArray(data.actions) ? data.actions : [];
@@ -1154,13 +1154,13 @@
                             if (action.type === 'read_checkout_summary') {
                                 const totalEl = Array.from(document.querySelectorAll('span')).find((el) => (el.textContent || '').includes('DT') && el.style.fontSize === '24px');
                                 const total = totalEl ? totalEl.textContent.trim() : 'indisponible';
-                                return `Recap commande. Total ${total}.`;
+                                return `Order summary. Total ${total}.`;
                             }
                         }
 
-                        return typeof data.speak === 'string' ? data.speak : 'Commande gestes executee.';
+                        return typeof data.speak === 'string' ? data.speak : 'Gesture command executed.';
                     } catch (_error) {
-                        return 'Service gestes temporairement indisponible.';
+                        return 'Gesture service temporarily unavailable.';
                     }
                 }
             });
