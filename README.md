@@ -5,7 +5,7 @@
 # 🌿 EL FIRMA
 ### Agricultural Enterprise Management Platform
 
-*A full-stack Symfony 6.4 web application for modern farm management —  
+*A full-stack Symfony 6.4 web application for modern farm management —
 from soil to sale, from livestock to logistics.*
 
 <br/>
@@ -14,11 +14,10 @@ from soil to sale, from livestock to logistics.*
 [![Symfony](https://img.shields.io/badge/Symfony-6.4_LTS-000000?style=for-the-badge&logo=symfony&logoColor=white)](https://symfony.com)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Firebase](https://img.shields.io/badge/Firebase-Realtime_DB-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
 
-[![License](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA?style=for-the-badge&color=116530)](https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA?style=for-the-badge&color=5e9c3d)](https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA/network)
+[![Academic Project](https://img.shields.io/badge/ESPRIT-PIDEV_3A3_2025--2026-116530?style=for-the-badge)](#-team)
 [![Last Commit](https://img.shields.io/github/last-commit/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA?style=for-the-badge&color=0c4a23)](https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA/commits)
 
 </div>
@@ -28,19 +27,24 @@ from soil to sale, from livestock to logistics.*
 ## 📖 Table of Contents
 
 - [About the Project](#-about-the-project)
+- [Demo](#-demo)
 - [Feature Highlights](#-feature-highlights)
 - [Tech Stack](#-tech-stack)
 - [System Architecture](#-system-architecture)
+- [Quick Start (TL;DR)](#-quick-start-tldr)
 - [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
 - [Module Overview](#-module-overview)
 - [AI & Intelligence](#-ai--intelligence)
+- [Machine Learning Models & Datasets](#-machine-learning-models--datasets)
 - [Biometric Authentication](#-biometric-authentication)
 - [API Integrations](#-api-integrations)
 - [Database Schema](#-database-schema)
 - [Project Structure](#-project-structure)
+- [Running Tests](#-running-tests)
 - [Contributing](#-contributing)
 - [Team](#-team)
+- [License](#-license)
 
 ---
 
@@ -48,9 +52,48 @@ from soil to sale, from livestock to logistics.*
 
 **EL FIRMA** is a comprehensive, production-grade agricultural enterprise management system built with **Symfony 6.4 LTS**. Born from the need to digitize and modernize farm operations, EL FIRMA brings together every aspect of agricultural business — from managing hectares of land and crop cycles to tracking livestock health, automating supply chains, and leveraging AI-driven insights.
 
-This platform goes far beyond a typical CRUD application. It integrates **biometric authentication** (fingerprint + face ID), a **RAG-powered chatbot**, **machine-learning crop recommendations**, **3D livestock visualization**, **predictive equipment maintenance**, and **real-time SMS/push notifications** — all within a polished, mobile-friendly interface.
+This platform goes far beyond a typical CRUD application. It integrates **biometric authentication** (fingerprint + face ID), a **RAG-powered chatbot**, a **machine-learning crop recommendation engine**, **3D livestock visualization**, **predictive equipment maintenance**, an **interactive training & certification module**, and **real-time SMS / push notifications** — all within a polished, mobile-friendly interface.
 
-> 🎓 Developed as a PIDEV (Projet d'Intégration et de Développement) at **ESPRIT School of Engineering** — 3rd Year, Group 3A3, Academic Year 2025–2026.
+> 🎓 Developed as a **PIDEV** (Projet d'Intégration et de Développement) at **ESPRIT School of Engineering** — 3rd Year, Group 3A3, Academic Year 2025–2026.
+
+---
+
+## 🎬 Demo
+
+> 📹 **Demo video:** _add your link here_ (YouTube / Google Drive)
+> 🌐 **Live deployment:** _Not available (run locally — see [Quick Start](#-quick-start-tldr))_
+
+### 🧑‍🌾 Client / Public Experience
+
+| Sign In | Public Home |
+|:---:|:---:|
+| ![Sign In](demo/screenshots/signin.jpg) | ![Public Home](demo/screenshots/public-home.jpg) |
+| **Product Marketplace** | **Livestock Catalog** |
+| ![Marketplace](demo/screenshots/marketplace.jpg) | ![Livestock Catalog](demo/screenshots/livestock-catalog.jpg) |
+| **AI Farm Assistant (RAG Chatbot)** | **Two-Factor Admin Access** |
+| ![Chatbot](demo/screenshots/chatbot.jpg) | ![2FA](demo/screenshots/twofa.jpg) |
+
+### 🖥️ Admin — Management Dashboards
+
+| Main Dashboard | Parcels Management |
+|:---:|:---:|
+| ![Main Dashboard](demo/screenshots/admin-dashboard.jpg) | ![Parcels](demo/screenshots/parcels.jpg) |
+| **Crops Management** | **Parcel Detail & Map** |
+| ![Crops](demo/screenshots/crops.jpg) | ![Parcel Detail](demo/screenshots/parcel-detail.jpg) |
+| **Animal Management** | **Livestock Capacity** |
+| ![Animals](demo/screenshots/animals.jpg) | ![Livestock](demo/screenshots/livestock.jpg) |
+| **Products Management** | **Suppliers & Partners** |
+| ![Products](demo/screenshots/products.jpg) | ![Suppliers](demo/screenshots/suppliers.jpg) |
+| **Contracts Analytics** | **3D Livestock Habitat Studio** |
+| ![Contracts](demo/screenshots/contracts.jpg) | ![3D Habitat](demo/screenshots/livestock-3d.jpg) |
+
+### 🎓 Training & Certification
+
+| Training Dashboard | Interactive Lesson |
+|:---:|:---:|
+| ![Training](demo/screenshots/training.jpg) | ![Lesson](demo/screenshots/lesson.jpg) |
+
+> All screenshots live in [`demo/screenshots/`](demo/screenshots/).
 
 ---
 
@@ -95,7 +138,7 @@ This platform goes far beyond a typical CRUD application. It integrates **biomet
 - **Supplier Analytics** — Scoring, performance metrics, and contract tracking
 - **Order Management** — Full order lifecycle with cart, checkout & Stripe payments
 - **Contract PDF Generation** — Auto-generated supplier contracts with DOMPDF
-- **Meeting Scheduling** — Calendar + Jitsi video integration for supplier meetings
+- **Meeting Scheduling** — Calendar + Jitsi/Zoho video integration for suppliers
 - **Multi-currency Support** — Live exchange rate conversion
 
 </td>
@@ -103,21 +146,21 @@ This platform goes far beyond a typical CRUD application. It integrates **biomet
 <tr>
 <td width="50%">
 
-### 📡 Communications
-- **SMS Alerts** — Twilio-powered vaccination reminders, capacity warnings, maintenance alerts
-- **Email Notifications** — SendGrid transactional emails (invitations, reports, alerts)
-- **Firebase Push Notifications** — Real-time mobile app sync
-- **Google Calendar Export** — One-click meeting/event export
+### 🎓 Training & Certification
+- **9 Interactive Lessons** — Sensors, AI, and maintenance with 3D models and inline knowledge-checks
+- **Certification Exam** — 30-question quiz, 70% pass mark
+- **Verifiable PDF Certificate** — Auto-generated with a QR verification link
+- **Progress Tracking** — Per-user lesson completion and scores
 
 </td>
 <td width="50%">
 
-### 📊 Reporting & Data
-- **PDF Reports** — DOMPDF-generated maintenance, contract & analytics reports
-- **Excel Export/Import** — Bulk data via PHPSpreadsheet (CSV/XLSX)
+### 📡 Communications & Reporting
+- **SMS Alerts** — Twilio vaccination reminders, capacity & maintenance alerts
+- **Email Notifications** — SendGrid / Resend transactional emails
+- **Firebase Push Notifications** — Real-time mobile sync
+- **PDF & Excel** — DOMPDF reports + PHPSpreadsheet import/export
 - **ChartJS Dashboards** — Live KPI charts with Symfony UX
-- **Supplier Analytics Dashboard** — Visual performance metrics and trends
-- **Weather Integration** — OpenWeather API for farm location forecasts
 
 </td>
 </tr>
@@ -132,65 +175,39 @@ This platform goes far beyond a typical CRUD application. It integrates **biomet
 |---|---|---|
 | **PHP** | `≥ 8.1` | Runtime language |
 | **Symfony** | `6.4 LTS` | Web framework |
-| **Doctrine ORM** | `3.6` | Database abstraction & migrations |
-| **MySQL** | `8.0` | Primary relational database |
+| **Doctrine ORM** | `3.x` | Database abstraction & migrations |
+| **MySQL / MariaDB** | `8.0 / 10.4+` | Primary relational database |
 | **Symfony Messenger** | `6.4` | Async message queue |
-| **Symfony Security** | `6.4` | Authentication & authorization |
 | **DOMPDF** | `3.1` | PDF generation |
 | **PHPSpreadsheet** | `5.6` | Excel/CSV import & export |
-| **VichUploaderBundle** | `2.9` | Smart file upload management |
+| **VichUploaderBundle** | `2.9` | File upload management |
 | **KnpPaginatorBundle** | `6.10` | List pagination |
 | **Firebase Bundle** | `3.1` | Mobile backend & push notifications |
 | **OTPHP** | `11.4` | TOTP two-factor authentication |
 | **endroid/qr-code** | `6.0` | QR code generation |
-| **Geocoder PHP** | `5.8` | Nominatim/OSM geocoding |
 
 ### Frontend
 | Technology | Purpose |
 |---|---|
-| **Bootstrap 5.3.3** | Responsive UI framework |
-| **Stimulus JS** | Lightweight frontend controllers |
-| **Turbo** | SPA-like navigation without full reloads |
+| **Bootstrap 5.3** | Responsive UI framework |
+| **Stimulus + Turbo (Symfony UX)** | SPA-like interactions without full reloads |
 | **Symfony UX ChartJS** | Data visualization |
-| **AOS (Animate On Scroll)** | Scroll-driven animations |
-| **Swiper** | Touch-friendly carousels |
-| **GLightbox** | Image/video lightbox |
+| **Three.js** | Interactive 3D sensor & livestock models |
+| **AOS · Swiper · GLightbox** | Animations, carousels, lightbox |
 | **Twig 3** | Server-side templating |
-| **Material Symbols** | Icon system |
 
 ### AI / Python Services
-| Service | Port | Technology | Purpose |
+| Service | Folder | Technology | Purpose |
 |---|---|---|---|
-| **RAG Chatbot Engine** | — | Python + Gemini Flash | Agricultural Q&A chatbot |
-| **Crop Recommender** | — | ExtraTreesClassifier | ML-based crop selection |
-| **Face ID Service** | `8765` | Python + face_recognition | Biometric face authentication |
-| **Chatbot NLP API** | `8002` | FastAPI + NaiveBayes | Voice/gesture intent detection |
+| **RAG Chatbot Engine** | `rag/` | Python + Gemini Flash | Agricultural Q&A chatbot |
+| **Crop Recommender** | `scripts/ml/`, `ml/` | scikit-learn (GradientBoosting) | ML-based crop selection |
+| **Face ID Service** | `scripts/faceid/` | Python + face_recognition | Biometric face authentication |
+| **Chatbot / Intent NLP** | `chatbot_ai/`, `ai_service/` | scikit-learn NaiveBayes | Voice / gesture intent detection |
 
-### Java Services
-| Service | Port | Technology | Purpose |
+### Java Service
+| Service | Folder | Technology | Purpose |
 |---|---|---|---|
-| **Fingerprint Bridge** | `8085` | Java + ZKFinger SDK | Fingerprint enrollment & matching |
-
-### External APIs & Integrations
-| API | Purpose |
-|---|---|
-| **Google Gemini Flash** | LLM for chatbot responses |
-| **OpenAI** | Alternative LLM support |
-| **Tripo3D** | 3D livestock model generation |
-| **Pixabay** | Auto-fetch product/crop images |
-| **Trefle** | Plant species & growing guide data |
-| **USDA** | Agricultural datasets |
-| **OpenWeather** | Real-time farm weather |
-| **Twilio** | SMS notifications |
-| **SendGrid** | Transactional emails |
-| **Stripe** | Payment processing |
-| **Google OAuth2** | Social login |
-| **GitHub OAuth2** | Social login |
-| **Google reCAPTCHA** | Form bot protection |
-| **Jitsi Meet** | Video meetings with suppliers |
-| **MapTiler** | Map tiles for parcel views |
-| **Exchange Rates API** | Live currency conversion |
-| **API-Ninjas** | Profanity content moderation |
+| **Fingerprint Bridge** | `fingerprint/` | Java + ZKFinger SDK | Fingerprint enrollment & matching |
 
 ---
 
@@ -198,24 +215,49 @@ This platform goes far beyond a typical CRUD application. It integrates **biomet
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                          EL FIRMA                               │
-│                    Symfony 6.4 Application                      │
-├──────────────┬──────────────┬──────────────┬────────────────────┤
-│   Web Layer  │ Service Layer│  Data Layer  │  External Services │
-│              │              │              │                    │
-│  37 Controllers  36+ Services  Doctrine ORM   Firebase RT DB   │
-│  22 Dashboard │  Business    │  MySQL 8.0   │  Twilio SMS        │
-│  Templates   │  Logic       │  8 Migrations│  SendGrid Email    │
-│  Twig Views  │  AI/ML       │  Repos       │  Stripe Payments   │
-├──────────────┴──────────────┴──────────────┴────────────────────┤
-│                      Microservice Layer                          │
-│                                                                  │
-│  [Python:8002]    [Python:8765]    [Java:8085]                  │
-│  FastAPI/NLP      Face ID          ZKFinger SDK                 │
-│  Chatbot          Recognition      Fingerprint                  │
-│  Crop ML          Biometrics       Biometrics                   │
+│                          EL FIRMA                                │
+│                    Symfony 6.4 Application                        │
+├──────────────┬───────────────┬──────────────┬────────────────────┤
+│   Web Layer  │ Service Layer │  Data Layer  │  External Services  │
+│              │               │              │                     │
+│  Controllers │  Business     │ Doctrine ORM │  Firebase RT DB     │
+│  Twig Views  │  Logic        │ MySQL 8.0    │  Twilio / Resend    │
+│  Symfony UX  │  AI / ML glue │ Migrations   │  Stripe Payments    │
+├──────────────┴───────────────┴──────────────┴────────────────────┤
+│                      Optional Microservices                       │
+│                                                                   │
+│   [Python] rag/ · scripts/ml/ · scripts/faceid/ · chatbot_ai/     │
+│   [Java]   fingerprint/  (ZKFinger SDK)                           │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## ⚡ Quick Start (TL;DR)
+
+> Goal: a fresh machine running the **core web app in under 10 minutes**.
+> The AI/biometric microservices are **optional** — the app runs without them.
+
+```bash
+# 1. Clone
+git clone https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA.git
+cd Esprit-PIDEV-WEB-3A3-2026-ELFIRMA
+
+# 2. Install PHP dependencies
+composer install
+
+# 3. Configure environment (fill in your own values)
+cp .env.example .env.local
+
+# 4. Create the database & run migrations
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate --no-interaction
+
+# 5. Launch
+symfony serve            # or: php -S localhost:8000 -t public/
+```
+
+Then open **http://localhost:8000**.
 
 ---
 
@@ -223,254 +265,214 @@ This platform goes far beyond a typical CRUD application. It integrates **biomet
 
 ### Prerequisites
 
-Ensure you have the following installed:
+| Requirement | Version | Needed for |
+|---|---|---|
+| **PHP** | `≥ 8.1` (ext: `pdo_mysql`, `intl`, `mbstring`, `gd`, `zip`, `curl`) | Core app |
+| **Composer** | `≥ 2.0` | PHP dependencies |
+| **MySQL / MariaDB** | `8.0` / `10.4+` | Database |
+| **Symfony CLI** | latest *(optional)* | `symfony serve` |
+| **Python** | `≥ 3.10` | AI / ML features *(optional)* |
+| **Java JRE** | `≥ 11` | Fingerprint bridge *(optional)* |
 
-- **PHP** `>= 8.1` with extensions: `pdo_mysql`, `intl`, `mbstring`, `gd`, `zip`, `curl`
-- **Composer** `>= 2.0`
-- **MySQL** `>= 8.0`
-- **Node.js** `>= 18` (for asset building)
-- **Python** `>= 3.9` (for AI/ML features)
-- **Java JRE** `>= 11` (for fingerprint bridge)
-- **Git**
+### Installation — Core App (required)
 
-### Installation
-
-**1. Clone the repository**
+**1. Clone & install**
 ```bash
 git clone https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA.git
 cd Esprit-PIDEV-WEB-3A3-2026-ELFIRMA
-```
-
-**2. Install PHP dependencies**
-```bash
 composer install
 ```
 
-**3. Configure environment**
+**2. Configure environment**
 ```bash
-cp .env .env.local
-# Edit .env.local and fill in all required values (see Environment Variables section)
+cp .env.example .env.local
+# Edit .env.local — at minimum set DATABASE_URL.
+# Keep all real secrets in .env.local ONLY (it is git-ignored).
 ```
 
-**4. Set up the database**
+**3. Database**
 ```bash
 php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
+php bin/console doctrine:migrations:migrate --no-interaction
 ```
 
-**5. Set up Python environment (for AI features)**
+**4. Run**
 ```bash
-# RAG Chatbot
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # Linux/macOS
-pip install -r rag/requirements.txt
-
-# Face ID Service
-cd scripts/faceid
-python -m venv .venv
-pip install -r requirements.txt
-```
-
-**6. Start microservices**
-```bash
-# Terminal 1 — Chatbot NLP API
-cd chatbot && uvicorn main:app --port 8002
-
-# Terminal 2 — Face ID Service  
-cd scripts/faceid && python server.py
-
-# Terminal 3 — Fingerprint Bridge
-cd fingerprint && java -jar FingerprintBridgeServer.jar
-```
-
-**7. Start the Symfony server**
-```bash
-symfony server:start
-# or
+symfony serve
+# or, without the Symfony CLI:
 php -S localhost:8000 -t public/
 ```
-
-**8. Open the application**
 
 | Interface | URL |
 |---|---|
 | Public website | http://localhost:8000 |
 | Admin dashboard | http://localhost:8000/elfirma |
+| Training module | http://localhost:8000/training |
 | Login | http://localhost:8000/login |
+
+### Installation — Optional AI / Biometric Services
+
+These power the chatbot, crop recommender, face ID and fingerprint features. The app degrades gracefully when they are not running.
+
+```bash
+# Python: create a virtualenv and install per-service requirements
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # Linux / macOS
+
+pip install -r rag/requirements-rag.txt        # RAG chatbot
+pip install -r scripts/faceid/requirements.txt # Face ID  (if present)
+```
+
+> Each AI folder (`rag/`, `scripts/ml/`, `scripts/faceid/`, `chatbot_ai/`) contains its own README / requirements with exact run commands. See [Machine Learning Models & Datasets](#-machine-learning-models--datasets).
 
 ---
 
 ## 🔑 Environment Variables
 
-<details>
-<summary><strong>Click to expand — full .env reference</strong></summary>
+All variables are documented in **[`.env.example`](.env.example)**. Copy it to `.env.local` and fill in your own values:
 
-```dotenv
-# ─── Application ──────────────────────────────────────
-APP_ENV=dev
-APP_SECRET=your_app_secret_32chars
-
-# ─── Database ─────────────────────────────────────────
-DATABASE_URL="mysql://root:@127.0.0.1:3306/elfirma"
-
-# ─── Async Messaging ──────────────────────────────────
-MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
-
-# ─── Email ────────────────────────────────────────────
-MAILER_DSN=sendgrid+api://SG.YOUR_KEY@default
-MAILER_FROM=no-reply@elfirma.com
-
-# ─── Firebase ─────────────────────────────────────────
-FIREBASE_CREDENTIALS_PATH=/path/to/serviceAccount.json
-FIREBASE_PROJECT_ID=elfirma-project
-FIREBASE_DATABASE_URI=https://elfirma-project-default-rtdb.firebaseio.com
-
-# ─── SMS (Twilio) ─────────────────────────────────────
-TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxx
-TWILIO_API_KEY_SID=SKxxxxxxxxxxxxxxxx
-TWILIO_API_KEY_SECRET=your_key_secret
-TWILIO_FROM_PHONE=+1xxxxxxxxxx
-TWILIO_TO_PHONE=+1xxxxxxxxxx
-
-# ─── Payments (Stripe) ────────────────────────────────
-STRIPE_PUBLIC_KEY=pk_test_xxxx
-STRIPE_SECRET_KEY=sk_test_xxxx
-STRIPE_CURRENCY=eur
-
-# ─── AI / LLM ─────────────────────────────────────────
-RAG_PYTHON_PATH=.venv\Scripts\python.exe
-RAG_CHAT_ENGINE_PATH=rag/scripts/chat_engine.py
-RAG_LLM_PROVIDER=gemini
-RAG_LLM_MODEL=gemini-flash-latest
-OPENAI_API_KEY=sk-xxxx
-
-# ─── 3D Generation ────────────────────────────────────
-TRIPO3D_API_KEY=your_tripo3d_key
-TRIPO3D_API_BASE_URL=https://api.tripo3d.ai
-TRIPO3D_TIMEOUT=180
-
-# ─── Biometrics ───────────────────────────────────────
-FACE_ID_HOST=127.0.0.1
-FACE_ID_PORT=8765
-FACE_ID_THRESHOLD=0.28
-FACE_ID_PYTHON_BIN=scripts/faceid/.venv/Scripts/python.exe
-
-# ─── Agriculture APIs ─────────────────────────────────
-TREFLE_API_KEY=your_trefle_key
-USDA_API_KEY=your_usda_key
-OPENWEATHER_API_KEY=your_openweather_key
-PIXABAY_API_KEY=your_pixabay_key
-MAPTILER_API_KEY=your_maptiler_key
-EXCHANGE_RATE_API_KEY=your_exchange_key
-
-# ─── OAuth ────────────────────────────────────────────
-GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_secret
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_secret
-
-# ─── reCAPTCHA ────────────────────────────────────────
-RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-RECAPTCHA_SECRET_KEY=your_recaptcha_secret
-
-# ─── Content Moderation ───────────────────────────────
-PROFANITY_FILTER_API_KEY=your_api_ninjas_key
-
-# ─── Alerts & Monitoring ──────────────────────────────
-CAPACITY_ALERT_THRESHOLD_PERCENT=85
-CAPACITY_ALERT_TO_EMAIL=admin@elfirma.com
-CAPACITY_ALERT_FROM_EMAIL=alerts@elfirma.com
+```bash
+cp .env.example .env.local
 ```
 
-</details>
+> ⚠️ **Never commit real secrets.** `.env.local` is git-ignored. Real API keys, passwords and DSNs must live there (or in real environment variables) — never in a committed file. See the [Symfony secrets guide](https://symfony.com/doc/current/configuration/secrets.html).
+
+Key groups: `APP_*`, `DATABASE_URL`, `MAILER_*`, `TWILIO_*`, `STRIPE_*`, `RAG_* / OPENAI_* / OPENROUTER_*`, `TRIPO3D_*`, `FACE_ID_*`, OAuth (`GOOGLE_*`, `GITHUB_*`), `RECAPTCHA_*`, and the agriculture APIs (`TREFLE_*`, `USDA_*`, `OPENWEATHER_*`, `PIXABAY_*`, `MAPTILER_*`).
 
 ---
 
 ## 🗂 Module Overview
 
 ### 🌐 Public Website (`/`)
-The customer-facing site includes a hero carousel, service catalog, agricultural product showcase, livestock catalog, team pages, blog, testimonials, and contact form — all with SEO-optimized templates.
+Customer-facing site: hero carousel, service catalog, product & livestock showcase, team pages, blog, testimonials, and contact form.
 
 ### 🖥 Admin Dashboard (`/elfirma`)
 
 | Module | Route | Features |
 |---|---|---|
-| 📊 **Dashboard** | `/elfirma` | KPI overview, ChartJS analytics, activity feed |
-| 👥 **Users** | `/elfirma/utilisateurs` | User management, role assignment, 2FA status |
+| 📊 **Dashboard** | `/elfirma` | KPI overview, ChartJS analytics |
+| 👥 **Users** | `/elfirma/utilisateurs` | User management, roles, 2FA status |
 | 🗺 **Parcels & Crops** | `/elfirma/parcelles-cultures` | Map view, crop lifecycle, CSV/XLSX import, recommendation engine |
 | 🐄 **Livestock & Animals** | `/elfirma/animaux-elevages` | Herd management, vaccination, 3D modeling, DNA detection |
-| 📦 **Products** | `/elfirma/produits` | Inventory, auto-image fetch, video generation |
-| 🛒 **Orders** | `/elfirma/produits-commandes` | Order workflow, cart, Stripe checkout |
-| 🔧 **Equipment** | `/elfirma/equipements-maintenance` | Asset tracking, predictive maintenance, service history |
-| 🤝 **Suppliers & Contracts** | `/elfirma/fournisseurs-contrats` | Supplier scoring, contract PDF, meeting scheduling |
-| 📋 **Complaints** | `/elfirma/reclamations` | Complaint tracking, resolution workflow, SMS notification |
-| 📈 **Analytics** | `/elfirma/supplier-analytics` | Supplier performance charts, trend analysis |
+| 📦 **Products** | `/elfirma/produits` | Inventory, auto-image fetch |
+| 🛒 **Orders** | `/elfirma/produits-commandes` | Cart, Stripe checkout |
+| 🔧 **Equipment** | `/elfirma/equipements-maintenance` | Asset tracking, predictive maintenance |
+| 🤝 **Suppliers & Contracts** | `/elfirma/fournisseurs-contrats` | Scoring, contract PDF, meetings |
+| 📋 **Complaints** | `/elfirma/reclamations` | Tracking, resolution workflow |
+| 🎓 **Training** | `/training` | Lessons, exam, certificate |
 
 ---
 
 ## 🧠 AI & Intelligence
 
 ### RAG Chatbot
-The built-in chatbot uses a **Retrieval-Augmented Generation** pipeline. It embeds your farm's knowledge base and retrieves relevant context before querying **Google Gemini Flash** for natural-language responses about crops, livestock, and operations.
+A **Retrieval-Augmented Generation** pipeline: it retrieves relevant context from the farm knowledge base, then queries **Google Gemini Flash** for natural-language answers.
 
 ```
 User Query → Document Retrieval (Top-K=5) → Gemini Flash LLM → Response
 ```
 
 ### Crop Recommendation Engine
-Input soil parameters to get ML-powered crop recommendations:
+Input soil & climate parameters → ML-powered crop recommendation with confidence and top-3 alternatives.
 
 | Input Feature | Description |
 |---|---|
-| N / P / K | Nitrogen, Phosphorus, Potassium levels (mg/kg) |
-| Temperature | Average temperature (°C) |
-| Humidity | Relative humidity (%) |
-| pH | Soil pH level |
-| Rainfall | Annual rainfall (mm) |
+| N / P / K | Nitrogen, Phosphorus, Potassium (mg/kg) |
+| temperature | Average temperature (°C) |
+| humidity | Relative humidity (%) |
+| ph | Soil pH |
+| rainfall | Rainfall (mm) |
 
-**Output:** Recommended crop, confidence score, top-3 alternatives, and agronomic guidance. Falls back to a profile-scoring algorithm if the Python model is unavailable.
+> Falls back to a profile-scoring algorithm if the Python model is unavailable. Full details and metrics below.
 
 ### Predictive Maintenance
-Analyzes equipment age, service hours, and historical maintenance patterns to **predict when next maintenance is required** — before a breakdown occurs. Generates calendar events and SMS alerts automatically.
+Analyzes equipment age, service hours and history to **predict the next maintenance window** before a breakdown, generating calendar events and SMS alerts.
 
 ### Voice & Gesture Assistant
-- **Voice Commands:** Navigate catalog, add to cart, and complete checkout hands-free using natural language
-- **Supplier Form Filling:** Dictate supplier details to populate forms automatically
-- **Gesture Recognition:** Map hand gestures to application actions (built with `NaiveBayesClassifier`)
+Hands-free catalog navigation, cart and checkout, plus supplier-form dictation, built on a `NaiveBayesClassifier` intent model.
 
 ### 3D Livestock Visualization
-Generate photorealistic 3D models of animals by providing a text description or image via the **Tripo3D API**. Models are stored and viewable in an interactive 3D viewer.
+Generate 3D animal models from a text/image prompt via the **Tripo3D API**, viewable in an interactive Three.js viewer.
+
+---
+
+## 🤖 Machine Learning Models & Datasets
+
+> Per the ESPRIT AI-publication rules: this section documents the Python version, datasets, models, and reproducible performance metrics.
+
+### Environment
+- **Python:** `≥ 3.10` (tested on 3.13)
+- **Core libs:** scikit-learn, pandas, numpy, joblib (+ Gemini SDK for the RAG chatbot)
+- Pinned requirements: [`rag/requirements-rag.txt`](rag/requirements-rag.txt) · [`rag/requirements-lock.txt`](rag/requirements-lock.txt)
+
+### Crop Recommendation Model
+
+| Item | Value |
+|---|---|
+| **Task** | Multi-class classification (22 crops) |
+| **Dataset** | `Crop_recommendation.csv` — 2,200 samples, 7 features (Kaggle *Crop Recommendation Dataset*) |
+| **Split** | 1,320 train / 440 validation / 440 test (seed 42) |
+| **Selected model** | **GradientBoostingClassifier** (best validation macro-F1) |
+| **Test accuracy** | **98.86%** |
+| **Test macro-F1** | **98.87%** |
+| **Artifacts** | [`ml/crop_recommendation/best_model.joblib`](ml/crop_recommendation/best_model.joblib) (~6 MB) + [`model_metadata.json`](ml/crop_recommendation/model_metadata.json) |
+
+**Model comparison (validation set):**
+
+| Model | Accuracy | Macro-F1 |
+|---|---|---|
+| RandomForest | 99.09% | 99.09% |
+| **GradientBoosting** ✅ | **99.55%** | **99.55%** |
+| ExtraTrees | 98.86% | 98.86% |
+
+**Top feature importances:** humidity (24.6%) · rainfall (23.4%) · K (18.5%) · P (12.7%) · N (11.7%).
+
+**Reproduce — train:**
+```bash
+python scripts/ml/train_crop_recommendation.py \
+  --dataset Crop_recommendation.csv \
+  --model-output ml/crop_recommendation/best_model.joblib \
+  --metadata-output ml/crop_recommendation/model_metadata.json
+```
+
+**Reproduce — single inference:**
+```bash
+python scripts/ml/crop_recommendation_infer.py \
+  --model ml/crop_recommendation/best_model.joblib \
+  --metadata ml/crop_recommendation/model_metadata.json \
+  --input-json "{\"N\":90,\"P\":42,\"K\":43,\"temperature\":21,\"humidity\":82,\"ph\":6.5,\"rainfall\":203}"
+```
+
+An exploratory notebook is available at [`notebooks/crop_recommendation_workflow.ipynb`](notebooks/crop_recommendation_workflow.ipynb).
+
+### Other models
+- **Chatbot / intent classifier** — `chatbot_ai/model/` (`rf_model.pkl`, `vectorizer.pkl`, `label_encoder.pkl`, `responses.pkl`).
+- **Voice / gesture intent** — `src/AI/` (NaiveBayes) trained via `App\Command\TrainVoiceIntentModelCommand`.
+
+> **Note on model size:** all committed models are small (< 25 MB), so they are kept in-repo for one-command reproducibility. Larger models (> 100 MB) must instead be hosted externally (Hugging Face / Drive) with a download script — none apply here.
 
 ---
 
 ## 🔐 Biometric Authentication
 
-EL FIRMA implements a multi-layered biometric security system — a feature rare in web applications:
-
 ### Fingerprint Recognition
-
 ```
-Browser ──► Symfony Controller ──► HTTP ──► Java Bridge (port 8085)
-                                              │
-                                              └──► ZKFinger SDK
-                                                   Enrollment / Match
+Browser ──► Symfony Controller ──► HTTP ──► Java Bridge (fingerprint/)
+                                              └──► ZKFinger SDK · Enroll / Match
 ```
 
 | Endpoint | Action |
 |---|---|
-| `POST /fingerprint/enroll/start` | Start fingerprint enrollment |
-| `POST /fingerprint/enroll/capture` | Capture fingerprint sample |
-| `POST /fingerprint/verify` | Verify against stored template |
-| `POST /fingerprint/identify` | Identify user from database |
+| `POST /fingerprint/enroll/start` | Start enrollment |
+| `POST /fingerprint/enroll/capture` | Capture sample |
+| `POST /fingerprint/verify` | Verify against template |
+| `POST /fingerprint/identify` | Identify user |
 
 ### Face ID
-
 ```
-Browser ──► Symfony Controller ──► HTTP ──► Python Service (port 8765)
-                                              │
-                                              └──► face_recognition library
-                                                   Encode / Compare (threshold: 0.28)
+Browser ──► Symfony Controller ──► HTTP ──► Python Service (scripts/faceid/, port 8765)
+                                              └──► face_recognition · Encode / Compare (threshold 0.28)
 ```
 
 ---
@@ -481,15 +483,14 @@ Browser ──► Symfony Controller ──► HTTP ──► Python Service (po
 ┌─────────────────────────────────────────────────────────────┐
 │                    External API Map                          │
 ├──────────────┬──────────────────────────────────────────────┤
-│ 🌱 Agri      │ Trefle (plants) · USDA (data) · OpenWeather  │
-│ 🤖 AI        │ Google Gemini · OpenAI · Tripo3D             │
-│ 💬 Comms     │ Twilio SMS · SendGrid Email · Jitsi Video    │
-│ 🗺 Geo       │ Nominatim (OSM) · MapTiler · OpenLayers      │
-│ 💳 Finance   │ Stripe Payments · Exchange Rates API         │
-│ 🔐 Auth      │ Google OAuth2 · GitHub OAuth2 · reCAPTCHA   │
-│ 📸 Media     │ Pixabay Images · Firebase Storage           │
-│ 🛡 Safety    │ API-Ninjas Profanity Filter                  │
-│ 📅 Calendar  │ Google Calendar · Zoho Meeting              │
+│ 🌱 Agri      │ Trefle (plants) · USDA (data) · OpenWeather   │
+│ 🤖 AI        │ Google Gemini · OpenAI · OpenRouter · Tripo3D │
+│ 💬 Comms     │ Twilio SMS · SendGrid/Resend · Jitsi/Zoho     │
+│ 🗺 Geo       │ Nominatim (OSM) · MapTiler                    │
+│ 💳 Finance   │ Stripe Payments · Exchange Rates API          │
+│ 🔐 Auth      │ Google OAuth2 · GitHub OAuth2 · reCAPTCHA     │
+│ 📸 Media     │ Pixabay Images · Firebase Storage             │
+│ 🛡 Safety    │ API-Ninjas Profanity Filter                   │
 └──────────────┴──────────────────────────────────────────────┘
 ```
 
@@ -497,46 +498,30 @@ Browser ──► Symfony Controller ──► HTTP ──► Python Service (po
 
 ## 🗄 Database Schema
 
-**23 entities** across 8 migrations, organized into domain clusters:
+Doctrine entities across domain clusters:
 
 <details>
 <summary><strong>View entity relationships</strong></summary>
 
 ```
 AGRICULTURAL CORE
-─────────────────
-Parcelle ──┐
-           ├──[1:N]──► Culture
-           └── (GPS coords, soil type, status)
-
-Livestock ──┐
-            ├──[1:N]──► Animal ──[1:N]──► Vaccination
-            └── (type, capacity, headcount)
+Parcelle ──[1:N]──► Culture            (GPS coords, soil type, status)
+Livestock ──[1:N]──► Animal ──[1:N]──► Vaccination
 
 EQUIPMENT
-─────────
-Equipement ──[1:N]──► Maintenance
-  └── (type, acquisition cost, service hours, predictive alerts)
+Equipement ──[1:N]──► Maintenance      (service hours, predictive alerts)
 
 COMMERCE
-────────
 Fournisseur ──┬──[1:N]──► Contrat
               ├──[1:N]──► Meeting
               └──[1:N]──► Commande
-
 Produit ──[M:N]──► Commande
-  └── (type, stock qty, expiry date, image)
-
 Categorie ──[1:N]──► Produit
 
-USERS & FEEDBACK
-────────────────
-Utilisateur ──[1:N]──► Reclamation
-  └── (role, biometric templates, OAuth IDs)
-
-Rating
-Notification
-IrrigationEvent
+USERS / TRAINING / FEEDBACK
+Utilisateur ──[1:N]──► Reclamation     (role, biometric templates, OAuth IDs)
+UserProgress                            (training lessons, quiz score, certificate)
+Rating · Notification · IrrigationEvent
 ```
 
 </details>
@@ -547,48 +532,32 @@ IrrigationEvent
 
 ```
 elfirma/
-├── config/                     # Symfony configuration
-│   ├── packages/               # Bundle configs (doctrine, security, mailer…)
-│   └── routes/                 # Route definitions
-│
-├── migrations/                 # Doctrine database migrations (8 files)
-│
-├── public/                     # Web root
-│   └── assets/
-│       ├── css/main.css        # 2300+ line custom stylesheet
-│       ├── img/                # Hero images, team photos, logos
-│       ├── js/                 # JavaScript modules
-│       └── vendor/             # Bootstrap, AOS, Swiper, GLightbox…
-│
+├── config/                  # Symfony configuration (packages, routes)
+├── migrations/              # Doctrine database migrations
+├── public/                  # Web root
+│   ├── assets/              # CSS, JS, images, vendor libs
+│   └── images/lessons/      # Training lesson photos
 ├── src/
-│   ├── Controller/             # 37 controllers
-│   ├── Entity/                 # 23 Doctrine entities
-│   ├── Repository/             # Data access layer
-│   ├── Service/                # 36+ business services
-│   ├── EventSubscriber/        # Symfony event listeners
-│   ├── Security/               # Auth providers, OAuth handlers
-│   ├── AI/                     # Intent classifiers, NLP models
-│   └── DTO/                    # Data transfer objects
-│
-├── templates/
-│   ├── base.html.twig          # Main layout
-│   ├── elfirma/                # 22 admin dashboard templates
-│   │   ├── cultures/           # Crop management views
-│   │   ├── parcelles/          # Parcel management views
-│   │   └── Livestock&Animal Management/
-│   ├── pages/                  # 10 public website pages
-│   ├── auth/                   # Login, signup, 2FA templates
-│   ├── emails/                 # Transactional email templates
-│   └── partials/               # Header, footer, navigation
-│
-├── fingerprint/                # Java ZKFinger SDK bridge
-│   └── FingerprintBridgeServer.java
-│
-├── rag/                        # Python RAG chatbot
-│   └── scripts/chat_engine.py
-│
-└── scripts/
-    └── faceid/                 # Python Face ID service
+│   ├── Controller/          # HTTP controllers
+│   ├── Entity/              # Doctrine entities
+│   ├── Repository/          # Data access layer
+│   ├── Service/             # Business services
+│   ├── Security/            # Auth providers, OAuth handlers
+│   ├── AI/                  # Intent classifiers / NLP
+│   └── Command/             # Console commands (e.g. model training)
+├── templates/               # Twig views (public, admin, training, emails)
+├── ml/crop_recommendation/  # Trained crop model + metadata
+├── scripts/
+│   ├── ml/                  # Crop training & inference scripts
+│   └── faceid/              # Python Face ID service
+├── rag/                     # Python RAG chatbot (+ requirements)
+├── chatbot_ai/ · ai_service/# Intent / chatbot NLP services
+├── fingerprint/             # Java ZKFinger SDK bridge
+├── notebooks/               # Jupyter exploration notebooks
+├── docs/                    # Technical documentation
+├── demo/                    # Screenshots / demo video
+├── .env.example             # Environment variable template
+└── README.md
 ```
 
 ---
@@ -596,46 +565,37 @@ elfirma/
 ## 🧪 Running Tests
 
 ```bash
-# Run the full test suite
+# PHPUnit test suite
 php bin/phpunit
 
-# Run with coverage report
-php bin/phpunit --coverage-html coverage/
-
-# Static analysis
-vendor/bin/phpstan analyse src --level=5
+# Static analysis (PHPStan)
+vendor/bin/phpstan analyse src
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
-
 1. **Fork** the repository
 2. **Create** a feature branch — `git checkout -b feature/your-feature-name`
-3. **Commit** your changes — `git commit -m 'feat: add amazing feature'`
-4. **Push** to your branch — `git push origin feature/your-feature-name`
+3. **Commit** with [Conventional Commits](https://www.conventionalcommits.org/) — `git commit -m 'feat: add amazing feature'`
+4. **Push** — `git push origin feature/your-feature-name`
 5. **Open** a Pull Request against `main`
 
-### Commit Convention
-
-We follow **Conventional Commits**:
-
-| Prefix | Use For |
+| Prefix | Use for |
 |---|---|
 | `feat:` | New feature |
 | `fix:` | Bug fix |
 | `refactor:` | Code restructuring |
-| `docs:` | Documentation update |
-| `test:` | Test additions |
-| `chore:` | Build / tooling changes |
+| `docs:` | Documentation |
+| `test:` | Tests |
+| `chore:` | Build / tooling |
 
 ---
 
 ## 👥 Team
 
-This project was built by a dedicated team of engineering students at **ESPRIT School of Engineering**:
+Built by engineering students at **ESPRIT School of Engineering**:
 
 <div align="center">
 
@@ -649,14 +609,14 @@ This project was built by a dedicated team of engineering students at **ESPRIT S
 
 </div>
 
-> 🎓 **ESPRIT — École Supérieure Privée d'Ingénierie et de Technologies**  
+> 🎓 **ESPRIT — École Supérieure Privée d'Ingénierie et de Technologies**
 > 3rd Year Engineering · PIDEV · Group 3A3 · 2025–2026
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This is an **academic project** developed for ESPRIT School of Engineering (PIDEV 2025–2026). It is provided for **educational purposes**; reuse beyond academic evaluation requires the authors' permission.
 
 ---
 
@@ -665,9 +625,5 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 **Built with 💚 and a lot of ☕ by Team 3A3 at ESPRIT**
 
 *Turning the age-old practice of farming into a data-driven, AI-powered enterprise.*
-
-<br/>
-
-[![GitHub](https://img.shields.io/badge/View_on_GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/YoussefAbbes/Esprit-PIDEV-WEB-3A3-2026-ELFIRMA)
 
 </div>
