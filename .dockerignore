@@ -1,0 +1,23 @@
+# Docker ignore rules for Symfony app
+.git
+.gitignore
+node_modules
+vendor
+var
+.cache
+.phpunit.cache
+.phpactor.json
+.venv
+.env
+.env.local
+.env.test
+.env.dev
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+npm-shrinkwrap.json
+README*.md
+install_log.txt
+temp*
+*.log
