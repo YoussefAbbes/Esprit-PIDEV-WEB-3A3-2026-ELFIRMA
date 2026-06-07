@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: elfirma-symfony
+    env: docker
+    dockerfilePath: Dockerfile
+    branch: main
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: '0'
+      - key: PORT
+        value: '10000'
+      - key: DATABASE_URL
+        value: 'postgresql://personne_x45t_user:FLxYNDzV7KnozGujSf5p5TbEzB0sAJMx@dpg-d8inioflk1mc738cft2g-a/personne_x45t'
+      - key: APP_SECRET
+        value: 'bd55b7bdf932719b5c15883b0edf1bab'
