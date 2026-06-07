@@ -28,4 +28,4 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 EXPOSE 10000
 
 # Lancer Symfony
-CMD php -S 0.0.0.0:10000 -t public
+CMD php -S 0.0.0.0:$PORT -t public
