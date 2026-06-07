@@ -23,8 +23,7 @@ WORKDIR /app
 COPY . .
 
 # Installer dépendances Symfony
-RUN composer install --no-dev --optimize-autoloader
-
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 # Port Render
 EXPOSE 10000
 
