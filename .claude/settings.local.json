@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $r = new ReflectionClass\\('\\\\''Doctrine\\\\DBAL\\\\Driver\\\\Middleware\\\\AbstractDriverMiddleware'\\\\''\\); echo $r->getFileName\\(\\);')"
-    ]
-  }
-}
